@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Compiled output
+functions/sharktalents/routes/
+functions/sharktalents/data/
+functions/sharktalents/services/
+functions/sharktalents/seeds/
+functions/sharktalents/*.js
+!functions/sharktalents/index.js
+functions/sharktalents/auth.js
+functions/sharktalents/db.js
+functions/sharktalents/helpers.js
+functions/sharktalents/router.js
+
+# Build artifacts
+frontend/build/
+frontend/dist/
+
+# Environment / secrets
+.env
+.env.local
+.env.production
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+Thumbs.db
+
+# Temp files
+*.tmp
+*.bak

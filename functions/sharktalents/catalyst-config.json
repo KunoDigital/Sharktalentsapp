@@ -1,0 +1,18 @@
+{
+  "deployment": {
+    "name": "sharktalents",
+    "stack": "node20",
+    "type": "advancedio",
+    "memory": 512,
+    "timeout": 180,
+    "env_variables": {
+      "ANTHROPIC_API_KEY": "REPLACE_ME",
+      "ADMIN_USER": "REPLACE_ME",
+      "ADMIN_PASS_HASH": "REPLACE_ME",
+      "JWT_SECRET": "REPLACE_ME"
+    }
+  },
+  "execution": {
+    "main": "index.js"
+  }
+}

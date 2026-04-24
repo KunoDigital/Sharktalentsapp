@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "targets": ["sharktalents"],
+    "ignore": [],
+    "source": "functions"
+  },
+  "client": {
+    "source": "frontend/build"
+  }
+}
