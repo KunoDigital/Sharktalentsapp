@@ -1,0 +1,682 @@
+[
+  {
+    "id": "d1",
+    "text": "Tu jefe te pide terminar una tarea urgente hoy pero ya tienes mucho trabajo. Tú:",
+    "options": [
+      "Le digo que sí y me organizo para sacar todo adelante como sea",
+      "Le explico lo que tengo y le propongo qué puedo mover para cumplir",
+      "Le pido que me ayude a decidir qué es más importante",
+      "Acepto sin quejarme y busco cómo cumplir sin molestar a nadie"
+    ],
+    "dimension": [
+      "D",
+      "C",
+      "I",
+      "S"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d2",
+    "text": "Un compañero siempre llega tarde y eso afecta a todos. Tú:",
+    "options": [
+      "Le digo directo que su tardanza nos perjudica",
+      "Lo menciono de forma suave en la próxima reunión para que lo capte",
+      "No digo nada, seguro tiene sus razones",
+      "Anoto las veces que ha llegado tarde por si alguien pregunta"
+    ],
+    "dimension": [
+      "D",
+      "I",
+      "S",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d3",
+    "text": "Te dan libertad total para organizar cómo hacer tu trabajo. Tú:",
+    "options": [
+      "Hago un plan con pasos y tiempos antes de empezar",
+      "Empiezo de una con lo que me parece más importante",
+      "Pregunto a mis compañeros cómo lo han hecho antes",
+      "Lo hablo con el equipo para que todos estemos de acuerdo"
+    ],
+    "dimension": [
+      "C",
+      "D",
+      "S",
+      "I"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d4",
+    "text": "Hay un malentendido con un cliente molesto. Tú:",
+    "options": [
+      "Lo escucho con calma y le aseguro que lo vamos a resolver",
+      "Le explico qué pasó y qué vamos a hacer para arreglarlo",
+      "Busco la información del caso antes de responderle",
+      "Uso mi mejor actitud para calmarlo y que se sienta bien atendido"
+    ],
+    "dimension": [
+      "S",
+      "D",
+      "C",
+      "I"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d5",
+    "text": "Tu grupo debe elegir entre dos formas de hacer algo. Tú:",
+    "options": [
+      "Dejo que los demás opinen y apoyo lo que tenga más apoyo",
+      "Analizo cuál opción tiene menos riesgos y explico mis razones",
+      "Propongo que votemos y animo a todos a participar",
+      "Elijo rápido la que me parece mejor y la defiendo"
+    ],
+    "dimension": [
+      "S",
+      "C",
+      "I",
+      "D"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d6",
+    "text": "Llegas a un trabajo nuevo y no conoces a nadie. Tu primer día:",
+    "options": [
+      "Me presento con todos y busco conversar",
+      "Observo cómo funcionan las cosas antes de hablar mucho",
+      "Busco a alguien amigable y me quedo cerca mientras me adapto",
+      "Pregunto por los procedimientos para entender mi trabajo rápido"
+    ],
+    "dimension": [
+      "I",
+      "D",
+      "S",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d7",
+    "text": "Tu jefe cambia lo que tienes que hacer a mitad de la semana. Tú:",
+    "options": [
+      "Me adapto sin problema, confío en que hay una buena razón",
+      "Le pido que me explique por qué cambió todo",
+      "Le digo que no estoy de acuerdo si creo que el cambio no tiene sentido",
+      "Lo comento con mis compañeros para ver cómo les afecta"
+    ],
+    "dimension": [
+      "S",
+      "C",
+      "D",
+      "I"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d8",
+    "text": "Tienes que hablar frente a un grupo de personas que no conoces. Tú:",
+    "options": [
+      "Lo disfruto, me gusta conocer gente nueva",
+      "Lo hago con seguridad, enfocado en lo que quiero decir",
+      "Me preparo mucho para no cometer errores",
+      "Prefiero que alguien más hable, pero lo hago si no hay otra opción"
+    ],
+    "dimension": [
+      "I",
+      "D",
+      "C",
+      "S"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d9",
+    "text": "Un compañero comete un error que afecta tu trabajo. Tú:",
+    "options": [
+      "Le digo directo que su error me afectó y le pido que lo corrija",
+      "Lo ayudo a corregirlo sin hacer un drama",
+      "Le comento de buena manera lo que pasó y le ofrezco ayuda",
+      "Reviso qué pasó y propongo algo para que no vuelva a pasar"
+    ],
+    "dimension": [
+      "D",
+      "S",
+      "I",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d10",
+    "text": "Alguien del trabajo te pide ayuda con algo que no es tu responsabilidad. Tú:",
+    "options": [
+      "Lo ayudo con gusto, me gusta que el ambiente sea bueno",
+      "Lo hago si tengo tiempo, pero primero mis cosas",
+      "Me ofrezco con entusiasmo, es una buena oportunidad de conectar",
+      "Pregunto exactamente qué necesita antes de comprometerme"
+    ],
+    "dimension": [
+      "S",
+      "D",
+      "I",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d11",
+    "text": "Tienes que convencer a alguien de que tu idea es la mejor. Tú:",
+    "options": [
+      "Preparo argumentos sólidos y ejemplos que respalden mi idea",
+      "Voy directo al punto y digo por qué mi idea es mejor",
+      "Busco puntos en común para que la otra persona se sienta escuchada",
+      "Uso mi entusiasmo y busco que la otra persona se anime con la idea"
+    ],
+    "dimension": [
+      "C",
+      "D",
+      "S",
+      "I"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d12",
+    "text": "Recibes una crítica sobre cómo hiciste tu trabajo. Tú:",
+    "options": [
+      "Pido ejemplos concretos para entender qué debo mejorar",
+      "Lo tomo como un reto y me propongo hacerlo mejor",
+      "Me afecta un poco pero trato de entender el punto del otro",
+      "Pregunto cómo afectó a los demás y qué puedo hacer diferente"
+    ],
+    "dimension": [
+      "C",
+      "D",
+      "S",
+      "I"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d13",
+    "text": "En tu trabajo hay un problema y nadie sabe bien qué hacer. Tú:",
+    "options": [
+      "Propongo lo que creo que hay que hacer y empiezo",
+      "Me aseguro de que todos estén tranquilos y pensemos juntos",
+      "Busco más información antes de proponer algo",
+      "Hablo con todos los que están involucrados para coordinar"
+    ],
+    "dimension": [
+      "D",
+      "S",
+      "C",
+      "I"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d14",
+    "text": "Te proponen trabajar con personas de otras áreas que no conoces. Tú:",
+    "options": [
+      "Me emociona la idea de conocer gente nueva",
+      "Prefiero trabajar con mi grupo habitual pero lo acepto",
+      "Lo veo como una oportunidad de mostrar lo que sé",
+      "Averiguo quiénes son y qué hacen antes de la primera reunión"
+    ],
+    "dimension": [
+      "I",
+      "S",
+      "D",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d15",
+    "text": "Tienes que entregar un trabajo importante mañana y aún te falta mucho. Tú:",
+    "options": [
+      "Me quedo el tiempo que haga falta hasta que quede bien",
+      "Me enfoco en lo más importante y entrego algo completo a tiempo",
+      "Pido ayuda a alguien para dividir el trabajo",
+      "Le aviso a mi jefe y propongo una fecha más realista"
+    ],
+    "dimension": [
+      "C",
+      "D",
+      "I",
+      "S"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d16",
+    "text": "Alguien se lleva el crédito por una idea que fue tuya. Tú:",
+    "options": [
+      "Lo enfrento directo y aclaro quién tuvo la idea",
+      "No digo nada para no generar problemas",
+      "Lo menciono de forma suave en la próxima reunión",
+      "Guardo pruebas de que fue mi idea por si vuelve a pasar"
+    ],
+    "dimension": [
+      "D",
+      "S",
+      "I",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d17",
+    "text": "La empresa pone en marcha un nuevo procedimiento que cambia tu forma de trabajar. Tú:",
+    "options": [
+      "Leo todo y practico antes de usarlo",
+      "Lo pruebo de una vez y aprendo mientras lo uso",
+      "Propongo una reunión para que todos lo aprendan juntos",
+      "Me tomo mi tiempo para adaptarme y pido ayuda cuando la necesito"
+    ],
+    "dimension": [
+      "C",
+      "D",
+      "I",
+      "S"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d18",
+    "text": "En una reunión nadie se atreve a dar su opinión. Tú:",
+    "options": [
+      "Doy mi opinión primero para romper el silencio",
+      "Voy preguntando a cada uno qué piensa",
+      "Digo algo con humor para que el ambiente se relaje",
+      "Propongo una forma ordenada de que cada uno comparta su punto"
+    ],
+    "dimension": [
+      "D",
+      "S",
+      "I",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d19",
+    "text": "Tu empresa anuncia cambios que afectan tu puesto. Tú:",
+    "options": [
+      "Lo veo como una oportunidad de crecer",
+      "Me preocupa y prefiero que las cosas sigan como están",
+      "Pregunto cómo afecta a los demás y me ofrezco a ayudar",
+      "Analizo bien los detalles para entender qué significa para mí"
+    ],
+    "dimension": [
+      "D",
+      "S",
+      "I",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d20",
+    "text": "Te piden hablar con un compañero sobre algo que no está haciendo bien. Tú:",
+    "options": [
+      "Soy directo y claro sobre lo que necesita mejorar",
+      "Lo abordo con cuidado, empezando por lo que hace bien",
+      "Preparo ejemplos concretos para explicarme mejor",
+      "Prefiero que su jefe lo haga, no quiero incomodarlo"
+    ],
+    "dimension": [
+      "D",
+      "I",
+      "C",
+      "S"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d21",
+    "text": "Trabajas con personas que piensan muy diferente a ti. Tú:",
+    "options": [
+      "Busco que todos hablen y encontremos un punto medio",
+      "Defiendo lo que creo correcto con firmeza",
+      "Apoyo lo que tenga más apoyo del grupo para avanzar",
+      "Busco información objetiva para que los hechos hablen"
+    ],
+    "dimension": [
+      "I",
+      "D",
+      "S",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d22",
+    "text": "Tienes dos ofertas de trabajo: una con mejor sueldo pero inestable, otra estable pero con menos paga. Tú:",
+    "options": [
+      "Elijo la de mejor sueldo, vale la pena arriesgarse",
+      "Elijo la estable, la tranquilidad vale mucho",
+      "Consulto con personas de confianza antes de decidir",
+      "Hago una lista comparando todo antes de decidir"
+    ],
+    "dimension": [
+      "D",
+      "S",
+      "I",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d23",
+    "text": "Un conocido te pide que lo recomiendes para un trabajo pero sabes que no está del todo listo. Tú:",
+    "options": [
+      "Le digo la verdad con respeto: no me siento cómodo recomendándolo así",
+      "Lo recomiendo igual, no quiero afectar la relación",
+      "Hablo con él primero para ver cómo está antes de decidir",
+      "Le explico qué tendría que mejorar antes de poder recomendarlo"
+    ],
+    "dimension": [
+      "D",
+      "S",
+      "I",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d24",
+    "text": "Notas que algo en tu trabajo se hace de una forma que no funciona bien. Tú:",
+    "options": [
+      "Propongo el cambio de inmediato y empujo para que se haga",
+      "Anoto el problema y propongo una forma mejor con ejemplos",
+      "Lo comento con compañeros a ver si alguien más lo nota",
+      "Espero a que alguien más lo mencione para apoyar el cambio"
+    ],
+    "dimension": [
+      "D",
+      "C",
+      "I",
+      "S"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d25",
+    "text": "Lograste terminar algo difícil que te costó mucho esfuerzo. Tú:",
+    "options": [
+      "Lo celebro y lo comparto con los que me rodean",
+      "Me siento satisfecho pero no necesito que los demás lo sepan",
+      "Ya estoy pensando en el siguiente desafío",
+      "Analizo qué hice bien para poder repetirlo"
+    ],
+    "dimension": [
+      "I",
+      "S",
+      "D",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d26",
+    "text": "Estás haciendo algo y a mitad te das cuenta que no está saliendo bien. Tú:",
+    "options": [
+      "Cambio de forma rápido sin perder más tiempo",
+      "Me detengo, analizo qué salió mal y hago un nuevo plan",
+      "Busco a alguien de confianza para decidir juntos qué hacer",
+      "Termino lo que empecé y corrijo al final"
+    ],
+    "dimension": [
+      "D",
+      "C",
+      "I",
+      "S"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d27",
+    "text": "Te piden aprender algo completamente nuevo para tu trabajo. Tú:",
+    "options": [
+      "Busco un curso o guía y estudio antes de intentar",
+      "Me lanzo a practicar y aprendo mientras lo hago",
+      "Busco a alguien que ya lo sepa y le pido que me enseñe",
+      "Pregunto si alguien cercano ya tiene experiencia en eso"
+    ],
+    "dimension": [
+      "C",
+      "D",
+      "I",
+      "S"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d28",
+    "text": "Tu jefe te pide hacer algo que tú crees que no va a funcionar. Tú:",
+    "options": [
+      "Lo hago tal cual, él sabe más que yo",
+      "Le digo directo por qué creo que no va a funcionar",
+      "Busco información para mostrarle una mejor opción",
+      "Pregunto a compañeros su opinión antes de decidir si lo cuestiono"
+    ],
+    "dimension": [
+      "S",
+      "D",
+      "C",
+      "I"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d29",
+    "text": "En una reunión alguien propone algo que tú crees que es mala idea. Tú:",
+    "options": [
+      "Hago preguntas para que la persona se dé cuenta sola del problema",
+      "Digo directo que no estoy de acuerdo y explico por qué",
+      "Me quedo callado si la mayoría parece estar de acuerdo",
+      "Señalo los riesgos y sugiero una opción diferente"
+    ],
+    "dimension": [
+      "I",
+      "D",
+      "S",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d30",
+    "text": "Te dan la opción de arreglar y organizar tu lugar de trabajo. Tú:",
+    "options": [
+      "Lo lleno de cosas personales que digan quién soy",
+      "Lo dejo simple y sin cosas que me distraigan",
+      "Lo hago cómodo, un lugar donde me sienta bien",
+      "Lo organizo al detalle: todo en su lugar"
+    ],
+    "dimension": [
+      "I",
+      "D",
+      "S",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d31",
+    "text": "Tienes mucho trabajo y poco tiempo para terminarlo todo. Tú:",
+    "options": [
+      "Negocio qué es realmente necesario entregar",
+      "Me motivo y doy todo para sacar todo adelante",
+      "Trabajo horas extra sin quejarme para cumplir",
+      "Organizo todo por importancia y dejo lo menos urgente para después"
+    ],
+    "dimension": [
+      "D",
+      "I",
+      "S",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d32",
+    "text": "Un cliente pide un cambio a último momento que complica todo. Tú:",
+    "options": [
+      "Evalúo qué implica y le presento opciones claras",
+      "Le digo que ya no es posible a estas alturas",
+      "Busco la forma de ayudarlo sin afectar mucho lo que ya está hecho",
+      "Hablo con él para entender qué tan urgente es y negociar"
+    ],
+    "dimension": [
+      "C",
+      "D",
+      "S",
+      "I"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d33",
+    "text": "Si tuvieras que enseñarle algo a un compañero, ¿cómo lo harías?",
+    "options": [
+      "Le explico paso a paso y me aseguro de que lo entendió bien",
+      "Se lo muestro rápido y lo dejo practicar solo",
+      "Lo hago junto con él para que aprenda mientras hacemos",
+      "Le doy tiempo para que lo intente y estoy cerca si necesita ayuda"
+    ],
+    "dimension": [
+      "C",
+      "D",
+      "I",
+      "S"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d34",
+    "text": "Tu empresa organiza una actividad voluntaria el fin de semana. Tú:",
+    "options": [
+      "Me anoto de inmediato, quiero participar y que me vean",
+      "Voy porque será divertido y conoceré gente",
+      "Voy solo si mis compañeros habituales también van",
+      "Evalúo de qué se trata antes de decidir"
+    ],
+    "dimension": [
+      "D",
+      "I",
+      "S",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d35",
+    "text": "Terminas un trabajo largo y difícil. ¿Qué es lo primero que piensas?",
+    "options": [
+      "¿Qué puedo mejorar para la próxima vez?",
+      "¡Hay que celebrar y reconocer el esfuerzo!",
+      "¿Cómo puedo hacerlo más rápido la próxima vez?",
+      "¿Cómo me sentí durante el proceso? ¿Fue sostenible?"
+    ],
+    "dimension": [
+      "C",
+      "I",
+      "D",
+      "S"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d36",
+    "text": "Un compañero te pide un favor que te va a quitar mucho tiempo. Tú:",
+    "options": [
+      "Le digo que sí sin dudarlo, me gusta ayudar",
+      "Le digo que ahora no puedo pero le sugiero otra forma",
+      "Acepto solo si no afecta mis propias cosas",
+      "Le pregunto los detalles para ver si de verdad necesita mi ayuda"
+    ],
+    "dimension": [
+      "S",
+      "D",
+      "I",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d37",
+    "text": "Cuando algo te sale muy bien en el trabajo, tu reacción es:",
+    "options": [
+      "Lo comparto con todos con entusiasmo",
+      "Me siento bien por dentro pero no lo digo mucho",
+      "Analizo qué hice bien para poder repetirlo",
+      "Ya estoy pensando en el siguiente reto"
+    ],
+    "dimension": [
+      "I",
+      "S",
+      "C",
+      "D"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d38",
+    "text": "Dos personas cercanas a ti tienen un problema entre ellos y eso afecta el ambiente. Tú:",
+    "options": [
+      "Hablo con cada uno por separado para entender qué pasó",
+      "Les digo directo que lo resuelvan ya",
+      "Organizo algo para que se reúnan en un ambiente relajado",
+      "Me mantengo al margen a menos que me pidan ayuda"
+    ],
+    "dimension": [
+      "S",
+      "D",
+      "I",
+      "C"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d39",
+    "text": "Te ofrecen asumir una nueva responsabilidad que nunca has tenido. Tú:",
+    "options": [
+      "La acepto con entusiasmo, es una oportunidad de crecer",
+      "Me emociona el reto y quiero intentarlo",
+      "Necesito entender bien qué implica antes de decir que sí",
+      "Me da algo de nervio pero lo hago si me necesitan"
+    ],
+    "dimension": [
+      "D",
+      "I",
+      "C",
+      "S"
+    ],
+    "correct": null
+  },
+  {
+    "id": "d40",
+    "text": "¿Qué describe mejor tu forma de trabajar día a día?",
+    "options": [
+      "Me gusta tener un plan claro y seguirlo paso a paso",
+      "Prefiero ir resolviendo según lo que va saliendo",
+      "Me va mejor cuando trabajo con otros y nos apoyamos",
+      "Disfruto convencer a otros y generar buen ambiente"
+    ],
+    "dimension": [
+      "C",
+      "D",
+      "S",
+      "I"
+    ],
+    "correct": null
+  }
+]

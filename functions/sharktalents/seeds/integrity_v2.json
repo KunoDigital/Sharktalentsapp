@@ -1,0 +1,1532 @@
+[
+  {
+    "id": "a1",
+    "dimension": "autenticidad",
+    "text": "Tu jefe presenta como suyo un proyecto que tú lideraste. En la reunión con directivos:",
+    "options": [
+      "No digo nada, no quiero generar conflicto con mi jefe",
+      "Después de la reunión le digo en privado que me gustaría que se reconociera mi participación",
+      "Lo aclaro durante la reunión frente a todos",
+      "Empiezo a buscar otro trabajo, no vale la pena pelear"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "a2",
+    "dimension": "autenticidad",
+    "text": "¿Qué tan de acuerdo estás con esta frase: \"A veces es mejor no decir todo lo que piensas para evitar conflictos innecesarios\"?",
+    "options": [
+      "Totalmente de acuerdo, hay que escoger las batallas",
+      "Depende de la situación, pero si es importante lo digo",
+      "No estoy de acuerdo, siempre hay que decir la verdad completa",
+      "Prefiero callar y evitar problemas"
+    ],
+    "risk_weights": [
+      1,
+      0,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "a3",
+    "dimension": "autenticidad",
+    "text": "¿Alguna vez has guardado silencio sobre algo que sabías que estaba mal en tu trabajo?",
+    "options": [
+      "Sí, varias veces, no quería problemas",
+      "Una vez, y me arrepentí",
+      "Nunca, siempre hablo",
+      "Sí, pero después busqué la forma de corregirlo"
+    ],
+    "risk_weights": [
+      3,
+      1,
+      2,
+      0
+    ]
+  },
+  {
+    "id": "a4",
+    "dimension": "autenticidad",
+    "text": "Prometiste a un cliente una fecha de entrega que ahora sabes que no vas a cumplir. Tu jefe te dice que no le avises al cliente todavía:",
+    "options": [
+      "Le hago caso a mi jefe, él tiene más experiencia",
+      "Aviso al cliente por mi cuenta, prefiero ser honesto",
+      "Espero al último momento a ver si se resuelve solo",
+      "Le digo a mi jefe que no me siento cómodo con eso y busco una solución intermedia"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      3,
+      1
+    ]
+  },
+  {
+    "id": "a5",
+    "dimension": "autenticidad",
+    "text": "\"Ser honesto no significa decir todo lo que piensas, sino no decir lo que no piensas\":",
+    "options": [
+      "De acuerdo, se puede ser honesto y respetuoso al mismo tiempo",
+      "No estoy de acuerdo, la honestidad total es lo único correcto",
+      "Es una buena excusa para callarse cuando conviene",
+      "Es cierto, hay que saber cuándo y cómo decir las cosas"
+    ],
+    "risk_weights": [
+      0,
+      2,
+      3,
+      1
+    ]
+  },
+  {
+    "id": "a6",
+    "dimension": "autenticidad",
+    "text": "Cometes un error grave que afecta a un compañero. Nadie sabe que fuiste tú:",
+    "options": [
+      "Busco la manera de corregirlo sin que se sepa que fui yo",
+      "Lo admito y asumo las consecuencias",
+      "Espero a ver si alguien lo descubre",
+      "Se lo cuento a un compañero de confianza para pedir consejo"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      3,
+      1
+    ]
+  },
+  {
+    "id": "a7",
+    "dimension": "autenticidad",
+    "text": "En tu último trabajo, ¿tu comportamiento era diferente cuando tu jefe estaba presente vs cuando no estaba?",
+    "options": [
+      "Igual en todo momento",
+      "Un poco más relajado cuando no estaba, pero hacía mi trabajo igual",
+      "Bastante diferente, me tomaba más libertades",
+      "Algo diferente en el ritmo pero no en la calidad"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      3,
+      1
+    ]
+  },
+  {
+    "id": "is1",
+    "dimension": "inteligencia_social",
+    "text": "Un compañero nuevo está siendo excluido del grupo. No es tu responsabilidad integrarlo:",
+    "options": [
+      "Lo invito a almorzar y trato de que se sienta bienvenido",
+      "No es mi problema, eventualmente se integrará solo",
+      "Le digo a mi jefe que debería hacer algo al respecto",
+      "Lo noto pero no hago nada, no quiero que piensen que me meto"
+    ],
+    "risk_weights": [
+      0,
+      3,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "is2",
+    "dimension": "inteligencia_social",
+    "text": "\"En el trabajo lo importante son los resultados, no cómo se sienta la gente\":",
+    "options": [
+      "Totalmente de acuerdo, esto es un negocio",
+      "Los resultados importan pero el bienestar del equipo también",
+      "Parcialmente de acuerdo, no se puede complacer a todos",
+      "Depende del tipo de trabajo"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "is3",
+    "dimension": "inteligencia_social",
+    "text": "Notas que un compañero ha estado muy callado y distante las últimas semanas. Su trabajo sigue siendo aceptable:",
+    "options": [
+      "No es mi asunto mientras haga su trabajo",
+      "Le pregunto en privado si está bien y si puedo ayudar en algo",
+      "Se lo menciono a su jefe por si hay algún problema",
+      "Lo observo pero no le digo nada a menos que su trabajo se afecte"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "is4",
+    "dimension": "inteligencia_social",
+    "text": "¿Alguna vez has dicho algo en el trabajo que hirió a alguien sin darte cuenta?",
+    "options": [
+      "Nunca, siempre mido mis palabras",
+      "Sí, y cuando me enteré me disculpé",
+      "Probablemente sí pero nadie me lo dijo",
+      "Sí, pero si se ofenden es su problema"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "is5",
+    "dimension": "inteligencia_social",
+    "text": "Tienes que despedir a alguien de tu equipo. La persona tiene problemas económicos que conoces:",
+    "options": [
+      "Lo hago lo más rápido posible para no prolongar el sufrimiento",
+      "Busco la manera más humana de comunicarlo y le ofrezco ayuda para la transición",
+      "Le pido a recursos humanos que lo haga, no quiero involucrarme emocionalmente",
+      "Intento convencer a mi jefe de no hacerlo, aunque sé que es necesario"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "is6",
+    "dimension": "inteligencia_social",
+    "text": "\"Si un compañero tiene un mal día, lo mejor es dejarlo tranquilo y no meterse\":",
+    "options": [
+      "De acuerdo, cada quien maneja sus emociones",
+      "Depende de la persona y la relación que tengas",
+      "Totalmente de acuerdo, en el trabajo no hay espacio para eso",
+      "No estoy de acuerdo, un simple gesto puede hacer la diferencia"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      3,
+      1
+    ]
+  },
+  {
+    "id": "is7",
+    "dimension": "inteligencia_social",
+    "text": "En una reunión, un compañero presenta una idea que claramente nadie entiende. Todos guardan silencio:",
+    "options": [
+      "Le hago preguntas para ayudarlo a explicarse mejor",
+      "No digo nada, no quiero parecer que lo estoy cuestionando",
+      "Después le digo en privado que no se entendió bien",
+      "Si nadie entendió, es su problema explicarse"
+    ],
+    "risk_weights": [
+      0,
+      2,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "im1",
+    "dimension": "imparcialidad",
+    "text": "Estás evaluando dos candidatos para un puesto. Uno es amigo tuyo y el otro es mejor calificado:",
+    "options": [
+      "Recomiendo al más calificado y le explico a mi amigo",
+      "Busco la forma de que mi amigo se vea mejor en la evaluación",
+      "Le digo a alguien más que tome la decisión para evitar conflicto de interés",
+      "Recomiendo a mi amigo si la diferencia no es tan grande"
+    ],
+    "risk_weights": [
+      0,
+      3,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "im2",
+    "dimension": "imparcialidad",
+    "text": "\"Está bien darle un trato preferencial a las personas que son leales contigo en el trabajo\":",
+    "options": [
+      "Totalmente de acuerdo, la lealtad se recompensa",
+      "No debería influir en decisiones profesionales",
+      "Algo de preferencia es natural y humano",
+      "Solo si no afecta a terceros"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      2,
+      1
+    ]
+  },
+  {
+    "id": "im3",
+    "dimension": "imparcialidad",
+    "text": "Dos personas de tu equipo tienen un conflicto. Uno es tu amigo cercano y el otro tiene la razón:",
+    "options": [
+      "Apoyo a mi amigo porque confío más en él",
+      "Escucho a ambos y me baso en los hechos para mediar",
+      "Me mantengo neutral y le pido a mi jefe que intervenga",
+      "Le digo a mi amigo en privado que creo que el otro tiene razón"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "im4",
+    "dimension": "imparcialidad",
+    "text": "¿Alguna vez has favorecido a alguien en una decisión laboral por la relación personal que tenían?",
+    "options": [
+      "Nunca en mi vida",
+      "Sí, alguna vez y no me sentí bien",
+      "Sí, pero creo que fue la decisión correcta",
+      "Es normal, todos lo hacen"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "im5",
+    "dimension": "imparcialidad",
+    "text": "\"Si un buen amigo comete una falta en el trabajo, es razonable darle una segunda oportunidad antes que a otros\":",
+    "options": [
+      "Sí, la confianza cuenta",
+      "No, las reglas deben ser iguales para todos",
+      "Depende de la gravedad de la falta",
+      "Es lo que haría la mayoría, aunque no sea correcto"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "im6",
+    "dimension": "imparcialidad",
+    "text": "Eres responsable de repartir un bono entre tu equipo. Todos cumplieron, pero uno te cae especialmente bien:",
+    "options": [
+      "Reparto según mérito medible, sin importar preferencias",
+      "Le doy un poco más al que me cae bien, nadie lo va a notar",
+      "Reparto equitativamente pero le doy reconocimiento verbal al que me cae bien",
+      "Busco un criterio que beneficie a quien yo quiera sin que parezca favoritismo"
+    ],
+    "risk_weights": [
+      0,
+      3,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "im7",
+    "dimension": "imparcialidad",
+    "text": "Un proveedor que es familiar de un directivo de tu empresa ofrece un servicio más caro que la competencia:",
+    "options": [
+      "Presento ambas cotizaciones y dejo que la dirección decida con la información completa",
+      "Escojo al familiar del directivo para no generar problemas",
+      "Escojo a la competencia si es mejor y más barata, y lo documento",
+      "Le sugiero al familiar que iguale el precio para poder escogerlo"
+    ],
+    "risk_weights": [
+      0,
+      3,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "s1",
+    "dimension": "sencillez",
+    "text": "\"Para avanzar en tu carrera a veces es necesario exagerar un poco tus logros\":",
+    "options": [
+      "Totalmente de acuerdo, así funciona el mundo",
+      "Es mejor dejar que tus resultados hablen por sí solos",
+      "Un poco de exageración no hace daño",
+      "Depende de la cultura de la empresa"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      2,
+      1
+    ]
+  },
+  {
+    "id": "s2",
+    "dimension": "sencillez",
+    "text": "¿Alguna vez has exagerado tus logros en una entrevista de trabajo o en tu currículum?",
+    "options": [
+      "Nunca, siempre soy 100% preciso",
+      "He resaltado mis fortalezas sin inventar nada",
+      "He exagerado un poco algunas cosas",
+      "He inventado o modificado datos significativos"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "s3",
+    "dimension": "sencillez",
+    "text": "Un colega te felicita por un proyecto exitoso. En realidad fue un trabajo de equipo donde tu contribución fue menor:",
+    "options": [
+      "Acepto el halago sin corregir, me lo merezco por otras cosas",
+      "Le aclaro que fue trabajo de equipo y menciono a los demás",
+      "Acepto pero internamente sé que no fue solo mío",
+      "Aprovecho para que mi jefe también escuche que me felicitan"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "s4",
+    "dimension": "sencillez",
+    "text": "\"Las personas que son demasiado humildes no llegan lejos en las empresas\":",
+    "options": [
+      "Es cierto, hay que saber venderse",
+      "No necesariamente, la humildad genuina genera respeto",
+      "Hay que encontrar un balance",
+      "Depende del tipo de empresa"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "s5",
+    "dimension": "sencillez",
+    "text": "Te ascienden a un puesto donde ganas más que compañeros con más experiencia que tú:",
+    "options": [
+      "Es mérito mío, me lo gané",
+      "Reconozco que tuve suerte y trato a mis compañeros con respeto",
+      "Evito hablar de mi salario para no generar envidia",
+      "Dejo que los demás sepan que me ascendieron porque soy el mejor"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "s6",
+    "dimension": "sencillez",
+    "text": "¿Alguna vez has usado información que sabías para manipular una situación a tu favor en el trabajo?",
+    "options": [
+      "Nunca",
+      "Sí, pero me di cuenta de que no estuvo bien",
+      "Sí, y creo que fue la decisión correcta",
+      "Lo hago regularmente, así se sobrevive"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "s7",
+    "dimension": "sencillez",
+    "text": "Tu equipo perdió un cliente importante. Tu jefe busca un responsable:",
+    "options": [
+      "Si fue en parte mi culpa, lo admito",
+      "Me aseguro de que el foco no caiga en mí",
+      "Analizo qué pasó antes de señalar a alguien",
+      "Si puedo atribuirlo a otro sin mentir, lo hago"
+    ],
+    "risk_weights": [
+      0,
+      3,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "dp1",
+    "dimension": "dominio_personal",
+    "text": "Estás en una negociación importante y la otra parte te provoca deliberadamente para que pierdas la calma:",
+    "options": [
+      "Me mantengo firme y profesional, no caigo en la provocación",
+      "Le digo que no voy a tolerar falta de respeto",
+      "Me retiro de la reunión si sigue provocando",
+      "Respondo con la misma actitud, no me voy a dejar"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "dp2",
+    "dimension": "dominio_personal",
+    "text": "\"Cuando alguien me falta el respeto en el trabajo, es importante responder fuerte para que no se repita\":",
+    "options": [
+      "Totalmente de acuerdo",
+      "Depende de quién sea",
+      "Es mejor mantener la calma y abordar el tema profesionalmente",
+      "Hay que defenderse pero sin perder la compostura"
+    ],
+    "risk_weights": [
+      3,
+      2,
+      0,
+      1
+    ]
+  },
+  {
+    "id": "dp3",
+    "dimension": "dominio_personal",
+    "text": "¿Alguna vez has tomado una decisión importante en el trabajo estando enojado o frustrado?",
+    "options": [
+      "Nunca, siempre espero a estar calmado",
+      "Sí, y después me arrepentí",
+      "Sí, pero la decisión fue correcta de todas formas",
+      "Lo hago frecuentemente, la presión es parte del trabajo"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "dp4",
+    "dimension": "dominio_personal",
+    "text": "Descubres que un compañero gana significativamente más que tú por el mismo trabajo. Te sientes furioso:",
+    "options": [
+      "Voy directo a recursos humanos a reclamar",
+      "Hablo con mi jefe de forma calmada para entender la situación",
+      "Empiezo a buscar otro trabajo sin decir nada",
+      "Confronto a mi compañero para preguntarle cuánto gana"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "dp5",
+    "dimension": "dominio_personal",
+    "text": "Tienes acceso a información confidencial que podría beneficiarte financieramente si la compartes fuera de la empresa:",
+    "options": [
+      "Es una tentación pero no vale la pena arriesgar mi reputación",
+      "La información es de la empresa, ni lo consideraría",
+      "Solo la compartiría con alguien de mucha confianza",
+      "Depende de cuánto beneficio me traería"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "dp6",
+    "dimension": "dominio_personal",
+    "text": "\"Si tienes la oportunidad de obtener una ventaja que otros no tienen, sería tonto no aprovecharla\":",
+    "options": [
+      "Totalmente de acuerdo",
+      "Depende de si es ético o no",
+      "Mientras sea legal no veo el problema",
+      "Hay que considerar cómo afecta a los demás"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      2,
+      1
+    ]
+  },
+  {
+    "id": "dp7",
+    "dimension": "dominio_personal",
+    "text": "Tu empresa te pide firmar un documento que sabes que contiene información inexacta. Si no firmas podrías perder tu puesto:",
+    "options": [
+      "Firmo, necesito el trabajo",
+      "Me niego a firmar y explico mis razones por escrito",
+      "Firmo pero guardo evidencia de que me obligaron",
+      "Le pregunto a un abogado antes de decidir"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "h1",
+    "dimension": "honestidad",
+    "text": "Tu empresa te paga de más por error un mes. Es un monto considerable:",
+    "options": [
+      "Lo notifico a recursos humanos inmediatamente",
+      "Espero a ver si ellos lo detectan primero",
+      "Lo guardo, si fue error de ellos no es mi culpa",
+      "Lo notifico pero espero que me dejen quedármelo"
+    ],
+    "risk_weights": [
+      0,
+      2,
+      3,
+      1
+    ]
+  },
+  {
+    "id": "h2",
+    "dimension": "honestidad",
+    "text": "¿Alguna vez has llamado \"enfermo\" al trabajo cuando no lo estabas?",
+    "options": [
+      "Nunca en mi vida",
+      "Sí, una o dos veces cuando realmente necesitaba un día libre",
+      "Lo he hecho varias veces",
+      "Lo hago regularmente cuando necesito tiempo"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "h3",
+    "dimension": "honestidad",
+    "text": "\"La mayoría de las personas miente en su currículum y eso es normal\":",
+    "options": [
+      "Totalmente de acuerdo, es parte del juego",
+      "Algo de embellecimiento es común pero no debería incluir mentiras",
+      "No estoy de acuerdo, el currículum debe ser honesto",
+      "Depende de qué tanto mienten"
+    ],
+    "risk_weights": [
+      3,
+      1,
+      0,
+      2
+    ]
+  },
+  {
+    "id": "h4",
+    "dimension": "honestidad",
+    "text": "Un cliente te pregunta directamente si tu producto tiene un defecto que tú conoces:",
+    "options": [
+      "Le digo la verdad y le ofrezco una solución",
+      "Minimizo el problema para no perder la venta",
+      "Le digo que no tengo esa información",
+      "Le digo que existe un detalle y que estamos trabajando en mejorarlo"
+    ],
+    "risk_weights": [
+      0,
+      2,
+      3,
+      1
+    ]
+  },
+  {
+    "id": "h5",
+    "dimension": "honestidad",
+    "text": "¿Con qué frecuencia usas recursos de la empresa (internet, teléfono, impresora) para asuntos personales?",
+    "options": [
+      "Nunca",
+      "Ocasionalmente para cosas menores",
+      "Con cierta regularidad",
+      "Frecuentemente, todos lo hacen"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "h6",
+    "dimension": "honestidad",
+    "text": "Descubres que un reporte que presentaste hace meses tenía un dato incorrecto que favoreció una decisión:",
+    "options": [
+      "Lo corrijo y aviso a quien corresponda",
+      "Lo corrijo silenciosamente sin decir nada",
+      "Lo dejo así, ya pasó mucho tiempo",
+      "Lo corrijo solo si alguien lo nota"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      3,
+      2
+    ]
+  },
+  {
+    "id": "h7",
+    "dimension": "honestidad",
+    "text": "\"Si una mentira pequeña protege tu trabajo y no daña a nadie, es aceptable\":",
+    "options": [
+      "Totalmente de acuerdo",
+      "Una omisión no es lo mismo que una mentira",
+      "No estoy de acuerdo, la verdad siempre es mejor",
+      "Depende de las circunstancias"
+    ],
+    "risk_weights": [
+      3,
+      2,
+      0,
+      1
+    ]
+  },
+  {
+    "id": "hu1",
+    "dimension": "hurto",
+    "text": "\"Llevarse cosas pequeñas del trabajo como bolígrafos o papel no es realmente robar\":",
+    "options": [
+      "Es correcto, son cosas insignificantes",
+      "Técnicamente es incorrecto pero no es grave",
+      "No estoy de acuerdo, llevarse cualquier cosa sin permiso es inaceptable",
+      "Depende del valor y de la política de la empresa"
+    ],
+    "risk_weights": [
+      3,
+      1,
+      0,
+      2
+    ]
+  },
+  {
+    "id": "hu2",
+    "dimension": "hurto",
+    "text": "Tienes acceso a la bodega y notas que hay exceso de un material costoso que nadie controla:",
+    "options": [
+      "Reporto el exceso para que se gestione correctamente",
+      "No tomo nada pero tampoco reporto, no es mi responsabilidad",
+      "Tomo algo pequeño, nadie lo va a notar",
+      "Evalúo cuánto podría tomar sin que se note"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "hu3",
+    "dimension": "hurto",
+    "text": "\"Si una empresa paga mal a sus empleados, es comprensible que algunos compensen tomando cosas\":",
+    "options": [
+      "Es comprensible y hasta justificable",
+      "Es comprensible pero no justificable",
+      "No es justificable bajo ninguna circunstancia",
+      "Depende de qué tan mal paguen"
+    ],
+    "risk_weights": [
+      3,
+      1,
+      0,
+      2
+    ]
+  },
+  {
+    "id": "hu4",
+    "dimension": "hurto",
+    "text": "Tu empresa va a desechar unos muebles de oficina que todavía están en buen estado. Un compañero te ofrece uno que dice que ya nadie quiere:",
+    "options": [
+      "Le pregunto si tiene autorización de la empresa para darlo",
+      "Lo acepto si realmente lo van a botar",
+      "Lo acepto sin preguntar, si lo van a botar no es robo",
+      "Lo acepto y le pregunto si tiene otro para un familiar"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "hu5",
+    "dimension": "hurto",
+    "text": "¿Alguna vez te has llevado algo del trabajo a tu casa sin pedir permiso, aunque sea algo pequeño como un cargador, herramientas o materiales?",
+    "options": [
+      "Sí, alguna vez algo pequeño que después devolví",
+      "Nunca me he llevado absolutamente nada",
+      "Sí, cosas pequeñas que nadie iba a extrañar",
+      "Sí, varias veces con cosas de diferente valor"
+    ],
+    "risk_weights": [
+      0,
+      2,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "hu6",
+    "dimension": "hurto",
+    "text": "Encuentras un error en el sistema que te permite acceder a beneficios que no te corresponden (descuentos, créditos, etc.):",
+    "options": [
+      "Lo reporto inmediatamente al área de sistemas",
+      "No lo uso pero tampoco lo reporto",
+      "Lo uso una vez para ver si alguien lo detecta",
+      "Lo aprovecho mientras esté disponible"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "hu7",
+    "dimension": "hurto",
+    "text": "\"Ver a otros empleados llevarse cosas de la empresa sin consecuencias hace que sea más tentador hacerlo\":",
+    "options": [
+      "Totalmente de acuerdo, es contagioso",
+      "Es tentador pero eso no lo justifica",
+      "No me influye lo que hagan los demás",
+      "Parcialmente de acuerdo, el ambiente influye"
+    ],
+    "risk_weights": [
+      3,
+      1,
+      0,
+      2
+    ]
+  },
+  {
+    "id": "so1",
+    "dimension": "soborno",
+    "text": "Un proveedor te invita a un viaje con todo pagado \"como agradecimiento\" por el negocio. Tu empresa no tiene política clara sobre esto:",
+    "options": [
+      "Lo rechazo, podría comprometer mi objetividad futura",
+      "Lo acepto, no hay política que lo prohíba",
+      "Consulto con mi jefe antes de decidir",
+      "Lo acepto, es una cortesía normal en los negocios"
+    ],
+    "risk_weights": [
+      0,
+      2,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "so2",
+    "dimension": "soborno",
+    "text": "\"En muchos países dar regalos o pagos extra es parte normal de hacer negocios y hay que aceptarlo\":",
+    "options": [
+      "Es la realidad y hay que aceptarla para poder trabajar",
+      "No estoy de acuerdo, siempre se puede buscar una forma correcta",
+      "Depende del país y la situación",
+      "Es algo que pasa pero no debería ser así"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      2,
+      1
+    ]
+  },
+  {
+    "id": "so3",
+    "dimension": "soborno",
+    "text": "Un funcionario público te dice que tu trámite empresarial puede tardar 6 meses o \"agilizarse\" con un pago informal:",
+    "options": [
+      "Pago para agilizar, el tiempo es dinero",
+      "Busco una alternativa legal aunque tome más tiempo",
+      "Le pregunto el monto antes de decidir",
+      "Busco un contacto que pueda ayudarme sin tener que pagar"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      2,
+      1
+    ]
+  },
+  {
+    "id": "so4",
+    "dimension": "soborno",
+    "text": "¿Alguna vez has aceptado un regalo de un proveedor o cliente, como un chocolate, una canasta, una cena o algo de mayor valor?",
+    "options": [
+      "Nunca he recibido ningún tipo de detalle",
+      "He recibido detalles menores como un chocolate o una taza",
+      "He recibido algo de valor como una cena costosa o un regalo caro",
+      "Sí, y preferí no comentarlo con nadie"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "so5",
+    "dimension": "soborno",
+    "text": "\"Si un regalo de un proveedor no cambia tu decisión, aceptarlo no tiene nada de malo\":",
+    "options": [
+      "De acuerdo, si no afecta mi objetividad no hay problema",
+      "No estoy de acuerdo, cualquier regalo puede generar compromiso",
+      "Depende del valor del regalo",
+      "Totalmente de acuerdo, es solo cortesía"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "so6",
+    "dimension": "soborno",
+    "text": "Sabes que tu competidor está pagando sobornos para ganar contratos en tu industria. Tu jefe te presiona para hacer lo mismo:",
+    "options": [
+      "Me niego y le explico que no estoy dispuesto a hacerlo",
+      "Le pido que lo ponga por escrito para protegerme",
+      "Lo hago si mi jefe asume la responsabilidad",
+      "Lo hago, es la única forma de competir"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "al1",
+    "dimension": "alcohol",
+    "text": "¿Con qué frecuencia consumes bebidas alcohólicas?",
+    "options": [
+      "Nunca o casi nunca",
+      "Ocasionalmente en reuniones sociales",
+      "Varias veces por semana",
+      "Casi todos los días"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "al2",
+    "dimension": "alcohol",
+    "text": "¿Alguna vez el consumo de alcohol ha afectado tu rendimiento laboral al día siguiente?",
+    "options": [
+      "Nunca",
+      "Una vez y aprendí la lección",
+      "Ha pasado en más de una ocasión",
+      "Sucede con cierta frecuencia"
+    ],
+    "risk_weights": [
+      1,
+      0,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "al3",
+    "dimension": "alcohol",
+    "text": "Tienes una reunión importante mañana a las 8am. Un amigo te invita a una celebración donde habrá mucho alcohol:",
+    "options": [
+      "Voy pero sin tomar, mañana es prioridad",
+      "No voy, no quiero arriesgarme",
+      "Voy y tomo moderadamente, me conozco",
+      "Voy y disfruto, soy capaz de manejar ambas cosas"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "al4",
+    "dimension": "alcohol",
+    "text": "\"Tomar un par de cervezas en el almuerzo de trabajo no debería ser un problema si no afecta tu rendimiento\":",
+    "options": [
+      "Totalmente de acuerdo",
+      "No estoy de acuerdo, el alcohol no debe mezclarse con el trabajo",
+      "Depende de la cultura de la empresa",
+      "Un par de cervezas no afectan a nadie"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "al5",
+    "dimension": "alcohol",
+    "text": "\"La empresa no debería preguntar sobre las costumbres de consumo de alcohol de sus empleados\":",
+    "options": [
+      "No estoy de acuerdo, la empresa tiene derecho a saber si puede afectar el trabajo",
+      "Depende del tipo de puesto y la responsabilidad",
+      "De acuerdo, lo que hago fuera del trabajo es mi vida privada",
+      "Totalmente de acuerdo, no tiene nada que ver con mi capacidad profesional"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "al6",
+    "dimension": "alcohol",
+    "text": "En un evento empresarial con clientes y directivos, el alcohol fluye libremente:",
+    "options": [
+      "Tomo muy poco o nada, estoy representando a mi empresa",
+      "Tomo con moderación para socializar",
+      "Me dejo llevar por el ambiente y tomo lo que me ofrecen",
+      "Es una oportunidad de relajarse, no voy a limitarme"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "dr1",
+    "dimension": "drogas",
+    "text": "\"El consumo de marihuana recreativa no debería ser motivo de preocupación para un empleador si es legal\":",
+    "options": [
+      "Totalmente de acuerdo, es decisión personal",
+      "No estoy de acuerdo, puede afectar el rendimiento",
+      "Depende del tipo de trabajo",
+      "Lo que haga fuera del trabajo no le importa a nadie"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "dr2",
+    "dimension": "drogas",
+    "text": "¿Alguna vez has consumido alguna sustancia no recetada para mejorar tu rendimiento laboral (pastillas para concentración, energizantes fuertes, etc.)?",
+    "options": [
+      "Nunca",
+      "He tomado cosas como café fuerte o bebidas energéticas, nada más",
+      "He probado alguna vez algo más fuerte",
+      "Lo hago cuando la carga de trabajo lo requiere"
+    ],
+    "risk_weights": [
+      1,
+      0,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "dr3",
+    "dimension": "drogas",
+    "text": "Un compañero de confianza te dice que consume drogas recreativas los fines de semana pero que nunca afecta su trabajo:",
+    "options": [
+      "Le digo que debería buscar ayuda profesional",
+      "No es mi asunto mientras no afecte al equipo",
+      "Lo reporto porque podría ser un riesgo a futuro",
+      "No me parece grave si su trabajo es bueno"
+    ],
+    "risk_weights": [
+      1,
+      2,
+      0,
+      3
+    ]
+  },
+  {
+    "id": "dr4",
+    "dimension": "drogas",
+    "text": "\"Si un empleado rinde bien, no debería importar si consume sustancias fuera del horario laboral\":",
+    "options": [
+      "Totalmente de acuerdo",
+      "Depende de la sustancia y del cargo",
+      "No estoy de acuerdo, hay un riesgo para la empresa",
+      "Es un tema complejo sin respuesta simple"
+    ],
+    "risk_weights": [
+      3,
+      1,
+      0,
+      2
+    ]
+  },
+  {
+    "id": "dr5",
+    "dimension": "drogas",
+    "text": "En una fiesta con compañeros de trabajo alguien saca cocaína. Varios participan:",
+    "options": [
+      "Me retiro de la situación inmediatamente",
+      "Me quedo pero no participo y no digo nada después",
+      "Me quedo, dejo claro que no participo, y me voy temprano",
+      "Depende de la situación y de quién esté presente"
+    ],
+    "risk_weights": [
+      0,
+      2,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "dr6",
+    "dimension": "drogas",
+    "text": "¿Pasarías una prueba de detección de drogas si te la hicieran hoy?",
+    "options": [
+      "Sí, sin ninguna duda",
+      "Creo que sí",
+      "No estoy seguro",
+      "Prefiero no responder"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "ap1",
+    "dimension": "apuestas",
+    "text": "¿Con qué frecuencia participas en actividades de apuestas (casinos, deportivas, en línea, juegos de cartas por dinero)?",
+    "options": [
+      "Nunca",
+      "Muy raramente, solo en ocasiones especiales",
+      "Con regularidad como entretenimiento",
+      "Frecuentemente"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "ap2",
+    "dimension": "apuestas",
+    "text": "¿Alguna vez has apostado más dinero del que podías permitirte perder?",
+    "options": [
+      "Nunca apuesto",
+      "Sí, una vez y aprendí",
+      "Ha pasado en más de una ocasión",
+      "Es parte de la emoción"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "ap3",
+    "dimension": "apuestas",
+    "text": "Has perdido dinero apostando y sientes urgencia de recuperarlo. Tienes acceso a un adelanto de tu salario:",
+    "options": [
+      "No usaría mi salario para apostar, busco otra forma de manejar la situación",
+      "Pido el adelanto pero para gastos básicos, no para apostar",
+      "Pido el adelanto y apuesto una parte para intentar recuperar",
+      "Pido el adelanto y lo apuesto todo, esta vez voy a ganar"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "ap4",
+    "dimension": "apuestas",
+    "text": "\"Las apuestas deportivas son solo entretenimiento, como ir al cine\":",
+    "options": [
+      "Totalmente de acuerdo",
+      "Pueden serlo si se controlan, pero hay un riesgo mayor",
+      "No estoy de acuerdo, las apuestas pueden ser adictivas",
+      "Son entretenimiento mientras no se salgan de control"
+    ],
+    "risk_weights": [
+      2,
+      1,
+      0,
+      3
+    ]
+  },
+  {
+    "id": "ap5",
+    "dimension": "apuestas",
+    "text": "¿Alguna vez las apuestas te han causado problemas financieros, familiares o laborales?",
+    "options": [
+      "Nunca",
+      "Una vez algo menor",
+      "Más de una vez",
+      "Es un tema recurrente"
+    ],
+    "risk_weights": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": "ap6",
+    "dimension": "apuestas",
+    "text": "Un compañero de trabajo te propone participar en una casa de apuestas en línea que él maneja. Dice que tiene \"tips seguros\":",
+    "options": [
+      "Lo rechazo, suena riesgoso y posiblemente ilegal",
+      "Le pregunto más detalles antes de decidir",
+      "Participo con poco dinero para probar",
+      "Acepto si las ganancias son buenas"
+    ],
+    "risk_weights": [
+      0,
+      2,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "co1",
+    "dimension": "confiabilidad",
+    "text": "Te comprometiste a entregar un trabajo el viernes. A mitad de semana sabes que no vas a poder:",
+    "options": [
+      "Aviso con tiempo y propongo nueva fecha",
+      "Aviso el viernes cuando ya es tarde",
+      "Entrego algo incompleto para cumplir formalmente",
+      "No digo nada y entrego cuando pueda"
+    ],
+    "risk_weights": [
+      0,
+      2,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "co2",
+    "dimension": "confiabilidad",
+    "text": "¿Con qué frecuencia has llegado tarde al trabajo sin una razón justificable?",
+    "options": [
+      "Nunca en toda mi carrera",
+      "Muy pocas veces, menos de 5 en total",
+      "Con cierta regularidad",
+      "Frecuentemente, no soy muy puntual"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "co3",
+    "dimension": "confiabilidad",
+    "text": "Un compañero depende de que termines tu parte para poder avanzar. Tuviste un imprevisto y vas atrasado:",
+    "options": [
+      "No le aviso, intento terminar a tiempo",
+      "Le aviso de inmediato para que pueda reorganizarse",
+      "Le aviso cuando ya no hay margen",
+      "Que se arregle, yo tengo mis propios problemas"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "co4",
+    "dimension": "confiabilidad",
+    "text": "\"La puntualidad es importante pero hay cosas más valiosas como la calidad del trabajo\":",
+    "options": [
+      "Totalmente de acuerdo, lo que importa es el resultado",
+      "Ambas son importantes, no se debe sacrificar una por la otra",
+      "La puntualidad es la base de la confiabilidad",
+      "Si el trabajo es excelente, la puntualidad pasa a segundo plano"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "co5",
+    "dimension": "confiabilidad",
+    "text": "Tu jefe te pide guardar una información confidencial. Un amigo cercano te pregunta al respecto:",
+    "options": [
+      "Le cuento algo general sin detalles específicos",
+      "Le digo que no puedo hablar de eso",
+      "Le cuento todo, confío en él",
+      "Le digo algo vago para no dejarlo con la curiosidad"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      3,
+      1
+    ]
+  },
+  {
+    "id": "co6",
+    "dimension": "confiabilidad",
+    "text": "¿Alguna vez un compañero te pidió que marcaras su entrada o cubriera su ausencia?",
+    "options": [
+      "Sí, y lo hice porque somos amigos",
+      "Sí me lo pidieron pero me negué",
+      "Nunca me lo han pedido",
+      "Sí, y lo hice solo una vez"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "co7",
+    "dimension": "confiabilidad",
+    "text": "\"Si nadie supervisa tu trabajo, es natural que baje un poco tu rendimiento\":",
+    "options": [
+      "No, mi rendimiento es siempre el mismo sin importar quién esté",
+      "Es natural pero hago el esfuerzo de mantenerme enfocado",
+      "Sí, es humano y es normal relajarse un poco",
+      "Definitivamente, sin supervisión la gente no rinde igual"
+    ],
+    "risk_weights": [
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": "bi1",
+    "dimension": "buena_impresion",
+    "text": "¿Alguna vez has sentido envidia de un compañero de trabajo?",
+    "options": [
+      "Nunca, me alegro por los éxitos de los demás",
+      "Sí, es natural, pero no afecta cómo los trato",
+      "Alguna vez me ha molestado que asciendan a otros",
+      "Prefiero no responder"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "bi2",
+    "dimension": "buena_impresion",
+    "text": "¿Alguna vez has hablado mal de un jefe o compañero a sus espaldas?",
+    "options": [
+      "Nunca, no hablo de personas que no estén presentes",
+      "Sí, en momentos de frustración he hecho comentarios negativos",
+      "Alguna vez he expresado mi desacuerdo con un compañero de confianza",
+      "Lo hago frecuentemente cuando algo me molesta"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "bi3",
+    "dimension": "buena_impresion",
+    "text": "Si tuvieras que calificar tu honestidad del 1 al 10:",
+    "options": [
+      "10 — soy completamente honesto siempre",
+      "8-9 — soy muy honesto pero nadie es perfecto",
+      "6-7 — trato de ser honesto pero a veces es difícil",
+      "Menos de 6 — reconozco que me cuesta"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "bi4",
+    "dimension": "buena_impresion",
+    "text": "¿Alguna vez has tenido un pensamiento poco ético en el trabajo, aunque no hayas actuado en consecuencia?",
+    "options": [
+      "Nunca, mis pensamientos siempre son correctos",
+      "Sí, he tenido tentaciones pero no actué",
+      "Sí, y en algún caso actué levemente",
+      "Es normal tener esos pensamientos"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "bi5",
+    "dimension": "buena_impresion",
+    "text": "¿Alguna vez has sentido que no merecías un reconocimiento que recibiste en el trabajo?",
+    "options": [
+      "Todo lo que he recibido me lo he ganado completamente",
+      "Sí, alguna vez sentí que fue más suerte que mérito",
+      "A veces siento que otros lo merecían más",
+      "Prefiero no pensar en eso"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "bi6",
+    "dimension": "buena_impresion",
+    "text": "¿Alguna vez te has quedado haciendo algo personal en horario de trabajo?",
+    "options": [
+      "Nunca, respeto al 100% mi horario laboral",
+      "Sí, en ocasiones he atendido cosas personales breves",
+      "Sí, con cierta frecuencia",
+      "Es inevitable, todos lo hacen"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "bi7",
+    "dimension": "buena_impresion",
+    "text": "¿Alguna vez has exagerado una excusa para llegar tarde o faltar al trabajo?",
+    "options": [
+      "Nunca, siempre digo la razón real",
+      "Sí, alguna vez omití que la razón era menos urgente de lo que dije",
+      "Lo he hecho más de una vez",
+      "Lo hago con frecuencia"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "bi8",
+    "dimension": "buena_impresion",
+    "text": "¿Te consideras mejor empleado que la mayoría de tus compañeros?",
+    "options": [
+      "Definitivamente soy mejor que la mayoría",
+      "Tengo fortalezas y debilidades como todos",
+      "En algunas áreas sí, en otras no",
+      "Creo que soy promedio"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "bi9",
+    "dimension": "buena_impresion",
+    "text": "¿Alguna vez has criticado internamente una decisión de tu jefe aunque no lo hayas dicho?",
+    "options": [
+      "Nunca, siempre estoy de acuerdo con mis jefes",
+      "Sí, frecuentemente cuestiono decisiones en mi mente",
+      "Alguna vez he pensado que mi jefe se equivocó",
+      "Prefiero no opinar sobre mis jefes"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "bi10",
+    "dimension": "buena_impresion",
+    "text": "¿Alguna vez has sentido pereza o desgano en el trabajo?",
+    "options": [
+      "Nunca, siempre estoy motivado al 100%",
+      "Sí, es normal tener días de baja energía",
+      "Con cierta frecuencia",
+      "Es parte de la rutina laboral"
+    ],
+    "risk_weights": [
+      3,
+      0,
+      1,
+      2
+    ]
+  }
+]

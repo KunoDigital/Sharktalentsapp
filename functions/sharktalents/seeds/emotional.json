@@ -1,0 +1,222 @@
+[
+  {
+    "id": "e1",
+    "text": "Tu equipo enfrenta una crisis inesperada que requiere una decisión inmediata. Tú:",
+    "options": [
+      "Actúo de inmediato con lo que siento que es correcto",
+      "Tomo un momento para evaluar opciones, pero decido rápido",
+      "Pido unos minutos para analizar la situación antes de actuar",
+      "Reúno toda la información disponible antes de tomar cualquier decisión"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e2",
+    "text": "Un compañero de trabajo te comparte una idea que a ti no te convence. Tú:",
+    "options": [
+      "Le digo lo que pienso de forma directa y espontánea",
+      "Expreso mi opinión pero intento ser diplomático",
+      "Escucho completamente y luego formulo preguntas específicas",
+      "Analizo los datos detrás de su propuesta antes de opinar"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e3",
+    "text": "Recibes una oferta de trabajo inesperada que parece atractiva. ¿Cómo decides?",
+    "options": [
+      "Si me emociona, acepto sin pensarlo mucho",
+      "Me dejo guiar por mi intuición pero consulto con alguien cercano",
+      "Hago una lista de pros y contras antes de responder",
+      "Investigo a fondo la empresa, el rol y las condiciones antes de decidir"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e4",
+    "text": "Estás en una reunión y alguien hace un comentario que te molesta. Tú:",
+    "options": [
+      "Reacciono en el momento y digo lo que siento",
+      "Me contengo un poco pero mi expresión facial lo delata",
+      "Tomo nota mental y lo abordo después en privado",
+      "Analizo si realmente vale la pena responder o si es mejor dejarlo pasar"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e5",
+    "text": "Cuando planificas un proyecto personal importante, generalmente:",
+    "options": [
+      "Empiezo de inmediato y voy ajustando sobre la marcha",
+      "Tengo una idea general y me adapto según avance",
+      "Hago un plan básico con los pasos principales",
+      "Creo un plan detallado con fechas, recursos y contingencias"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e6",
+    "text": "Un amigo te pide consejo sobre un problema personal difícil. Tú:",
+    "options": [
+      "Le comparto lo que siento desde el corazón sin filtros",
+      "Lo escucho con empatía y doy mi opinión honesta",
+      "Le hago preguntas para entender mejor antes de opinar",
+      "Le ayudo a analizar la situación objetivamente con pros y contras"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e7",
+    "text": "Ante un cambio sorpresivo en tu rutina de trabajo, tu primera reacción es:",
+    "options": [
+      "Me adapto rápido, me gusta la improvisación",
+      "Lo acepto aunque me incomode un poco al principio",
+      "Busco entender por qué cambió antes de adaptarme",
+      "Necesito tiempo para procesar el cambio y reorganizar mi plan"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e8",
+    "text": "Estás comprando algo costoso. ¿Cómo tomas la decisión final?",
+    "options": [
+      "Si me gusta y puedo pagarlo, lo compro en el momento",
+      "Me dejo guiar por cómo me hace sentir pero verifico lo básico",
+      "Comparo un par de opciones y elijo la que tenga mejor equilibrio",
+      "Investigo reviews, comparo precios y espero a estar seguro"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e9",
+    "text": "Tu jefe te asigna una tarea que nunca has hecho. Tu reacción interna es:",
+    "options": [
+      "Emoción por el reto, me lanzo a hacerla sin preocuparme",
+      "Un poco de nervios pero confío en que aprenderé haciéndola",
+      "Busco recursos y ejemplos antes de empezar",
+      "Me preocupa no hacerla bien, así que estudio el tema a fondo primero"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e10",
+    "text": "Cuando discutes con alguien sobre un tema donde hay desacuerdo, tú:",
+    "options": [
+      "Defiendo mi posición con pasión y energía",
+      "Expreso mi punto pero intento encontrar un punto medio",
+      "Presento argumentos lógicos para respaldar mi postura",
+      "Prefiero basar la discusión en datos y evidencia objetiva"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e11",
+    "text": "Te enteras de que un proyecto que lideraste fracasó. Tu reacción inmediata es:",
+    "options": [
+      "Siento frustración intensa pero la proceso rápido y busco qué sigue",
+      "Me afecta emocionalmente pero busco aprender del error",
+      "Hago una retrospectiva mental para identificar qué salió mal",
+      "Documento los errores sistemáticamente para no repetirlos"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e12",
+    "text": "En una negociación importante, ¿qué te guía más?",
+    "options": [
+      "Mi instinto sobre la otra persona y la situación",
+      "Una combinación de intuición y los puntos clave que preparé",
+      "Los argumentos que preparé previamente",
+      "Los datos duros y el análisis que hice antes de la reunión"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e13",
+    "text": "Cuando ves una oportunidad de negocio interesante, tú:",
+    "options": [
+      "Me emociono y quiero actuar de inmediato",
+      "Me entusiasma pero le doy una noche de sueño antes de decidir",
+      "Evalúo riesgos y beneficios antes de moverme",
+      "Hago un análisis financiero completo antes de considerar cualquier acción"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e14",
+    "text": "Un colega está visiblemente angustiado. Tú:",
+    "options": [
+      "Me acerco de inmediato y le pregunto cómo se siente",
+      "Le ofrezco apoyo pero respeto si no quiere hablar",
+      "Observo la situación y busco el momento adecuado para abordarla",
+      "Considero si es apropiado intervenir o si debería escalar a alguien más"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e15",
+    "text": "Te piden liderar una presentación frente a directivos que no conoces. Tú:",
+    "options": [
+      "Me siento cómodo improvisando, confío en mi carisma",
+      "Preparo los puntos clave pero dejo espacio para ser natural",
+      "Ensayo la presentación varias veces para sentirme seguro",
+      "Preparo cada diapositiva con datos y anticipo todas las preguntas posibles"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e16",
+    "text": "Cuando algo te sale muy bien, tu forma de celebrarlo es:",
+    "options": [
+      "Lo comparto con entusiasmo con todos los que me rodean",
+      "Me siento bien internamente y lo comento con personas cercanas",
+      "Reconozco el logro pero ya estoy pensando en el siguiente paso",
+      "Analizo qué hice bien para poder replicarlo"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e17",
+    "text": "En un ambiente laboral tenso con mucha presión, tú tiendes a:",
+    "options": [
+      "Expresar abiertamente cómo me siento y buscar apoyo",
+      "Manejar la presión canalizándola en acción",
+      "Mantener la calma externamente aunque internamente me afecte",
+      "Desconectarme emocionalmente y enfocarme solo en las tareas"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e18",
+    "text": "Si tuvieras que elegir un estilo de trabajo, preferirías:",
+    "options": [
+      "Creativo y flexible, sin horarios rígidos ni procesos fijos",
+      "Mayormente libre pero con algunas guías generales",
+      "Estructurado con espacio para ajustar según la situación",
+      "Totalmente organizado con procesos claros y métricas definidas"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e19",
+    "text": "Cuando tomas una decisión importante y resulta ser incorrecta, tú:",
+    "options": [
+      "Acepto el error rápidamente y paso a la siguiente decisión",
+      "Me afecta un poco pero lo uso como aprendizaje",
+      "Reviso dónde falló mi razonamiento para no repetirlo",
+      "Analizo en detalle cada paso para entender exactamente qué salió mal"
+    ],
+    "scores": [0, 33, 66, 100]
+  },
+  {
+    "id": "e20",
+    "text": "¿Qué frase describe mejor tu forma de abordar los retos?",
+    "options": [
+      "Sigo mi corazón y confío en que las cosas saldrán bien",
+      "Combino intuición con sentido común para avanzar",
+      "Planifico cuidadosamente pero me adapto si es necesario",
+      "Los datos y el análisis son mi mejor herramienta para superar retos"
+    ],
+    "scores": [0, 33, 66, 100]
+  }
+]
