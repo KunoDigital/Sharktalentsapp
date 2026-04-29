@@ -1,0 +1,40 @@
+{
+  "deployment": {
+    "name": "api",
+    "stack": "node20",
+    "type": "advancedio",
+    "memory": 512,
+    "timeout": 30,
+    "env_variables": {
+      "CLERK_PUBLISHABLE_KEY": "set-in-catalyst-console",
+      "CLERK_SECRET_KEY": "set-in-catalyst-console",
+      "CLERK_WEBHOOK_SECRET": "set-in-catalyst-console",
+      "ANTHROPIC_API_KEY": "set-in-catalyst-console",
+      "INTERNAL_API_KEY": "set-in-catalyst-console",
+      "URL_SIGNING_SECRET": "set-in-catalyst-console",
+      "CRYPTO_MASTER_KEY": "set-in-catalyst-console",
+      "APP_BASE_URL": "https://sharktalents.ai",
+      "CLIENT_HOSTING_BASE": "/app/index.html",
+      "PUBLIC_REPORT_BASE": "/app/index.html#/report",
+      "TEST_LINK_BASE": "/app/index.html#/test",
+      "ANTHROPIC_MODEL": "claude-haiku-4-5-20251001",
+      "ANTHROPIC_CACHING_ENABLED": "true",
+      "ANTHROPIC_TIMEOUT_MS": "25000",
+      "ANTHROPIC_MAX_RETRIES": "3",
+      "CIRCUIT_BREAKER_THRESHOLD": "5",
+      "CIRCUIT_BREAKER_COOLDOWN_MS": "60000",
+      "RATE_LIMIT_WINDOW_MS": "60000",
+      "RATE_LIMIT_MAX_REQUESTS": "30",
+      "API_V1_RATE_LIMIT_DEFAULT": "60",
+      "API_V1_RATE_LIMIT_PER_TENANT": "1000",
+      "LOG_LEVEL": "info",
+      "APP_VERSION": "0.1.0",
+      "BOT_MODE": "cold",
+      "BOT_CONFIDENCE_THRESHOLD_DEFAULT": "0.75",
+      "BOT_RAG_TOP_K": "5"
+    }
+  },
+  "execution": {
+    "main": "index.js"
+  }
+}

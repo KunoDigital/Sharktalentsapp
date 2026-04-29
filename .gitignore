@@ -3,17 +3,31 @@ node_modules/
 .pnp
 .pnp.js
 
-# Compiled output (JS compilado desde TS)
+# Compiled output (JS desde TS) — backend nuevo
+functions/api/handlers/
+functions/api/services/
+functions/api/integrations/
+functions/api/db/
+functions/api/middleware/
+functions/api/lib/
+functions/api/data/
+functions/api/seeds/*.js
+functions/api/*.js
+!functions/api/index.js
+
+# Compiled output — backend legacy (prototipo, todavía referenciable)
 functions/sharktalents/routes/
 functions/sharktalents/data/
 functions/sharktalents/services/
 functions/sharktalents/*.js
 !functions/sharktalents/index.js
-
-# Seeds: mantener JSON (datos), ignorar JS compilado
 functions/sharktalents/seeds/*.js
 
 # Build artifacts
+shark/build/
+shark/dist/
+shark/*.zip
+shark/*.tsbuildinfo
 frontend/build/
 frontend/dist/
 
@@ -21,7 +35,9 @@ frontend/dist/
 .env
 .env.local
 .env.production
+.env.development
 *.env
+!.env.example
 
 # IDE
 .vscode/
@@ -39,3 +55,6 @@ Thumbs.db
 # Temp files
 *.tmp
 *.bak
+
+# Catalyst
+.catalyst/
