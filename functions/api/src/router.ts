@@ -1,49 +1,67 @@
-import type { IncomingMessage, ServerResponse } from 'http';
-import { getHealth } from './handlers/health';
+import type { RequestContext } from './lib/context';
 import { AppError } from './lib/errors';
+import { sendJson } from './lib/http';
 import { logger } from './lib/logger';
+import { getHealth } from './handlers/health';
+import { handleClerkWebhook } from './handlers/clerkWebhooks';
 
 const log = logger('ROUTER');
 
-type Handler = (req: IncomingMessage, res: ServerResponse) => Promise<void>;
-
-function send(res: ServerResponse, status: number, body: unknown): void {
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.end(JSON.stringify(body));
-}
+type Handler = (ctx: RequestContext) => Promise<void>;
 
 const routes: Array<{ method: string; pattern: RegExp; handler: Handler }> = [
   {
     method: 'GET',
     pattern: /^\/health\/?$/,
-    handler: async (_req, res) => {
+    handler: async (ctx) => {
       const result = await getHealth();
-      send(res, result.status === 'ok' ? 200 : 503, result);
+      sendJson(ctx.res, result.status === 'ok' ? 200 : 503, result);
     },
+  },
+  {
+    method: 'POST',
+    pattern: /^\/api\/webhooks\/clerk\/?$/,
+    handler: handleClerkWebhook,
   },
 ];
 
-export async function route(req: IncomingMessage, res: ServerResponse): Promise<void> {
-  const url = req.url ?? '/';
-  const method = (req.method ?? 'GET').toUpperCase();
+export async function route(ctx: RequestContext): Promise<void> {
+  const url = ctx.req.url ?? '/';
+  const method = (ctx.req.method ?? 'GET').toUpperCase();
   const path = url.split('?')[0];
 
   try {
     for (const r of routes) {
       if (r.method === method && r.pattern.test(path)) {
-        await r.handler(req, res);
+        await r.handler(ctx);
         return;
       }
     }
-    send(res, 404, { error: { code: 'not_found', message: `No route for ${method} ${path}` } });
+    sendJson(ctx.res, 404, {
+      error: { code: 'not_found', message: `No route for ${method} ${path}` },
+    });
   } catch (err) {
     if (err instanceof AppError) {
-      log.warn('app error', { code: err.code, message: err.message, status: err.status });
-      send(res, err.status, { error: { code: err.code, message: err.message, details: err.details } });
+      log.warn('app error', {
+        traceId: ctx.traceId,
+        code: err.code,
+        message: err.message,
+        status: err.status,
+      });
+      sendJson(ctx.res, err.status, {
+        error: { code: err.code, message: err.message, details: err.details },
+        trace_id: ctx.traceId,
+      });
       return;
     }
-    log.error('unhandled error', { message: (err as Error).message });
-    send(res, 500, { error: { code: 'internal_error', message: 'Internal server error' } });
+    log.error('unhandled error', {
+      traceId: ctx.traceId,
+      message: (err as Error).message,
+      stack: (err as Error).stack,
+    });
+    sendJson(ctx.res, 500, {
+      error: { code: 'internal_error', message: 'Internal server error' },
+      trace_id: ctx.traceId,
+    });
   }
 }
