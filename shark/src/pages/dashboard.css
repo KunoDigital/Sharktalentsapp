@@ -77,3 +77,114 @@
 .dashboard-state-label {
   color: var(--st-fg);
 }
+
+.action-queue {
+  background: var(--st-bg-elev);
+  border: 1px solid rgba(197, 252, 111, 0.3);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.action-queue-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--st-accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 1rem;
+}
+
+.action-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--st-bg);
+  border: 1px solid var(--st-border-soft);
+  border-radius: 8px;
+  padding: 0.85rem 1.1rem;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.action-item:hover {
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.action-priority-warn { border-left: 4px solid var(--st-warn); }
+.action-priority-warn:hover { border-color: var(--st-warn); }
+
+.action-priority-good { border-left: 4px solid var(--st-accent); }
+.action-priority-good:hover { border-color: var(--st-accent); }
+
+.action-priority-info { border-left: 4px solid var(--st-info); }
+.action-priority-info:hover { border-color: var(--st-info); }
+
+.action-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.action-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.action-label {
+  font-size: 0.95rem;
+  color: var(--st-fg-strong);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.action-count {
+  background: var(--st-accent);
+  color: var(--st-accent-fg);
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.action-priority-warn .action-count {
+  background: var(--st-warn);
+  color: var(--st-bg);
+}
+
+.action-priority-info .action-count {
+  background: var(--st-info);
+  color: #fff;
+}
+
+.action-hint {
+  font-size: 0.8rem;
+  color: var(--st-fg-muted);
+  margin-top: 0.2rem;
+}
+
+.action-cta {
+  font-size: 0.85rem;
+  color: var(--st-accent);
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .action-item {
+    flex-wrap: wrap;
+  }
+  .action-cta {
+    margin-left: auto;
+  }
+}

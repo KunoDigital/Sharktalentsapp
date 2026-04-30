@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { MOCK_JOBS } from '../data/mockJobs';
 import { MOCK_APPLICATIONS, STATE_LABELS } from '../data/mockApplications';
+import { MOCK_DRAFTS } from '../data/mockDrafts';
+import { MOCK_MESSAGES } from '../data/mockOutreach';
+import { MOCK_REPORTS } from '../data/mockReports';
 import './pages.css';
 import './dashboard.css';
 
@@ -17,6 +20,19 @@ export default function Dashboard() {
     !['hired', 'rejected_by_admin', 'auto_rejected_low_score'].includes(a.state),
   ).length;
   const finalists = MOCK_APPLICATIONS.filter((a) => a.state === 'finalist').length;
+
+  // Action queue: lo que requiere atención de Cris HOY
+  const draftsPending = MOCK_DRAFTS.filter((d) => d.status === 'draft_generated' || d.status === 'in_review');
+  const botNeedsReview = MOCK_APPLICATIONS.filter((a) => a.bot_decision?.needs_review === true);
+  const inboxNeedsResponse = MOCK_MESSAGES.filter((m) => m.needs_response);
+  const finalistsToInterview = MOCK_APPLICATIONS.filter((a) => a.state === 'finalist');
+  const reportsWithNewFeedback = Object.values(MOCK_REPORTS).filter(
+    (r) => r.client_feedback && r.client_feedback.length > 0,
+  );
+
+  const totalActions =
+    draftsPending.length + botNeedsReview.length + inboxNeedsResponse.length +
+    finalistsToInterview.length + reportsWithNewFeedback.length;
 
   // Funnel data
   const funnelStages = [
@@ -53,8 +69,74 @@ export default function Dashboard() {
     <div>
       <h1 className="page-title">Dashboard</h1>
       <p className="page-subtitle">
-        Vista general de los puestos activos y candidatos en pipeline.
+        {totalActions === 0
+          ? 'Todo bajo control. No hay nada urgente que requiera tu atención.'
+          : `Hay ${totalActions} ${totalActions === 1 ? 'cosa' : 'cosas'} que requieren tu atención hoy.`}
       </p>
+
+      {totalActions > 0 && (
+        <section className="action-queue">
+          <h2 className="action-queue-title">Tu cola</h2>
+          <div className="action-queue-list">
+            {draftsPending.length > 0 && (
+              <ActionItem
+                icon="📋"
+                count={draftsPending.length}
+                label={`${draftsPending.length === 1 ? 'Draft pendiente' : 'Drafts pendientes'} de revisar`}
+                hint="Post-reunión con cliente — la IA armó el borrador, vos validás antes de mandárselo"
+                cta="Revisar drafts"
+                to="/drafts"
+                priority="warn"
+              />
+            )}
+            {botNeedsReview.length > 0 && (
+              <ActionItem
+                icon="🤖"
+                count={botNeedsReview.length}
+                label={`${botNeedsReview.length === 1 ? 'Decisión del bot' : 'Decisiones del bot'} con baja confianza`}
+                hint="El bot prefiere que vos decidas — confidence debajo del umbral"
+                cta="Ver review queue"
+                to="/bot/review"
+                priority="warn"
+              />
+            )}
+            {finalistsToInterview.length > 0 && (
+              <ActionItem
+                icon="🎯"
+                count={finalistsToInterview.length}
+                label={`${finalistsToInterview.length === 1 ? 'Finalista listo' : 'Finalistas listos'} para entrevista`}
+                hint="Pasaron todas las evaluaciones — agendá entrevista 1:1"
+                cta="Ver finalistas"
+                to="/candidates"
+                priority="good"
+              />
+            )}
+            {inboxNeedsResponse.length > 0 && (
+              <ActionItem
+                icon="💬"
+                count={inboxNeedsResponse.length}
+                label={`${inboxNeedsResponse.length === 1 ? 'Mensaje sin responder' : 'Mensajes sin responder'} en inbox outbound`}
+                hint="Respuestas de candidatos vía LinkedIn / email"
+                cta="Ir al inbox"
+                to="/inbox"
+                priority="info"
+              />
+            )}
+            {reportsWithNewFeedback.length > 0 && (
+              <ActionItem
+                icon="✉️"
+                count={reportsWithNewFeedback.length}
+                label={`${reportsWithNewFeedback.length === 1 ? 'Cliente respondió' : 'Clientes respondieron'} feedback de reportes`}
+                hint="Eligieron candidatos para entrevistar"
+                cta="Ver reportes"
+                to="/reports"
+                priority="good"
+              />
+            )}
+          </div>
+        </section>
+      )}
+
       <div className="stat-grid">
         <div className="stat-card">
           <div className="stat-value">{activeJobs}</div>
@@ -160,5 +242,39 @@ export default function Dashboard() {
         <code>shark/src/data/mock*.ts</code>.
       </p>
     </div>
+  );
+}
+
+type Priority = 'warn' | 'good' | 'info';
+
+function ActionItem({
+  icon,
+  count,
+  label,
+  hint,
+  cta,
+  to,
+  priority,
+}: {
+  icon: string;
+  count: number;
+  label: string;
+  hint: string;
+  cta: string;
+  to: string;
+  priority: Priority;
+}) {
+  return (
+    <Link to={to} className={`action-item action-priority-${priority}`}>
+      <div className="action-icon">{icon}</div>
+      <div className="action-body">
+        <div className="action-label">
+          <span className="action-count">{count}</span>
+          {label}
+        </div>
+        <div className="action-hint">{hint}</div>
+      </div>
+      <div className="action-cta">{cta} →</div>
+    </Link>
   );
 }
