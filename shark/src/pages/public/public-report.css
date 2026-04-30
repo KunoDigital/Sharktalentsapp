@@ -833,3 +833,69 @@
     font-size: 1.5rem;
   }
 }
+
+/* Print styles — para imprimir directo desde browser sin librerías */
+@media print {
+  .pr-root { background: #fff; color: #111827; }
+  .pr-header {
+    position: static;
+    background: #fff;
+    border-bottom: 2px solid #c5fc6f;
+    padding: 1rem 1.5rem;
+  }
+  .pr-header-actions,
+  .pr-feedback-section,
+  .pr-feedback-block,
+  .pr-download-btn { display: none !important; }
+  .pr-brand,
+  .pr-section-title,
+  .pr-candidate-name,
+  .pr-overview-title,
+  .pr-fortalezas-label,
+  .pr-style-label,
+  .pr-conclusion-label { color: #1f2937; }
+  .pr-section,
+  .pr-overview-card,
+  .pr-candidate-card,
+  .pr-conclusion-card,
+  .pr-affinity-bars,
+  .pr-style-card,
+  .pr-emocional-block {
+    background: #fff !important;
+    border: 1px solid #d1d5db !important;
+    page-break-inside: avoid;
+    color: #1f2937 !important;
+  }
+  .pr-section-text,
+  .pr-candidate-paragraph,
+  .pr-emocional-block p,
+  .pr-style-card p,
+  .pr-conclusion-text,
+  .pr-overview-list,
+  .pr-overview-comp,
+  .pr-overview-velna,
+  .pr-table td { color: #374151 !important; }
+  .pr-candidate-affinity-pct,
+  .pr-table-affinity { color: #065f46 !important; }
+  .pr-recommendation {
+    background: #d1fae5 !important;
+    border-color: #6ee7b7 !important;
+    color: #064e3b !important;
+    page-break-inside: avoid;
+  }
+  .pr-velna-fill,
+  .pr-affinity-fill { background: #1f2937 !important; }
+  .pr-velna-track,
+  .pr-affinity-track { background: #e5e7eb !important; }
+  .pr-confidential { background: #fef3c7; color: #78350f; }
+  .pr-footer {
+    background: #fff;
+    color: #6b7280;
+    border-top: 1px solid #d1d5db;
+  }
+  .pr-candidate-card {
+    page-break-before: auto;
+    page-break-after: avoid;
+  }
+  button, textarea { display: none !important; }
+}

@@ -609,7 +609,21 @@ const PIPELINE_BancoPacifico: Application[] = [
   },
 ];
 
-export const MOCK_APPLICATIONS: Application[] = [...PIPELINE_AcmeTech, ...PIPELINE_BancoPacifico];
+// Combine hardcoded mocks + demo data from localStorage (si hay)
+const HARDCODED_APPLICATIONS: Application[] = [...PIPELINE_AcmeTech, ...PIPELINE_BancoPacifico];
+
+function loadDemoExtras(): Application[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem('demo_applications');
+    if (!raw) return [];
+    return JSON.parse(raw) as Application[];
+  } catch {
+    return [];
+  }
+}
+
+export const MOCK_APPLICATIONS: Application[] = [...HARDCODED_APPLICATIONS, ...loadDemoExtras()];
 
 export function getApplicationsByJobId(jobId: string): Application[] {
   return MOCK_APPLICATIONS.filter((a) => a.job_id === jobId);

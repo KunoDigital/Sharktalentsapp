@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { MOCK_JOBS } from '../data/mockJobs';
+import { generateDemoApplications, clearDemoApplications, getDemoCount } from '../lib/demoData';
 import './pages.css';
 
-type Tab = 'integraciones' | 'api_keys' | 'equipo' | 'branding' | 'plan';
+type Tab = 'integraciones' | 'api_keys' | 'equipo' | 'branding' | 'plan' | 'demo';
 
 export default function Settings() {
   const [tab, setTab] = useState<Tab>('integraciones');
@@ -12,7 +14,7 @@ export default function Settings() {
       <p className="page-subtitle">Configuración del tenant.</p>
 
       <div className="phase-tabs">
-        {(['integraciones', 'api_keys', 'equipo', 'branding', 'plan'] as Tab[]).map((t) => (
+        {(['integraciones', 'api_keys', 'equipo', 'branding', 'plan', 'demo'] as Tab[]).map((t) => (
           <button
             key={t}
             className={`phase-tab${tab === t ? ' is-active' : ''}`}
@@ -22,7 +24,8 @@ export default function Settings() {
              t === 'api_keys' ? 'API keys' :
              t === 'equipo' ? 'Equipo' :
              t === 'branding' ? 'Branding' :
-             'Plan & Billing'}
+             t === 'plan' ? 'Plan & Billing' :
+             '🎲 Demo data'}
           </button>
         ))}
       </div>
@@ -32,6 +35,7 @@ export default function Settings() {
       {tab === 'equipo' && <EquipoTab />}
       {tab === 'branding' && <BrandingTab />}
       {tab === 'plan' && <PlanTab />}
+      {tab === 'demo' && <DemoDataTab />}
     </div>
   );
 }
@@ -166,6 +170,85 @@ function BrandingTab() {
         </div>
         <button className="btn-toolbar">Editar</button>
       </div>
+    </div>
+  );
+}
+
+function DemoDataTab() {
+  const [count, setCount] = useState(30);
+  const [generated, setGenerated] = useState(getDemoCount());
+
+  function handleGenerate() {
+    generateDemoApplications(count, MOCK_JOBS.map((j) => j.id));
+    setGenerated(getDemoCount());
+    if (confirm(`✓ Generados ${count} candidatos demo. ¿Refrescar la página para verlos?`)) {
+      window.location.reload();
+    }
+  }
+
+  function handleClear() {
+    if (!confirm('¿Borrar todos los candidatos demo?')) return;
+    clearDemoApplications();
+    setGenerated(0);
+    if (confirm('✓ Borrados. ¿Refrescar la página?')) {
+      window.location.reload();
+    }
+  }
+
+  return (
+    <div className="settings-list">
+      <div className="settings-item">
+        <div>
+          <div className="settings-item-title">Candidatos demo actuales</div>
+          <div className="settings-item-desc">
+            {generated === 0
+              ? 'No hay candidatos demo generados — solo ves los 8 hardcoded del mock.'
+              : `${generated} candidatos demo activos en localStorage.`}
+          </div>
+        </div>
+      </div>
+
+      <div className="settings-item">
+        <div>
+          <div className="settings-item-title">Generar candidatos random</div>
+          <div className="settings-item-desc">
+            Útil para mostrar la app a un cliente potencial con volumen real (filtros funcionando, charts con data, kanban poblado).
+            Los candidatos se distribuyen entre los 4 puestos existentes con scores aleatorios pero coherentes.
+          </div>
+        </div>
+        <div className="settings-item-actions" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.5rem' }}>
+          <input
+            type="number"
+            min={5}
+            max={200}
+            value={count}
+            onChange={(e) => setCount(Math.max(5, Math.min(200, Number(e.target.value))))}
+            className="filter-search"
+            style={{ minWidth: 'auto', width: '100px' }}
+          />
+          <button className="btn-primary" onClick={handleGenerate}>
+            Generar {count}
+          </button>
+        </div>
+      </div>
+
+      <div className="settings-item">
+        <div>
+          <div className="settings-item-title">Limpiar demo data</div>
+          <div className="settings-item-desc">
+            Borra todos los candidatos demo. Vuelve a los 8 hardcoded.
+          </div>
+        </div>
+        <div className="settings-item-actions">
+          <button className="cd-btn-danger" onClick={handleClear} disabled={generated === 0}>
+            Borrar demo
+          </button>
+        </div>
+      </div>
+
+      <p className="muted-note">
+        💡 Demo data persiste en <code>localStorage</code>. Cambiar de browser o limpiar cookies elimina la data.
+      </p>
     </div>
   );
 }

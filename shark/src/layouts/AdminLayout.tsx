@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { OrganizationSwitcher, UserButton, useOrganization } from '@clerk/clerk-react';
 import CommandPalette from '../components/CommandPalette';
+import NotificationCenter from '../components/NotificationCenter';
 import './AdminLayout.css';
 
 const NAV_ITEMS = [
@@ -65,6 +66,7 @@ export default function AdminLayout() {
       <div className="admin-content">
         <header className="admin-header">
           <div className="admin-header-right">
+            <NotificationCenter />
             <OrganizationSwitcher hidePersonal afterSelectOrganizationUrl="/" />
             <UserButton afterSignOutUrl="/" />
           </div>
