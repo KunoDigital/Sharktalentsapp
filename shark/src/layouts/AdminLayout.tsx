@@ -4,6 +4,7 @@ import './AdminLayout.css';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', end: true },
+  { to: '/drafts', label: 'Drafts (cliente)' },
   { to: '/jobs', label: 'Jobs' },
   { to: '/candidates', label: 'Candidatos' },
   { to: '/reports', label: 'Reportes' },

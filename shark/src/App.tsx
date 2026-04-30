@@ -7,6 +7,8 @@ import JobDetail from './pages/JobDetail';
 import CandidatesList from './pages/CandidatesList';
 import CandidateDetail from './pages/CandidateDetail';
 import Comparativo from './pages/Comparativo';
+import DraftsList from './pages/DraftsList';
+import DraftReview from './pages/DraftReview';
 import { ReportsStub, InboxStub, SettingsStub } from './pages/Stubs';
 import PublicReport from './pages/public/PublicReport';
 import ClientPortalLanding from './pages/public/ClientPortalLanding';
@@ -40,6 +42,8 @@ function ProtectedAdmin() {
             <Route path="jobs/:id/comparar" element={<Comparativo />} />
             <Route path="candidates" element={<CandidatesList />} />
             <Route path="candidates/:id" element={<CandidateDetail />} />
+            <Route path="drafts" element={<DraftsList />} />
+            <Route path="drafts/:id" element={<DraftReview />} />
             <Route path="reports" element={<ReportsStub />} />
             <Route path="inbox" element={<InboxStub />} />
             <Route path="settings" element={<SettingsStub />} />
