@@ -1,28 +1,24 @@
 # Documentación de SharkTalents
 
-Documentos de referencia sobre el diseño, contenido y evolución de la plataforma.
+Documentación técnica del producto y su arquitectura.
 
 ## Estructura
 
-### `evaluaciones/`
-Documentos fuente de las pruebas psicométricas: revisiones, correcciones, lógica interna y manuales.
+### `master-plan/`
+Plan canónico de la arquitectura nueva. Punto de entrada para entender el refactor.
 
-- `Manual_Competencias_Kudert.docx` — manual de las 54 competencias usadas en el modelo
-- `guia_perfiles_pk.docx` — guía de los 15 perfiles PK de DISC
-- `revision_disc.md/.docx` — revisión y validación de preguntas DISC
-- `revision_velna.md/.docx` — revisión de la prueba cognitiva VELNA
-- `revision_integridad.docx` — revisión de la prueba de integridad
-- `INTEGRITY_V2_BORRADOR.md` — borrador del diseño de integridad v2
-- `INTEGRITY_V2_CORRECCIONES.md` — correcciones aplicadas al borrador
-- `LOGICA_COMPETENCIAS.md` — documentación de la lógica de cálculo de competencias
+### `aprendizajes/`
+Manual de patrones, antipatrones y lecciones aprendidas durante el desarrollo.
 
-### `contenido-web/`
-Contenido para sharktalents.ai y materiales de marketing.
+### `ADR/` (Architectural Decision Records)
+Decisiones arquitectónicas documentadas: contexto, opciones evaluadas, decisión y consecuencias.
 
-- `sharktalents_web_contenido.md` — descripción de las 5 dimensiones de evaluación para la web
-- `sharktalents_storytelling_candidato.md` — narrativa del camino del candidato por la plataforma
+### `INTEGRATIONS/`
+Documentación operativa de las integraciones con servicios externos (Zoho Recruit, Zoho Meeting, Zoho Bookings, Zoho Sign, HeyReach, Whisper, Anthropic).
 
-### `pendientes/`
-Lista de mejoras y cambios pendientes.
+### `RUNBOOKS/`
+Procedimientos paso a paso para incidentes, despliegues y operaciones rutinarias.
 
-- `MEJORAS_PENDIENTES.md` — roadmap y TODOs
+---
+
+> **Nota:** los borradores de evaluaciones psicométricas, contenido de marketing y notas personales no viven en este repo — se mantienen en la carpeta de trabajo personal del equipo.
