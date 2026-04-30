@@ -6,6 +6,7 @@ import JobsList from './pages/JobsList';
 import JobDetail from './pages/JobDetail';
 import CandidatesList from './pages/CandidatesList';
 import CandidateDetail from './pages/CandidateDetail';
+import Comparativo from './pages/Comparativo';
 import { ReportsStub, InboxStub, SettingsStub } from './pages/Stubs';
 import './App.css';
 
@@ -34,6 +35,7 @@ export default function App() {
               <Route index element={<Dashboard />} />
               <Route path="jobs" element={<JobsList />} />
               <Route path="jobs/:id" element={<JobDetail />} />
+              <Route path="jobs/:id/comparar" element={<Comparativo />} />
               <Route path="candidates" element={<CandidatesList />} />
               <Route path="candidates/:id" element={<CandidateDetail />} />
               <Route path="reports" element={<ReportsStub />} />
