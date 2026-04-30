@@ -1,9 +1,12 @@
+import { lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react';
 import ErrorBoundary from './components/ErrorBoundary';
 import AdminLayout from './layouts/AdminLayout';
-import Dashboard from './pages/Dashboard';
 import JobsList from './pages/JobsList';
+
+// Lazy: Dashboard (recharts ~210KB), PublicReport (jsPDF + html2canvas, ~200KB)
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 import JobDetail from './pages/JobDetail';
 import CandidatesList from './pages/CandidatesList';
 import CandidateDetail from './pages/CandidateDetail';
@@ -28,6 +31,14 @@ import CandidateTestDone from './pages/public/CandidateTestDone';
 import './App.css';
 import './components/error-boundary.css';
 
+function LoadingPage() {
+  return (
+    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--st-fg-muted)' }}>
+      Cargando…
+    </div>
+  );
+}
+
 function SignedOutLanding() {
   return (
     <div className="signed-out-landing">
@@ -49,7 +60,7 @@ function ProtectedAdmin() {
       <SignedIn>
         <Routes>
           <Route path="/" element={<AdminLayout />}>
-            <Route index element={<ErrorBoundary context="dashboard"><Dashboard /></ErrorBoundary>} />
+            <Route index element={<ErrorBoundary context="dashboard"><Suspense fallback={<LoadingPage />}><Dashboard /></Suspense></ErrorBoundary>} />
             <Route path="jobs" element={<ErrorBoundary context="jobs-list"><JobsList /></ErrorBoundary>} />
             <Route path="jobs/:id" element={<ErrorBoundary context="job-detail"><JobDetail /></ErrorBoundary>} />
             <Route path="jobs/:id/comparar" element={<ErrorBoundary context="comparativo"><Comparativo /></ErrorBoundary>} />

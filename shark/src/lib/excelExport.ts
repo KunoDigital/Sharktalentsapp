@@ -1,17 +1,17 @@
-import * as XLSX from 'xlsx';
 import type { Application } from '../data/mockApplications';
 import { STATE_LABELS, SOURCE_LABELS } from '../data/mockApplications';
 import type { Job } from '../data/mockJobs';
 
 /**
- * Genera un .xlsx descargable con la tabla de candidatos de un puesto.
- * Una hoja por puesto si se pasan varios.
+ * Genera un .xlsx descargable con la tabla de candidatos.
+ * xlsx se carga dinámicamente para no inflar el bundle inicial.
  */
-export function exportCandidatesToExcel(
+export async function exportCandidatesToExcel(
   applications: Application[],
   jobs: Job[],
   filename: string,
-): void {
+): Promise<void> {
+  const XLSX = await import('xlsx');
   const wb = XLSX.utils.book_new();
 
   // Una hoja con todos los candidatos
@@ -64,7 +64,8 @@ export function exportCandidatesToExcel(
 /**
  * Genera un .xlsx con la tabla de jobs.
  */
-export function exportJobsToExcel(jobs: Job[], filename: string): void {
+export async function exportJobsToExcel(jobs: Job[], filename: string): Promise<void> {
+  const XLSX = await import('xlsx');
   const wb = XLSX.utils.book_new();
   const rows = jobs.map((j) => ({
     'Puesto': j.title,

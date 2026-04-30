@@ -1,35 +1,31 @@
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-
 /**
  * Exporta un elemento DOM como PDF descargable.
- * Captura el elemento como canvas, lo divide en páginas A4 si es necesario.
+ * jsPDF + html2canvas se cargan dinámicamente para no inflar el bundle inicial.
  */
 export async function exportElementToPdf(
   element: HTMLElement,
   filename: string,
 ): Promise<void> {
-  // Render con html2canvas
+  const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+    import('jspdf'),
+    import('html2canvas'),
+  ]);
+
   const canvas = await html2canvas(element, {
-    scale: 2, // mejor resolución
+    scale: 2,
     useCORS: true,
-    backgroundColor: '#0d121a', // dark theme matches public report
+    backgroundColor: '#0d121a',
     logging: false,
   });
 
   const imgData = canvas.toDataURL('image/png');
-  const pdf = new jsPDF({
-    orientation: 'portrait',
-    unit: 'pt',
-    format: 'a4',
-  });
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
   const imgWidth = pageWidth;
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  // Si la imagen es más alta que una página, dividir en páginas
   let heightLeft = imgHeight;
   let position = 0;
 
