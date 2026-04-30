@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getTestSession, VELNA_SUBTESTS, type VelnaSubtest } from '../../data/mockCandidateTests';
+import { getJobById } from '../../data/mockJobs';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
+import { calculateVelnaResult } from '../../lib/scoring';
 import './candidate-test.css';
 
 type Phase = 'intro' | 'subtest_intro' | 'subtest_running' | 'done';
@@ -53,7 +55,22 @@ export default function CandidateVelnaTest() {
       setPhase('subtest_intro');
     } else {
       setPhase('done');
-      setTimeout(() => navigate(`/test/${token}/disc`), 1500);
+      const job = session ? getJobById(session.job_id) : undefined;
+      const result = job
+        ? calculateVelnaResult(VELNA_SUBTESTS, answers, job.velna_ideal)
+        : null;
+      setTimeout(() => navigate(`/test/${token}/disc`, result ? {
+        state: {
+          score: {
+            type: 'velna',
+            data: {
+              aggregate: result.aggregate_pct,
+              similarity: result.similarity_with_ideal_pct,
+              per_subtest: result.per_subtest,
+            },
+          },
+        },
+      } : undefined), 1500);
     }
   }
 

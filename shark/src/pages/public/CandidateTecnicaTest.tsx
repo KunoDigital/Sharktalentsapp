@@ -67,7 +67,18 @@ export default function CandidateTecnicaTest() {
       setCurrentIdx((i) => i + 1);
     } else {
       setSubmitted(true);
-      setTimeout(() => navigate(`/test/${token}/done?phase=tecnica`), 1500);
+      // Score solo cuenta multiple_choice con correct_option_id
+      const scorable = questions.filter((q) => q.correct_option_id != null);
+      const correct = scorable.filter((q) => answers[q.id]?.selected_option_id === q.correct_option_id).length;
+      const pct = scorable.length > 0 ? Math.round((correct / scorable.length) * 100) : 0;
+      setTimeout(() => navigate(`/test/${token}/done?phase=tecnica`, {
+        state: {
+          score: {
+            type: 'tecnica',
+            data: { correct, total: scorable.length, pct },
+          },
+        },
+      }), 1500);
     }
   }
 

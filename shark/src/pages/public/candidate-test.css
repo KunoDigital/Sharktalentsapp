@@ -889,3 +889,91 @@
   font-size: 0.85rem;
   color: #b8c0cc;
 }
+
+/* Score card en done page */
+.ct-score-card {
+  background: #131923;
+  border: 1px solid rgba(197, 252, 111, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem 1.75rem;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.ct-score-card h2 {
+  font-size: 1.15rem;
+  color: #c5fc6f;
+  margin: 0 0 1rem;
+}
+
+.ct-score-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.ct-score-bar {
+  display: grid;
+  grid-template-columns: 60px 1fr 40px;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.ct-score-bar-label {
+  font-size: 0.85rem;
+  color: #b8c0cc;
+  font-weight: 500;
+  text-align: right;
+}
+
+.ct-score-bar-track {
+  height: 10px;
+  background: #0d121a;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.ct-score-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.ct-score-bar-val {
+  font-size: 0.85rem;
+  color: #c5fc6f;
+  font-weight: 600;
+  text-align: right;
+}
+
+.ct-score-detail {
+  font-size: 0.95rem;
+  color: #b8c0cc;
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+.ct-score-detail strong {
+  color: #f3f4f6;
+}
+
+.ct-score-obs {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ct-score-obs li {
+  padding: 0.4rem 0 0.4rem 1.5rem;
+  position: relative;
+  color: #fbbf24;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.ct-score-obs li::before {
+  content: '⚠️';
+  position: absolute;
+  left: 0;
+}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getTestSession, INTEGRITY_QUESTIONS } from '../../data/mockCandidateTests';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
+import { calculateIntegrityResult } from '../../lib/scoring';
 import './candidate-test.css';
 
 const LIKERT_LABELS = [
@@ -38,7 +39,18 @@ export default function CandidateIntegridadTest() {
   function submit() {
     if (!allAnswered) return;
     setSubmitted(true);
-    setTimeout(() => navigate(`/test/${token}/done?phase=integridad`), 1500);
+    const result = calculateIntegrityResult(INTEGRITY_QUESTIONS, answers);
+    setTimeout(() => navigate(`/test/${token}/done?phase=integridad`, {
+      state: {
+        score: {
+          type: 'integridad',
+          data: {
+            observations: result.observations,
+            buena_impresion_alta: result.buena_impresion_alta,
+          },
+        },
+      },
+    }), 1500);
   }
 
   if (submitted) {

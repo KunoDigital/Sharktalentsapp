@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getTestSession, DISC_QUESTIONS, type DiscOption } from '../../data/mockCandidateTests';
+import { getJobById } from '../../data/mockJobs';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
+import { calculateDiscRaw, calculateDiscSimilarity, discDominantLabel } from '../../lib/scoring';
 import './candidate-test.css';
 
 type Answer = {
@@ -56,8 +58,31 @@ export default function CandidateDiscTest() {
       setCurrentIdx((i) => i + 1);
     } else {
       setSubmitted(true);
-      console.log('[DISC] submitted', { answers, antiCheatEvents: events });
-      setTimeout(() => navigate(`/test/${token}/done?phase=conductual`), 1500);
+      // Calcular score real con la lógica local
+      const validAnswers = Object.values(answers).filter(
+        (a): a is { question_id: string; most_axis: 'd' | 'i' | 's' | 'c'; least_axis: 'd' | 'i' | 's' | 'c' } =>
+          !!a.question_id && !!a.most_axis && !!a.least_axis,
+      );
+      const raw = calculateDiscRaw(DISC_QUESTIONS, validAnswers);
+      const dominant = discDominantLabel(raw);
+      const job = session ? getJobById(session.job_id) : undefined;
+      const similarity = job ? calculateDiscSimilarity(raw, {
+        d: job.disc_ideal_a.d, i: job.disc_ideal_a.i, s: job.disc_ideal_a.s, c: job.disc_ideal_a.c,
+      }) : undefined;
+
+      console.log('[DISC] submitted', { raw, dominant, similarity, antiCheatEvents: events });
+      setTimeout(() => navigate(`/test/${token}/done?phase=conductual`, {
+        state: {
+          score: {
+            type: 'disc',
+            data: {
+              d: Math.round(raw.d), i: Math.round(raw.i), s: Math.round(raw.s), c: Math.round(raw.c),
+              dominant: dominant.label,
+              similarity,
+            },
+          },
+        },
+      }), 1200);
     }
   }
 
