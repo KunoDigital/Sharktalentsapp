@@ -28,22 +28,24 @@ export default function AdminLayout() {
 
   return (
     <div className="admin-layout">
+      <a href="#main-content" className="skip-link">Saltar al contenido</a>
       <button
         className="admin-mobile-toggle"
         onClick={() => setMobileOpen((o) => !o)}
-        aria-label="Toggle menu"
+        aria-label={mobileOpen ? 'Cerrar menú' : 'Abrir menú'}
+        aria-expanded={mobileOpen}
       >
         ☰
       </button>
 
-      {mobileOpen && <div className="admin-mobile-overlay" onClick={() => setMobileOpen(false)} />}
+      {mobileOpen && <div className="admin-mobile-overlay" onClick={() => setMobileOpen(false)} aria-hidden="true" />}
 
-      <aside className={`admin-sidebar ${mobileOpen ? 'is-open' : ''}`}>
+      <aside className={`admin-sidebar ${mobileOpen ? 'is-open' : ''}`} aria-label="Navegación principal">
         <div className="admin-brand">
-          <span className="admin-brand-mark">⌬</span>
+          <span className="admin-brand-mark" aria-hidden="true">⌬</span>
           <span className="admin-brand-name">SharkTalents</span>
         </div>
-        <nav className="admin-nav">
+        <nav className="admin-nav" aria-label="Secciones">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
@@ -71,7 +73,7 @@ export default function AdminLayout() {
             <UserButton afterSignOutUrl="/" />
           </div>
         </header>
-        <main className="admin-main" key={location.pathname}>
+        <main id="main-content" className="admin-main" key={location.pathname} tabIndex={-1}>
           <Outlet />
         </main>
       </div>

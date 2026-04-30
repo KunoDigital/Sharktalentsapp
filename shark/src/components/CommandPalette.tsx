@@ -114,10 +114,10 @@ export default function CommandPalette() {
   if (!open) return null;
 
   return (
-    <div className="cmdk-overlay" onClick={() => setOpen(false)}>
-      <div className="cmdk-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="cmdk-overlay" onClick={() => setOpen(false)} role="presentation">
+      <div className="cmdk-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Búsqueda global">
         <div className="cmdk-input-wrap">
-          <span className="cmdk-icon">🔍</span>
+          <span className="cmdk-icon" aria-hidden="true">🔍</span>
           <input
             ref={inputRef}
             className="cmdk-input"
