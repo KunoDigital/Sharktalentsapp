@@ -1,26 +1,28 @@
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background: #f9fafb;
+  background: var(--st-bg);
 }
 
 .admin-sidebar {
   width: 240px;
   flex-shrink: 0;
-  background: #1f2937;
-  color: #f3f4f6;
+  background: #0a0e15;
+  color: var(--st-fg);
   padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
+  border-right: 1px solid var(--st-border-soft);
 }
 
 .admin-brand {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 1.5rem;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+  color: var(--st-accent);
 }
 
 .admin-brand-mark {
@@ -30,34 +32,35 @@
 .admin-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
   flex: 1;
 }
 
 .admin-nav-link {
   display: block;
   padding: 0.55rem 0.75rem;
-  color: #d1d5db;
+  color: var(--st-fg-muted);
   text-decoration: none;
   border-radius: 6px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .admin-nav-link:hover {
-  background: #374151;
-  color: #fff;
+  background: var(--st-bg-elev-2);
+  color: var(--st-fg-strong);
+  text-decoration: none;
 }
 
 .admin-nav-link.is-active {
-  background: #4b5563;
-  color: #fff;
+  background: var(--st-accent-soft);
+  color: var(--st-accent);
   font-weight: 500;
 }
 
 .admin-tenant-tag {
-  font-size: 0.8rem;
-  color: #9ca3af;
-  border-top: 1px solid #374151;
+  font-size: 0.75rem;
+  color: var(--st-fg-muted);
+  border-top: 1px solid var(--st-border-soft);
   padding-top: 1rem;
   margin-top: 1rem;
   word-wrap: break-word;
@@ -68,6 +71,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background: var(--st-bg);
 }
 
 .admin-header {
@@ -75,8 +79,8 @@
   justify-content: flex-end;
   align-items: center;
   padding: 0.75rem 1.5rem;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--st-bg-elev);
+  border-bottom: 1px solid var(--st-border-soft);
   min-height: 56px;
 }
 

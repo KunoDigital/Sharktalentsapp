@@ -8,9 +8,9 @@
   font-size: 0.8rem;
 }
 
-.bot-mode-cold { background: #dbeafe; color: #1e3a8a; }
-.bot-mode-warm { background: #fef3c7; color: #78350f; }
-.bot-mode-hot { background: #fee2e2; color: #991b1b; }
+.bot-mode-cold { background: var(--st-info-soft); color: var(--st-info); }
+.bot-mode-warm { background: var(--st-warn-soft); color: var(--st-warn); }
+.bot-mode-hot { background: var(--st-danger-soft); color: var(--st-danger); }
 
 .bot-stats-grid {
   display: grid;
@@ -20,12 +20,12 @@
 }
 
 .bot-empty-state {
-  background: #f9fafb;
-  border: 1px dashed #d1d5db;
+  background: var(--st-bg-elev);
+  border: 1px dashed var(--st-border-strong);
   border-radius: 8px;
   padding: 2.5rem;
   text-align: center;
-  color: #6b7280;
+  color: var(--st-fg-muted);
 }
 
 .bot-queue-list {
@@ -37,9 +37,9 @@
 
 .bot-queue-card {
   display: block;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-left: 4px solid #f59e0b;
+  background: var(--st-bg-elev);
+  border: 1px solid var(--st-border-soft);
+  border-left: 4px solid var(--st-warn);
   border-radius: 8px;
   padding: 1.25rem 1.5rem;
   text-decoration: none;
@@ -49,7 +49,8 @@
 
 .bot-queue-card:hover {
   transform: translateY(-1px);
-  border-color: #f59e0b;
+  border-color: var(--st-warn);
+  text-decoration: none;
 }
 
 .bot-queue-header {
@@ -63,12 +64,12 @@
 .bot-queue-name {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--st-fg-strong);
 }
 
 .bot-queue-meta {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--st-fg-muted);
 }
 
 .bot-queue-confidence {
@@ -78,13 +79,13 @@
 .bot-queue-conf-pct {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #92400e;
+  color: var(--st-warn);
   line-height: 1;
 }
 
 .bot-queue-conf-label {
   font-size: 0.7rem;
-  color: #6b7280;
+  color: var(--st-fg-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-top: 0.15rem;
@@ -92,8 +93,8 @@
 
 .bot-queue-recommendation {
   font-size: 0.9rem;
-  color: #1f2937;
-  background: #fef3c7;
+  color: var(--st-fg);
+  background: var(--st-warn-soft);
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
   margin-bottom: 0.75rem;
@@ -101,14 +102,14 @@
 
 .bot-queue-rationale {
   font-size: 0.875rem;
-  color: #4b5563;
+  color: var(--st-fg);
   line-height: 1.6;
   margin-bottom: 0.75rem;
 }
 
 .bot-queue-cta {
   font-size: 0.85rem;
-  color: #1f2937;
+  color: var(--st-accent);
   font-weight: 500;
   text-align: right;
 }
@@ -121,18 +122,20 @@
   font-weight: 600;
 }
 
-.bot-conf-good { background: #d1fae5; color: #065f46; }
-.bot-conf-mid { background: #fef3c7; color: #78350f; }
-.bot-conf-low { background: #fee2e2; color: #991b1b; }
-
-/* ========== Bot rationale section in CandidateDetail ========== */
+.bot-conf-good { background: var(--st-success-soft); color: var(--st-success); }
+.bot-conf-mid { background: var(--st-warn-soft); color: var(--st-warn); }
+.bot-conf-low { background: var(--st-danger-soft); color: var(--st-danger); }
 
 .cd-bot-section {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--st-bg-elev);
+  border: 1px solid var(--st-border-soft);
   border-radius: 8px;
   padding: 1.25rem 1.5rem;
   margin-bottom: 1.5rem;
+}
+
+.cd-bot-needs-review-card {
+  border-left: 4px solid var(--st-warn);
 }
 
 .cd-bot-header {
@@ -142,20 +145,20 @@
   gap: 1rem;
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--st-border-soft);
 }
 
 .cd-bot-title {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #6b7280;
+  color: var(--st-fg-muted);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .cd-bot-recommendation {
   font-size: 1.05rem;
-  color: #111827;
+  color: var(--st-fg-strong);
   font-weight: 500;
   margin-top: 0.25rem;
 }
@@ -170,30 +173,30 @@
   line-height: 1;
 }
 
-.cd-bot-confidence-pct.is-low { color: #92400e; }
-.cd-bot-confidence-pct.is-high { color: #065f46; }
+.cd-bot-confidence-pct.is-low { color: var(--st-warn); }
+.cd-bot-confidence-pct.is-high { color: var(--st-success); }
 
 .cd-bot-confidence-label {
   font-size: 0.7rem;
-  color: #6b7280;
+  color: var(--st-fg-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .cd-bot-needs-review {
-  background: #fef3c7;
-  border-left: 4px solid #f59e0b;
+  background: var(--st-warn-soft);
+  border-left: 4px solid var(--st-warn);
   padding: 0.75rem 1rem;
   border-radius: 4px;
   font-size: 0.875rem;
-  color: #78350f;
+  color: var(--st-warn);
   margin-bottom: 1rem;
 }
 
 .cd-bot-rationale-text {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: #1f2937;
+  color: var(--st-fg);
   margin: 0 0 1rem;
 }
 
@@ -204,7 +207,7 @@
 .cd-bot-factors-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--st-fg-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.5rem;
@@ -215,24 +218,24 @@
   grid-template-columns: 130px 1fr;
   gap: 1rem;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--st-border-soft);
   font-size: 0.875rem;
 }
 
 .cd-bot-factor-row:last-child { border-bottom: none; }
 
 .cd-bot-factor-label {
-  color: #4b5563;
+  color: var(--st-fg);
   font-weight: 500;
 }
 
 .cd-bot-factor-signal {
-  color: #1f2937;
+  color: var(--st-fg-strong);
 }
 
 .cd-bot-rag {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--st-bg);
+  border: 1px solid var(--st-border-soft);
   border-radius: 6px;
   padding: 0.85rem 1rem;
 }
@@ -240,7 +243,7 @@
 .cd-bot-rag-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--st-fg-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.6rem;
@@ -259,25 +262,25 @@
   align-items: center;
   font-size: 0.875rem;
   padding: 0.4rem 0.6rem;
-  background: #fff;
+  background: var(--st-bg-elev);
   border-radius: 4px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--st-border-soft);
 }
 
 .cd-bot-rag-item-name {
-  color: #1f2937;
+  color: var(--st-fg-strong);
   font-weight: 500;
 }
 
 .cd-bot-rag-item-outcome {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--st-fg-muted);
   font-style: italic;
 }
 
 .cd-bot-rag-similarity {
-  background: #e0e7ff;
-  color: #3730a3;
+  background: var(--st-info-soft);
+  color: var(--st-info);
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;

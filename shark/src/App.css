@@ -1,10 +1,36 @@
 :root {
-  --st-bg: #ffffff;
-  --st-fg: #111827;
-  --st-muted: #6b7280;
-  --st-border: #e5e7eb;
-  --st-header-bg: #f9fafb;
-  --st-accent: #1f2937;
+  /* Backgrounds */
+  --st-bg: #0e1218;
+  --st-bg-elev: #161b24;
+  --st-bg-elev-2: #1a1f2e;
+  --st-bg-input: #131923;
+
+  /* Foreground */
+  --st-fg: #e6e8eb;
+  --st-fg-strong: #ffffff;
+  --st-fg-muted: #8a93a3;
+  --st-fg-muted-2: #5d6573;
+
+  /* Borders */
+  --st-border: #232a37;
+  --st-border-strong: #2c3442;
+  --st-border-soft: #1c2230;
+
+  /* Accent (neón green) */
+  --st-accent: #c5fc6f;
+  --st-accent-fg: #0a0e15;
+  --st-accent-soft: rgba(197, 252, 111, 0.12);
+  --st-accent-strong: rgba(197, 252, 111, 0.3);
+
+  /* Status */
+  --st-danger: #f87171;
+  --st-danger-soft: rgba(248, 113, 113, 0.12);
+  --st-warn: #fbbf24;
+  --st-warn-soft: rgba(251, 191, 36, 0.12);
+  --st-info: #60a5fa;
+  --st-info-soft: rgba(96, 165, 250, 0.12);
+  --st-success: #34d399;
+  --st-success-soft: rgba(52, 211, 153, 0.12);
 }
 
 * {
@@ -20,41 +46,24 @@ body,
   background: var(--st-bg);
   color: var(--st-fg);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-.app-shell {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+a {
+  color: var(--st-accent);
+  text-decoration: none;
 }
 
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1.5rem;
-  background: var(--st-header-bg);
-  border-bottom: 1px solid var(--st-border);
+a:hover {
+  text-decoration: underline;
 }
 
-.app-header h1 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.app-header-right {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.app-main {
-  flex: 1;
-  padding: 2rem;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  color: var(--st-fg);
 }
 
 .signed-out-landing {
@@ -65,59 +74,48 @@ body,
   min-height: 100vh;
   text-align: center;
   padding: 2rem;
+  background: var(--st-bg);
 }
 
 .signed-out-landing h1 {
-  font-size: 2.25rem;
-  margin: 0 0 0.75rem;
+  font-size: 2.5rem;
+  margin: 0 0 0.5rem;
+  color: var(--st-accent);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .signed-out-landing p {
-  color: var(--st-muted);
-  margin: 0 0 1.5rem;
-  font-size: 1rem;
+  color: var(--st-fg-muted);
+  margin: 0 0 2rem;
 }
 
 .btn-primary {
   background: var(--st-accent);
-  color: #fff;
+  color: var(--st-accent-fg);
   border: none;
   padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   border-radius: 6px;
   cursor: pointer;
+  transition: opacity 0.15s;
 }
 
 .btn-primary:hover {
-  background: #111827;
+  opacity: 0.85;
 }
 
-.tenant-card {
-  border: 1px solid var(--st-border);
-  border-radius: 8px;
-  padding: 1.25rem 1.5rem;
-  background: #fff;
-}
-
-.tenant-card h2 {
-  margin: 0 0 0.5rem;
-  font-size: 1.5rem;
-}
-
-.tenant-card p {
-  margin: 0.25rem 0;
-  color: var(--st-fg);
-}
-
-.tenant-card .muted {
-  color: var(--st-muted);
-  font-size: 0.9rem;
-  margin-top: 1rem;
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 code {
-  background: #f3f4f6;
+  background: var(--st-bg-elev);
   padding: 0.125rem 0.4rem;
   border-radius: 4px;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  color: var(--st-accent);
 }
