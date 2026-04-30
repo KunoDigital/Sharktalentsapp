@@ -1,0 +1,62 @@
+.tt-wrap {
+  position: relative;
+  display: inline-block;
+  cursor: help;
+}
+
+.tt-term {
+  border-bottom: 1px dotted var(--st-fg-muted);
+}
+
+.tt-wrap:hover .tt-term,
+.tt-wrap:focus-visible .tt-term {
+  color: var(--st-accent);
+  border-bottom-color: var(--st-accent);
+}
+
+.tt-bubble {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--st-bg-elev);
+  color: var(--st-fg);
+  border: 1px solid var(--st-border-strong);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  width: 280px;
+  z-index: 50;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  text-align: left;
+  white-space: normal;
+  cursor: default;
+}
+
+.tt-bubble strong {
+  color: var(--st-accent);
+}
+
+.tt-bubble ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1rem;
+}
+
+.tt-bubble li {
+  margin: 0.15rem 0;
+}
+
+.tt-top {
+  bottom: calc(100% + 8px);
+}
+
+.tt-bottom {
+  top: calc(100% + 8px);
+}
+
+@media (max-width: 600px) {
+  .tt-bubble {
+    width: 240px;
+    font-size: 0.75rem;
+  }
+}

@@ -6,6 +6,7 @@ import {
   type TimelineEvent,
 } from '../data/mockApplications';
 import { getJobById } from '../data/mockJobs';
+import { Term } from '../components/Tooltip';
 import './pages.css';
 import './candidate-detail.css';
 import './bot.css';
@@ -128,7 +129,7 @@ export default function CandidateDetail() {
 
       {hasAntiCheat && (
         <section className="cd-anticheat-banner">
-          <div className="cd-ac-title">⚠️ ANTI-TRAMPA — {app.anti_cheat_events.length} eventos detectados</div>
+          <div className="cd-ac-title">⚠️ <Term name="anti-trampa">ANTI-TRAMPA</Term> — {app.anti_cheat_events.length} eventos detectados</div>
           <div className="cd-ac-body">
             {app.anti_cheat_events.slice(0, 6).map((e, i) => (
               <span key={i} className="cd-ac-event">
@@ -144,7 +145,7 @@ export default function CandidateDetail() {
 
       <section className="cd-stat-grid">
         <div className="cd-stat-card">
-          <div className="cd-stat-label">DISC</div>
+          <div className="cd-stat-label"><Term name="DISC">DISC</Term></div>
           {app.disc ? (
             <>
               <div className="cd-stat-value">{app.disc.similitud_pct}%</div>
@@ -168,7 +169,7 @@ export default function CandidateDetail() {
         </div>
 
         <div className="cd-stat-card">
-          <div className="cd-stat-label">VELNA Cognitiva</div>
+          <div className="cd-stat-label"><Term name="VELNA">VELNA</Term> Cognitiva</div>
           {app.velna ? (
             <>
               <div className="cd-stat-value">{app.velna.similitud_pct}%</div>
@@ -212,7 +213,7 @@ export default function CandidateDetail() {
         </div>
 
         <div className="cd-stat-card">
-          <div className="cd-stat-label">Integridad</div>
+          <div className="cd-stat-label"><Term name="integridad">Integridad</Term></div>
           {app.integridad ? (
             <>
               <div className="cd-stat-value">
