@@ -347,6 +347,23 @@
   gap: 0.5rem;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.4);
   z-index: 10;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .cd-sticky-actions {
+    left: 0;
+    padding: 0.6rem 0.75rem;
+  }
+  .cd-sticky-actions button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    flex: 1;
+    min-width: 100px;
+  }
+  .cd-btn-ghost {
+    margin-left: 0;
+  }
 }
 
 .cd-btn-secondary {

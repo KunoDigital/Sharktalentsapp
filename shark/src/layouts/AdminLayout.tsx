@@ -1,4 +1,5 @@
-import { Outlet, NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { OrganizationSwitcher, UserButton, useOrganization } from '@clerk/clerk-react';
 import CommandPalette from '../components/CommandPalette';
 import './AdminLayout.css';
@@ -16,9 +17,27 @@ const NAV_ITEMS = [
 
 export default function AdminLayout() {
   const { organization } = useOrganization();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+
+  // Cerrar menú móvil al navegar
+  function handleNavClick() {
+    setMobileOpen(false);
+  }
+
   return (
     <div className="admin-layout">
-      <aside className="admin-sidebar">
+      <button
+        className="admin-mobile-toggle"
+        onClick={() => setMobileOpen((o) => !o)}
+        aria-label="Toggle menu"
+      >
+        ☰
+      </button>
+
+      {mobileOpen && <div className="admin-mobile-overlay" onClick={() => setMobileOpen(false)} />}
+
+      <aside className={`admin-sidebar ${mobileOpen ? 'is-open' : ''}`}>
         <div className="admin-brand">
           <span className="admin-brand-mark">⌬</span>
           <span className="admin-brand-name">SharkTalents</span>
@@ -29,6 +48,7 @@ export default function AdminLayout() {
               key={item.to}
               to={item.to}
               end={item.end}
+              onClick={handleNavClick}
               className={({ isActive }) => 'admin-nav-link' + (isActive ? ' is-active' : '')}
             >
               {item.label}
@@ -49,7 +69,7 @@ export default function AdminLayout() {
             <UserButton afterSignOutUrl="/" />
           </div>
         </header>
-        <main className="admin-main">
+        <main className="admin-main" key={location.pathname}>
           <Outlet />
         </main>
       </div>
