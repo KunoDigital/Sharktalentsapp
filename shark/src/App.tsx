@@ -1,5 +1,6 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react';
+import ErrorBoundary from './components/ErrorBoundary';
 import AdminLayout from './layouts/AdminLayout';
 import Dashboard from './pages/Dashboard';
 import JobsList from './pages/JobsList';
@@ -25,6 +26,7 @@ import CandidateVideoTest from './pages/public/CandidateVideoTest';
 import CandidateApply from './pages/public/CandidateApply';
 import CandidateTestDone from './pages/public/CandidateTestDone';
 import './App.css';
+import './components/error-boundary.css';
 
 function SignedOutLanding() {
   return (
@@ -47,18 +49,18 @@ function ProtectedAdmin() {
       <SignedIn>
         <Routes>
           <Route path="/" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="jobs" element={<JobsList />} />
-            <Route path="jobs/:id" element={<JobDetail />} />
-            <Route path="jobs/:id/comparar" element={<Comparativo />} />
-            <Route path="candidates" element={<CandidatesList />} />
-            <Route path="candidates/:id" element={<CandidateDetail />} />
-            <Route path="drafts" element={<DraftsList />} />
-            <Route path="drafts/:id" element={<DraftReview />} />
-            <Route path="bot/review" element={<BotReviewQueue />} />
-            <Route path="reports" element={<Reportes />} />
-            <Route path="inbox" element={<InboxOutbound />} />
-            <Route path="settings" element={<Settings />} />
+            <Route index element={<ErrorBoundary context="dashboard"><Dashboard /></ErrorBoundary>} />
+            <Route path="jobs" element={<ErrorBoundary context="jobs-list"><JobsList /></ErrorBoundary>} />
+            <Route path="jobs/:id" element={<ErrorBoundary context="job-detail"><JobDetail /></ErrorBoundary>} />
+            <Route path="jobs/:id/comparar" element={<ErrorBoundary context="comparativo"><Comparativo /></ErrorBoundary>} />
+            <Route path="candidates" element={<ErrorBoundary context="candidates-list"><CandidatesList /></ErrorBoundary>} />
+            <Route path="candidates/:id" element={<ErrorBoundary context="candidate-detail"><CandidateDetail /></ErrorBoundary>} />
+            <Route path="drafts" element={<ErrorBoundary context="drafts-list"><DraftsList /></ErrorBoundary>} />
+            <Route path="drafts/:id" element={<ErrorBoundary context="draft-review"><DraftReview /></ErrorBoundary>} />
+            <Route path="bot/review" element={<ErrorBoundary context="bot-review"><BotReviewQueue /></ErrorBoundary>} />
+            <Route path="reports" element={<ErrorBoundary context="reportes"><Reportes /></ErrorBoundary>} />
+            <Route path="inbox" element={<ErrorBoundary context="inbox"><InboxOutbound /></ErrorBoundary>} />
+            <Route path="settings" element={<ErrorBoundary context="settings"><Settings /></ErrorBoundary>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
@@ -71,20 +73,18 @@ export default function App() {
   return (
     <HashRouter>
       <Routes>
-        {/* Public routes — no Clerk auth required */}
-        <Route path="/report/:token" element={<PublicReport />} />
-        <Route path="/portal/:token" element={<ClientPortalLanding />} />
-        <Route path="/portal/:token/jobs/:jobId" element={<ClientPortalJobView />} />
-        <Route path="/test/:token" element={<CandidateTestEntry />} />
-        <Route path="/test/:token/tecnica" element={<CandidateTecnicaTest />} />
-        <Route path="/test/:token/velna" element={<CandidateVelnaTest />} />
-        <Route path="/test/:token/disc" element={<CandidateDiscTest />} />
-        <Route path="/test/:token/integridad" element={<CandidateIntegridadTest />} />
-        <Route path="/test/:token/videos" element={<CandidateVideoTest />} />
-        <Route path="/apply/:tenantSlug/:jobSlug" element={<CandidateApply />} />
-        <Route path="/test/:token/done" element={<CandidateTestDone />} />
-        {/* Everything else requires login */}
-        <Route path="/*" element={<ProtectedAdmin />} />
+        <Route path="/report/:token" element={<ErrorBoundary context="public-report"><PublicReport /></ErrorBoundary>} />
+        <Route path="/portal/:token" element={<ErrorBoundary context="client-portal-landing"><ClientPortalLanding /></ErrorBoundary>} />
+        <Route path="/portal/:token/jobs/:jobId" element={<ErrorBoundary context="client-portal-job"><ClientPortalJobView /></ErrorBoundary>} />
+        <Route path="/test/:token" element={<ErrorBoundary context="candidate-entry"><CandidateTestEntry /></ErrorBoundary>} />
+        <Route path="/test/:token/tecnica" element={<ErrorBoundary context="candidate-tecnica"><CandidateTecnicaTest /></ErrorBoundary>} />
+        <Route path="/test/:token/velna" element={<ErrorBoundary context="candidate-velna"><CandidateVelnaTest /></ErrorBoundary>} />
+        <Route path="/test/:token/disc" element={<ErrorBoundary context="candidate-disc"><CandidateDiscTest /></ErrorBoundary>} />
+        <Route path="/test/:token/integridad" element={<ErrorBoundary context="candidate-integridad"><CandidateIntegridadTest /></ErrorBoundary>} />
+        <Route path="/test/:token/videos" element={<ErrorBoundary context="candidate-videos"><CandidateVideoTest /></ErrorBoundary>} />
+        <Route path="/apply/:tenantSlug/:jobSlug" element={<ErrorBoundary context="candidate-apply"><CandidateApply /></ErrorBoundary>} />
+        <Route path="/test/:token/done" element={<ErrorBoundary context="candidate-done"><CandidateTestDone /></ErrorBoundary>} />
+        <Route path="/*" element={<ErrorBoundary context="admin-app"><ProtectedAdmin /></ErrorBoundary>} />
       </Routes>
     </HashRouter>
   );

@@ -1,0 +1,73 @@
+.error-boundary {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.eb-card {
+  background: var(--st-bg-elev, #161b24);
+  border: 1px solid var(--st-danger, #f87171);
+  border-left: 4px solid var(--st-danger, #f87171);
+  border-radius: 12px;
+  padding: 2rem 2.5rem;
+  max-width: 600px;
+  width: 100%;
+}
+
+.eb-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.eb-card h1 {
+  font-size: 1.5rem;
+  margin: 0 0 0.5rem;
+  color: var(--st-fg-strong, #ffffff);
+}
+
+.eb-msg {
+  color: var(--st-fg, #e6e8eb);
+  margin: 0 0 1rem;
+}
+
+.eb-details {
+  background: var(--st-bg, #0d121a);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+  color: var(--st-fg-muted, #8a93a3);
+}
+
+.eb-details summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--st-fg, #e6e8eb);
+  user-select: none;
+}
+
+.eb-details pre {
+  margin: 0.75rem 0 0;
+  font-family: 'SF Mono', Menlo, Monaco, monospace;
+  font-size: 0.75rem;
+  color: var(--st-danger, #f87171);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.eb-stack {
+  margin-top: 0.5rem !important;
+  color: var(--st-fg-muted-2, #5d6573) !important;
+  font-size: 0.7rem !important;
+}
+
+.eb-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}

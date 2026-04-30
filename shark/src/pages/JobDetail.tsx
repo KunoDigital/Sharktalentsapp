@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getJobById } from '../data/mockJobs';
+import { MOCK_JOBS, getJobById } from '../data/mockJobs';
 import {
   getApplicationsByJobId,
   STATE_LABELS,
   SOURCE_LABELS,
   type Application,
 } from '../data/mockApplications';
+import { exportCandidatesToExcel } from '../lib/excelExport';
+import { slugifyForFilename } from '../lib/pdfExport';
 import './pages.css';
 
 type Phase = 'tecnica' | 'conductual' | 'integridad';
@@ -109,7 +111,7 @@ export default function JobDetail() {
           <Link to={`/jobs/${job.id}/comparar`} className="btn-toolbar">
             Comparar candidatos
           </Link>
-          <button className="btn-toolbar" onClick={() => alert('Mock: exportar Excel')}>
+          <button className="btn-toolbar" onClick={() => exportCandidatesToExcel(applications, MOCK_JOBS, `candidatos-${slugifyForFilename(job.title)}.xlsx`)}>
             Exportar Excel
           </button>
           <span className={`status-tag status-${job.status}`}>{job.status}</span>

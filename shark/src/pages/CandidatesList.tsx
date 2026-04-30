@@ -1,13 +1,24 @@
 import { Link } from 'react-router-dom';
 import { MOCK_APPLICATIONS, STATE_LABELS, SOURCE_LABELS } from '../data/mockApplications';
-import { getJobById } from '../data/mockJobs';
+import { MOCK_JOBS, getJobById } from '../data/mockJobs';
+import { exportCandidatesToExcel } from '../lib/excelExport';
 import './pages.css';
 
 export default function CandidatesList() {
   return (
     <div>
-      <h1 className="page-title">Candidatos</h1>
-      <p className="page-subtitle">Vista cross-job de todas las aplicaciones.</p>
+      <div className="page-header-row">
+        <div>
+          <h1 className="page-title">Candidatos</h1>
+          <p className="page-subtitle">Vista cross-job de todas las aplicaciones.</p>
+        </div>
+        <button
+          className="btn-toolbar"
+          onClick={() => exportCandidatesToExcel(MOCK_APPLICATIONS, MOCK_JOBS, 'candidatos-todos.xlsx')}
+        >
+          Exportar Excel
+        </button>
+      </div>
 
       <table className="data-table">
         <thead>
