@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { MOCK_JOBS, type JobStatus } from '../data/mockJobs';
 import { exportJobsToExcel } from '../lib/excelExport';
+import EmptyState from '../components/EmptyState';
 import './pages.css';
 
 const STATUS_FILTERS: ('all' | JobStatus)[] = ['all', 'active', 'paused', 'draft', 'closed'];
@@ -57,9 +58,14 @@ export default function JobsList() {
       </div>
 
       {filteredJobs.length === 0 ? (
-        <div className="stub-card">
-          <p>No hay puestos que coincidan con los filtros.</p>
-        </div>
+        <EmptyState
+          icon="🔍"
+          title="No encontramos puestos"
+          description={MOCK_JOBS.length === 0
+            ? 'Empezá creando tu primer puesto. Después podés invitar candidatos.'
+            : 'Ningún puesto coincide con los filtros activos. Probá otra búsqueda o cambiá el filtro de estado.'}
+          cta={MOCK_JOBS.length === 0 ? { label: '+ Crear primer puesto' } : undefined}
+        />
       ) : (
         <table className="data-table">
           <thead>

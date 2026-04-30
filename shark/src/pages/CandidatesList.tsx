@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MOCK_APPLICATIONS, STATE_LABELS, SOURCE_LABELS, type ApplicationSource, type ApplicationState } from '../data/mockApplications';
 import { MOCK_JOBS, getJobById } from '../data/mockJobs';
 import { exportCandidatesToExcel } from '../lib/excelExport';
+import EmptyState from '../components/EmptyState';
 import './pages.css';
 
 export default function CandidatesList() {
@@ -69,9 +70,14 @@ export default function CandidatesList() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="stub-card">
-          <p>No hay candidatos que coincidan con los filtros.</p>
-        </div>
+        <EmptyState
+          icon="🔍"
+          title="No encontramos candidatos"
+          description={MOCK_APPLICATIONS.length === 0
+            ? 'Cuando un candidato aplique a alguno de tus puestos, va a aparecer acá automáticamente.'
+            : 'Ningún candidato coincide con los filtros activos. Cambiá source, estado o limpiá la búsqueda.'}
+          hint={MOCK_APPLICATIONS.length === 0 ? 'El link de aplicación se comparte como /apply/<tenant>/<puesto>' : undefined}
+        />
       ) : (
         <table className="data-table">
           <thead>

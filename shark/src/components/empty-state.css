@@ -1,0 +1,47 @@
+.empty-state {
+  background: var(--st-bg-elev);
+  border: 1px dashed var(--st-border-strong);
+  border-radius: 12px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.7;
+}
+
+.empty-state-title {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--st-fg-strong);
+  font-weight: 600;
+}
+
+.empty-state-desc {
+  margin: 0.25rem 0 0;
+  color: var(--st-fg-muted);
+  font-size: 0.9rem;
+  max-width: 480px;
+  line-height: 1.5;
+}
+
+.empty-state-cta {
+  margin-top: 1rem;
+  text-decoration: none;
+}
+
+.empty-state-cta:hover {
+  text-decoration: none;
+}
+
+.empty-state-hint {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--st-fg-muted-2);
+}
