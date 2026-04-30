@@ -1,14 +1,98 @@
+import type { IncomingMessage } from 'http';
 import { Webhook } from 'svix';
 import type { RequestContext } from '../lib/context';
+import { datastore, zcql, now } from '../lib/db';
+import { escapeSql, unwrapRow, unwrapRows } from '../lib/dbHelpers';
 import { env } from '../lib/env';
-import { UnauthorizedError } from '../lib/errors';
+import { ForbiddenError, UnauthorizedError } from '../lib/errors';
 import { sendJson, readRawBody } from '../lib/http';
 import { logger } from '../lib/logger';
+import { markProcessed } from '../lib/processedEvents';
 import { slugify } from '../lib/slugify';
-import * as tenantsDb from '../db/tenants';
-import * as processedEventsDb from '../db/processedEvents';
 
-const log = logger('CLERK-WH');
+const log = logger('TENANTS');
+const TABLE = 'Tenants';
+
+// ---- Types ----
+
+export type TenantStatus = 'active' | 'suspended' | 'deleted';
+
+export type Tenant = {
+  ROWID: string;
+  clerk_org_id: string;
+  name: string;
+  slug: string;
+  plan: string;
+  status: TenantStatus;
+  max_active_jobs: number;
+  max_candidates_per_month: number;
+  features_enabled: string;
+  branding_config: string | null;
+  billing_email: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type TenantInsert = Omit<Tenant, 'ROWID'>;
+
+// ---- DB queries ----
+
+async function insertTenant(
+  req: IncomingMessage,
+  payload: Omit<TenantInsert, 'created_at' | 'updated_at'>,
+): Promise<Tenant> {
+  const row = await datastore(req).table(TABLE).insertRow({
+    ...payload,
+    created_at: now(),
+    updated_at: now(),
+  });
+  return unwrapRow<Tenant>(row, TABLE) as Tenant;
+}
+
+async function updateTenant(
+  req: IncomingMessage,
+  rowId: string,
+  patch: Partial<TenantInsert>,
+): Promise<Tenant | null> {
+  const row = await datastore(req).table(TABLE).updateRow({
+    ROWID: rowId,
+    ...patch,
+    updated_at: now(),
+  });
+  return unwrapRow<Tenant>(row, TABLE);
+}
+
+async function getByClerkOrgId(req: IncomingMessage, clerkOrgId: string): Promise<Tenant | null> {
+  const query = `SELECT * FROM ${TABLE} WHERE clerk_org_id = '${escapeSql(clerkOrgId)}' LIMIT 1`;
+  const result = (await zcql(req).executeZCQLQuery(query)) as unknown[];
+  const rows = unwrapRows<Tenant>(result, TABLE);
+  return rows[0] ?? null;
+}
+
+// ---- Middleware: requireTenant ----
+
+export async function requireTenant(ctx: RequestContext): Promise<string> {
+  if (!ctx.user) throw new UnauthorizedError('Authentication required');
+
+  const clerkOrgId = ctx.user.clerk_org_id;
+  if (!clerkOrgId) throw new ForbiddenError('No active organization. Select one.');
+
+  const tenant = await getByClerkOrgId(ctx.req, clerkOrgId);
+  if (!tenant) throw new ForbiddenError(`Tenant not provisioned for org ${clerkOrgId}`);
+  if (tenant.status !== 'active') throw new ForbiddenError(`Tenant is ${tenant.status}`);
+
+  ctx.tenantId = tenant.ROWID;
+  ctx.tenant = {
+    id: tenant.ROWID,
+    clerk_org_id: tenant.clerk_org_id,
+    name: tenant.name,
+    slug: tenant.slug,
+    status: tenant.status,
+  };
+  return tenant.ROWID;
+}
+
+// ---- Webhook handler: Clerk → Tenants sync ----
 
 type ClerkOrgEventData = {
   id: string;
@@ -51,7 +135,7 @@ export async function handleClerkWebhook(ctx: RequestContext): Promise<void> {
   }
 
   const eventId = svixId;
-  const { isNew } = await processedEventsDb.markProcessed(ctx.req, eventId, 'clerk');
+  const { isNew } = await markProcessed(ctx.req, eventId, 'clerk');
   if (!isNew) {
     log.info('duplicate event ignored', { eventId, type: event.type });
     sendJson(ctx.res, 200, { received: true, duplicate: true });
@@ -76,7 +160,7 @@ async function processEventAsync(ctx: RequestContext, event: ClerkEvent): Promis
     case 'organization.created': {
       const data = event.data as ClerkOrgEventData;
       const name = data.name ?? `Org ${data.id}`;
-      await tenantsDb.insert(ctx.req, {
+      await insertTenant(ctx.req, {
         clerk_org_id: data.id,
         name,
         slug: data.slug ?? slugify(name),
@@ -93,9 +177,9 @@ async function processEventAsync(ctx: RequestContext, event: ClerkEvent): Promis
 
     case 'organization.updated': {
       const data = event.data as ClerkOrgEventData;
-      const tenant = await tenantsDb.getByClerkOrgId(ctx.req, data.id);
+      const tenant = await getByClerkOrgId(ctx.req, data.id);
       if (tenant) {
-        await tenantsDb.update(ctx.req, tenant.ROWID, {
+        await updateTenant(ctx.req, tenant.ROWID, {
           name: data.name ?? tenant.name,
           slug: data.slug ?? tenant.slug,
         });
@@ -105,9 +189,9 @@ async function processEventAsync(ctx: RequestContext, event: ClerkEvent): Promis
 
     case 'organization.deleted': {
       const data = event.data as ClerkOrgEventData;
-      const tenant = await tenantsDb.getByClerkOrgId(ctx.req, data.id);
+      const tenant = await getByClerkOrgId(ctx.req, data.id);
       if (tenant) {
-        await tenantsDb.update(ctx.req, tenant.ROWID, { status: 'deleted' });
+        await updateTenant(ctx.req, tenant.ROWID, { status: 'deleted' });
       }
       break;
     }

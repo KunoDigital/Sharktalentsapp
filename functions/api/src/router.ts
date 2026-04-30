@@ -2,27 +2,16 @@ import type { RequestContext } from './lib/context';
 import { AppError } from './lib/errors';
 import { sendJson } from './lib/http';
 import { logger } from './lib/logger';
-import { getHealth } from './handlers/health';
-import { handleClerkWebhook } from './handlers/clerkWebhooks';
+import { getHealth } from './features/health';
+import { handleClerkWebhook } from './features/tenants';
 
 const log = logger('ROUTER');
 
 type Handler = (ctx: RequestContext) => Promise<void>;
 
 const routes: Array<{ method: string; pattern: RegExp; handler: Handler }> = [
-  {
-    method: 'GET',
-    pattern: /^\/health\/?$/,
-    handler: async (ctx) => {
-      const result = await getHealth();
-      sendJson(ctx.res, result.status === 'ok' ? 200 : 503, result);
-    },
-  },
-  {
-    method: 'POST',
-    pattern: /^\/api\/webhooks\/clerk\/?$/,
-    handler: handleClerkWebhook,
-  },
+  { method: 'GET', pattern: /^\/health\/?$/, handler: getHealth },
+  { method: 'POST', pattern: /^\/api\/webhooks\/clerk\/?$/, handler: handleClerkWebhook },
 ];
 
 export async function route(ctx: RequestContext): Promise<void> {

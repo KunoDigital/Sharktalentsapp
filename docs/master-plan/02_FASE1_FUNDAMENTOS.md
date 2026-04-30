@@ -281,100 +281,84 @@ El archivo actual tiene `"REPLACE_ME"` en cada env var — eso es aceptable para
 
 ## 4. Estructura de carpetas nueva
 
-### Backend
+### Backend — estructura plana feature-first
 
-**Antes:**
-```
-functions/sharktalents/
-├── index.js  (compilado)
-├── catalyst-config.json
-├── package.json
-├── tsconfig.json
-├── src/
-│   ├── index.ts
-│   ├── router.ts
-│   ├── db.ts
-│   ├── auth.ts
-│   ├── helpers.ts
-│   ├── routes/        (9 archivos)
-│   ├── services/      (9 archivos)
-│   ├── data/
-│   └── seeds/
-└── seeds/             (7 JSONs)
-```
+**Decisión clave (rectificada en abril 2026):** la versión inicial de este doc proponía 8 subcarpetas (`handlers/services/integrations/db/middleware/lib/data/seeds`), siguiendo patterns de teams grandes. **Eso fue un error** para el contexto real de SharkTalents (1 humano + agentes IA — ver memoria `project_definicion_de_escalable.md`).
 
-**Después:**
+La estructura correcta para "1 humano + IA" optimiza por:
+1. **Una IA puede leer y modificar un feature en una sola pasada** (todo el feature en 1 archivo).
+2. **Cuando algo falla, hay UN lugar para mirar**, no 5.
+3. **Agregar feature N+1 sigue el mismo patrón** que features existentes (consistencia que la IA puede replicar).
+
+**Estructura final:**
+
 ```
 functions/api/
-├── index.js                       (compilado, 40 líneas max)
+├── index.js                       (compilado, entry para Catalyst)
 ├── catalyst-config.json
 ├── package.json
 ├── tsconfig.json                  (strict: true)
 ├── src/
-│   ├── index.ts                   (entry, 30 líneas)
-│   ├── router.ts                  (solo routing + middleware raíz)
-│   ├── handlers/                  (por recurso, antes "routes/")
-│   │   ├── auth.ts
-│   │   ├── adminJobs.ts
-│   │   ├── adminAssessments.ts
-│   │   ├── adminResults.ts
-│   │   ├── adminCandidates.ts
-│   │   ├── adminLibrary.ts
-│   │   ├── adminReports.ts
-│   │   ├── publicTest.ts
-│   │   ├── publicReport.ts
-│   │   └── health.ts              (NUEVO)
-│   ├── services/                  (lógica de negocio, sin HTTP)
-│   │   ├── candidateScoring.ts
-│   │   ├── clientReportGenerator.ts
-│   │   ├── pdfGenerator.ts
-│   │   ├── questionsStore.ts
-│   │   ├── reportFileStore.ts
-│   │   ├── reportGenerator.ts
-│   │   ├── scoring.ts
-│   │   ├── stateMachine.ts        (NUEVO — pipeline transitions)
-│   │   ├── tokenTracker.ts        (REESCRITO — persistir en DB)
-│   │   ├── auditLog.ts            (NUEVO)
-│   │   └── outbox.ts              (NUEVO)
-│   ├── integrations/              (NUEVO — wrappers de APIs externas)
-│   │   ├── anthropic.ts           (MOVIDO de services/anthropic.ts)
-│   │   └── catalystFileStore.ts   (MOVIDO de services/reportFileStore.ts)
-│   ├── db/                        (NUEVO — queries por tabla)
-│   │   ├── jobs.ts
-│   │   ├── assessments.ts
-│   │   ├── candidates.ts
-│   │   ├── results.ts
-│   │   ├── scores.ts              (DiscScores, CognitiveScores, etc.)
-│   │   ├── pipelineTransitions.ts
-│   │   ├── clientReports.ts
-│   │   ├── reportCandidates.ts
-│   │   ├── techLibrary.ts
-│   │   ├── screenExits.ts
-│   │   ├── processedEvents.ts
-│   │   ├── outboxEvents.ts
-│   │   ├── auditLog.ts
-│   │   ├── tokenUsage.ts
-│   │   ├── circuitBreakers.ts
-│   │   ├── config.ts
-│   │   └── helpers.ts             (normalizeRow, escapeSql, dateTime helpers)
-│   ├── middleware/                (NUEVO)
-│   │   ├── auth.ts                (authenticate, requireAdmin)
-│   │   ├── rateLimit.ts
-│   │   ├── internalAuth.ts
-│   │   └── validation.ts
-│   ├── lib/                       (NUEVO — utils genéricos)
+│   ├── index.ts                   (entry — crea ctx, llama a router)
+│   ├── router.ts                  (mapea URL → feature handler)
+│   ├── features/                  (UN archivo por feature, todo adentro)
+│   │   ├── health.ts              (GET /health)
+│   │   ├── tenants.ts             (webhook Clerk, sync orgs → DB)
+│   │   ├── auth.ts                (verifyToken, requireAuth, requireTenant)
+│   │   ├── jobs.ts                (CRUD puestos)
+│   │   ├── candidates.ts          (perfil candidato + timeline + snapshot)
+│   │   ├── applications.ts        (state machine + transiciones por fase)
+│   │   ├── pipeline.ts            (vista kanban por fase + comparativo)
+│   │   ├── assessments.ts         (técnica, DISC, VELNA, integridad — sus tests)
+│   │   ├── reports.ts             (generación + publicación + feedback cliente)
+│   │   ├── outreach.ts            (HeyReach + pool interno + inbox unificada)
+│   │   ├── bot.ts                 (decisor: decisiones + rationale + RAG)
+│   │   └── webhooks.ts            (Recruit, Bookings, Sign, HeyReach entrantes)
+│   ├── lib/                       (cosas REALMENTE compartidas)
+│   │   ├── env.ts                 (lectura + validación env vars)
+│   │   ├── logger.ts              (log con prefijos + summary_text)
 │   │   ├── errors.ts              (AppError, ValidationError, etc.)
-│   │   ├── hmac.ts
-│   │   ├── retry.ts
+│   │   ├── context.ts             (RequestContext type)
+│   │   ├── http.ts                (sendJson, readRawBody)
+│   │   ├── db.ts                  (Catalyst SDK accessor)
+│   │   ├── slugify.ts
+│   │   ├── retry.ts               (retry con backoff)
 │   │   ├── circuitBreaker.ts
-│   │   ├── logger.ts              (log con prefijos)
-│   │   └── env.ts                 (lectura y validación de env vars)
-│   ├── data/
-│   │   └── competencias.ts        (sin cambio)
-│   └── seeds/
-│       └── loadQuestions.ts       (con cache en memoria)
-└── seeds/                         (sin cambio, 7 JSONs)
+│   │   ├── hmac.ts                (verificación firmas webhooks)
+│   │   ├── auditLog.ts            (escribe summary_text en español plano)
+│   │   ├── outbox.ts              (cola para side-effects async)
+│   │   ├── anthropic.ts           (cliente Anthropic con caching + timeout)
+│   │   └── fileStore.ts           (Catalyst File Store wrapper)
+│   └── seeds/                     (datos pre-cargados — JSON)
+│       └── *.json                 (preguntas DISC/VELNA/integridad/emoción)
 ```
+
+### Reglas de la nueva estructura
+
+1. **`features/<nombre>.ts` contiene TODO de ese feature**: handler HTTP + lógica de negocio + queries DB inline. No hay servicios/integrations/db separados por feature.
+
+2. **`lib/` es solo lo verdaderamente compartido por 3+ features.** Si solo lo usa 1 feature, vive dentro de ese feature.
+
+3. **Cuándo extraer algo a `lib/`:**
+   - Lo usan 3+ features (ej: logger, env, errors).
+   - Es un wrapper de SDK externo (ej: anthropic, fileStore — porque centraliza retries + timeouts).
+   - Es infraestructura crítica (auditLog, outbox).
+
+4. **Cuándo dividir un feature en archivos:**
+   - El archivo crece a >800 líneas → dividir en `features/<nombre>/index.ts` + helpers.
+   - Hasta entonces, queda en 1 archivo.
+
+5. **Tests:** suficientes para casos críticos (state machine, scoring, hmac), no obsesión. No hay equipo que rompa cosas; es 1 humano + IA con typing estricto.
+
+### Antes vs después
+
+| Métrica | Estructura vieja (8 carpetas) | Estructura nueva (2 carpetas) |
+|---|---|---|
+| Carpetas en `src/` | 8 | 2 |
+| Para entender feature "candidates" | Abrir 5 archivos en 5 carpetas | Abrir 1 archivo |
+| Para agregar feature nuevo | Crear archivo en 5 carpetas | Crear 1 archivo |
+| Cuando algo falla | Buscar en 8 lugares | 1 lugar |
+| Razonamiento de IA al modificar | Alto riesgo de romper algo en otra carpeta | Bajo riesgo, todo está en el mismo archivo |
 
 ### Frontend
 

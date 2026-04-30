@@ -1,8 +1,8 @@
 import { createClerkClient, verifyToken } from '@clerk/backend';
-import type { RequestContext } from '../lib/context';
-import { env } from '../lib/env';
-import { ForbiddenError, UnauthorizedError } from '../lib/errors';
-import { logger } from '../lib/logger';
+import type { RequestContext } from './context';
+import { env } from './env';
+import { ForbiddenError, UnauthorizedError } from './errors';
+import { logger } from './logger';
 
 const log = logger('AUTH');
 

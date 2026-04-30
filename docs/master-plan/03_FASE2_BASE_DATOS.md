@@ -11,6 +11,62 @@
 
 ---
 
+## ⚠️ Rectificación abril 2026
+
+La versión inicial de este doc proponía **54 tablas** distribuidas en 3 bloques. **Eso fue exceso** para el contexto real de SharkTalents (1 humano + agentes IA — ver memoria `project_definicion_de_escalable.md`).
+
+Reglas correctas para schema:
+
+1. **Crear tabla solo cuando se necesita** — no pre-crear tablas para features que vienen en 3 meses. Tabla vacía durante meses = data stale + fricción mental sin valor.
+2. **Colapsar tablas relacionadas** cuando la separación no aporta queryabilidad real.
+3. **JSON columns son OK para data que solo se lee/muestra a humanos** (ej: rationale del bot, summary text). Solo normalizar lo que necesitás indexar/queryear.
+
+### Reducción de schema: 54 → 25 tablas core (resto se agrega cuando se necesita)
+
+**Colapsos aplicados:**
+
+| Antes (separadas) | Después (colapsada) | Por qué |
+|---|---|---|
+| `DiscScores` + `CognitiveScores` + `EmotionalScores` + `IntegrityScores` + `IntegrityDimensions` + `TechnicalScores` + `CompetenciaScores` (7 tablas) | `Scores` (1 tabla con `type` enum + `summary` JSON) + `IntegrityDimensions` (queryable) (2 tablas) | Cuando querés "qué scores tiene Ariana" hacés 1 query, no 7. Las 15 dimensiones de integridad sí queryeables. |
+| `OutreachCampaigns` + `OutreachContacts` + `OutreachInbox` + `OutreachTemplates` (4 tablas) | `OutreachCampaigns` + `OutreachMessages` (2 tablas) | Contacts + Inbox son la misma idea: registro de un contacto outbound. Templates pueden vivir como JSON en Campaigns. |
+| `JobProfileDrafts` + `JobBossProfiles` (2 tablas) | `Jobs` con columnas extra para draft state + boss profile JSON | Boss profile es 1-1 con Job. Draft state es etapa transitoria del Job. |
+| `BotDecisions` + `BotTrainingExamples` + `ReviewQueue` (3 tablas) | `BotDecisions` (1 tabla con flag `needs_review` + flag `is_training_example`) | Toda la lógica del bot decisor en 1 tabla. Review queue = filter `needs_review = true`. |
+| `ClientNotifications` + `ClientNotificationTemplates` (2 tablas) | `Notifications` con `template_key` + templates en seeds JSON | Templates son data fija, viven en `seeds/`, no en DB. |
+| `RecruitJobMappings` + `RecruitStageMappings` + `RecruitSyncQueue` (3 tablas) | `RecruitSync` (1 tabla con `mapping_type` + queue) | Recruit-specific data en una sola tabla. Mapping y queue son la misma idea (relación SharkTalents↔Recruit con estado). |
+| `IntegrationSecrets` + `IntegrationHealth` + `ZohoMeetings` (3 tablas) | `IntegrationSecrets` + `IntegrationActivity` (2 tablas, `IntegrationActivity` = health + meetings + cualquier actividad de integración) | Health checks + meeting recordings son ambos "actividades de integración". |
+
+**Total tras colapsos:** ~25 tablas vs 54 originales. **Las que quedan se crean cuando se necesitan, no de una.**
+
+### Tablas que crear PRIMERO (Block 1 — para que SharkTalents arranque)
+
+Solo estas para empezar a operar el flujo básico:
+
+1. **`Tenants`** — la org del cliente (Clerk org)
+2. **`ProcessedEvents`** — idempotencia para webhooks
+3. **`Jobs`** — los puestos
+4. **`Candidates`** — las personas
+5. **`JobApplications`** — aplicaciones de candidato a puesto
+6. **`ApplicationTransitions`** — append-only audit del state machine
+7. **`Scores`** — scores normalizados (DISC, VELNA, técnica, integridad, emoción)
+8. **`IntegrityDimensions`** — las 15 dims queryeables de integridad
+9. **`AuditLog`** — eventos del sistema con `summary_text` en español
+10. **`OutboxEvents`** — async side-effects (notif, sync Recruit, etc.)
+
+10 tablas para tener un sistema funcionando end-to-end. Lo demás se agrega cuando lleguen las features.
+
+### Tablas DIFERIDAS (crear cuando la feature lo necesita)
+
+- **Block 2 — Plan B operativo (cuando arranque pipeline real):** `PrefilterQuestions`, `PrefilterAnswers`, `JobBossProfiles`*, `ContinueTokens`, `ClientNotifications`, `JobProfileDrafts`*, `JobTrackingSnapshots`. (* = ahora son columnas en `Jobs`)
+- **Block 3 — Videos dinámicos (cuando arranque feature):** `VideoQuestions`, `VideoResponses`, `VideoConsents`
+- **Block 4 — Bot decisor (cuando warm/hot mode):** `BotDecisions`
+- **Block 5 — Outbound (cuando arranque outbound real):** `CandidatePool`, `OutreachCampaigns`, `OutreachMessages`
+- **Block 6 — Integraciones Zoho (cuando se conecta cada una):** `IntegrationSecrets`, `IntegrationActivity`, `RecruitSync`
+- **Block 7 — Plataforma:** `ApiKeys`, `TokenUsage`, `CircuitBreakers`, `Config`
+
+**El resto del doc abajo describe el detalle de cada tabla.** Mantengo todo el spec porque es referencia útil cuando llegue el momento. Solo cambia *cuándo* crear cada una.
+
+---
+
 ## Deliverables
 
 - [ ] 17 tablas nuevas/rediseñadas creadas en Catalyst DataStore

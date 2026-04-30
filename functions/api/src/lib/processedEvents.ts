@@ -1,6 +1,6 @@
 import type { IncomingMessage } from 'http';
-import { datastore, zcql, now } from '../lib/db';
-import { escapeSql, unwrapRow } from './helpers';
+import { datastore, zcql, now } from './db';
+import { escapeSql, unwrapRow } from './dbHelpers';
 
 const TABLE = 'ProcessedEvents';
 

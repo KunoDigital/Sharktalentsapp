@@ -27,6 +27,13 @@ Cambios relevantes del proyecto. Sigue el formato [Keep a Changelog](https://kee
   - Páginas: Dashboard (stats + cards), JobsList (tabla), JobDetail (kanban + tabla por estado), CandidatesList (cross-job).
   - Stubs para Reportes, Inbox outbound, Settings con referencias a docs del master plan.
   - CSS limpio post-CRA, design system básico (status tags, kanban, data tables, stat cards).
+- **Refactor backend a estructura plana feature-first** (rectifica error en master plan inicial):
+  - Backend pasa de 8 carpetas (handlers/services/integrations/db/middleware/lib/data/seeds) a 2 carpetas (`features/` + `lib/`).
+  - Cada feature en 1 archivo: handler HTTP + lógica + queries DB inline. Ej: `features/tenants.ts` consolida lo que antes era `handlers/clerkWebhooks.ts` + `db/tenants.ts` + `middleware/tenant.ts` + `db/processedEvents.ts`.
+  - `lib/` queda solo con infrastructure compartida (env, logger, errors, http, db, dbHelpers, auth, processedEvents, slugify, context).
+  - Master plan doc 02 actualizado con la decisión + tabla "antes vs después".
+  - Master plan doc 03 actualizado: 54 tablas → 25 core + 29 deferred (crear cuando la feature lo necesita). Colapsos: 7 score tables → 2, 4 outreach → 2, 3 bot → 1, 2 notif → 1.
+  - Razón del cambio: contexto real es 1 humano + agentes IA (no team de ingenieros). La estructura plana optimiza para "AI puede leer/modificar feature en 1 archivo + Cris puede spot-check sin perderse entre carpetas".
 
 ### Changed
 - `catalyst.json` ahora apunta a `shark/dist` (Vite build output).

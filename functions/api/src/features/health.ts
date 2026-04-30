@@ -1,3 +1,5 @@
+import type { RequestContext } from '../lib/context';
+import { sendJson } from '../lib/http';
 import { logger } from '../lib/logger';
 
 const log = logger('HEALTH');
@@ -9,7 +11,7 @@ type HealthStatus = {
   checks: Record<string, { status: 'ok' | 'fail'; latency_ms?: number; reason?: string }>;
 };
 
-export async function getHealth(): Promise<HealthStatus> {
+export async function getHealth(ctx: RequestContext): Promise<void> {
   const started = Date.now();
   const checks: HealthStatus['checks'] = {};
 
@@ -18,12 +20,13 @@ export async function getHealth(): Promise<HealthStatus> {
   const allOk = Object.values(checks).every((c) => c.status === 'ok');
   const status: HealthStatus['status'] = allOk ? 'ok' : 'degraded';
 
-  if (status !== 'ok') log.warn('health degraded', { checks });
+  if (status !== 'ok') log.warn('health degraded', { traceId: ctx.traceId, checks });
 
-  return {
+  const body: HealthStatus = {
     status,
     version: process.env.APP_VERSION ?? '0.0.0',
     timestamp: new Date().toISOString(),
     checks,
   };
+  sendJson(ctx.res, status === 'ok' ? 200 : 503, body);
 }

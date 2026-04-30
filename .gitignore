@@ -3,14 +3,9 @@ node_modules/
 .pnp
 .pnp.js
 
-# Compiled output (JS desde TS) — backend nuevo
-functions/api/handlers/
-functions/api/services/
-functions/api/integrations/
-functions/api/db/
-functions/api/middleware/
+# Compiled output (JS desde TS) — backend nuevo (estructura plana feature-first)
+functions/api/features/
 functions/api/lib/
-functions/api/data/
 functions/api/seeds/*.js
 functions/api/*.js
 !functions/api/index.js
