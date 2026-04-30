@@ -230,6 +230,87 @@ export const VELNA_SUBTESTS: VelnaSubtest[] = [
   },
 ];
 
+// ============== Video questions ==============
+// 7 preguntas dinámicas generadas por IA según los resultados previos del candidato.
+// Categorías: technical, weakness_followup, situational, cv_claim_check, integrity_check, english_check.
+// 2 intentos por pregunta. Máx 90 segundos por respuesta. 3 modalidades: video/audio/texto.
+
+export type VideoCategory = 'technical' | 'weakness_followup' | 'situational' | 'cv_claim_check' | 'integrity_check' | 'english_check';
+
+export type VideoQuestion = {
+  id: string;
+  order: number;
+  category: VideoCategory;
+  category_label: string;
+  question: string;
+  context_hint?: string;
+  max_seconds: number;
+};
+
+export const VIDEO_QUESTIONS: VideoQuestion[] = [
+  {
+    id: 'vq1',
+    order: 1,
+    category: 'technical',
+    category_label: 'Técnica',
+    question: 'Contame de un proyecto donde tuviste que tomar decisiones de arquitectura. ¿Cuál fue el trade-off más difícil y cómo lo resolviste?',
+    context_hint: 'Tu prueba técnica salió alta. Queremos ver cómo razonás en problemas reales.',
+    max_seconds: 90,
+  },
+  {
+    id: 'vq2',
+    order: 2,
+    category: 'weakness_followup',
+    category_label: 'Profundización',
+    question: 'En tu evaluación cognitiva, la sub-prueba de Numérica salió debajo del promedio. Contanos cómo manejás situaciones donde tenés que tomar decisiones con datos numéricos.',
+    context_hint: 'No te preocupes, es una pregunta abierta. Queremos entender, no juzgar.',
+    max_seconds: 90,
+  },
+  {
+    id: 'vq3',
+    order: 3,
+    category: 'situational',
+    category_label: 'Situacional',
+    question: 'Imaginá: tu jefe te pide que hagas algo que vos creés que no es la mejor decisión técnica. ¿Cómo lo manejarías?',
+    max_seconds: 90,
+  },
+  {
+    id: 'vq4',
+    order: 4,
+    category: 'cv_claim_check',
+    category_label: 'Verificación CV',
+    question: 'En tu CV decís que lideraste un equipo de 5 personas en tu rol anterior. Contame del proyecto más complejo que dirigiste y cómo manejaste los conflictos del equipo.',
+    context_hint: 'Esta pregunta valida lo que pusiste en tu CV — no necesitás citar al pie de la letra.',
+    max_seconds: 90,
+  },
+  {
+    id: 'vq5',
+    order: 5,
+    category: 'integrity_check',
+    category_label: 'Coherencia',
+    question: 'En la prueba de integridad respondiste que "siempre dirías la verdad sin importar las consecuencias". Contame de una vez en que la verdad te trajo una consecuencia incómoda en el trabajo.',
+    context_hint: 'Profundizamos para ver consistencia entre lo que decís y lo que hacés.',
+    max_seconds: 90,
+  },
+  {
+    id: 'vq6',
+    order: 6,
+    category: 'situational',
+    category_label: 'Situacional',
+    question: 'Si tuvieras que aprender una tecnología totalmente nueva en 2 semanas para entregar un proyecto crítico, ¿cómo lo abordarías?',
+    max_seconds: 90,
+  },
+  {
+    id: 'vq7',
+    order: 7,
+    category: 'english_check',
+    category_label: 'Inglés',
+    question: 'Tell us briefly, in English, why you would be a good fit for this role.',
+    context_hint: 'El puesto requiere inglés. Hablanos brevemente en inglés.',
+    max_seconds: 60,
+  },
+];
+
 // ============== Integridad questions ==============
 // Likert-scale (1-5) sobre situaciones laborales y conductas.
 // Algunas preguntas son detectores de "buena impresión" (deseabilidad social)
