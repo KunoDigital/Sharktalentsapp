@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { MOCK_JOBS } from '../data/mockJobs';
 import { generateDemoApplications, clearDemoApplications, getDemoCount } from '../lib/demoData';
+import { getNotifPrefs, setNotifPrefs, ALL_TYPES, TYPE_LABELS, clearReadIds } from '../lib/notificationPrefs';
 import './pages.css';
 
-type Tab = 'integraciones' | 'api_keys' | 'equipo' | 'branding' | 'plan' | 'demo';
+type Tab = 'integraciones' | 'notifications' | 'api_keys' | 'equipo' | 'branding' | 'plan' | 'demo';
 
 export default function Settings() {
   const [tab, setTab] = useState<Tab>('integraciones');
@@ -14,13 +15,14 @@ export default function Settings() {
       <p className="page-subtitle">Configuración del tenant.</p>
 
       <div className="phase-tabs">
-        {(['integraciones', 'api_keys', 'equipo', 'branding', 'plan', 'demo'] as Tab[]).map((t) => (
+        {(['integraciones', 'notifications', 'api_keys', 'equipo', 'branding', 'plan', 'demo'] as Tab[]).map((t) => (
           <button
             key={t}
             className={`phase-tab${tab === t ? ' is-active' : ''}`}
             onClick={() => setTab(t)}
           >
             {t === 'integraciones' ? 'Integraciones' :
+             t === 'notifications' ? '🔔 Notificaciones' :
              t === 'api_keys' ? 'API keys' :
              t === 'equipo' ? 'Equipo' :
              t === 'branding' ? 'Branding' :
@@ -31,6 +33,7 @@ export default function Settings() {
       </div>
 
       {tab === 'integraciones' && <IntegracionesTab />}
+      {tab === 'notifications' && <NotificationsTab />}
       {tab === 'api_keys' && <ApiKeysTab />}
       {tab === 'equipo' && <EquipoTab />}
       {tab === 'branding' && <BrandingTab />}
@@ -169,6 +172,68 @@ function BrandingTab() {
           <div className="settings-item-desc">Mensaje custom que ven tus clientes al abrir el portal.</div>
         </div>
         <button className="btn-toolbar">Editar</button>
+      </div>
+    </div>
+  );
+}
+
+function NotificationsTab() {
+  const [prefs, setPrefs] = useState(getNotifPrefs());
+
+  function toggle(type: typeof ALL_TYPES[number]) {
+    const next = { ...prefs, [type]: !prefs[type] };
+    setPrefs(next);
+    setNotifPrefs(next);
+  }
+
+  function clearRead() {
+    clearReadIds();
+    alert('Marcas de leído borradas. Refrescá para ver.');
+  }
+
+  return (
+    <div className="settings-list">
+      <p className="muted" style={{ marginBottom: '1rem' }}>
+        Activá o silenciá tipos de notificación. Las que silencies no aparecen en el bell ni en el dashboard.
+      </p>
+
+      {ALL_TYPES.map((type) => (
+        <div key={type} className="settings-item">
+          <div>
+            <div className="settings-item-title">{TYPE_LABELS[type]}</div>
+            <div className="settings-item-desc">
+              {type === 'drafts' ? 'Cuando la IA arma un draft post-reunión y necesita tu OK.' :
+               type === 'bot_review' ? 'Cuando el bot decisor tiene confidence debajo del umbral.' :
+               type === 'finalists' ? 'Cuando un candidato pasa todas las evaluaciones.' :
+               type === 'inbox' ? 'Mensajes de candidatos vía LinkedIn / email outbound.' :
+               'Cuando un cliente envía feedback en un reporte.'}
+            </div>
+          </div>
+          <div className="settings-item-actions">
+            <label className="notif-toggle">
+              <input
+                type="checkbox"
+                checked={prefs[type]}
+                onChange={() => toggle(type)}
+              />
+              <span className="notif-toggle-slider" />
+            </label>
+          </div>
+        </div>
+      ))}
+
+      <div className="settings-item">
+        <div>
+          <div className="settings-item-title">Marcas de "leído"</div>
+          <div className="settings-item-desc">
+            Cuando hacés click en una notificación se marca como leída. Si querés volver a verlas todas como no leídas, podés limpiar el historial.
+          </div>
+        </div>
+        <div className="settings-item-actions">
+          <button className="cd-btn-ghost" onClick={clearRead}>
+            Limpiar marcas
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -649,3 +649,54 @@
   align-items: center;
   flex-shrink: 0;
 }
+
+/* Toggle switch */
+.notif-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.notif-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.notif-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--st-bg-elev-2);
+  border: 1px solid var(--st-border-strong);
+  border-radius: 999px;
+  transition: 0.2s;
+}
+
+.notif-toggle-slider::before {
+  position: absolute;
+  content: '';
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  top: 3px;
+  background: var(--st-fg-muted);
+  border-radius: 50%;
+  transition: 0.2s;
+}
+
+.notif-toggle input:checked + .notif-toggle-slider {
+  background: var(--st-accent);
+  border-color: var(--st-accent);
+}
+
+.notif-toggle input:checked + .notif-toggle-slider::before {
+  transform: translateX(20px);
+  background: var(--st-accent-fg);
+}
+
+.notif-toggle input:focus-visible + .notif-toggle-slider {
+  outline: 2px solid var(--st-accent);
+  outline-offset: 2px;
+}
