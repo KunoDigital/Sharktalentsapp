@@ -550,3 +550,78 @@
   margin-top: 0.5rem;
   text-align: right;
 }
+
+/* VELNA */
+.ct-subtests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+.ct-subtest-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #131923;
+  border: 1px solid #1c2230;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+}
+
+.ct-subtest-num {
+  width: 28px;
+  height: 28px;
+  background: #c5fc6f;
+  color: #0a0e15;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.ct-subtest-info {
+  flex: 1;
+}
+
+.ct-subtest-label {
+  font-weight: 600;
+  color: #f3f4f6;
+  margin-bottom: 0.15rem;
+}
+
+.ct-subtest-desc {
+  font-size: 0.8rem;
+  color: #8a93a3;
+}
+
+.ct-subtest-time {
+  font-size: 0.85rem;
+  color: #c5fc6f;
+  font-weight: 500;
+}
+
+.ct-timer {
+  background: rgba(197, 252, 111, 0.15);
+  color: #c5fc6f;
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.ct-timer.is-low {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  animation: pulse-red 1s infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}

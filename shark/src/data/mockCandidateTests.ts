@@ -152,6 +152,84 @@ export const TECNICA_QUESTIONS: Record<string, TecnicaQuestion[]> = {
   ],
 };
 
+// ============== VELNA questions ==============
+// 5 sub-tests timed: Verbal / Espacial / Lógica / Numérica / Abstracta.
+
+export type VelnaSubtestKey = 'verbal' | 'espacial' | 'logica' | 'numerica' | 'abstracta';
+
+export type VelnaQuestion = {
+  id: string;
+  question: string;
+  options: { id: string; text: string }[];
+  correct_option_id: string;
+};
+
+export type VelnaSubtest = {
+  key: VelnaSubtestKey;
+  label: string;
+  description: string;
+  duration_sec: number;
+  questions: VelnaQuestion[];
+};
+
+export const VELNA_SUBTESTS: VelnaSubtest[] = [
+  {
+    key: 'verbal',
+    label: 'Verbal',
+    description: 'Comprensión lectora, sinónimos y vocabulario.',
+    duration_sec: 300,
+    questions: [
+      { id: 'v1', question: '¿Cuál es el sinónimo más cercano de "perspicaz"?', options: [{ id: 'a', text: 'Lento' }, { id: 'b', text: 'Astuto' }, { id: 'c', text: 'Confuso' }, { id: 'd', text: 'Distraído' }], correct_option_id: 'b' },
+      { id: 'v2', question: 'Si "todos los gatos son mamíferos" y "Mishi es un gato", entonces:', options: [{ id: 'a', text: 'Mishi puede ser un mamífero' }, { id: 'b', text: 'Mishi es un mamífero' }, { id: 'c', text: 'Mishi no es un mamífero' }, { id: 'd', text: 'Falta información' }], correct_option_id: 'b' },
+      { id: 'v3', question: '"Su discurso fue conciso pero contundente." ¿Qué significa "conciso"?', options: [{ id: 'a', text: 'Largo y elaborado' }, { id: 'b', text: 'Confuso' }, { id: 'c', text: 'Breve y al punto' }, { id: 'd', text: 'Apasionado' }], correct_option_id: 'c' },
+    ],
+  },
+  {
+    key: 'espacial',
+    label: 'Espacial',
+    description: 'Razonamiento con formas, rotación y distancias.',
+    duration_sec: 300,
+    questions: [
+      { id: 'e1', question: 'Si rotás un cuadrado 90° en sentido horario, ¿qué obtenés?', options: [{ id: 'a', text: 'Un cuadrado (igual)' }, { id: 'b', text: 'Un círculo' }, { id: 'c', text: 'Un triángulo' }, { id: 'd', text: 'Un rectángulo' }], correct_option_id: 'a' },
+      { id: 'e2', question: 'Imaginá un cubo. ¿Cuántas caras tiene?', options: [{ id: 'a', text: '4' }, { id: 'b', text: '6' }, { id: 'c', text: '8' }, { id: 'd', text: '12' }], correct_option_id: 'b' },
+      { id: 'e3', question: 'Si caminás 100m al norte, después 50m al este, después 100m al sur, ¿a qué distancia estás del punto de partida?', options: [{ id: 'a', text: '0m' }, { id: 'b', text: '50m' }, { id: 'c', text: '150m' }, { id: 'd', text: '250m' }], correct_option_id: 'b' },
+    ],
+  },
+  {
+    key: 'logica',
+    label: 'Lógica',
+    description: 'Patrones, secuencias y razonamiento deductivo.',
+    duration_sec: 300,
+    questions: [
+      { id: 'l1', question: '¿Qué número sigue en la secuencia: 2, 4, 8, 16, ?', options: [{ id: 'a', text: '24' }, { id: 'b', text: '32' }, { id: 'c', text: '20' }, { id: 'd', text: '64' }], correct_option_id: 'b' },
+      { id: 'l2', question: 'Si "ningún A es B" y "todo C es A", entonces:', options: [{ id: 'a', text: 'Algún C es B' }, { id: 'b', text: 'Ningún C es B' }, { id: 'c', text: 'Todo C es B' }, { id: 'd', text: 'No se puede determinar' }], correct_option_id: 'b' },
+      { id: 'l3', question: 'Tres amigos comen pizza. Ana come 2 porciones, Bea el doble que Ana, y Carlos 1 menos que Bea. ¿Cuántas come Carlos?', options: [{ id: 'a', text: '2' }, { id: 'b', text: '3' }, { id: 'c', text: '4' }, { id: 'd', text: '5' }], correct_option_id: 'b' },
+    ],
+  },
+  {
+    key: 'numerica',
+    label: 'Numérica',
+    description: 'Cálculo, porcentajes y razonamiento cuantitativo.',
+    duration_sec: 300,
+    questions: [
+      { id: 'n1', question: '¿Cuál es el 15% de 240?', options: [{ id: 'a', text: '24' }, { id: 'b', text: '36' }, { id: 'c', text: '40' }, { id: 'd', text: '48' }], correct_option_id: 'b' },
+      { id: 'n2', question: 'Una camisa cuesta $80 con 20% descuento. ¿Cuál era el precio original?', options: [{ id: 'a', text: '$96' }, { id: 'b', text: '$100' }, { id: 'c', text: '$108' }, { id: 'd', text: '$120' }], correct_option_id: 'b' },
+      { id: 'n3', question: 'Si un auto recorre 360km en 4 horas, ¿cuántos km recorre en 6 horas a la misma velocidad?', options: [{ id: 'a', text: '480km' }, { id: 'b', text: '540km' }, { id: 'c', text: '600km' }, { id: 'd', text: '720km' }], correct_option_id: 'b' },
+    ],
+  },
+  {
+    key: 'abstracta',
+    label: 'Abstracta',
+    description: 'Reconocimiento de patrones y razonamiento abstracto.',
+    duration_sec: 300,
+    questions: [
+      { id: 'a1', question: 'Si en una serie A=1, B=2, C=3..., ¿cuánto es Z?', options: [{ id: 'a', text: '20' }, { id: 'b', text: '24' }, { id: 'c', text: '26' }, { id: 'd', text: '28' }], correct_option_id: 'c' },
+      { id: 'a2', question: '¿Qué letra completa el patrón: A, C, E, G, ?', options: [{ id: 'a', text: 'H' }, { id: 'b', text: 'I' }, { id: 'c', text: 'J' }, { id: 'd', text: 'K' }], correct_option_id: 'b' },
+      { id: 'a3', question: 'Si △ + △ = ◇, y ◇ + ◇ = ☆, entonces ☆ equivale a:', options: [{ id: 'a', text: '2 △' }, { id: 'b', text: '3 △' }, { id: 'c', text: '4 △' }, { id: 'd', text: '6 △' }], correct_option_id: 'c' },
+    ],
+  },
+];
+
 // ============== DISC questions ==============
 // 24 preguntas típicas de DISC (forced choice). Cada pregunta tiene 4 adjetivos,
 // uno por cada dimensión. Candidato elige "más como yo" y "menos como yo".
