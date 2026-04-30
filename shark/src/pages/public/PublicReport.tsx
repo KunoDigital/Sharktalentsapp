@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { getReportByToken, type ReportCandidateNarrative } from '../../data/mockReports';
 import { getJobById } from '../../data/mockJobs';
 import { getApplicationById, type Application } from '../../data/mockApplications';
+import { exportElementToPdf, slugifyForFilename } from '../../lib/pdfExport';
 import './public-report.css';
 
 type FeedbackChoice = 'interview' | 'pass' | 'maybe' | null;
@@ -15,6 +16,8 @@ export default function PublicReport() {
 
   const [feedback, setFeedback] = useState<FeedbackState>({});
   const [submitted, setSubmitted] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const reportRef = useRef<HTMLElement | null>(null);
 
   if (!report || !job) {
     return (
@@ -48,6 +51,19 @@ export default function PublicReport() {
     setTimeout(() => alert('Mock: feedback enviado a Kuno Digital'), 100);
   }
 
+  async function handleDownloadPdf() {
+    if (!reportRef.current || !job || !report) return;
+    setExporting(true);
+    try {
+      const filename = `reporte-${slugifyForFilename(job.title)}-${report.published_at}.pdf`;
+      await exportElementToPdf(reportRef.current, filename);
+    } catch (err) {
+      alert(`Error al generar PDF: ${(err as Error).message}`);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <div className="pr-root">
       <header className="pr-header">
@@ -55,12 +71,22 @@ export default function PublicReport() {
           <span className="pr-brand">SharkTalents.AI</span>
           <span className="pr-brand-tag">Evaluación de talento con inteligencia artificial</span>
         </div>
-        <div className="pr-header-finalists">
-          {candidates.length} {candidates.length === 1 ? 'finalista' : 'finalistas'}
+        <div className="pr-header-actions">
+          <button
+            className="pr-download-btn"
+            onClick={handleDownloadPdf}
+            disabled={exporting}
+            title="Descargar como PDF"
+          >
+            {exporting ? 'Generando…' : '📄 Descargar PDF'}
+          </button>
+          <div className="pr-header-finalists">
+            {candidates.length} {candidates.length === 1 ? 'finalista' : 'finalistas'}
+          </div>
         </div>
       </header>
 
-      <main className="pr-main">
+      <main className="pr-main" ref={reportRef as React.RefObject<HTMLElement>}>
         <div className="pr-title-block">
           <h1 className="pr-title">{job.title.toUpperCase()}</h1>
           <div className="pr-subtitle">{report.tenant_name}</div>
