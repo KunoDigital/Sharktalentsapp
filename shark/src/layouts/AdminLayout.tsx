@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { OrganizationSwitcher, UserButton, useOrganization } from '@clerk/clerk-react';
 import CommandPalette from '../components/CommandPalette';
 import NotificationCenter from '../components/NotificationCenter';
+import ShortcutsHelp from '../components/ShortcutsHelp';
+import { useGlobalShortcuts } from '../hooks/useGlobalShortcuts';
 import './AdminLayout.css';
 
 const NAV_ITEMS = [
@@ -20,6 +22,8 @@ export default function AdminLayout() {
   const { organization } = useOrganization();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { helpOpen, setHelpOpen } = useGlobalShortcuts(navigate);
 
   // Cerrar menú móvil al navegar
   function handleNavClick() {
@@ -60,6 +64,8 @@ export default function AdminLayout() {
         </nav>
         <div className="admin-cmdk-hint">
           Buscar: <kbd>⌘</kbd>+<kbd>K</kbd>
+          <br />
+          Atajos: <kbd>?</kbd>
         </div>
         <div className="admin-tenant-tag">
           {organization ? `${organization.name}` : 'Sin tenant'}
@@ -78,6 +84,7 @@ export default function AdminLayout() {
         </main>
       </div>
       <CommandPalette />
+      <ShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>
   );
 }

@@ -1,0 +1,133 @@
+.sh-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.sh-modal {
+  background: var(--st-bg-elev);
+  border: 1px solid var(--st-border-strong);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+}
+
+.sh-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--st-border-soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sh-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--st-fg-strong);
+}
+
+.sh-close {
+  background: transparent;
+  border: none;
+  color: var(--st-fg-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+}
+
+.sh-close:hover {
+  background: var(--st-bg-elev-2);
+  color: var(--st-fg);
+}
+
+.sh-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.sh-item {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  align-items: center;
+}
+
+.sh-item:hover {
+  background: var(--st-bg-elev-2);
+}
+
+.sh-keys {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.sh-keys kbd {
+  background: var(--st-bg);
+  color: var(--st-accent);
+  border: 1px solid var(--st-border-soft);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'SF Mono', monospace;
+  font-size: 0.8rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+.sh-plus {
+  color: var(--st-fg-muted-2);
+  font-size: 0.75rem;
+}
+
+.sh-alt {
+  color: var(--st-fg-muted);
+  font-size: 0.75rem;
+  margin-left: 0.4rem;
+}
+
+.sh-desc {
+  font-size: 0.875rem;
+  color: var(--st-fg);
+}
+
+.sh-footer {
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--st-border-soft);
+  font-size: 0.75rem;
+  color: var(--st-fg-muted);
+  line-height: 1.5;
+}
+
+.sh-footer kbd {
+  background: var(--st-bg);
+  border: 1px solid var(--st-border-soft);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-family: 'SF Mono', monospace;
+  color: var(--st-accent);
+}
+
+/* Row keyboard focus highlight */
+.row-keyboard-focus {
+  background: var(--st-accent-soft) !important;
+  outline: 2px solid var(--st-accent);
+  outline-offset: -2px;
+}
