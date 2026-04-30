@@ -10,7 +10,9 @@ import Comparativo from './pages/Comparativo';
 import DraftsList from './pages/DraftsList';
 import DraftReview from './pages/DraftReview';
 import BotReviewQueue from './pages/BotReviewQueue';
-import { ReportsStub, InboxStub, SettingsStub } from './pages/Stubs';
+import Reportes from './pages/Reportes';
+import InboxOutbound from './pages/InboxOutbound';
+import Settings from './pages/Settings';
 import PublicReport from './pages/public/PublicReport';
 import ClientPortalLanding from './pages/public/ClientPortalLanding';
 import ClientPortalJobView from './pages/public/ClientPortalJob';
@@ -46,9 +48,9 @@ function ProtectedAdmin() {
             <Route path="drafts" element={<DraftsList />} />
             <Route path="drafts/:id" element={<DraftReview />} />
             <Route path="bot/review" element={<BotReviewQueue />} />
-            <Route path="reports" element={<ReportsStub />} />
-            <Route path="inbox" element={<InboxStub />} />
-            <Route path="settings" element={<SettingsStub />} />
+            <Route path="reports" element={<Reportes />} />
+            <Route path="inbox" element={<InboxOutbound />} />
+            <Route path="settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

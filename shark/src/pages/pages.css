@@ -407,3 +407,131 @@
   text-decoration: none;
   color: var(--st-fg-strong);
 }
+
+/* Reportes feedback tags */
+.report-fb-tag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-right: 0.3rem;
+}
+
+.report-fb-tag.is-interview { background: var(--st-success-soft); color: var(--st-success); }
+.report-fb-tag.is-maybe { background: var(--st-warn-soft); color: var(--st-warn); }
+.report-fb-tag.is-pass { background: var(--st-danger-soft); color: var(--st-danger); }
+
+/* Inbox messages */
+.inbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.inbox-msg {
+  background: var(--st-bg-elev);
+  border: 1px solid var(--st-border-soft);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+.inbox-msg.is-needs-response {
+  border-left: 4px solid var(--st-warn);
+}
+
+.inbox-msg.is-unread {
+  background: var(--st-bg-elev-2);
+}
+
+.inbox-msg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.inbox-msg-name {
+  font-weight: 600;
+  color: var(--st-fg-strong);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.inbox-msg-unread-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--st-accent);
+  border-radius: 50%;
+}
+
+.inbox-msg-meta {
+  font-size: 0.8rem;
+  color: var(--st-fg-muted);
+}
+
+.inbox-msg-channel {
+  font-size: 0.75rem;
+  color: var(--st-fg-muted);
+  text-align: right;
+  font-weight: 500;
+}
+
+.inbox-msg-body {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--st-fg);
+  line-height: 1.5;
+}
+
+.inbox-msg-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Settings list */
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  background: var(--st-bg-elev);
+  border: 1px solid var(--st-border-soft);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+.settings-item-title {
+  font-weight: 600;
+  color: var(--st-fg-strong);
+  margin-bottom: 0.25rem;
+}
+
+.settings-item-desc {
+  font-size: 0.875rem;
+  color: var(--st-fg-muted);
+  line-height: 1.4;
+}
+
+.settings-item-meta {
+  font-size: 0.75rem;
+  color: var(--st-fg-muted-2);
+  margin-top: 0.4rem;
+}
+
+.settings-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-shrink: 0;
+}

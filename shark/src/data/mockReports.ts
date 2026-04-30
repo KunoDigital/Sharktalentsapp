@@ -43,6 +43,14 @@ export type Report = {
   candidate_app_ids: string[];
   narratives: Record<string, ReportCandidateNarrative>;
   conclusion: ReportConclusion;
+  // Métricas de feedback (mock)
+  client_opened_at?: string; // null si no abrió
+  client_feedback?: {
+    candidate_app_id: string;
+    decision: 'interview' | 'maybe' | 'pass';
+    comment?: string;
+    submitted_at: string;
+  }[];
 };
 
 export const MOCK_REPORTS: Record<string, Report> = {
@@ -52,6 +60,12 @@ export const MOCK_REPORTS: Record<string, Report> = {
     tenant_name: 'Kuno Digital',
     published_at: '2026-04-25',
     status: 'published',
+    client_opened_at: '2026-04-25T16:42:00Z',
+    client_feedback: [
+      { candidate_app_id: 'app_10', decision: 'interview', comment: 'Me encantó el perfil de Luis, agendemos lo antes posible.', submitted_at: '2026-04-26T09:15:00Z' },
+      { candidate_app_id: 'app_11', decision: 'interview', comment: 'Patricia también, especialmente por la red de contactos.', submitted_at: '2026-04-26T09:15:00Z' },
+      { candidate_app_id: 'app_12', decision: 'maybe', comment: 'Alejandro lo dejamos como backup.', submitted_at: '2026-04-26T09:15:00Z' },
+    ],
     candidate_app_ids: ['app_10', 'app_11', 'app_12'],
     narratives: {
       app_10: {
