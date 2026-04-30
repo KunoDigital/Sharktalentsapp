@@ -1,0 +1,189 @@
+/* Candidate Apply page — DARK */
+
+.apply-job-card {
+  background: #131923;
+  border: 1px solid #1c2230;
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.apply-job-tag {
+  display: inline-block;
+  background: rgba(197, 252, 111, 0.15);
+  color: #c5fc6f;
+  padding: 0.25rem 0.7rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.apply-job-card h1 {
+  font-size: 1.75rem;
+  margin: 0 0 0.5rem;
+  color: #f3f4f6;
+  font-weight: 700;
+}
+
+.apply-job-meta {
+  color: #b8c0cc;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.apply-job-meta strong {
+  color: #c5fc6f;
+}
+
+.apply-job-desc {
+  color: #b8c0cc;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  margin: 0 0 1.5rem;
+}
+
+.apply-job-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background: #0d121a;
+  border-radius: 8px;
+}
+
+.apply-stat-label {
+  font-size: 0.7rem;
+  color: #8a93a3;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.apply-stat-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f3f4f6;
+}
+
+.apply-form {
+  background: #131923;
+  border: 1px solid #1c2230;
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.apply-form h2 {
+  font-size: 1.5rem;
+  margin: 0 0 0.5rem;
+  color: #f3f4f6;
+}
+
+.apply-form h3 {
+  font-size: 1rem;
+  margin: 1.5rem 0 0.75rem;
+  color: #c5fc6f;
+}
+
+.apply-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.apply-field {
+  margin-bottom: 1rem;
+}
+
+.apply-field-label {
+  font-size: 0.75rem;
+  color: #c5fc6f;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.apply-field-error {
+  color: #f87171;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.75rem;
+  margin-left: 0.4rem;
+}
+
+.apply-field-input input,
+.apply-field-input select,
+.apply-field-input textarea {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  background: #0d121a;
+  border: 1px solid #2c3442;
+  border-radius: 6px;
+  color: #f3f4f6;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.apply-field-input input:focus,
+.apply-field-input select:focus,
+.apply-field-input textarea:focus {
+  outline: none;
+  border-color: #c5fc6f;
+}
+
+.apply-field-input.has-error input,
+.apply-field-input.has-error select,
+.apply-field-input.has-error textarea {
+  border-color: #f87171;
+}
+
+.apply-file-input {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.apply-file-input input[type="file"] {
+  display: none;
+}
+
+.apply-file-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1c2230;
+  color: #c5fc6f;
+  border: 1px dashed #2c3442;
+  padding: 0.65rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.apply-file-input:hover .apply-file-btn {
+  border-color: #c5fc6f;
+}
+
+.apply-file-hint {
+  font-size: 0.8rem;
+  color: #34d399;
+}
+
+.apply-consent-title {
+  margin-top: 1.5rem;
+}
+
+.apply-error-msg {
+  color: #f87171;
+  font-size: 0.8rem;
+  margin: -0.4rem 0 0.6rem 1.6rem;
+}

@@ -22,6 +22,7 @@ import CandidateTecnicaTest from './pages/public/CandidateTecnicaTest';
 import CandidateVelnaTest from './pages/public/CandidateVelnaTest';
 import CandidateIntegridadTest from './pages/public/CandidateIntegridadTest';
 import CandidateVideoTest from './pages/public/CandidateVideoTest';
+import CandidateApply from './pages/public/CandidateApply';
 import CandidateTestDone from './pages/public/CandidateTestDone';
 import './App.css';
 
@@ -80,6 +81,7 @@ export default function App() {
         <Route path="/test/:token/disc" element={<CandidateDiscTest />} />
         <Route path="/test/:token/integridad" element={<CandidateIntegridadTest />} />
         <Route path="/test/:token/videos" element={<CandidateVideoTest />} />
+        <Route path="/apply/:tenantSlug/:jobSlug" element={<CandidateApply />} />
         <Route path="/test/:token/done" element={<CandidateTestDone />} />
         {/* Everything else requires login */}
         <Route path="/*" element={<ProtectedAdmin />} />
