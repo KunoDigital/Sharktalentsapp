@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { to: '/drafts', label: 'Drafts (cliente)' },
   { to: '/jobs', label: 'Jobs' },
   { to: '/candidates', label: 'Candidatos' },
+  { to: '/bot/review', label: 'Bot — Review queue' },
   { to: '/reports', label: 'Reportes' },
   { to: '/inbox', label: 'Inbox outbound' },
   { to: '/settings', label: 'Settings' },

@@ -8,6 +8,7 @@ import {
 import { getJobById } from '../data/mockJobs';
 import './pages.css';
 import './candidate-detail.css';
+import './bot.css';
 
 const CATEGORY_DOT: Record<TimelineEvent['category'], string> = {
   application: '🟢',
@@ -69,15 +70,61 @@ export default function CandidateDetail() {
       <section className="cd-summary-card">
         <div className="cd-summary-label">RESUMEN EJECUTIVO (IA)</div>
         <p className="cd-summary-text">{app.ia_summary}</p>
-        {app.bot_recommendation && (
-          <div className="cd-bot-rec">
-            <span className="cd-bot-rec-label">Bot decisor:</span> {app.bot_recommendation}
-            {app.bot_confidence != null && (
-              <span className="cd-bot-conf"> · confidence {(app.bot_confidence * 100).toFixed(0)}%</span>
-            )}
-          </div>
-        )}
       </section>
+
+      {app.bot_decision && (
+        <section className={`cd-bot-section ${app.bot_decision.needs_review ? 'cd-bot-needs-review-card' : ''}`}>
+          <div className="cd-bot-header">
+            <div>
+              <div className="cd-bot-title">Decisión del bot — modo {app.bot_decision.mode}</div>
+              <div className="cd-bot-recommendation">{app.bot_decision.recommendation}</div>
+            </div>
+            <div className="cd-bot-confidence-block">
+              <div className={`cd-bot-confidence-pct ${app.bot_decision.confidence < app.bot_decision.threshold ? 'is-low' : 'is-high'}`}>
+                {(app.bot_decision.confidence * 100).toFixed(0)}%
+              </div>
+              <div className="cd-bot-confidence-label">
+                confidence · umbral {(app.bot_decision.threshold * 100).toFixed(0)}%
+              </div>
+            </div>
+          </div>
+
+          {app.bot_decision.needs_review && (
+            <div className="cd-bot-needs-review">
+              ⚠️ Confidence debajo del umbral — el bot no auto-aplicó esta decisión y la dejó para tu revisión.
+            </div>
+          )}
+
+          <p className="cd-bot-rationale-text">{app.bot_decision.rationale_text}</p>
+
+          <div className="cd-bot-factors">
+            <div className="cd-bot-factors-label">Factores que pesó (peso · señal)</div>
+            {app.bot_decision.rationale_factors.map((f, i) => (
+              <div key={i} className="cd-bot-factor-row">
+                <div className="cd-bot-factor-label">
+                  {f.label} <span className="muted small">({(f.weight * 100).toFixed(0)}%)</span>
+                </div>
+                <div className="cd-bot-factor-signal">{f.signal}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="cd-bot-rag">
+            <div className="cd-bot-rag-label">Casos similares que el bot consultó (RAG)</div>
+            <div className="cd-bot-rag-list">
+              {app.bot_decision.rag_examples.map((ex, i) => (
+                <div key={i} className="cd-bot-rag-item">
+                  <div>
+                    <div className="cd-bot-rag-item-name">{ex.candidate_name}</div>
+                    <div className="cd-bot-rag-item-outcome">{ex.outcome}</div>
+                  </div>
+                  <span className="cd-bot-rag-similarity">{ex.similarity_pct}% similar</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {hasAntiCheat && (
         <section className="cd-anticheat-banner">

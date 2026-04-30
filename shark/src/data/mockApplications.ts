@@ -77,6 +77,36 @@ export type TimelineEvent = {
   category: 'application' | 'evaluation' | 'decision' | 'communication' | 'alert';
 };
 
+export type BotMode = 'cold' | 'warm' | 'hot';
+
+export type RagExample = {
+  application_id: string;
+  candidate_name: string;
+  similarity_pct: number;
+  outcome: string; // "Cris aprobó como finalista" / "Auto-rechazado" / etc.
+};
+
+export type BotDecisionDetail = {
+  id: string;
+  decided_at: string;
+  stage: 'prefilter' | 'tecnica' | 'conductual' | 'integridad' | 'finalist';
+  recommendation: string; // ej: "Avanzar a integridad"
+  confidence: number; // 0-1
+  threshold: number;
+  mode: BotMode;
+  rationale_text: string; // español plano, párrafo
+  rationale_factors: { label: string; weight: number; signal: string }[];
+  rag_examples: RagExample[];
+  needs_review: boolean; // true si confidence < threshold
+  auto_applied: boolean;
+  admin_override?: {
+    decided_at: string;
+    by: string;
+    decision: string;
+    reason: string;
+  };
+};
+
 export type Application = {
   id: string;
   job_id: string;
@@ -104,6 +134,7 @@ export type Application = {
   // bot
   bot_confidence?: number;
   bot_recommendation?: string;
+  bot_decision?: BotDecisionDetail; // detalle completo cuando existe
   // ia summary (hardcoded mock; cuando haya backend, generado al cambiar de etapa)
   ia_summary: string;
   // timeline
@@ -196,6 +227,31 @@ const PIPELINE_AcmeTech: Application[] = [
     anti_cheat_events: [],
     bot_confidence: 0.89,
     bot_recommendation: 'Avanzar a finalista',
+    bot_decision: {
+      id: 'bd_1',
+      decided_at: '2026-04-19',
+      stage: 'finalist',
+      recommendation: 'Marcar como finalista',
+      confidence: 0.89,
+      threshold: 0.75,
+      mode: 'warm',
+      rationale_text:
+        'Carla cumple los 4 criterios principales del puesto: técnica alta (87% > 60% mínimo), DISC similitud fuerte con perfil ideal A (78%), VELNA agregado 82% con perfil ideal, e integridad sin alertas. Su perfil D-Dominante con orientación a calidad calza con lo que busca AcmeTech. Aspiración salarial dentro del rango. No hay flags de anti-trampa. Recomiendo marcar como finalista con confidence alta.',
+      rationale_factors: [
+        { label: 'Técnica', weight: 0.25, signal: '87% (mínimo 60%) — fuerte' },
+        { label: 'DISC similitud', weight: 0.25, signal: '78% (umbral ≥70%) — alineado' },
+        { label: 'VELNA similitud', weight: 0.2, signal: '82% — sobre el ideal' },
+        { label: 'Integridad', weight: 0.2, signal: 'Sin alertas en 15 dimensiones' },
+        { label: 'Anti-trampa', weight: 0.1, signal: 'Cero eventos detectados' },
+      ],
+      rag_examples: [
+        { application_id: 'app_42', candidate_name: 'María Vergara (puesto similar)', similarity_pct: 88, outcome: 'Cris aprobó como finalista, fue contratada' },
+        { application_id: 'app_67', candidate_name: 'Pedro Aguilar (puesto similar)', similarity_pct: 82, outcome: 'Cris aprobó como finalista, declinó oferta' },
+        { application_id: 'app_103', candidate_name: 'Sofía Reyes (puesto Fullstack)', similarity_pct: 79, outcome: 'Cris aprobó, contratada' },
+      ],
+      needs_review: false,
+      auto_applied: true,
+    },
     ia_summary:
       'Carla, 28 años, perfil D-Dominante con orientación a calidad (similitud 78% con perfil ideal). Cognitiva alta (82%), Verbal y Lógica fuertes. Técnica aprobada con 87%. Integridad sin alertas. Aspiración salarial $1800/mes — dentro del rango. Sin anti-trampa flags. Bot recomienda: avanzar a finalista (confidence 89%). Lista para entrevista 1:1.',
     timeline: [
@@ -297,6 +353,32 @@ const PIPELINE_AcmeTech: Application[] = [
       { phase: 'conductual', type: 'window_blur', question_id: 'Abstracto #1', duration_sec: 3 },
       { phase: 'conductual', type: 'cursor_out', question_id: 'DISC #5', duration_sec: 0 },
     ],
+    bot_confidence: 0.42,
+    bot_recommendation: 'Necesito revisión humana',
+    bot_decision: {
+      id: 'bd_2',
+      decided_at: '2026-04-21',
+      stage: 'conductual',
+      recommendation: 'Pausar y revisar CV — confianza insuficiente para avanzar solo',
+      confidence: 0.42,
+      threshold: 0.75,
+      mode: 'warm',
+      rationale_text:
+        'Ariana presenta un patrón conflictivo que no puedo resolver sin tu input humano. Su técnica fue 93% (muy alta), pero su DISC similitud cayó a 35% (debajo del 70% mínimo) y detecté 6 eventos anti-trampa durante conductual (5 salidas de cursor + 1 ventana). Hipótesis: la diferencia entre técnica fuerte y conductual débil con tantas salidas sugiere posible asistencia externa en la técnica. No estoy seguro y prefiero que vos lo revises. Mi recomendación cautelosa: pedir CV detallado y entrevistar antes de avanzar a integridad. Si ves contexto que justifique el patrón (ej: ansiedad, distracción puntual), podés override.',
+      rationale_factors: [
+        { label: 'Técnica', weight: 0.25, signal: '93% — muy alta, sospechosa por contraste' },
+        { label: 'DISC similitud', weight: 0.25, signal: '35% — debajo del umbral 70%' },
+        { label: 'VELNA similitud', weight: 0.2, signal: '51% — bajo' },
+        { label: 'Integridad', weight: 0.2, signal: 'No completada aún' },
+        { label: 'Anti-trampa', weight: 0.1, signal: '6 eventos — flag alta' },
+      ],
+      rag_examples: [
+        { application_id: 'app_88', candidate_name: 'Caso similar 1 (técnica alta + anti-trampa)', similarity_pct: 76, outcome: 'Cris pidió entrevista preliminar; resultó tener asistencia externa, rechazado' },
+        { application_id: 'app_92', candidate_name: 'Caso similar 2 (DISC bajo pero CV fuerte)', similarity_pct: 71, outcome: 'Cris override y avanzó; ahora trabaja como senior dev' },
+      ],
+      needs_review: true,
+      auto_applied: false,
+    },
     ia_summary:
       'Ariana, 31 años. Técnica aprobada con 93% (excelente). Pasó a conductual donde DISC dio similitud 35% con perfil ideal y VELNA 51% (Verbal alto, Espacial/Lógica/Numérica bajos). Aspiración salarial $600/mes — debajo del rango. ⚠️ Anti-trampa: 6 salidas de pantalla durante conductual (5 cursor + 1 ventana). Patrón sospechoso: técnica fuerte pero conductual débil con muchas salidas → posible asistencia externa en técnica. Recomendación: revisar CV y entrevistar antes de avanzar a integridad.',
     timeline: [
