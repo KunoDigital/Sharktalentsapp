@@ -625,3 +625,82 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
 }
+
+/* Integridad — Likert scale */
+.ct-integrity-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.ct-integrity-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.5rem;
+  align-items: center;
+  background: #131923;
+  border: 1px solid #1c2230;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+}
+
+.ct-integrity-text {
+  font-size: 0.9rem;
+  color: #f3f4f6;
+  line-height: 1.4;
+}
+
+.ct-integrity-num {
+  color: #c5fc6f;
+  font-weight: 700;
+  margin-right: 0.4rem;
+}
+
+.ct-likert-scale {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.ct-likert-btn {
+  width: 36px;
+  height: 36px;
+  background: #0d121a;
+  border: 1px solid #2c3442;
+  border-radius: 50%;
+  color: #b8c0cc;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ct-likert-btn:hover {
+  border-color: #c5fc6f;
+  color: #f3f4f6;
+}
+
+.ct-likert-btn.is-selected {
+  background: #c5fc6f;
+  color: #0a0e15;
+  border-color: #c5fc6f;
+}
+
+.ct-likert-legend {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #6b7585;
+  padding: 0 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .ct-integrity-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .ct-likert-scale {
+    justify-content: center;
+  }
+}

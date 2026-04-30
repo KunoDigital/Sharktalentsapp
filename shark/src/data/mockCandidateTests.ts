@@ -230,6 +230,33 @@ export const VELNA_SUBTESTS: VelnaSubtest[] = [
   },
 ];
 
+// ============== Integridad questions ==============
+// Likert-scale (1-5) sobre situaciones laborales y conductas.
+// Algunas preguntas son detectores de "buena impresión" (deseabilidad social)
+// — respuestas extremas en estas levantan flag.
+
+export type IntegrityQuestion = {
+  id: string;
+  text: string;
+  dimension: string; // ej: 'Honestidad', 'Hurto', 'Soborno', 'Buena impresión'
+  is_social_desirability_check: boolean; // true = detector de buena impresión
+};
+
+export const INTEGRITY_QUESTIONS: IntegrityQuestion[] = [
+  { id: 'i1', text: 'Si encuentro una billetera con dinero en la oficina, la entregaría intacta a recursos humanos.', dimension: 'Honestidad', is_social_desirability_check: true },
+  { id: 'i2', text: 'A veces uso recursos de la oficina (impresora, internet) para asuntos personales.', dimension: 'Honestidad', is_social_desirability_check: false },
+  { id: 'i3', text: 'Nunca he llegado tarde al trabajo en mi vida.', dimension: 'Confiabilidad', is_social_desirability_check: true },
+  { id: 'i4', text: 'Si veo que un compañero está cometiendo un error que afecta al cliente, le aviso aunque no sea mi responsabilidad.', dimension: 'Inteligencia social', is_social_desirability_check: false },
+  { id: 'i5', text: 'Aceptaría un regalo significativo de un proveedor si nadie se entera.', dimension: 'Soborno', is_social_desirability_check: false },
+  { id: 'i6', text: 'Siempre digo la verdad, sin importar las consecuencias.', dimension: 'Autenticidad', is_social_desirability_check: true },
+  { id: 'i7', text: 'Si llego antes que mi jefe a la oficina, dedico ese tiempo extra a tareas personales.', dimension: 'Ética profesional', is_social_desirability_check: false },
+  { id: 'i8', text: 'En el último año he consumido alcohol durante horas laborales.', dimension: 'Alcohol', is_social_desirability_check: false },
+  { id: 'i9', text: 'Considero que las políticas de la empresa son guías que se pueden flexibilizar según el contexto.', dimension: 'Imparcialidad', is_social_desirability_check: false },
+  { id: 'i10', text: 'Nunca he criticado a un colega por la espalda.', dimension: 'Sencillez', is_social_desirability_check: true },
+  { id: 'i11', text: 'Si encuentro información confidencial fuera de lugar, la leería antes de devolverla.', dimension: 'Confiabilidad', is_social_desirability_check: false },
+  { id: 'i12', text: 'En momentos de presión, mantengo la calma incluso cuando los demás no.', dimension: 'Dominio personal', is_social_desirability_check: true },
+];
+
 // ============== DISC questions ==============
 // 24 preguntas típicas de DISC (forced choice). Cada pregunta tiene 4 adjetivos,
 // uno por cada dimensión. Candidato elige "más como yo" y "menos como yo".
