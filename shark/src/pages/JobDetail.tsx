@@ -108,6 +108,9 @@ export default function JobDetail() {
           </p>
         </div>
         <div className="job-detail-toolbar">
+          <Link to={`/jobs/${job.id}/edit`} className="btn-toolbar">
+            ✏️ Editar
+          </Link>
           <Link to={`/jobs/${job.id}/comparar`} className="btn-toolbar">
             Comparar candidatos
           </Link>

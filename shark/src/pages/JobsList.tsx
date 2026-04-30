@@ -28,7 +28,9 @@ export default function JobsList() {
           <button className="btn-toolbar" onClick={() => exportJobsToExcel(MOCK_JOBS, 'jobs.xlsx')}>
             Exportar Excel
           </button>
-          <button className="btn-primary">+ Nuevo puesto</button>
+          <Link to="/jobs/new" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
+            + Nuevo puesto
+          </Link>
         </div>
       </div>
       <p className="page-subtitle">Puestos abiertos, en pausa y borradores.</p>

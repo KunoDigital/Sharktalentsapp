@@ -8,6 +8,7 @@ import JobsList from './pages/JobsList';
 // Lazy: Dashboard (recharts ~210KB), PublicReport (jsPDF + html2canvas, ~200KB)
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 import JobDetail from './pages/JobDetail';
+import JobForm from './pages/JobForm';
 import CandidatesList from './pages/CandidatesList';
 import CandidateDetail from './pages/CandidateDetail';
 import Comparativo from './pages/Comparativo';
@@ -17,6 +18,8 @@ import BotReviewQueue from './pages/BotReviewQueue';
 import Reportes from './pages/Reportes';
 import InboxOutbound from './pages/InboxOutbound';
 import Settings from './pages/Settings';
+import EmailPreviews from './pages/EmailPreviews';
+import HelpCenter from './pages/HelpCenter';
 import PublicReport from './pages/public/PublicReport';
 import ClientPortalLanding from './pages/public/ClientPortalLanding';
 import ClientPortalJobView from './pages/public/ClientPortalJob';
@@ -75,7 +78,9 @@ function ProtectedAdmin() {
           <Route path="/" element={<AdminLayout />}>
             <Route index element={<ErrorBoundary context="dashboard"><Suspense fallback={<LoadingPage />}><Dashboard /></Suspense></ErrorBoundary>} />
             <Route path="jobs" element={<ErrorBoundary context="jobs-list"><JobsList /></ErrorBoundary>} />
+            <Route path="jobs/new" element={<ErrorBoundary context="job-new"><JobForm mode="create" /></ErrorBoundary>} />
             <Route path="jobs/:id" element={<ErrorBoundary context="job-detail"><JobDetail /></ErrorBoundary>} />
+            <Route path="jobs/:id/edit" element={<ErrorBoundary context="job-edit"><JobForm mode="edit" /></ErrorBoundary>} />
             <Route path="jobs/:id/comparar" element={<ErrorBoundary context="comparativo"><Comparativo /></ErrorBoundary>} />
             <Route path="candidates" element={<ErrorBoundary context="candidates-list"><CandidatesList /></ErrorBoundary>} />
             <Route path="candidates/:id" element={<ErrorBoundary context="candidate-detail"><CandidateDetail /></ErrorBoundary>} />
@@ -85,6 +90,8 @@ function ProtectedAdmin() {
             <Route path="reports" element={<ErrorBoundary context="reportes"><Reportes /></ErrorBoundary>} />
             <Route path="inbox" element={<ErrorBoundary context="inbox"><InboxOutbound /></ErrorBoundary>} />
             <Route path="settings" element={<ErrorBoundary context="settings"><Settings /></ErrorBoundary>} />
+            <Route path="emails" element={<ErrorBoundary context="emails"><EmailPreviews /></ErrorBoundary>} />
+            <Route path="help" element={<ErrorBoundary context="help"><HelpCenter /></ErrorBoundary>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

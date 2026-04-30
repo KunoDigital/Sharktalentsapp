@@ -1,0 +1,121 @@
+.email-templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 1.25rem;
+}
+
+.email-template-card {
+  background: var(--st-bg-elev);
+  border: 1px solid var(--st-border-soft);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.email-template-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+}
+
+.email-audience-tag {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.email-audience-tag.is-candidato {
+  background: var(--st-info-soft);
+  color: var(--st-info);
+}
+
+.email-audience-tag.is-cliente {
+  background: var(--st-accent-soft);
+  color: var(--st-accent);
+}
+
+.email-trigger {
+  color: var(--st-fg-muted);
+  font-size: 0.75rem;
+  flex: 1;
+}
+
+.email-channels {
+  font-size: 0.85rem;
+}
+
+.email-preview-frame {
+  background: #fff;
+  color: #1f2937;
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.email-from {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.email-from strong {
+  color: #374151;
+}
+
+.email-subject {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.email-body {
+  white-space: pre-line;
+  color: #374151;
+  margin-bottom: 1.25rem;
+}
+
+.email-cta-btn {
+  background: #c5fc6f;
+  color: #0a0e15;
+  border: none;
+  padding: 0.65rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.email-footer {
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.7rem;
+  color: #9ca3af;
+}
+
+.email-brand {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.email-footer a {
+  color: #6b7280;
+  text-decoration: underline;
+}
+
+.email-vars-hint {
+  margin-top: 0.75rem;
+  font-size: 0.7rem;
+  color: var(--st-fg-muted);
+}
+
+.email-vars-hint code {
+  font-size: 0.7rem;
+}

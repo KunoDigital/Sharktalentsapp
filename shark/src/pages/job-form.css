@@ -1,0 +1,148 @@
+.job-form-page {
+  max-width: 900px;
+}
+
+.job-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.job-form-section {
+  background: var(--st-bg-elev);
+  border: 1px solid var(--st-border-soft);
+  border-radius: 12px;
+  padding: 1.5rem 1.75rem;
+}
+
+.job-form-section h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  color: var(--st-fg-strong);
+  font-weight: 600;
+}
+
+.job-form-field {
+  margin-bottom: 1rem;
+}
+
+.job-form-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--st-accent);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.job-form-required {
+  color: var(--st-danger);
+}
+
+.job-form-field input,
+.job-form-field textarea,
+.job-form-field select {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  background: var(--st-bg-input);
+  border: 1px solid var(--st-border-strong);
+  border-radius: 6px;
+  color: var(--st-fg);
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.job-form-field input:focus,
+.job-form-field textarea:focus,
+.job-form-field select:focus {
+  outline: none;
+  border-color: var(--st-accent);
+}
+
+.job-form-field textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.job-form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.job-form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.job-form-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.job-form-disc-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--st-bg);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.job-form-disc-bar {
+  display: grid;
+  grid-template-columns: 24px 1fr 36px;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.job-form-disc-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--st-fg);
+}
+
+.job-form-disc-slider {
+  width: 100%;
+}
+
+.job-form-disc-val {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: right;
+  color: var(--st-accent);
+}
+
+.job-form-velna {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.job-form-competencia-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 20px;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.job-form-competencia-row span {
+  color: var(--st-fg-muted);
+}
+
+.job-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 0;
+}
+
+.job-form-actions .cd-btn-ghost {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}

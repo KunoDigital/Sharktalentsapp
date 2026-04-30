@@ -16,7 +16,9 @@ const NAV_ITEMS = [
   { to: '/bot/review', label: 'Bot — Review queue' },
   { to: '/reports', label: 'Reportes' },
   { to: '/inbox', label: 'Inbox outbound' },
+  { to: '/emails', label: 'Email templates' },
   { to: '/settings', label: 'Settings' },
+  { to: '/help', label: '? Ayuda' },
 ];
 
 export default function AdminLayout() {
