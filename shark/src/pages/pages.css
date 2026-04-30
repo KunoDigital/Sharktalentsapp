@@ -290,6 +290,23 @@
   margin-top: 0.15rem;
 }
 
+.kanban-card-warn {
+  color: #991b1b;
+  font-weight: 500;
+}
+
+.kanban-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.kanban-card-link:hover {
+  border-color: #6b7280;
+  transform: translateY(-1px);
+}
+
 .kanban-empty {
   text-align: center;
   color: #9ca3af;

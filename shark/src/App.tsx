@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import JobsList from './pages/JobsList';
 import JobDetail from './pages/JobDetail';
 import CandidatesList from './pages/CandidatesList';
+import CandidateDetail from './pages/CandidateDetail';
 import { ReportsStub, InboxStub, SettingsStub } from './pages/Stubs';
 import './App.css';
 
@@ -34,6 +35,7 @@ export default function App() {
               <Route path="jobs" element={<JobsList />} />
               <Route path="jobs/:id" element={<JobDetail />} />
               <Route path="candidates" element={<CandidatesList />} />
+              <Route path="candidates/:id" element={<CandidateDetail />} />
               <Route path="reports" element={<ReportsStub />} />
               <Route path="inbox" element={<InboxStub />} />
               <Route path="settings" element={<SettingsStub />} />

@@ -11,9 +11,9 @@ import './pages.css';
 const STATE_COLUMNS: { state: ApplicationState; label: string }[] = [
   { state: 'prefilter_pending', label: 'Prefiltro' },
   { state: 'prefilter_passed', label: 'Pre OK' },
-  { state: 'disc_completed', label: 'DISC' },
-  { state: 'technical_completed', label: 'Técnica' },
-  { state: 'videos_completed', label: 'Videos' },
+  { state: 'tecnica_completed', label: 'Técnica' },
+  { state: 'conductual_completed', label: 'Conductual' },
+  { state: 'integridad_completed', label: 'Integridad' },
   { state: 'finalist', label: 'Finalistas' },
 ];
 
@@ -77,17 +77,19 @@ export default function JobDetail() {
               </div>
               <div className="kanban-col-body">
                 {items.map((app) => (
-                  <div key={app.id} className="kanban-card">
+                  <Link key={app.id} to={`/candidates/${app.id}`} className="kanban-card kanban-card-link">
                     <div className="kanban-card-name">{app.candidate_name}</div>
                     <div className="kanban-card-meta">
                       <span className="source-tag">{SOURCE_LABELS[app.source]}</span>
                     </div>
-                    {app.disc_summary && (
-                      <div className="kanban-card-detail">DISC: {app.disc_summary}</div>
-                    )}
-                    {app.technical_score != null && (
+                    {app.disc && (
                       <div className="kanban-card-detail">
-                        Técnica: <strong>{app.technical_score}</strong>
+                        DISC: {app.disc.dominant_label.split('—')[0].trim()} · sim {app.disc.similitud_pct}%
+                      </div>
+                    )}
+                    {app.tecnica && (
+                      <div className="kanban-card-detail">
+                        Técnica: <strong>{app.tecnica.pct}%</strong> ({app.tecnica.estado})
                       </div>
                     )}
                     {app.bot_confidence != null && (
@@ -95,7 +97,12 @@ export default function JobDetail() {
                         Bot: <strong>{(app.bot_confidence * 100).toFixed(0)}%</strong>
                       </div>
                     )}
-                  </div>
+                    {app.anti_cheat_events.length > 0 && (
+                      <div className="kanban-card-detail kanban-card-warn">
+                        ⚠️ Anti-trampa: {app.anti_cheat_events.length} eventos
+                      </div>
+                    )}
+                  </Link>
                 ))}
                 {items.length === 0 && <div className="kanban-empty">Vacío</div>}
               </div>
@@ -115,19 +122,23 @@ export default function JobDetail() {
                 <th>Estado</th>
                 <th>DISC</th>
                 <th>Técnica</th>
-                <th>Integridad</th>
+                <th>Anti-trampa</th>
                 <th>Bot conf.</th>
               </tr>
             </thead>
             <tbody>
               {applications.map((app) => (
                 <tr key={app.id}>
-                  <td>{app.candidate_name}</td>
+                  <td>
+                    <Link to={`/candidates/${app.id}`} className="link">{app.candidate_name}</Link>
+                  </td>
                   <td className="muted">{SOURCE_LABELS[app.source]}</td>
                   <td>{STATE_LABELS[app.state]}</td>
-                  <td className="muted">{app.disc_summary ?? '—'}</td>
-                  <td>{app.technical_score ?? '—'}</td>
-                  <td>{app.integrity_score ?? '—'}</td>
+                  <td className="muted">{app.disc ? `sim ${app.disc.similitud_pct}%` : '—'}</td>
+                  <td>{app.tecnica ? `${app.tecnica.pct}%` : '—'}</td>
+                  <td className={app.anti_cheat_events.length > 0 ? 'cd-tecnica-no-aprobado' : 'muted'}>
+                    {app.anti_cheat_events.length > 0 ? `⚠️ ${app.anti_cheat_events.length}` : '—'}
+                  </td>
                   <td>{app.bot_confidence != null ? `${(app.bot_confidence * 100).toFixed(0)}%` : '—'}</td>
                 </tr>
               ))}

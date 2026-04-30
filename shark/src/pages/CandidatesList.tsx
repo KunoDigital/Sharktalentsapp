@@ -25,7 +25,9 @@ export default function CandidatesList() {
             const job = getJobById(app.job_id);
             return (
               <tr key={app.id}>
-                <td>{app.candidate_name}</td>
+                <td>
+                  <Link to={`/candidates/${app.id}`} className="link">{app.candidate_name}</Link>
+                </td>
                 <td className="muted">{app.candidate_email}</td>
                 <td>
                   {job ? (
