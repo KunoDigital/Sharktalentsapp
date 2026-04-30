@@ -20,6 +20,13 @@ Cambios relevantes del proyecto. Sigue el formato [Keep a Changelog](https://kee
   - Router refactoreado a pattern de `ctx`; `traceId` propagado en headers + logs.
   - Frontend integrado con `@clerk/clerk-react@5`: `<ClerkProvider>`, `<SignedIn/Out>`, `<UserButton>`, `<OrganizationSwitcher>`.
   - Docs `docs/INTEGRATIONS/clerk.md` + `docs/RUNBOOKS/clerk-caido.md`.
+- **Frontend admin shell con mock data (Path A — desarrollo en paralelo a creación de tablas Catalyst):**
+  - HashRouter + react-router-dom 7 con rutas `/`, `/jobs`, `/jobs/:id`, `/candidates`, `/reports`, `/inbox`, `/settings`.
+  - `AdminLayout` con sidebar nav + branded header con `<OrganizationSwitcher>` + `<UserButton>`.
+  - Mock data layer en `shark/src/data/mock{Jobs,Applications}.ts` con tipos derivados del master plan (states del pipeline operativo, sources, scores).
+  - Páginas: Dashboard (stats + cards), JobsList (tabla), JobDetail (kanban + tabla por estado), CandidatesList (cross-job).
+  - Stubs para Reportes, Inbox outbound, Settings con referencias a docs del master plan.
+  - CSS limpio post-CRA, design system básico (status tags, kanban, data tables, stat cards).
 
 ### Changed
 - `catalyst.json` ahora apunta a `shark/dist` (Vite build output).
