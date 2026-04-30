@@ -266,8 +266,8 @@ const PIPELINE_AcmeTech: Application[] = [
     applied_at: '2026-04-19',
     salary_aspiration_usd: 600,
     disponibilidad: 'Totalmente disponible',
-    tecnica_state: 'completado',
-    conductual_state: 'completado',
+    tecnica_state: 'siguiente_etapa',
+    conductual_state: 'duda_cv',
     integridad_state: 'registrado',
     disc: {
       d: 30,
@@ -288,7 +288,7 @@ const PIPELINE_AcmeTech: Application[] = [
       similitud_pct: 51,
     },
     emocional: { value: 65, label: 'Mesura' },
-    tecnica: { pct: 0, estado: 'Pendiente', minimo_requerido_pct: 60 },
+    tecnica: { pct: 93, estado: 'Aprobado', minimo_requerido_pct: 60 },
     anti_cheat_events: [
       { phase: 'conductual', type: 'cursor_out', question_id: 'DISC #5', duration_sec: 0 },
       { phase: 'conductual', type: 'cursor_out', question_id: 'Espacial #2', duration_sec: 0 },
@@ -298,13 +298,16 @@ const PIPELINE_AcmeTech: Application[] = [
       { phase: 'conductual', type: 'cursor_out', question_id: 'DISC #5', duration_sec: 0 },
     ],
     ia_summary:
-      'Ariana, 31 años, perfil C-Cumplidor (similitud 35% — baja con perfil ideal). Cognitiva 51% (Verbal alto, Espacial muy bajo). Técnica pendiente de completar. Aspiración salarial $600/mes — debajo del rango del puesto. ⚠️ Anti-trampa: 6 salidas detectadas durante conductual (5 cursor + 1 ventana). Recomendación: revisar CV y considerar entrevistar antes de avanzar.',
+      'Ariana, 31 años. Técnica aprobada con 93% (excelente). Pasó a conductual donde DISC dio similitud 35% con perfil ideal y VELNA 51% (Verbal alto, Espacial/Lógica/Numérica bajos). Aspiración salarial $600/mes — debajo del rango. ⚠️ Anti-trampa: 6 salidas de pantalla durante conductual (5 cursor + 1 ventana). Patrón sospechoso: técnica fuerte pero conductual débil con muchas salidas → posible asistencia externa en técnica. Recomendación: revisar CV y entrevistar antes de avanzar a integridad.',
     timeline: [
       { at: '2026-04-19', actor: 'webhook', summary_text: 'Aplicó vía Recruit (hub gratis).', category: 'application' },
       { at: '2026-04-19', actor: 'system', summary_text: 'Prefiltro: salario aspirado $600 — debajo del rango sugerido para el puesto. Avanzó igual con flag.', category: 'alert' },
-      { at: '2026-04-20', actor: 'candidate', summary_text: 'Completó conductual: DISC similitud 35%, VELNA 51%.', category: 'evaluation' },
-      { at: '2026-04-20', actor: 'system', summary_text: 'Anti-trampa: 6 salidas de pantalla detectadas durante conductual. Flag levantado.', category: 'alert' },
-      { at: '2026-04-20', actor: 'system', summary_text: 'Email enviado: link a prueba técnica.', category: 'communication' },
+      { at: '2026-04-19', actor: 'system', summary_text: 'Email enviado: link a prueba técnica.', category: 'communication' },
+      { at: '2026-04-20', actor: 'candidate', summary_text: 'Completó técnica: 93% (aprobada, mínimo 60%).', category: 'evaluation' },
+      { at: '2026-04-20', actor: 'system', summary_text: 'Email enviado: link a evaluación conductual (DISC + VELNA + emoción).', category: 'communication' },
+      { at: '2026-04-21', actor: 'candidate', summary_text: 'Completó conductual: DISC similitud 35%, VELNA 51%.', category: 'evaluation' },
+      { at: '2026-04-21', actor: 'system', summary_text: 'Anti-trampa: 6 salidas de pantalla detectadas durante conductual. Flag levantado.', category: 'alert' },
+      { at: '2026-04-21', actor: 'admin', summary_text: 'Cris marcó como "Duda — Revisar CV" antes de avanzar a integridad.', category: 'decision' },
     ],
   },
   {
