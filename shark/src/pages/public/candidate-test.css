@@ -455,3 +455,98 @@
 .ct-thanks-big .ct-start-btn {
   margin-top: 1rem;
 }
+
+.ct-question-text {
+  font-size: 1.15rem;
+  margin: 0 0 1.25rem;
+  line-height: 1.5;
+  color: #f3f4f6;
+}
+
+.ct-tag-situational {
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+/* Multiple choice */
+.ct-mc-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ct-mc-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: #0d121a;
+  border: 1px solid #1c2230;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  color: #b8c0cc;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.ct-mc-option:hover {
+  border-color: #2c3442;
+}
+
+.ct-mc-option.is-selected {
+  border-color: #c5fc6f;
+  background: rgba(197, 252, 111, 0.08);
+  color: #f3f4f6;
+}
+
+.ct-mc-letter {
+  background: #1c2230;
+  color: #c5fc6f;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.ct-mc-option.is-selected .ct-mc-letter {
+  background: #c5fc6f;
+  color: #0a0e15;
+}
+
+.ct-mc-text {
+  flex: 1;
+  line-height: 1.5;
+}
+
+/* Open ended */
+.ct-open-textarea {
+  width: 100%;
+  background: #0d121a;
+  border: 1px solid #2c3442;
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #f3f4f6;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.ct-open-textarea:focus {
+  outline: none;
+  border-color: #c5fc6f;
+}
+
+.ct-open-counter {
+  font-size: 0.75rem;
+  color: #8a93a3;
+  margin-top: 0.5rem;
+  text-align: right;
+}

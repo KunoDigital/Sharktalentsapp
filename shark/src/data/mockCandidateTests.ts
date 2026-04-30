@@ -62,6 +62,96 @@ export function getTestSession(token: string): TestSession | undefined {
   return MOCK_TEST_SESSIONS[token];
 }
 
+// ============== Tecnica questions (IA-generated mock) ==============
+
+export type TecnicaQuestionType = 'multiple_choice' | 'open_ended' | 'situational';
+
+export type TecnicaQuestion = {
+  id: string;
+  type: TecnicaQuestionType;
+  area: string;
+  question: string;
+  options?: { id: string; text: string }[];
+  correct_option_id?: string;
+  style_axis?: 'autonomy_vs_consult';
+};
+
+export const TECNICA_QUESTIONS: Record<string, TecnicaQuestion[]> = {
+  job_1: [
+    {
+      id: 't1',
+      type: 'multiple_choice',
+      area: 'JavaScript',
+      question: '¿Cuál es la diferencia principal entre `let` y `const` en JavaScript?',
+      options: [
+        { id: 'a', text: '`let` permite reasignar la variable, `const` no (pero el contenido de objetos/arrays sí puede mutar)' },
+        { id: 'b', text: '`const` solo se puede usar para números, `let` para cualquier tipo' },
+        { id: 'c', text: 'No hay diferencia, son sinónimos' },
+        { id: 'd', text: '`let` es más rápido en runtime' },
+      ],
+      correct_option_id: 'a',
+    },
+    {
+      id: 't2',
+      type: 'multiple_choice',
+      area: 'React',
+      question: 'Tenés un componente que re-renderiza demasiado seguido. ¿Cuál es la primera herramienta que usarías para diagnosticar?',
+      options: [
+        { id: 'a', text: 'console.log dentro del componente' },
+        { id: 'b', text: 'React DevTools Profiler' },
+        { id: 'c', text: 'Reescribir el componente con clases' },
+        { id: 'd', text: 'Cambiar el estado a Redux' },
+      ],
+      correct_option_id: 'b',
+    },
+    {
+      id: 't3',
+      type: 'multiple_choice',
+      area: 'Bases de datos',
+      question: 'Una query SQL está corriendo a 5 segundos cuando antes corría a 50ms. ¿Cuál sería tu primer paso?',
+      options: [
+        { id: 'a', text: 'Reescribirla desde cero' },
+        { id: 'b', text: 'Pedirle al DBA que revise' },
+        { id: 'c', text: 'Correr EXPLAIN/EXPLAIN ANALYZE para ver el query plan' },
+        { id: 'd', text: 'Agregar más recursos al servidor' },
+      ],
+      correct_option_id: 'c',
+    },
+    {
+      id: 't4',
+      type: 'situational',
+      area: 'Toma de decisiones técnicas',
+      question: 'Tenés que elegir entre dos librerías. La opción A es popular pero el equipo no la conoce. La opción B es menos popular pero el equipo ya tiene experiencia. El tiempo es ajustado. ¿Qué hacés?',
+      options: [
+        { id: 'a', text: 'Voy con A porque es la industry standard y vale la pena aprender' },
+        { id: 'b', text: 'Voy con B porque ahorramos tiempo y el equipo ejecuta más rápido' },
+        { id: 'c', text: 'Hago un PoC corto de cada una con el equipo y decidimos juntos' },
+        { id: 'd', text: 'Le pregunto al CTO qué prefiere' },
+      ],
+      style_axis: 'autonomy_vs_consult',
+    },
+    {
+      id: 't5',
+      type: 'open_ended',
+      area: 'Arquitectura',
+      question: 'Describí en 3-4 líneas cómo diseñarías el endpoint para que un usuario pueda ver "todos sus pedidos del último mes" en una app de e-commerce con 1M de usuarios.',
+    },
+    {
+      id: 't6',
+      type: 'multiple_choice',
+      area: 'Performance',
+      question: 'Una página tarda 4 segundos en cargar. El bundle JS es de 2.5MB. ¿Qué optimización tendría más impacto inmediato?',
+      options: [
+        { id: 'a', text: 'Code splitting + lazy loading de rutas' },
+        { id: 'b', text: 'Cambiar de React a Vue' },
+        { id: 'c', text: 'Usar minify + gzip (ya están)' },
+        { id: 'd', text: 'Comprimir imágenes' },
+      ],
+      correct_option_id: 'a',
+    },
+  ],
+};
+
 // ============== DISC questions ==============
 // 24 preguntas típicas de DISC (forced choice). Cada pregunta tiene 4 adjetivos,
 // uno por cada dimensión. Candidato elige "más como yo" y "menos como yo".
