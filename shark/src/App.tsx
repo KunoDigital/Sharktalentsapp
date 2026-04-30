@@ -28,13 +28,26 @@ import CandidateIntegridadTest from './pages/public/CandidateIntegridadTest';
 import CandidateVideoTest from './pages/public/CandidateVideoTest';
 import CandidateApply from './pages/public/CandidateApply';
 import CandidateTestDone from './pages/public/CandidateTestDone';
+import { Skeleton, SkeletonStatCard, SkeletonChart } from './components/Skeleton';
 import './App.css';
 import './components/error-boundary.css';
 
 function LoadingPage() {
   return (
-    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--st-fg-muted)' }}>
-      Cargando…
+    <div style={{ padding: '2rem' }}>
+      <Skeleton width="40%" height={28} className="skel-mb" />
+      <Skeleton width="60%" height={14} className="skel-mb" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
+        <SkeletonStatCard />
+        <SkeletonStatCard />
+        <SkeletonStatCard />
+        <SkeletonStatCard />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem', marginTop: '1.5rem' }}>
+        <SkeletonChart />
+        <SkeletonChart height={180} />
+        <SkeletonChart height={180} />
+      </div>
     </div>
   );
 }
