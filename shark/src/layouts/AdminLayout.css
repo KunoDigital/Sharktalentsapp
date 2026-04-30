@@ -57,12 +57,29 @@
   font-weight: 500;
 }
 
+.admin-cmdk-hint {
+  font-size: 0.75rem;
+  color: var(--st-fg-muted-2);
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.admin-cmdk-hint kbd {
+  background: var(--st-bg-elev-2);
+  border: 1px solid var(--st-border-soft);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-family: 'SF Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--st-fg);
+}
+
 .admin-tenant-tag {
   font-size: 0.75rem;
   color: var(--st-fg-muted);
   border-top: 1px solid var(--st-border-soft);
   padding-top: 1rem;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   word-wrap: break-word;
 }
 

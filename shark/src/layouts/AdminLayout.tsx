@@ -1,5 +1,6 @@
 import { Outlet, NavLink } from 'react-router-dom';
 import { OrganizationSwitcher, UserButton, useOrganization } from '@clerk/clerk-react';
+import CommandPalette from '../components/CommandPalette';
 import './AdminLayout.css';
 
 const NAV_ITEMS = [
@@ -34,6 +35,9 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
+        <div className="admin-cmdk-hint">
+          Buscar: <kbd>⌘</kbd>+<kbd>K</kbd>
+        </div>
         <div className="admin-tenant-tag">
           {organization ? `${organization.name}` : 'Sin tenant'}
         </div>
@@ -49,6 +53,7 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+      <CommandPalette />
     </div>
   );
 }

@@ -1,0 +1,155 @@
+.cmdk-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8vh;
+}
+
+.cmdk-modal {
+  background: var(--st-bg-elev);
+  border: 1px solid var(--st-border-strong);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.cmdk-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--st-border-soft);
+}
+
+.cmdk-icon {
+  font-size: 1rem;
+}
+
+.cmdk-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--st-fg-strong);
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.cmdk-input::placeholder {
+  color: var(--st-fg-muted-2);
+}
+
+.cmdk-shortcut {
+  background: var(--st-bg);
+  color: var(--st-fg-muted);
+  border: 1px solid var(--st-border-soft);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-family: 'SF Mono', monospace;
+}
+
+.cmdk-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.cmdk-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--st-fg-muted);
+  font-size: 0.875rem;
+}
+
+.cmdk-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--st-fg);
+  font-family: inherit;
+}
+
+.cmdk-item.is-active {
+  background: var(--st-accent-soft);
+}
+
+.cmdk-type-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+  min-width: 70px;
+  text-align: center;
+}
+
+.cmdk-type-page { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+.cmdk-type-job { background: var(--st-accent-soft); color: var(--st-accent); }
+.cmdk-type-candidate { background: rgba(248, 113, 113, 0.15); color: #fca5a5; }
+.cmdk-type-draft { background: var(--st-warn-soft); color: var(--st-warn); }
+.cmdk-type-action { background: var(--st-bg-elev-2); color: var(--st-fg-muted); }
+
+.cmdk-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.cmdk-item-label {
+  font-size: 0.9rem;
+  color: var(--st-fg-strong);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cmdk-item-hint {
+  font-size: 0.75rem;
+  color: var(--st-fg-muted);
+  margin-top: 0.15rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cmdk-footer {
+  border-top: 1px solid var(--st-border-soft);
+  padding: 0.6rem 1rem;
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: var(--st-fg-muted);
+}
+
+.cmdk-footer kbd {
+  background: var(--st-bg);
+  border: 1px solid var(--st-border-soft);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-family: 'SF Mono', monospace;
+  margin-right: 0.3rem;
+}
