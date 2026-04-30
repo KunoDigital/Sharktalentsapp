@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getTestSession, TECNICA_QUESTIONS, type TecnicaQuestion } from '../../data/mockCandidateTests';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
+import { usePersistedState, hasPersistedState } from '../../hooks/usePersistedState';
 import './candidate-test.css';
 
 type Answer = {
@@ -16,8 +17,10 @@ export default function CandidateTecnicaTest() {
   const session = token ? getTestSession(token) : undefined;
   const questions = session ? TECNICA_QUESTIONS[session.job_id] ?? [] : [];
 
-  const [answers, setAnswers] = useState<Record<string, Answer>>({});
-  const [currentIdx, setCurrentIdx] = useState(0);
+  const storageKey = `tecnica_${token ?? 'anon'}`;
+  const hadResume = hasPersistedState(`${storageKey}_answers`);
+  const [answers, setAnswers, clearAnswers] = usePersistedState<Record<string, Answer>>(`${storageKey}_answers`, {});
+  const [currentIdx, setCurrentIdx, clearIdx] = usePersistedState<number>(`${storageKey}_idx`, 0);
   const [submitted, setSubmitted] = useState(false);
 
   const currentQ = questions[currentIdx];
@@ -67,6 +70,8 @@ export default function CandidateTecnicaTest() {
       setCurrentIdx((i) => i + 1);
     } else {
       setSubmitted(true);
+      clearAnswers();
+      clearIdx();
       // Score solo cuenta multiple_choice con correct_option_id
       const scorable = questions.filter((q) => q.correct_option_id != null);
       const correct = scorable.filter((q) => answers[q.id]?.selected_option_id === q.correct_option_id).length;
@@ -118,6 +123,18 @@ export default function CandidateTecnicaTest() {
             Estas preguntas evalúan tu dominio técnico para el puesto. Si una pregunta tiene "Argumentar tu respuesta" abajo, escribí en tus palabras — eso vale más que la opción que marcaste.
           </p>
         </div>
+
+        {hadResume && Object.keys(answers).length > 0 && (
+          <div className="ct-resume-banner">
+            ↩️ Continuamos donde quedaste — tenés {Object.keys(answers).length} respuestas guardadas.
+            <button
+              className="ct-resume-clear"
+              onClick={() => {
+                if (confirm('¿Empezar de cero?')) { clearAnswers(); clearIdx(); }
+              }}
+            >Empezar de cero</button>
+          </div>
+        )}
 
         {antiCheatCount > 0 && (
           <div className="ct-anticheat-warning">

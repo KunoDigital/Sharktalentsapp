@@ -293,6 +293,36 @@
   margin-bottom: 1rem;
 }
 
+.ct-resume-banner {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: #a5b4fc;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ct-resume-clear {
+  background: transparent;
+  color: #a5b4fc;
+  border: 1px solid #6366f1;
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ct-resume-clear:hover {
+  background: #6366f1;
+  color: #fff;
+}
+
 .ct-question-card {
   background: #131923;
   border: 1px solid #1c2230;

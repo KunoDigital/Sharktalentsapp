@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getTestSession, VELNA_SUBTESTS, type VelnaSubtest } from '../../data/mockCandidateTests';
 import { getJobById } from '../../data/mockJobs';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
+import { usePersistedState } from '../../hooks/usePersistedState';
 import { calculateVelnaResult } from '../../lib/scoring';
 import './candidate-test.css';
 
@@ -13,10 +14,11 @@ export default function CandidateVelnaTest() {
   const navigate = useNavigate();
   const session = token ? getTestSession(token) : undefined;
 
+  const storageKey = `velna_${token ?? 'anon'}_answers`;
   const [phase, setPhase] = useState<Phase>('intro');
   const [subtestIdx, setSubtestIdx] = useState(0);
   const [questionIdx, setQuestionIdx] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({}); // qid -> optId
+  const [answers, setAnswers, clearAnswers] = usePersistedState<Record<string, string>>(storageKey, {});
   const [secondsLeft, setSecondsLeft] = useState(0);
 
   const subtest = VELNA_SUBTESTS[subtestIdx];
@@ -59,6 +61,7 @@ export default function CandidateVelnaTest() {
       const result = job
         ? calculateVelnaResult(VELNA_SUBTESTS, answers, job.velna_ideal)
         : null;
+      clearAnswers();
       setTimeout(() => navigate(`/test/${token}/disc`, result ? {
         state: {
           score: {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getTestSession, INTEGRITY_QUESTIONS } from '../../data/mockCandidateTests';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
+import { usePersistedState, hasPersistedState } from '../../hooks/usePersistedState';
 import { calculateIntegrityResult } from '../../lib/scoring';
 import './candidate-test.css';
 
@@ -18,7 +19,9 @@ export default function CandidateIntegridadTest() {
   const navigate = useNavigate();
   const session = token ? getTestSession(token) : undefined;
 
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const storageKey = `integridad_${token ?? 'anon'}_answers`;
+  const hadResume = hasPersistedState(storageKey);
+  const [answers, setAnswers, clearAnswers] = usePersistedState<Record<string, number>>(storageKey, {});
   const [submitted, setSubmitted] = useState(false);
 
   const { count: antiCheatCount } = useAntiCheat({
@@ -39,6 +42,7 @@ export default function CandidateIntegridadTest() {
   function submit() {
     if (!allAnswered) return;
     setSubmitted(true);
+    clearAnswers();
     const result = calculateIntegrityResult(INTEGRITY_QUESTIONS, answers);
     setTimeout(() => navigate(`/test/${token}/done?phase=integridad`, {
       state: {
@@ -85,6 +89,16 @@ export default function CandidateIntegridadTest() {
             Marcá qué tan de acuerdo estás con cada afirmación. <strong>No hay respuestas correctas</strong> — buscamos honestidad, no agradar. Las respuestas extremas en todas las preguntas pueden levantar alertas.
           </p>
         </div>
+
+        {hadResume && Object.keys(answers).length > 0 && (
+          <div className="ct-resume-banner">
+            ↩️ Continuamos donde quedaste — tenés {Object.keys(answers).length} respuestas guardadas.
+            <button
+              className="ct-resume-clear"
+              onClick={() => { if (confirm('¿Empezar de cero?')) clearAnswers(); }}
+            >Empezar de cero</button>
+          </div>
+        )}
 
         {antiCheatCount > 0 && (
           <div className="ct-anticheat-warning">

@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getTestSession, DISC_QUESTIONS, type DiscOption } from '../../data/mockCandidateTests';
 import { getJobById } from '../../data/mockJobs';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
+import { usePersistedState, hasPersistedState } from '../../hooks/usePersistedState';
 import { calculateDiscRaw, calculateDiscSimilarity, discDominantLabel } from '../../lib/scoring';
 import './candidate-test.css';
 
@@ -17,8 +18,10 @@ export default function CandidateDiscTest() {
   const navigate = useNavigate();
   const session = token ? getTestSession(token) : undefined;
 
-  const [answers, setAnswers] = useState<Record<string, Partial<Answer>>>({});
-  const [currentIdx, setCurrentIdx] = useState(0);
+  const storageKey = `disc_${token ?? 'anon'}`;
+  const hadResume = hasPersistedState(`${storageKey}_answers`);
+  const [answers, setAnswers, clearAnswers] = usePersistedState<Record<string, Partial<Answer>>>(`${storageKey}_answers`, {});
+  const [currentIdx, setCurrentIdx, clearIdx] = usePersistedState<number>(`${storageKey}_idx`, 0);
   const [submitted, setSubmitted] = useState(false);
 
   const currentQ = DISC_QUESTIONS[currentIdx];
@@ -71,6 +74,9 @@ export default function CandidateDiscTest() {
       }) : undefined;
 
       console.log('[DISC] submitted', { raw, dominant, similarity, antiCheatEvents: events });
+      // Limpiar localStorage al terminar
+      clearAnswers();
+      clearIdx();
       setTimeout(() => navigate(`/test/${token}/done?phase=conductual`, {
         state: {
           score: {
@@ -123,6 +129,23 @@ export default function CandidateDiscTest() {
             No hay respuestas buenas ni malas — usá tu intuición.
           </p>
         </div>
+
+        {hadResume && Object.keys(answers).length > 0 && (
+          <div className="ct-resume-banner">
+            ↩️ Continuamos donde quedaste — tenés {Object.keys(answers).length} respuestas guardadas.
+            <button
+              className="ct-resume-clear"
+              onClick={() => {
+                if (confirm('¿Empezar de cero? Se borran las respuestas guardadas.')) {
+                  clearAnswers();
+                  clearIdx();
+                }
+              }}
+            >
+              Empezar de cero
+            </button>
+          </div>
+        )}
 
         {antiCheatCount > 0 && (
           <div className="ct-anticheat-warning">
