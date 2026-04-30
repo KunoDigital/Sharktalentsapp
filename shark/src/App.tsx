@@ -9,6 +9,8 @@ import CandidateDetail from './pages/CandidateDetail';
 import Comparativo from './pages/Comparativo';
 import { ReportsStub, InboxStub, SettingsStub } from './pages/Stubs';
 import PublicReport from './pages/public/PublicReport';
+import ClientPortalLanding from './pages/public/ClientPortalLanding';
+import ClientPortalJobView from './pages/public/ClientPortalJob';
 import './App.css';
 
 function SignedOutLanding() {
@@ -55,6 +57,8 @@ export default function App() {
       <Routes>
         {/* Public routes — no Clerk auth required */}
         <Route path="/report/:token" element={<PublicReport />} />
+        <Route path="/portal/:token" element={<ClientPortalLanding />} />
+        <Route path="/portal/:token/jobs/:jobId" element={<ClientPortalJobView />} />
         {/* Everything else requires login */}
         <Route path="/*" element={<ProtectedAdmin />} />
       </Routes>
