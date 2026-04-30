@@ -16,6 +16,9 @@ import Settings from './pages/Settings';
 import PublicReport from './pages/public/PublicReport';
 import ClientPortalLanding from './pages/public/ClientPortalLanding';
 import ClientPortalJobView from './pages/public/ClientPortalJob';
+import CandidateTestEntry from './pages/public/CandidateTestEntry';
+import CandidateDiscTest from './pages/public/CandidateDiscTest';
+import CandidateTestDone from './pages/public/CandidateTestDone';
 import './App.css';
 
 function SignedOutLanding() {
@@ -67,6 +70,9 @@ export default function App() {
         <Route path="/report/:token" element={<PublicReport />} />
         <Route path="/portal/:token" element={<ClientPortalLanding />} />
         <Route path="/portal/:token/jobs/:jobId" element={<ClientPortalJobView />} />
+        <Route path="/test/:token" element={<CandidateTestEntry />} />
+        <Route path="/test/:token/disc" element={<CandidateDiscTest />} />
+        <Route path="/test/:token/done" element={<CandidateTestDone />} />
         {/* Everything else requires login */}
         <Route path="/*" element={<ProtectedAdmin />} />
       </Routes>
