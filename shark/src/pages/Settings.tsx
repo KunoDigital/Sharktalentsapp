@@ -145,6 +145,17 @@ function EquipoTab() {
           ))}
         </tbody>
       </table>
+      <div className="settings-item" style={{ marginTop: '1.5rem' }}>
+        <div>
+          <div className="settings-item-title">Tour de bienvenida</div>
+          <div className="settings-item-desc">
+            Volver a ver el tour interactivo que te muestra las features principales.
+          </div>
+        </div>
+        <div className="settings-item-actions">
+          <button className="btn-toolbar" onClick={replayTour}>Volver a ver tour</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -175,6 +186,13 @@ function BrandingTab() {
       </div>
     </div>
   );
+}
+
+function replayTour() {
+  localStorage.removeItem('onboarding_completed');
+  if (confirm('Tour reseteado. ¿Refrescar para ver?')) {
+    window.location.href = '/';
+  }
 }
 
 function NotificationsTab() {

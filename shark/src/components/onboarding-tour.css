@@ -1,0 +1,121 @@
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 70;
+  pointer-events: auto;
+}
+
+.tour-highlight {
+  position: fixed;
+  border: 3px solid var(--st-accent);
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 71;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0);
+  animation: tour-pulse 2s ease-in-out infinite;
+  transition: top 0.3s, left 0.3s, width 0.3s, height 0.3s;
+}
+
+@keyframes tour-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(197, 252, 111, 0.5); }
+  50% { box-shadow: 0 0 0 12px rgba(197, 252, 111, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-highlight { animation: none; }
+}
+
+.tour-tooltip {
+  position: fixed;
+  z-index: 72;
+  background: var(--st-bg-elev);
+  border: 1px solid var(--st-accent);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  width: 360px;
+  max-width: calc(100vw - 2rem);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  transition: top 0.3s, left 0.3s;
+}
+
+.tour-progress-dots {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.tour-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--st-bg-elev-2);
+  transition: background 0.2s;
+}
+
+.tour-dot.is-active {
+  background: var(--st-accent);
+  width: 24px;
+  border-radius: 999px;
+}
+
+.tour-dot.is-done {
+  background: var(--st-fg-muted);
+}
+
+.tour-progress-text {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--st-fg-muted);
+}
+
+.tour-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: var(--st-fg-strong);
+  font-weight: 600;
+}
+
+.tour-body {
+  margin: 0 0 1rem;
+  color: var(--st-fg);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.tour-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tour-skip {
+  background: transparent;
+  color: var(--st-fg-muted);
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.4rem;
+}
+
+.tour-skip:hover {
+  color: var(--st-fg);
+  text-decoration: underline;
+}
+
+.tour-nav-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .tour-tooltip {
+    width: calc(100vw - 2rem);
+    left: 1rem !important;
+    right: 1rem !important;
+    transform: none !important;
+  }
+}

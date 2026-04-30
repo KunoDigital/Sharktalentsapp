@@ -4,6 +4,7 @@ import { OrganizationSwitcher, UserButton, useOrganization } from '@clerk/clerk-
 import CommandPalette from '../components/CommandPalette';
 import NotificationCenter from '../components/NotificationCenter';
 import ShortcutsHelp from '../components/ShortcutsHelp';
+import OnboardingTour from '../components/OnboardingTour';
 import { useGlobalShortcuts } from '../hooks/useGlobalShortcuts';
 import './AdminLayout.css';
 
@@ -85,6 +86,7 @@ export default function AdminLayout() {
       </div>
       <CommandPalette />
       <ShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <OnboardingTour />
     </div>
   );
 }
