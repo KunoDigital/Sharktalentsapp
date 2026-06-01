@@ -168,6 +168,11 @@ export default function CandidateVelnaTest() {
   }
 
   if (phase === 'intro') {
+    // Las preguntas cognitivas se cargan async (dynamic import del JSON del level
+    // correspondiente). Si el candidato cliquea "Empezar" antes de que la carga termine,
+    // startSubtest(0) crashea porque VELNA_SUBTESTS[0] es undefined. Por eso disabled
+    // el botón mientras length===0.
+    const subtestsReady = VELNA_SUBTESTS.length > 0;
     return (
       <div className="ct-root">
         <header className="ct-header">
@@ -179,20 +184,31 @@ export default function CandidateVelnaTest() {
           <p className="ct-instructions">
             Esta evaluación tiene <strong>5 sub-pruebas con tiempo</strong>. Cada una mide una habilidad distinta. No te preocupes si no terminás todas las preguntas — la velocidad y la precisión cuentan parejo.
           </p>
-          <div className="ct-subtests-list">
-            {VELNA_SUBTESTS.map((st, i) => (
-              <div key={st.key} className="ct-subtest-row">
-                <div className="ct-subtest-num">{i + 1}</div>
-                <div className="ct-subtest-info">
-                  <div className="ct-subtest-label">{st.label}</div>
-                  <div className="ct-subtest-desc">{st.description}</div>
+          {subtestsReady ? (
+            <div className="ct-subtests-list">
+              {VELNA_SUBTESTS.map((st, i) => (
+                <div key={st.key} className="ct-subtest-row">
+                  <div className="ct-subtest-num">{i + 1}</div>
+                  <div className="ct-subtest-info">
+                    <div className="ct-subtest-label">{st.label}</div>
+                    <div className="ct-subtest-desc">{st.description}</div>
+                  </div>
+                  <div className="ct-subtest-time">{Math.floor(st.duration_sec / 60)} min · {st.questions.length} preg.</div>
                 </div>
-                <div className="ct-subtest-time">{Math.floor(st.duration_sec / 60)} min · {st.questions.length} preg.</div>
-              </div>
-            ))}
-          </div>
-          <button className="ct-start-btn" onClick={() => setPhase('subtest_intro')}>
-            Empezar →
+              ))}
+            </div>
+          ) : (
+            <p className="muted" style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+              Cargando preguntas…
+            </p>
+          )}
+          <button
+            className="ct-start-btn"
+            onClick={() => setPhase('subtest_intro')}
+            disabled={!subtestsReady}
+            style={!subtestsReady ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+          >
+            {subtestsReady ? 'Empezar →' : 'Cargando…'}
           </button>
         </main>
       </div>
