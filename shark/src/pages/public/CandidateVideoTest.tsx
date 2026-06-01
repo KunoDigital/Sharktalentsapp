@@ -2,7 +2,21 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getTestSession, VIDEO_QUESTIONS, type VideoQuestion } from '../../data/mockCandidateTests';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
+import { publicApi } from '../../lib/publicApi';
+import { config } from '../../config';
+import { logger } from '../../lib/logger';
 import './candidate-test.css';
+
+const log = logger('CANDIDATE_VIDEO_TEST');
+
+const CATEGORY_LABELS: Record<string, string> = {
+  technical: 'Técnica',
+  weakness_followup: 'Debilidad',
+  situational: 'Situacional',
+  cv_claim_check: 'Validar CV',
+  integrity_check: 'Integridad',
+  english_check: 'Inglés',
+};
 
 type Modality = 'video' | 'audio' | 'text';
 
@@ -10,6 +24,7 @@ type Response = {
   question_id: string;
   modality: Modality;
   blob_url?: string; // local URL del recording (en backend: file id)
+  blob?: Blob; // actual blob — se usa para upload al backend
   text?: string;
   duration_sec?: number;
   attempt: number;
@@ -26,22 +41,98 @@ export default function CandidateVideoTest() {
   const [questionIdx, setQuestionIdx] = useState(0);
   const [responses, setResponses] = useState<Record<string, Response>>({});
   const [attempts, setAttempts] = useState<Record<string, number>>({});
+  const [questions, setQuestions] = useState<VideoQuestion[]>(VIDEO_QUESTIONS);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const currentQ = VIDEO_QUESTIONS[questionIdx];
+  // Cargar preguntas reales del backend si hay useApi
+  useEffect(() => {
+    if (!token || !config.useApi) return;
+    let cancelled = false;
+    publicApi
+      .getTestVideos(token)
+      .then((res) => {
+        if (cancelled || !res) return;
+        if (!res.questions || res.questions.length === 0) {
+          setLoadError('Las preguntas todavía no fueron generadas. Pedile a tu reclutadora que las dispare desde su panel.');
+          return;
+        }
+        const adapted: VideoQuestion[] = res.questions.map((q, i) => ({
+          id: q.question_id,
+          order: i + 1,
+          category: q.category,
+          category_label: CATEGORY_LABELS[q.category] ?? q.category,
+          question: q.question_text,
+          max_seconds: q.max_duration_sec,
+          context_hint: '',
+        } as VideoQuestion));
+        setQuestions(adapted);
+      })
+      .catch((err) => {
+        log.warn('load videos failed', { error: (err as Error).message });
+        // Fallback al mock — el candidato puede igual completar (modo demo)
+      });
+    return () => { cancelled = true; };
+  }, [token]);
+
+  const currentQ = questions[questionIdx];
   const { count: antiCheatCount } = useAntiCheat({
     enabled: phase === 'questions',
     current_question_id: currentQ?.id ?? null,
   });
 
   if (!session) return <p>Link inválido. <Link to="/">Volver</Link></p>;
+  if (loadError) {
+    return (
+      <div className="ct-root">
+        <main className="ct-main">
+          <div className="ct-thanks-big">
+            <h1>⏳ Preguntas pendientes</h1>
+            <p>{loadError}</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   function handleResponse(r: Response) {
     setResponses((curr) => ({ ...curr, [r.question_id]: r }));
     setAttempts((curr) => ({ ...curr, [r.question_id]: (curr[r.question_id] ?? 0) + 1 }));
   }
 
-  function nextQuestion() {
-    if (questionIdx < VIDEO_QUESTIONS.length - 1) {
+  async function submitCurrentToBackend(): Promise<void> {
+    if (!token || !config.useApi || !currentQ) return;
+    const r = responses[currentQ.id];
+    if (!r) return;
+
+    // Si hay blob, subir primero al File Store y obtener catalyst_file_id
+    let catalystFileId: string | undefined;
+    if (r.blob) {
+      try {
+        const upload = await publicApi.uploadTestVideoBlob(token, currentQ.id, r.blob);
+        if (upload?.catalyst_file_id) {
+          catalystFileId = upload.catalyst_file_id;
+          log.info('blob uploaded', { qid: currentQ.id, fileId: catalystFileId, bytes: upload.bytes });
+        }
+      } catch (err) {
+        log.warn('upload blob failed', { error: (err as Error).message, qid: currentQ.id });
+        // Seguir sin file_id — el submit todavía registra el attempt con metadata
+      }
+    }
+
+    try {
+      await publicApi.submitTestVideo(token, currentQ.id, {
+        transcript: r.text || undefined,
+        duration_sec: r.duration_sec,
+        catalyst_file_id: catalystFileId,
+      });
+    } catch (err) {
+      log.warn('submit video failed', { error: (err as Error).message, qid: currentQ.id });
+    }
+  }
+
+  async function nextQuestion() {
+    await submitCurrentToBackend();
+    if (questionIdx < questions.length - 1) {
       setQuestionIdx(questionIdx + 1);
     } else {
       setPhase('done');
@@ -70,12 +161,12 @@ export default function CandidateVideoTest() {
   return (
     <div className="ct-root">
       <header className="ct-test-header">
-        <div className="ct-test-brand">SharkTalents.AI · Video {questionIdx + 1}/7</div>
+        <div className="ct-test-brand">SharkTalents.AI · Video {questionIdx + 1}/{questions.length}</div>
         <div className="ct-test-progress">
           <div className="ct-progress-bar">
-            <div className="ct-progress-bar-fill" style={{ width: `${((questionIdx + 1) / VIDEO_QUESTIONS.length) * 100}%` }} />
+            <div className="ct-progress-bar-fill" style={{ width: `${((questionIdx + 1) / questions.length) * 100}%` }} />
           </div>
-          <span className="ct-progress-text">{questionIdx + 1}/{VIDEO_QUESTIONS.length}</span>
+          <span className="ct-progress-text">{questionIdx + 1}/{questions.length}</span>
         </div>
       </header>
 
@@ -151,6 +242,7 @@ function VideoQuestionCard({
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [textAnswer, setTextAnswer] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -207,6 +299,7 @@ function VideoQuestionCard({
         });
         const url = URL.createObjectURL(blob);
         setPreviewUrl(url);
+        setRecordedBlob(blob);
         setRecordingComplete(true);
         if (streamRef.current) {
           streamRef.current.getTracks().forEach((t) => t.stop());
@@ -259,6 +352,7 @@ function VideoQuestionCard({
         question_id: question.id,
         modality,
         blob_url: previewUrl,
+        blob: recordedBlob ?? undefined,
         duration_sec: secondsElapsed,
         attempt: attemptsUsed + 1,
       });

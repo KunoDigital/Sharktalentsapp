@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Checklist primer cliente — flow end-to-end</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 0 24px 60px;
+    color: #1a1a1a;
+    line-height: 1.55;
+    background: #fafafa;
+  }
+  h1 {
+    font-size: 26px;
+    margin: 0 0 4px;
+    color: #0e1218;
+  }
+  .subtitle {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+  h2 {
+    font-size: 18px;
+    color: #0e1218;
+    margin-top: 28px;
+    margin-bottom: 12px;
+    padding-left: 12px;
+    border-left: 4px solid #dafd6f;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  h2 .stage-num {
+    background: #0e1218;
+    color: #dafd6f;
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  .step {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 8px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .step input[type="checkbox"] {
+    margin: 4px 0 0 0;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .step .content {
+    flex: 1;
+  }
+  .step .num {
+    font-weight: bold;
+    color: #0e1218;
+    margin-right: 6px;
+  }
+  .step .title {
+    font-weight: 600;
+    color: #0e1218;
+  }
+  .step .detail {
+    font-size: 13px;
+    color: #4b5563;
+    margin-top: 4px;
+  }
+  .step.manual {
+    border-left: 3px solid #f59e0b;
+  }
+  .step.auto {
+    border-left: 3px solid #22c55e;
+  }
+  .step.cris {
+    border-left: 3px solid #3b82f6;
+  }
+  .legend {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 13px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 2px;
+  }
+  .notes {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 10px;
+    font-size: 13px;
+  }
+  .notes strong { color: #92400e; }
+  .notes textarea {
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    resize: vertical;
+  }
+  .progress {
+    position: sticky;
+    top: 20px;
+    background: #0e1218;
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10;
+  }
+  .progress-bar {
+    width: 200px;
+    height: 8px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #dafd6f;
+    transition: width 0.3s;
+  }
+</style>
+</head>
+<body>
+
+<h1>📋 Checklist primer cliente — flow end-to-end</h1>
+<p class="subtitle">Vamos paso a paso. Tickeá lo que funcione, dejá nota de lo que falle.</p>
+
+<div class="progress">
+  <div>
+    <strong>Progreso:</strong> <span id="done">0</span> / <span id="total">0</span> pasos
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="bar" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span> Cris hace en SharkTalents</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span> Cris hace en sistema externo (Catalyst, Recruit, Zoho Sign)</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#22c55e"></span> Automático (verificar que pasa solo)</div>
+</div>
+
+<!-- ETAPA 1: PRE-FLOW -->
+<h2>Pre-flow — preparar el tenant <span class="stage-num">SETUP</span></h2>
+
+<div class="step manual">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">1.1</span><span class="title">Subir template de contrato a Zoho Sign</span></div>
+    <div class="detail">Zoho Sign Console → Templates → Subir el contrato + crear campos. Anotá el TEMPLATE_ID.</div>
+  </div>
+</div>
+
+<div class="step manual">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">1.2</span><span class="title">Setear env var ZOHO_SIGN_CONTRACT_TEMPLATE_ID en Catalyst</span></div>
+    <div class="detail">Catalyst Console → Functions → api → Environment Variables → agregar con el ID del paso anterior.</div>
+  </div>
+</div>
+
+<div class="step manual">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">1.3</span><span class="title">Verificar templates de Recruit con merge field</span></div>
+    <div class="detail">Los 6 templates (3 email + 3 WP) deben tener al final del link: <code>?recruit_id=${Candidatos.ID de Candidato}</code></div>
+  </div>
+</div>
+
+<!-- ETAPA 2: CRM → SHARKTALENTS -->
+<h2>Etapa 2 — Convertir lead a cliente <span class="stage-num">CRM</span></h2>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">2.1</span><span class="title">Convertir lead del CRM en tenant SharkTalents</span></div>
+    <div class="detail">SharkTalents admin → /marketing/leads → buscar al cliente → botón "Convertir a tenant" (yo verifico que existe ese botón).</div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">2.2</span><span class="title">Cliente queda como tenant activo</span></div>
+    <div class="detail">Después de convertir, verificar en Catalyst tabla <code>Tenants</code> que aparece la fila nueva.</div>
+  </div>
+</div>
+
+<!-- ETAPA 3: PERFIL DE CARGO -->
+<h2>Etapa 3 — Crear perfil de cargo <span class="stage-num">DRAFT</span></h2>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">3.1</span><span class="title">Pegar transcript en SharkTalents</span></div>
+    <div class="detail">/drafts → "Pegar transcript" → pegás el PDF del cliente + tus notas de la reunión.</div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">3.2</span><span class="title">IA genera el draft (15-30s)</span></div>
+    <div class="detail">Tarda hasta 60s. Si aborta o tira error → anotar abajo.</div>
+  </div>
+</div>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">3.3</span><span class="title">Revisar el draft generado</span></div>
+    <div class="detail">¿Tiene Objetivo, Responsabilidades, Tareas, Herramientas, Perfil del candidato, DISC narrativo, Competencias con qué evaluamos? Si falta algo → anotar.</div>
+  </div>
+</div>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">3.4</span><span class="title">Aprobar y mandar al cliente</span></div>
+    <div class="detail">Apretar "✓ Aprobar y mandar al cliente". Si pide email, poner el del cliente. Verifica que aparece alert con link del portal.</div>
+  </div>
+</div>
+
+<!-- ETAPA 4: CLIENTE VALIDA -->
+<h2>Etapa 4 — Cliente valida el perfil <span class="stage-num">PORTAL</span></h2>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">4.1</span><span class="title">Cliente recibe email "Necesitamos tu aprobación"</span></div>
+    <div class="detail">Verificar que llega a su inbox. Si no llega en 2 min → revisar spam + logs de outbox.</div>
+  </div>
+</div>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">4.2</span><span class="title">Cliente abre el portal y revisa el perfil</span></div>
+    <div class="detail">Verificar que se ve TODO: datos del puesto, objetivo, responsabilidades, tareas, herramientas, perfil candidato, DISC narrativo + barras, VELNA, tabla competencias, condiciones.</div>
+  </div>
+</div>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">4.3</span><span class="title">Cliente puede dejar comentarios o aprobar</span></div>
+    <div class="detail">Probar el textarea de comentarios. Apretar "✓ Aprobar el perfil". Verificar mensaje "¡Listo!".</div>
+  </div>
+</div>
+
+<!-- ETAPA 5: CREACIÓN AUTOMÁTICA -->
+<h2>Etapa 5 — Creación automática <span class="stage-num">AUTO</span></h2>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">5.1</span><span class="title">Se crea el Job en SharkTalents</span></div>
+    <div class="detail">Verificar en Catalyst tabla <code>Jobs</code> que aparece fila nueva con el título del puesto y company.</div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">5.2</span><span class="title">Se crea Job Opening en Zoho Recruit</span></div>
+    <div class="detail">Zoho Recruit → Ofertas de empleo → debería aparecer el nuevo puesto con título + cliente + descripción.</div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">5.3</span><span class="title">Los 3 campos custom del Job Opening tienen links</span></div>
+    <div class="detail">En Recruit, abrí el puesto: <code>Perfil tecnica</code>, <code>Perfil Disc</code>, <code>Prueba integridad</code> deben tener URLs auto-llenadas con <code>recruit_job_id</code>.</div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">5.4</span><span class="title">recruit_job_id guardado en SharkTalents</span></div>
+    <div class="detail">En Catalyst tabla <code>Jobs</code>, la fila nueva debe tener <code>recruit_job_id</code> con un ID numérico.</div>
+  </div>
+</div>
+
+<!-- ETAPA 6: CONTRATO -->
+<h2>Etapa 6 — Contrato al cliente <span class="stage-num">CONTRATO</span></h2>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">6.1</span><span class="title">Mandar contrato desde MarketingLeads</span></div>
+    <div class="detail">/marketing/leads → click en "📄 Contrato" del lead → llenar form (puesto, salario USD) → "Enviar".</div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">6.2</span><span class="title">Cliente recibe email de Zoho Sign</span></div>
+    <div class="detail">El email viene de Zoho Sign, no de ZeptoMail. Verificar que el cliente lo recibe.</div>
+  </div>
+</div>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">6.3</span><span class="title">Cliente firma el contrato</span></div>
+    <div class="detail">Cliente abre el link, revisa, firma digital. Verificar en Zoho Sign que queda "Completed".</div>
+  </div>
+</div>
+
+<!-- ETAPA 7: PUBLICIDAD -->
+<h2>Etapa 7 — Publicar el puesto <span class="stage-num">PUBLICAR</span></h2>
+
+<div class="step manual">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">7.1</span><span class="title">Crear publicidad de LinkedIn (manual)</span></div>
+    <div class="detail">Vos creás la pauta a mano apuntando a la página de aplicación del puesto en Recruit.</div>
+  </div>
+</div>
+
+<!-- ETAPA 8: CANDIDATOS APLICAN -->
+<h2>Etapa 8 — Candidato aplica <span class="stage-num">CANDIDATO</span></h2>
+
+<div class="step manual">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">8.1</span><span class="title">Candidato llena form de Recruit</span></div>
+    <div class="detail">Recruit lo crea con status <code>Applied</code>. Vos lo mirás y decidís pasar a <code>intelliscreen</code>.</div>
+  </div>
+</div>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">8.2</span><span class="title">Mover manualmente a intelliscreen</span></div>
+    <div class="detail">En Recruit, cambiar Application Status del candidato a <code>intelliscreen</code>.</div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">8.3</span><span class="title">Recruit dispara email/WP con link a prueba técnica</span></div>
+    <div class="detail">El link tiene <code>?recruit_id=...</code> que identifica al candidato. Verificar que llega.</div>
+  </div>
+</div>
+
+<!-- ETAPA 9: PRUEBAS DEL CANDIDATO -->
+<h2>Etapa 9 — Candidato hace pruebas <span class="stage-num">PRUEBAS</span></h2>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">9.1</span><span class="title">Candidato hace técnica</span></div>
+    <div class="detail">Click en link → llega a SharkTalents → hace la prueba técnica → submitea.</div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">9.2</span><span class="title">SharkTalents avisa a Recruit → pasa a Kudert</span></div>
+    <div class="detail">Verificar en Recruit que el candidato cambia de status a <code>Kudert</code>.</div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">9.3</span><span class="title">Recruit dispara email/WP de DISC + VELNA + emoción</span></div>
+    <div class="detail">Llega el siguiente link al candidato.</div>
+  </div>
+</div>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">9.4</span><span class="title">Candidato hace conductual</span></div>
+    <div class="detail">DISC + VELNA + emoción.</div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">9.5</span><span class="title">SharkTalents avisa Recruit → pasa a veritas</span></div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">9.6</span><span class="title">Recruit dispara email/WP de integridad</span></div>
+  </div>
+</div>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">9.7</span><span class="title">Candidato hace integridad</span></div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">9.8</span><span class="title">SharkTalents avisa Recruit → pasa a Invitación entrevista</span></div>
+    <div class="detail">⚠️ <strong>Decisión:</strong> ¿Saltar videos para este cliente y pasar directo a finalist? Si sí, hay que configurar el flow.</div>
+  </div>
+</div>
+
+<!-- ETAPA 10: REPORTE AL CLIENTE -->
+<h2>Etapa 10 — Reporte al cliente <span class="stage-num">REPORTE</span></h2>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">10.1</span><span class="title">Bot evalúa al candidato (modo cold, sin tu aprobación)</span></div>
+    <div class="detail">Bot decide si pasa a finalist o se rechaza basado en scores. Verificar que pasa solo sin pedir aprobación tuya.</div>
+  </div>
+</div>
+
+<div class="step auto">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">10.2</span><span class="title">Cliente recibe reporte de finalistas</span></div>
+    <div class="detail">Email al cliente con link al reporte (DISC, VELNA, integridad, técnica).</div>
+  </div>
+</div>
+
+<div class="step cris">
+  <input type="checkbox">
+  <div class="content">
+    <div><span class="num">10.3</span><span class="title">Cliente puede dejar notas en el reporte</span></div>
+    <div class="detail">Verificar que tiene UI para escribir comentarios por candidato.</div>
+  </div>
+</div>
+
+<!-- NOTAS GENERALES -->
+<div class="notes">
+  <strong>📝 Notas de la prueba</strong>
+  <p style="margin: 8px 0 0 0;">Anotá acá los issues que vayas encontrando para arreglar después:</p>
+  <textarea rows="8" placeholder="Ej:&#10;- Etapa 5.2: el Job Opening en Recruit no apareció — verificar logs&#10;- Etapa 9.3: el WP no llegó — revisar template&#10;..."></textarea>
+</div>
+
+<script>
+  function updateProgress() {
+    const checks = document.querySelectorAll('input[type="checkbox"]');
+    const done = document.querySelectorAll('input[type="checkbox"]:checked').length;
+    const total = checks.length;
+    document.getElementById('done').textContent = done;
+    document.getElementById('total').textContent = total;
+    document.getElementById('bar').style.width = (done/total*100) + '%';
+  }
+  document.querySelectorAll('input[type="checkbox"]').forEach(c => c.addEventListener('change', updateProgress));
+  updateProgress();
+</script>
+
+</body>
+</html>

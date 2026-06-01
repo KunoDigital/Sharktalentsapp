@@ -145,6 +145,90 @@ const SECTIONS: Section[] = [
       },
     ],
   },
+  {
+    title: 'Crear y configurar un puesto',
+    icon: '➕',
+    faqs: [
+      {
+        q: '¿Cómo arranco un puesto nuevo desde cero?',
+        a: (
+          <ol>
+            <li>Ir a <Link to="/jobs">Jobs</Link> → "Nuevo puesto"</li>
+            <li>Completar título, empresa, contexto y nivel cognitivo (basic/mid/senior)</li>
+            <li>Definir DISC ideal — usá el slider visual o uno de los 24 PK profiles</li>
+            <li>Definir mínimo técnico (default 60%) y reglas de auto-rechazo si querés filtrado automático</li>
+            <li>Activar el puesto → ya genera link público de aplicación</li>
+          </ol>
+        ),
+      },
+      {
+        q: '¿Qué es el "Briefing IA" y para qué sirve?',
+        a: <>Si tenés transcript de reunión con el cliente, pegalo en "Drafts" y la IA arma un Job Profile completo (DISC ideal, VELNA, competencias, salario sugerido, contexto). Ahorra ~30 min por puesto. Después podés refinar con feedback en lenguaje natural.</>,
+      },
+      {
+        q: '¿Cómo defino el perfil del jefe directo (boss profile)?',
+        a: <>En el form del puesto hay sección "Estilo del jefe". Definís nombre, rol, y un slider de 0-1 entre "consulta todo" → "da autonomía". Si lo seteás, la prueba situacional doble eje compara el estilo del candidato contra el del jefe — match alto = mejor fit cultural.</>,
+      },
+      {
+        q: '¿Qué hace el flag "auto-rejection rules"?',
+        a: <>Reglas opcionales que rechazan al candidato automáticamente al fallar umbrales. Ej: similitud DISC mínima 50%, VELNA mínimo 60, integridad máximo 30% riesgo. Sin reglas, todo candidato pasa al siguiente stage hasta que decidas a mano.</>,
+      },
+    ],
+  },
+  {
+    title: 'Pool interno y matching',
+    icon: '🔍',
+    faqs: [
+      {
+        q: '¿Qué es el pool interno?',
+        a: <>Base de candidatos evaluados que NO fueron contratados pero quedaron buenos. Cuando se cierra un puesto sin contratar a alguien fuerte, automáticamente entra al pool con sus scores. Para puestos futuros, podés hacer "match" y ver candidatos preexistentes que califican sin tener que arrancar evaluación de cero.</>,
+      },
+      {
+        q: '¿Cómo funciona el matching del pool?',
+        a: <>Algoritmo computa similitud DISC + VELNA + tags de área. Devuelve top N candidatos del pool con score de match (0-100). Vos decidís a quién recontactar. Útil para "ya tenemos a alguien que casi calificó hace 3 meses".</>,
+      },
+      {
+        q: '¿Los candidatos saben que están en el pool?',
+        a: <>Sí. Antes de entrar al pool firman consent explícito en el flow de aplicación. Se les puede contactar hasta 6 meses post-evaluación; después se eliminan automáticamente.</>,
+      },
+    ],
+  },
+  {
+    title: 'Outreach LinkedIn (HeyReach)',
+    icon: '📨',
+    faqs: [
+      {
+        q: '¿Qué es Outreach y cuándo lo uso?',
+        a: <>Cuando un puesto necesita candidatos que NO van a aplicar solos (ej: gerente con experiencia específica), corrés campañas LinkedIn outbound desde HeyReach. Las respuestas aterrizan en el Inbox unificado de SharkTalents para que respondas sin saltar entre apps.</>,
+      },
+      {
+        q: '¿Las respuestas en LinkedIn realmente llegan acá?',
+        a: <>Sí. HeyReach pushea via webhook cada vez que recibe un DM o aceptan una invitación. Aparece en <Link to="/inbox">Inbox</Link> con flag "necesita respuesta". Cuando respondés desde acá, se manda automáticamente a LinkedIn.</>,
+      },
+      {
+        q: '¿Tengo que crear las campañas en HeyReach o acá?',
+        a: <>Las creás en HeyReach (UI propia con su targeting de LinkedIn). Acá las ves para ver stats + manejar las respuestas. Las campañas internas (no-HeyReach) se crean acá directamente.</>,
+      },
+    ],
+  },
+  {
+    title: 'API y integraciones',
+    icon: '🔌',
+    faqs: [
+      {
+        q: '¿Tengo API para integrar con mi CRM?',
+        a: <>Sí. En <Link to="/settings">Settings → API Keys</Link> generás una key con permisos granulares (read/write por entidad). La docs OpenAPI está en <code>/api/openapi.json</code>. Rate limit 60 req/min default.</>,
+      },
+      {
+        q: '¿Qué hace el MCP server?',
+        a: <>Es un servidor Model Context Protocol que expone 12 tools de SharkTalents para que un agente IA (Claude Desktop, etc.) pueda crear puestos, listar candidatos, leer scores, etc. Útil si querés operar SharkTalents desde tu agente personal en lugar de la UI.</>,
+      },
+      {
+        q: '¿Cómo invito a alguien de mi equipo?',
+        a: <>En <Link to="/settings">Settings → Equipo</Link>, hacés "Invitar" con su email. Le llega invitación de Clerk. Cuando la acepta, queda en tu organización con permisos del rol que le diste (admin, recruiter, viewer).</>,
+      },
+    ],
+  },
 ];
 
 export default function HelpCenter() {

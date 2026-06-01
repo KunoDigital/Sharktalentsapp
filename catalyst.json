@@ -1,4 +1,8 @@
 {
+  "functions": {
+    "targets": ["api"],
+    "source": "functions"
+  },
   "client": {
     "source": "shark/dist"
   }

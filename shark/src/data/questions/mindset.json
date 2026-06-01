@@ -1,0 +1,152 @@
+[
+  {
+    "id": "m1",
+    "category": "aprender",
+    "text": "Hace 4 clases que estás aprendiendo a tocar guitarra y sigues trabándote en los acordes básicos. Hoy tienes clase y no practicaste durante la semana.",
+    "options": [
+      "Soy malo con la música, no creo que vaya a aprender de verdad.",
+      "Cada vez que me trabo siento que algo nuevo se está acomodando.",
+      "Con la semana que tuve, no había manera de meter práctica.",
+      "Voy 15 min antes a la clase y aprovecho ese rato para practicar.",
+      "Si no veo progreso en otras 4 clases, mejor dejo.",
+      "Esto puede ser el inicio de algo más grande, voy a aprovechar."
+    ],
+    "dimension": ["fija", "crecimiento", "victima", "agente", "proteccion", "oportunidad"],
+    "correct": null
+  },
+  {
+    "id": "m2",
+    "category": "imprevisto",
+    "text": "Faltan 2 días para un viaje en grupo. La persona que iba a manejar canceló. Eres la única persona del grupo que tiene auto, pero nadie lo sabe todavía.",
+    "options": [
+      "Yo manejo porque sé cómo se comporta mi auto, conviene que sea yo.",
+      "Aviso al grupo, tal vez alguien tiene una idea que no se me ocurrió.",
+      "Aviso al grupo que sin alguien que maneje, no se puede el viaje.",
+      "¿Y si nos turnamos para manejar y cada uno aporta otra cosa?",
+      "Con esta cancelación se complica armar algo bueno con tan poco tiempo.",
+      "Esta cancelación abre la chance de hacer el viaje un poco distinto, tal vez mejor."
+    ],
+    "dimension": ["experto", "curiosa", "reactiva", "creativa", "escasez", "abundancia"],
+    "correct": null
+  },
+  {
+    "id": "m3",
+    "category": "social",
+    "text": "Te invitaron al cumpleaños de un amigo. Vas solo y de todos los invitados solo conoces al festejado.",
+    "options": [
+      "Sé que no soy bueno conectando con desconocidos, no espero mucho.",
+      "Cada conversación nueva me deja algo, voy con esa actitud.",
+      "Llevo en la cabeza unos temas que sé manejar bien para abrir conversación.",
+      "Voy con la actitud de descubrir, tal vez conozca gente interesante.",
+      "Le pregunto a mi amigo a qué hora se va, así tengo plan claro.",
+      "No me hago plan, voy y veo cómo fluye la noche."
+    ],
+    "dimension": ["fija", "crecimiento", "experto", "curiosa", "certeza", "exploracion"],
+    "correct": null
+  },
+  {
+    "id": "m4",
+    "category": "salud",
+    "text": "Hace meses que quieres empezar a hacer ejercicio pero no encuentras un horario que te funcione: en la mañana te cuesta levantarte, en la tarde estás cansado/a, en la noche tienes otras cosas.",
+    "options": [
+      "Voy a buscar la rutina más popular, esa seguro funciona.",
+      "¿Y si camino fuerte al volver del trabajo? Así no me ocupa horario aparte.",
+      "Con mi rutina actual es difícil, mejor cuando tenga más tiempo libre.",
+      "Yo decido cuándo empezar, este lunes empiezo aunque sea 10 min al día.",
+      "Mejor no me anoto en un gimnasio caro para no perder el dinero si no voy.",
+      "Esta es la chance de cambiar mi salud para mejor, voy con todo."
+    ],
+    "dimension": ["reactiva", "creativa", "victima", "agente", "proteccion", "oportunidad"],
+    "correct": null
+  },
+  {
+    "id": "m5",
+    "category": "hogar",
+    "text": "Te mudaste hace una semana a un barrio donde no conoces a nadie y no conoces bien la zona.",
+    "options": [
+      "Este barrio me va a costar, todavía no veo dónde podría conectar.",
+      "Me presento en el almacén o la panadería, así me voy haciendo conocido.",
+      "Recién llegué, todavía no tengo dinero para gastar mucho conociendo el lugar.",
+      "Hay tantos lugares por descubrir, cualquier salida puede ser interesante.",
+      "Hago una lista de lugares que tengo que visitar y los voy marcando.",
+      "No me hago plan, salgo cada día por una calle distinta y veo qué encuentro."
+    ],
+    "dimension": ["victima", "agente", "escasez", "abundancia", "certeza", "exploracion"],
+    "correct": null
+  },
+  {
+    "id": "m6",
+    "category": "relaciones",
+    "text": "Hace 2 semanas tuviste una pelea fuerte con un amigo cercano. No se hablan. Hoy él te escribió: \"tenemos que hablar\".",
+    "options": [
+      "Soy así y no voy a cambiar mi posición, espero que él entienda.",
+      "Estos conflictos me ayudan a entenderme mejor, voy abierto a aprender.",
+      "Voy con la actitud que me sirvió otras veces para limar asperezas.",
+      "Le propongo encontrarnos en un lugar neutro, fuera de los de siempre.",
+      "Espero que él diga primero, si cedo me va a pasar por encima.",
+      "Tenemos años de amistad, este conflicto es chico al lado de eso."
+    ],
+    "dimension": ["fija", "crecimiento", "reactiva", "creativa", "escasez", "abundancia"],
+    "correct": null
+  },
+  {
+    "id": "m7",
+    "category": "tiempo_libre",
+    "text": "Tienes 10 días libres en marzo y quieres irte de vacaciones. Tu pareja dejó la decisión en tus manos.",
+    "options": [
+      "Ya conozco bien Cancún, voy a algo que sé que funciona.",
+      "Investigo destinos que no conozco, leo blogs y foros.",
+      "Con tan poca anticipación, lo bueno ya está reservado.",
+      "Hoy mismo busco vuelos, decido y compro, sino se va el tiempo.",
+      "Armo el itinerario día por día con horarios y reservas antes de viajar.",
+      "Voy con el vuelo y el primer hotel; el resto lo decido en el camino."
+    ],
+    "dimension": ["experto", "curiosa", "victima", "agente", "certeza", "exploracion"],
+    "correct": null
+  },
+  {
+    "id": "m8",
+    "category": "aprender",
+    "text": "Hace 6 meses te propusiste leer más, pero del último libro que abriste pasaron 3 meses sin avanzar.",
+    "options": [
+      "Voy a comprar un libro de un género que sé que me engancha.",
+      "¿Y si pruebo audiolibros mientras hago las compras?",
+      "Tengo poco tiempo libre, no me da para algo así.",
+      "Hay tantos formatos y temas, seguro encuentro algo que me atrape.",
+      "Mejor no me obligo, si me forzo lo voy a terminar odiando.",
+      "Esto puede ser una rutina nueva muy buena, lo intento en serio."
+    ],
+    "dimension": ["reactiva", "creativa", "escasez", "abundancia", "proteccion", "oportunidad"],
+    "correct": null
+  },
+  {
+    "id": "m9",
+    "category": "imprevisto",
+    "text": "Saliste de tu casa hace una hora y te diste cuenta que perdiste el celular. No sabes si lo dejaste en algún lugar o si te lo robaron.",
+    "options": [
+      "Soy un desastre con las cosas, siempre pierdo algo.",
+      "Esto me sirve para mejorar mis hábitos con lo que llevo encima.",
+      "Sé bien qué hacer, ya pasé por algo similar.",
+      "¿Qué opciones tengo? Voy a averiguar todas las que existan.",
+      "Hago la denuncia, después llamo al banco, después vuelvo a buscarlo.",
+      "Vuelvo sobre mis pasos sin un orden fijo, ya iré viendo qué hacer."
+    ],
+    "dimension": ["fija", "crecimiento", "experto", "curiosa", "certeza", "exploracion"],
+    "correct": null
+  },
+  {
+    "id": "m10",
+    "category": "aprender",
+    "text": "Quieres mejorar tu inglés. Probaste con cursos online pero te aburres rápido y abandonas.",
+    "options": [
+      "Voy a buscar un curso más exigente, a ver si me motiva más.",
+      "¿Y si veo series con subtítulos en inglés? Aprendo mientras me distraigo.",
+      "Sin alguien que me obligue, me cuesta sostenerlo.",
+      "Me anoto en clase con horario fijo, así me responsabilizo.",
+      "Mejor no me anoto en algo caro, ya sé cómo termino.",
+      "Esto me puede abrir puertas que no veo, vale la pena el esfuerzo."
+    ],
+    "dimension": ["reactiva", "creativa", "victima", "agente", "proteccion", "oportunidad"],
+    "correct": null
+  }
+]

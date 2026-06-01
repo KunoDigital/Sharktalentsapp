@@ -1,0 +1,324 @@
+[
+  {
+    "id": "c1_v01",
+    "type": "vocab",
+    "text": "Her argument was _____ — supported by extensive evidence and difficult to dispute.",
+    "options": ["tenuous", "cogent", "spurious", "fleeting"],
+    "correct": 1
+  },
+  {
+    "id": "c1_v02",
+    "type": "vocab",
+    "text": "The committee's response to the proposal was _____ at best — they neither endorsed nor rejected it.",
+    "options": ["unequivocal", "lukewarm", "vehement", "candid"],
+    "correct": 1
+  },
+  {
+    "id": "c1_v03",
+    "type": "vocab",
+    "text": "The negotiations had been dragging on for weeks; finally, the CEO told everyone to _____.",
+    "options": ["beat around the bush", "cut to the chase", "miss the boat", "let the cat out of the bag"],
+    "correct": 1
+  },
+  {
+    "id": "c1_v04",
+    "type": "vocab",
+    "text": "His comments were _____ to the discussion — completely off-topic and unhelpful.",
+    "options": ["pertinent", "extraneous", "salient", "germane"],
+    "correct": 1
+  },
+  {
+    "id": "c1_v05",
+    "type": "vocab",
+    "text": "_____ the obstacles, the project was completed ahead of schedule.",
+    "options": ["Notwithstanding", "Provided", "Albeit", "Insofar as"],
+    "correct": 0
+  },
+  {
+    "id": "c1_v06",
+    "type": "vocab",
+    "text": "The findings _____ several long-held assumptions in the field.",
+    "options": ["reinforced", "overturned", "echoed", "duplicated"],
+    "correct": 1
+  },
+  {
+    "id": "c1_v07",
+    "type": "vocab",
+    "text": "After three failed attempts, the team finally decided to _____.",
+    "options": ["bite the bullet", "throw in the towel", "raise the bar", "call the shots"],
+    "correct": 1
+  },
+  {
+    "id": "c1_v08",
+    "type": "vocab",
+    "text": "The CEO's resignation came _____, taking the entire industry by surprise.",
+    "options": ["right on cue", "out of left field", "in the same vein", "by the same token"],
+    "correct": 1
+  },
+  {
+    "id": "c1_v09",
+    "type": "vocab",
+    "text": "Her writing is so _____ that even complex topics become accessible.",
+    "options": ["convoluted", "lucid", "ostentatious", "verbose"],
+    "correct": 1
+  },
+  {
+    "id": "c1_v10",
+    "type": "vocab",
+    "text": "The author's stance is decidedly _____ — she refuses to take a clear position.",
+    "options": ["dogmatic", "ambivalent", "categorical", "fervent"],
+    "correct": 1
+  },
+  {
+    "id": "c1_v11",
+    "type": "vocab",
+    "text": "We must _____ between correlation and causation when analyzing the data.",
+    "options": ["conflate", "delineate", "amalgamate", "obscure"],
+    "correct": 1
+  },
+  {
+    "id": "c1_v12",
+    "type": "vocab",
+    "text": "The new regulation effectively _____ the old rules — they are no longer enforced.",
+    "options": ["supersedes", "complements", "elaborates", "echoes"],
+    "correct": 0
+  },
+  {
+    "id": "c1_v13",
+    "type": "vocab",
+    "text": "The success of the initiative _____ on cooperation between several agencies.",
+    "options": ["hinges", "inflicts", "stipulates", "prevails"],
+    "correct": 0
+  },
+  {
+    "id": "c1_v14",
+    "type": "vocab",
+    "text": "His proposal was _____ at first, but it gained traction once people considered the long-term benefits.",
+    "options": ["wholeheartedly embraced", "met with skepticism", "immediately approved", "completely ignored"],
+    "correct": 1
+  },
+  {
+    "id": "c1_v15",
+    "type": "vocab",
+    "text": "The CEO is known for her _____ — making bold decisions even when others hesitate.",
+    "options": ["timidity", "decisiveness", "indifference", "hesitation"],
+    "correct": 1
+  },
+  {
+    "id": "c1_v16",
+    "type": "vocab",
+    "text": "Despite the apparent contradictions, her arguments are remarkably _____.",
+    "options": ["coherent", "fragmented", "incoherent", "disjointed"],
+    "correct": 0
+  },
+
+  {
+    "id": "c1_g01",
+    "type": "grammar",
+    "text": "_____ I known about the meeting, I would have rearranged my schedule.",
+    "options": ["If", "Had", "When", "Should"],
+    "correct": 1
+  },
+  {
+    "id": "c1_g02",
+    "type": "grammar",
+    "text": "Rarely _____ such a comprehensive proposal in my career.",
+    "options": ["I have seen", "have I seen", "I saw", "did I see"],
+    "correct": 1
+  },
+  {
+    "id": "c1_g03",
+    "type": "grammar",
+    "text": "The board recommended that the policy _____ immediately.",
+    "options": ["is reviewed", "be reviewed", "would be reviewed", "was reviewed"],
+    "correct": 1
+  },
+  {
+    "id": "c1_g04",
+    "type": "grammar",
+    "text": "He's the kind of leader _____ everyone aspires to work for.",
+    "options": ["who", "whom", "whose", "which"],
+    "correct": 1
+  },
+  {
+    "id": "c1_g05",
+    "type": "grammar",
+    "text": "The data, _____ collected over five years, supports the original hypothesis.",
+    "options": ["which", "having been", "had been", "being"],
+    "correct": 1
+  },
+  {
+    "id": "c1_g06",
+    "type": "grammar",
+    "text": "Hardly _____ when the system crashed again.",
+    "options": ["we had restarted", "had we restarted", "we restarted", "did we restart"],
+    "correct": 1
+  },
+  {
+    "id": "c1_g07",
+    "type": "grammar",
+    "text": "It is essential that every team member _____ aware of the deadline.",
+    "options": ["is", "be", "would be", "was"],
+    "correct": 1
+  },
+  {
+    "id": "c1_g08",
+    "type": "grammar",
+    "text": "_____ the report been submitted earlier, the project might have proceeded faster.",
+    "options": ["If", "Had", "Should", "Were"],
+    "correct": 1
+  },
+  {
+    "id": "c1_g09",
+    "type": "grammar",
+    "text": "The extent _____ AI will reshape the industry remains uncertain.",
+    "options": ["which", "to which", "of which", "in which"],
+    "correct": 1
+  },
+  {
+    "id": "c1_g10",
+    "type": "grammar",
+    "text": "Not until the third quarter _____ a noticeable improvement.",
+    "options": ["we saw", "did we see", "had we seen", "have we seen"],
+    "correct": 1
+  },
+  {
+    "id": "c1_g11",
+    "type": "grammar",
+    "text": "_____ for his timely intervention, the deal would have collapsed.",
+    "options": ["Were it not", "Had not it been", "Without", "Despite"],
+    "correct": 0
+  },
+  {
+    "id": "c1_g12",
+    "type": "grammar",
+    "text": "She insisted on _____ a more thorough review.",
+    "options": ["we conduct", "us to conduct", "conducting", "to conduct"],
+    "correct": 2
+  },
+  {
+    "id": "c1_g13",
+    "type": "grammar",
+    "text": "The findings, _____ surprising to many, were actually expected by the research team.",
+    "options": ["although", "despite", "even though", "while"],
+    "correct": 0
+  },
+  {
+    "id": "c1_g14",
+    "type": "grammar",
+    "text": "By no means _____ the final word on the matter.",
+    "options": ["this is", "is this", "this has", "has this"],
+    "correct": 1
+  },
+  {
+    "id": "c1_g15",
+    "type": "grammar",
+    "text": "The strategy _____ to be revised in light of the new data.",
+    "options": ["needs", "is needing", "has need", "need"],
+    "correct": 0
+  },
+  {
+    "id": "c1_g16",
+    "type": "grammar",
+    "text": "Only when all stakeholders agree _____ proceed with implementation.",
+    "options": ["we can", "can we", "we will", "will we"],
+    "correct": 1
+  },
+
+  {
+    "id": "c1_r01",
+    "type": "reading",
+    "text": "Read: \"The notion that automation will eliminate jobs en masse, while intuitively appealing, oversimplifies the historical pattern of technological change. Each previous wave of automation — from the mechanical loom to the personal computer — initially displaced workers in specific sectors but ultimately created entirely new categories of employment that could not have been anticipated. The challenge facing policymakers today is not whether to embrace AI, but how to manage the inevitable transition period in which displaced workers may struggle to acquire new skills before opportunities arise.\"\n\nWhat is the author's primary argument?",
+    "options": [
+      "AI will eliminate most jobs permanently",
+      "Historical patterns suggest automation creates new jobs even as it destroys others",
+      "Workers do not need new skills to adapt",
+      "Policymakers should ban AI development"
+    ],
+    "correct": 1
+  },
+  {
+    "id": "c1_r02",
+    "type": "reading",
+    "text": "Read: \"Critics of the new regulation argue that it imposes excessive compliance costs on small businesses without delivering proportional environmental benefits. Proponents counter that the cumulative impact across thousands of firms is precisely what makes such regulations meaningful, and that exempting smaller players would create perverse incentives. The truth, as is often the case, lies somewhere in between — and depends heavily on how rigorously the regulation is enforced.\"\n\nWhat is the author's overall stance on the regulation?",
+    "options": [
+      "Strongly supportive",
+      "Strongly opposed",
+      "Nuanced — sees merit in both sides",
+      "Indifferent to the outcome"
+    ],
+    "correct": 2
+  },
+  {
+    "id": "c1_r03",
+    "type": "reading",
+    "text": "Read: \"Studies of organizational behavior consistently reveal a paradox: companies that explicitly value 'innovation' often produce it less reliably than those whose cultures emphasize execution and discipline. This is not because innovation requires bureaucracy — quite the opposite — but because innovative breakthroughs typically emerge from the friction between disciplined execution and unexpected obstacles. Treating innovation as an end in itself, divorced from operational rigor, tends to produce activity without substance.\"\n\nWhat does the author imply about innovation?",
+    "options": [
+      "It comes only from creative environments",
+      "Bureaucracy is essential for innovation",
+      "It often emerges from disciplined execution and friction with reality",
+      "Companies should not prioritize innovation"
+    ],
+    "correct": 2
+  },
+  {
+    "id": "c1_r04",
+    "type": "reading",
+    "text": "Read: \"The leadership literature is replete with prescriptions about communication, vision, and empowerment. Yet research increasingly suggests that the most effective leaders do not necessarily excel in these visible domains. Rather, they distinguish themselves through what might be called 'unglamorous discipline': consistent follow-through, candid feedback even when uncomfortable, and a willingness to make decisions in the absence of perfect information. These qualities rarely produce viral leadership quotes, but they correlate strongly with sustained organizational performance.\"\n\nWhat does the author argue about effective leaders?",
+    "options": [
+      "They are the most charismatic and visionary",
+      "They focus on inspirational communication",
+      "Their effectiveness comes from less visible, disciplined behaviors",
+      "They prioritize empowering others above all else"
+    ],
+    "correct": 2
+  },
+  {
+    "id": "c1_r05",
+    "type": "reading",
+    "text": "Read: \"The economist's prediction proved spectacularly wrong, yet his reputation suffered surprisingly little. This phenomenon — where high-status forecasters retain credibility despite track records that, in any other domain, would be career-ending — speaks to a deeper truth about expertise. We tend to evaluate experts based on the prestige of their conclusions and the eloquence of their arguments, rather than on the boring metric of whether their predictions actually came true.\"\n\nWhat is the author's main critique?",
+    "options": [
+      "Economists make too many predictions",
+      "We judge experts by prestige rather than accuracy",
+      "The economist should have been fired",
+      "Forecasting is impossible in economics"
+    ],
+    "correct": 1
+  },
+  {
+    "id": "c1_r06",
+    "type": "reading",
+    "text": "Read: \"The conventional wisdom holds that diverse teams outperform homogeneous ones. While this is broadly true in complex problem-solving contexts, the relationship is far from automatic. Diversity without psychological safety often produces conflict that depresses performance below what either a homogeneous group or a more inclusive diverse group would achieve. The lesson is that diversity is necessary but not sufficient — the practices that allow diverse perspectives to surface and integrate matter at least as much.\"\n\nWhat qualification does the author add to the diversity argument?",
+    "options": [
+      "Diverse teams always outperform homogeneous ones",
+      "Diversity alone is insufficient without practices that enable inclusion",
+      "Homogeneous teams are actually better",
+      "Diversity only works in simple problems"
+    ],
+    "correct": 1
+  },
+  {
+    "id": "c1_r07",
+    "type": "reading",
+    "text": "Read: \"For decades, the corporate response to social pressure has been a familiar pattern: hire a public relations firm, draft a statement, perhaps create a board-level committee. What distinguishes the current moment is that these traditional measures are increasingly seen as inadequate, even insulting. Stakeholders — employees, customers, regulators — are demanding substantive change, not symbolic gestures. Companies that fail to recognize this shift risk a credibility deficit that no amount of crisis communication can repair.\"\n\nWhat is the author's central observation?",
+    "options": [
+      "Public relations firms are always effective",
+      "Symbolic responses are no longer sufficient — substantive change is required",
+      "Stakeholders are easily satisfied",
+      "Crisis communication is the most important corporate skill"
+    ],
+    "correct": 1
+  },
+  {
+    "id": "c1_r08",
+    "type": "reading",
+    "text": "Read: \"The argument for prioritizing speed in product development is intuitive: ship faster, learn faster, iterate faster. Yet the experience of mature companies suggests that the relationship between speed and learning is non-linear. At some point, the rate of shipping outpaces the rate at which feedback can be meaningfully integrated, leading to a kind of cargo-cult agility — motion without progress. The most effective teams calibrate their pace not to maximum velocity, but to the velocity at which they can actually digest what they're learning.\"\n\nWhat does the author suggest about speed in product development?",
+    "options": [
+      "Faster is always better",
+      "Speed should always be reduced to slow",
+      "Optimal speed matches the team's capacity to learn from feedback",
+      "Mature companies should not iterate"
+    ],
+    "correct": 2
+  }
+]

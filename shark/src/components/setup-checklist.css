@@ -1,0 +1,134 @@
+.setup-checklist {
+  background: var(--st-bg-elev);
+  border: 1px solid var(--st-accent);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0 0 4px rgba(197, 252, 111, 0.05);
+}
+
+.setup-checklist-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.setup-checklist-title {
+  margin: 0 0 0.2rem;
+  font-size: 1.05rem;
+  color: var(--st-fg-strong);
+  font-weight: 600;
+}
+
+.setup-checklist-progress {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--st-fg-muted);
+}
+
+.setup-checklist-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.setup-checklist-btn {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.7rem;
+}
+
+.setup-checklist-bar {
+  height: 4px;
+  background: var(--st-bg-elev-2);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.setup-checklist-bar-fill {
+  height: 100%;
+  background: var(--st-accent);
+  transition: width 0.3s ease;
+}
+
+.setup-checklist-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.setup-checklist-item {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--st-bg);
+  border: 1px solid var(--st-border-soft);
+  border-radius: 8px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.setup-checklist-item:hover {
+  border-color: var(--st-accent);
+}
+
+.setup-checklist-item.is-done {
+  opacity: 0.65;
+  background: transparent;
+}
+
+.setup-checklist-item.is-done .setup-checklist-item-title {
+  text-decoration: line-through;
+  color: var(--st-fg-muted);
+}
+
+.setup-checklist-item-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--st-bg-elev-2);
+  color: var(--st-fg-strong);
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.setup-checklist-item.is-done .setup-checklist-item-num {
+  background: var(--st-accent);
+  color: var(--st-accent-fg);
+}
+
+.setup-checklist-item-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--st-fg-strong);
+  margin-bottom: 0.15rem;
+}
+
+.setup-checklist-item-desc {
+  font-size: 0.8rem;
+  color: var(--st-fg-muted);
+  line-height: 1.4;
+}
+
+.setup-checklist-item-cta .btn-toolbar {
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .setup-checklist-item {
+    grid-template-columns: 28px 1fr;
+  }
+  .setup-checklist-item-cta {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}

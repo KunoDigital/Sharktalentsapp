@@ -1,59 +1,71 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { getTestSession, DISC_QUESTIONS, type DiscOption } from '../../data/mockCandidateTests';
+import { getTestSession } from '../../data/mockCandidateTests';
 import { getJobById } from '../../data/mockJobs';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
 import { usePersistedState, hasPersistedState } from '../../hooks/usePersistedState';
-import { calculateDiscRaw, calculateDiscSimilarity, discDominantLabel } from '../../lib/scoring';
+import { scoreDisc, normalizeDiscRaw, calculateDiscSimilarity, discDominantLabel } from '../../lib/scoring';
+import { shuffleOptions } from '../../lib/shuffle';
+import { getRealDiscQuestions } from '../../data/realQuestionsAdapter';
+import { publicApi } from '../../lib/publicApi';
+import { ApiError } from '../../lib/api';
+import { logger } from '../../lib/logger';
 import './candidate-test.css';
 
-type Answer = {
-  question_id: string;
-  most_axis: 'd' | 'i' | 's' | 'c';
-  least_axis: 'd' | 'i' | 's' | 'c';
-};
+const log = logger('DISC');
 
+/**
+ * DISC v2 con preguntas reales del v1 (40 forced-choice).
+ *
+ * Formato:
+ *   - Cada pregunta es situacional ("¿Qué harías si...?")
+ *   - 4 opciones, cada una representa una dimensión D/I/S/C distinta
+ *   - El candidato elige UNA opción (no most/least como antes)
+ *   - El score es el conteo de cuántas veces eligió cada dimensión
+ *
+ * Shuffle: las opciones se muestran en orden aleatorio (estable por candidato),
+ * y la dimensión asociada se traduce con el reverseMap.
+ */
 export default function CandidateDiscTest() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const session = token ? getTestSession(token) : undefined;
 
+  const questions = useMemo(() => getRealDiscQuestions(), []);
+
   const storageKey = `disc_${token ?? 'anon'}`;
   const hadResume = hasPersistedState(`${storageKey}_answers`);
-  const [answers, setAnswers, clearAnswers] = usePersistedState<Record<string, Partial<Answer>>>(`${storageKey}_answers`, {});
+  const [answers, setAnswers, clearAnswers] = usePersistedState<Record<string, number>>(`${storageKey}_answers`, {});
   const [currentIdx, setCurrentIdx, clearIdx] = usePersistedState<number>(`${storageKey}_idx`, 0);
   const [submitted, setSubmitted] = useState(false);
 
-  const currentQ = DISC_QUESTIONS[currentIdx];
-  const isLast = currentIdx === DISC_QUESTIONS.length - 1;
-  const completed = Object.values(answers).filter((a) => a.most_axis && a.least_axis).length;
+  const currentQ = questions[currentIdx];
+  const isLast = currentIdx === questions.length - 1;
+  const completed = Object.keys(answers).length;
 
   const { events, count: antiCheatCount } = useAntiCheat({
     enabled: !submitted,
     current_question_id: currentQ?.id ?? null,
   });
 
-  if (!session) {
+  // Shuffle de opciones (con reverseMap para traducir display → original al guardar)
+  const { shuffled, reverseMap } = useMemo(() => {
+    if (!currentQ) return { shuffled: [], reverseMap: [] };
+    return shuffleOptions(currentQ.options, simpleHash(currentQ.id));
+  }, [currentQ?.id]);
+
+  // Si no hay session en mock, aceptamos si hay token — el backend valida en submit.
+  if (!token) {
     return <p>Link inválido. <Link to="/">Volver</Link></p>;
   }
 
-  const currentAnswer = currentQ ? answers[currentQ.id] ?? {} : {};
-  const canAdvance = !!currentAnswer.most_axis && !!currentAnswer.least_axis && currentAnswer.most_axis !== currentAnswer.least_axis;
+  const currentSelection = currentQ ? answers[currentQ.id] : undefined; // índice ORIGINAL
+  const canAdvance = currentSelection != null;
 
-  function setMost(opt: DiscOption) {
+  function selectOption(displayIdx: number) {
     if (!currentQ) return;
-    setAnswers((curr) => ({
-      ...curr,
-      [currentQ.id]: { ...curr[currentQ.id], question_id: currentQ.id, most_axis: opt.axis },
-    }));
-  }
-
-  function setLeast(opt: DiscOption) {
-    if (!currentQ) return;
-    setAnswers((curr) => ({
-      ...curr,
-      [currentQ.id]: { ...curr[currentQ.id], question_id: currentQ.id, least_axis: opt.axis },
-    }));
+    const originalIdx = reverseMap[displayIdx];
+    setAnswers((curr) => ({ ...curr, [currentQ.id]: originalIdx }));
   }
 
   function next() {
@@ -61,20 +73,44 @@ export default function CandidateDiscTest() {
       setCurrentIdx((i) => i + 1);
     } else {
       setSubmitted(true);
-      // Calcular score real con la lógica local
-      const validAnswers = Object.values(answers).filter(
-        (a): a is { question_id: string; most_axis: 'd' | 'i' | 's' | 'c'; least_axis: 'd' | 'i' | 's' | 'c' } =>
-          !!a.question_id && !!a.most_axis && !!a.least_axis,
-      );
-      const raw = calculateDiscRaw(DISC_QUESTIONS, validAnswers);
-      const dominant = discDominantLabel(raw);
+      const result = scoreDisc(questions, answers);
+      const normalized = normalizeDiscRaw(result, result.total_questions);
+      const dominant = discDominantLabel(normalized);
       const job = session ? getJobById(session.job_id) : undefined;
-      const similarity = job ? calculateDiscSimilarity(raw, {
+      const similarity = job ? calculateDiscSimilarity(normalized, {
         d: job.disc_ideal_a.d, i: job.disc_ideal_a.i, s: job.disc_ideal_a.s, c: job.disc_ideal_a.c,
       }) : undefined;
 
-      console.log('[DISC] submitted', { raw, dominant, similarity, antiCheatEvents: events });
-      // Limpiar localStorage al terminar
+      // Submit al backend (skip silently si useApi=false)
+      if (token) {
+        publicApi.submitTest(token, {
+          disc: {
+            raw_d: result.d,
+            raw_i: result.i,
+            raw_s: result.s,
+            raw_c: result.c,
+            total_questions: result.total_questions,
+          },
+          anti_cheat: events.length > 0 ? {
+            count: events.length,
+            events: events.map((e) => ({ type: e.type, question_id: e.question_id, duration_ms: e.duration_ms })),
+            phase: 'conductual',
+          } : undefined,
+        }).catch((err: unknown) => {
+          if (err instanceof ApiError) {
+            log.warn('submit falló', { status: err.status, code: err.code, msg: err.message });
+          } else {
+            log.warn('submit error', { error: (err as Error).message });
+          }
+        });
+      }
+
+      log.info('submitted', {
+        d: result.d, i: result.i, s: result.s, c: result.c,
+        dominant: dominant.label,
+        similarity,
+        antiCheatCount: events.length,
+      });
       clearAnswers();
       clearIdx();
       setTimeout(() => navigate(`/test/${token}/done?phase=conductual`, {
@@ -82,7 +118,7 @@ export default function CandidateDiscTest() {
           score: {
             type: 'disc',
             data: {
-              d: Math.round(raw.d), i: Math.round(raw.i), s: Math.round(raw.s), c: Math.round(raw.c),
+              d: normalized.d, i: normalized.i, s: normalized.s, c: normalized.c,
               dominant: dominant.label,
               similarity,
             },
@@ -115,9 +151,9 @@ export default function CandidateDiscTest() {
         <div className="ct-test-brand">SharkTalents.AI</div>
         <div className="ct-test-progress">
           <div className="ct-progress-bar">
-            <div className="ct-progress-bar-fill" style={{ width: `${((currentIdx + 1) / DISC_QUESTIONS.length) * 100}%` }} />
+            <div className="ct-progress-bar-fill" style={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }} />
           </div>
-          <span className="ct-progress-text">{currentIdx + 1}/{DISC_QUESTIONS.length}</span>
+          <span className="ct-progress-text">{currentIdx + 1}/{questions.length}</span>
         </div>
       </header>
 
@@ -125,14 +161,13 @@ export default function CandidateDiscTest() {
         <div className="ct-test-intro">
           <h1>Evaluación conductual — DISC</h1>
           <p className="ct-instructions">
-            En cada grupo, marcá el adjetivo que <strong>más te describe</strong> (verde) y el que <strong>menos te describe</strong> (rojo).
-            No hay respuestas buenas ni malas — usá tu intuición.
+            En cada situación, elegí <strong>la respuesta que mejor te describe</strong>. No hay respuestas buenas ni malas — usá tu intuición.
           </p>
         </div>
 
         {hadResume && Object.keys(answers).length > 0 && (
           <div className="ct-resume-banner">
-            ↩️ Continuamos donde quedaste — tenés {Object.keys(answers).length} respuestas guardadas.
+            ↩️ Continuamos donde quedaste — tienes {completed} respuestas guardadas.
             <button
               className="ct-resume-clear"
               onClick={() => {
@@ -154,31 +189,22 @@ export default function CandidateDiscTest() {
         )}
 
         <section className="ct-question-card">
-          <div className="ct-question-num">Pregunta {currentIdx + 1}</div>
-          <div className="ct-question-options">
-            {currentQ.options.map((opt) => {
-              const isMost = currentAnswer.most_axis === opt.axis;
-              const isLeast = currentAnswer.least_axis === opt.axis;
+          <div className="ct-question-num">Pregunta {currentIdx + 1}/{questions.length}</div>
+          <h2 className="ct-question-text">{currentQ?.text}</h2>
+          <div className="ct-mc-options">
+            {shuffled.map((optText, displayIdx) => {
+              const originalIdx = reverseMap[displayIdx];
+              const isSelected = currentSelection === originalIdx;
+              const displayLetter = ['A', 'B', 'C', 'D', 'E'][displayIdx] ?? '';
               return (
-                <div key={opt.axis} className={`ct-option ${isMost ? 'is-most' : ''} ${isLeast ? 'is-least' : ''}`}>
-                  <div className="ct-option-label">{opt.label}</div>
-                  <div className="ct-option-buttons">
-                    <button
-                      className={`ct-opt-btn ct-opt-most ${isMost ? 'is-active' : ''}`}
-                      onClick={() => setMost(opt)}
-                      disabled={isLeast}
-                    >
-                      {isMost ? '✓ Más como yo' : 'Más como yo'}
-                    </button>
-                    <button
-                      className={`ct-opt-btn ct-opt-least ${isLeast ? 'is-active' : ''}`}
-                      onClick={() => setLeast(opt)}
-                      disabled={isMost}
-                    >
-                      {isLeast ? '✓ Menos como yo' : 'Menos como yo'}
-                    </button>
-                  </div>
-                </div>
+                <button
+                  key={displayIdx}
+                  className={`ct-mc-option ${isSelected ? 'is-selected' : ''}`}
+                  onClick={() => selectOption(displayIdx)}
+                >
+                  <span className="ct-mc-letter">{displayLetter}</span>
+                  <span className="ct-mc-text">{optText}</span>
+                </button>
               );
             })}
           </div>
@@ -189,7 +215,7 @@ export default function CandidateDiscTest() {
             ← Atrás
           </button>
           <div className="ct-test-status">
-            {completed} de {DISC_QUESTIONS.length} respondidas
+            {completed} de {questions.length} respondidas
           </div>
           <button className="ct-start-btn" onClick={next} disabled={!canAdvance}>
             {isLast ? 'Terminar →' : 'Siguiente →'}
@@ -198,4 +224,11 @@ export default function CandidateDiscTest() {
       </main>
     </div>
   );
+}
+
+/** Hash simple para seed reproducible del shuffle por pregunta. */
+function simpleHash(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return h;
 }

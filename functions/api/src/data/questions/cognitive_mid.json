@@ -1,0 +1,1502 @@
+[
+  {
+    "id": "cm_v1",
+    "text": "¿Cuál es sinónimo de 'perspicaz'?",
+    "options": [
+      "Distraído",
+      "Agudo",
+      "Lento",
+      "Torpe"
+    ],
+    "dimension": "verbal",
+    "correct": 1
+  },
+  {
+    "id": "cm_v2",
+    "text": "¿Cuál es sinónimo de 'conciso'?",
+    "options": [
+      "Extenso",
+      "Confuso",
+      "Breve",
+      "Detallado"
+    ],
+    "dimension": "verbal",
+    "correct": 2
+  },
+  {
+    "id": "cm_v3",
+    "text": "¿Cuál es sinónimo de 'controversial'?",
+    "options": [
+      "Aceptado",
+      "Polémico",
+      "Tranquilo",
+      "Obvio"
+    ],
+    "dimension": "verbal",
+    "correct": 1
+  },
+  {
+    "id": "cm_v4",
+    "text": "¿Cuál es sinónimo de 'implementar'?",
+    "options": [
+      "Eliminar",
+      "Planear",
+      "Ejecutar",
+      "Ignorar"
+    ],
+    "dimension": "verbal",
+    "correct": 2
+  },
+  {
+    "id": "cm_v5",
+    "text": "¿Cuál es sinónimo de 'eficiente'?",
+    "options": [
+      "Lento",
+      "Productivo",
+      "Costoso",
+      "Complejo"
+    ],
+    "dimension": "verbal",
+    "correct": 1
+  },
+  {
+    "id": "cm_v6",
+    "text": "¿Cuál es sinónimo de 'ambiguo'?",
+    "options": [
+      "Claro",
+      "Preciso",
+      "Confuso",
+      "Directo"
+    ],
+    "dimension": "verbal",
+    "correct": 2
+  },
+  {
+    "id": "cm_v7",
+    "text": "¿Cuál es sinónimo de 'priorizar'?",
+    "options": [
+      "Ignorar",
+      "Postponer",
+      "Jerarquizar",
+      "Eliminar"
+    ],
+    "dimension": "verbal",
+    "correct": 2
+  },
+  {
+    "id": "cm_v8",
+    "text": "¿Cuál es antónimo de 'rentable'?",
+    "options": [
+      "Costoso",
+      "Deficitario",
+      "Complejo",
+      "Lento"
+    ],
+    "dimension": "verbal",
+    "correct": 1
+  },
+  {
+    "id": "cm_v9",
+    "text": "¿Cuál es antónimo de 'puntual'?",
+    "options": [
+      "Rápido",
+      "Tardío",
+      "Ausente",
+      "Informal"
+    ],
+    "dimension": "verbal",
+    "correct": 1
+  },
+  {
+    "id": "cm_v10",
+    "text": "¿Cuál es antónimo de 'flexible'?",
+    "options": [
+      "Lento",
+      "Rígido",
+      "Pesado",
+      "Simple"
+    ],
+    "dimension": "verbal",
+    "correct": 1
+  },
+  {
+    "id": "cm_v11",
+    "text": "¿Cuál es antónimo de 'transparente'?",
+    "options": [
+      "Oscuro",
+      "Opaco",
+      "Confuso",
+      "Lento"
+    ],
+    "dimension": "verbal",
+    "correct": 1
+  },
+  {
+    "id": "cm_v12",
+    "text": "¿Cuál es antónimo de 'motivado'?",
+    "options": [
+      "Cansado",
+      "Aburrido",
+      "Desmotivado",
+      "Distraído"
+    ],
+    "dimension": "verbal",
+    "correct": 2
+  },
+  {
+    "id": "cm_v13",
+    "text": "¿Cuál es antónimo de 'ascender'?",
+    "options": [
+      "Pausar",
+      "Descender",
+      "Detener",
+      "Retroceder"
+    ],
+    "dimension": "verbal",
+    "correct": 1
+  },
+  {
+    "id": "cm_v14",
+    "text": "¿Cuál es antónimo de 'concreto'?",
+    "options": [
+      "Vago",
+      "Largo",
+      "Difícil",
+      "Lento"
+    ],
+    "dimension": "verbal",
+    "correct": 0
+  },
+  {
+    "id": "cm_v15",
+    "text": "ERROR es a CORRECCIÓN como ENFERMEDAD es a:",
+    "options": [
+      "Médico",
+      "Hospital",
+      "Tratamiento",
+      "Paciente"
+    ],
+    "dimension": "verbal",
+    "correct": 2
+  },
+  {
+    "id": "cm_v16",
+    "text": "SEMILLA es a ÁRBOL como IDEA es a:",
+    "options": [
+      "Mente",
+      "Proyecto",
+      "Reunión",
+      "Plan"
+    ],
+    "dimension": "verbal",
+    "correct": 1
+  },
+  {
+    "id": "cm_v17",
+    "text": "DEFENDER es a INDEFENDIBLE como MODIFICAR es a:",
+    "options": [
+      "Modificable",
+      "Inmodificable",
+      "Modificado",
+      "Remodificar"
+    ],
+    "dimension": "verbal",
+    "correct": 1
+  },
+  {
+    "id": "cm_v18",
+    "text": "DIRECTOR es a EMPRESA como CAPITÁN es a:",
+    "options": [
+      "Puerto",
+      "Mar",
+      "Barco",
+      "Tripulación"
+    ],
+    "dimension": "verbal",
+    "correct": 2
+  },
+  {
+    "id": "cm_v19",
+    "text": "SÍNTOMA es a DIAGNÓSTICO como DATO es a:",
+    "options": [
+      "Número",
+      "Tabla",
+      "Conclusión",
+      "Archivo"
+    ],
+    "dimension": "verbal",
+    "correct": 2
+  },
+  {
+    "id": "cm_v20",
+    "text": "ENSAYO es a OBRA como BORRADOR es a:",
+    "options": [
+      "Papel",
+      "Documento final",
+      "Pluma",
+      "Escritorio"
+    ],
+    "dimension": "verbal",
+    "correct": 1
+  },
+  {
+    "id": "cm_l1",
+    "text": "¿Cuál número falta? 2, 6, 12, 20, 30, ___",
+    "options": [
+      "38",
+      "40",
+      "42",
+      "44"
+    ],
+    "dimension": "logico",
+    "correct": 2
+  },
+  {
+    "id": "cm_l2",
+    "text": "¿Cuál número falta? 1, 1, 2, 3, 5, 8, 13, ___",
+    "options": [
+      "18",
+      "19",
+      "20",
+      "21"
+    ],
+    "dimension": "logico",
+    "correct": 3
+  },
+  {
+    "id": "cm_l3",
+    "text": "¿Cuál número falta? 2, 5, 11, 23, 47, ___",
+    "options": [
+      "90",
+      "93",
+      "95",
+      "97"
+    ],
+    "dimension": "logico",
+    "correct": 2
+  },
+  {
+    "id": "cm_l4",
+    "text": "¿Cuál número falta? 1, 3, 6, 10, 15, 21, ___",
+    "options": [
+      "26",
+      "27",
+      "28",
+      "30"
+    ],
+    "dimension": "logico",
+    "correct": 2
+  },
+  {
+    "id": "cm_l5",
+    "text": "¿Cuál número falta? 4, 9, 16, 25, 36, ___",
+    "options": [
+      "42",
+      "45",
+      "48",
+      "49"
+    ],
+    "dimension": "logico",
+    "correct": 3
+  },
+  {
+    "id": "cm_l6",
+    "text": "¿Cuál número falta? 3, 4, 7, 11, 18, 29, ___",
+    "options": [
+      "44",
+      "45",
+      "46",
+      "47"
+    ],
+    "dimension": "logico",
+    "correct": 3
+  },
+  {
+    "id": "cm_l7",
+    "text": "¿Cuál número falta? 1, 2, 6, 24, 120, ___",
+    "options": [
+      "620",
+      "720",
+      "820",
+      "920"
+    ],
+    "dimension": "logico",
+    "correct": 1
+  },
+  {
+    "id": "cm_l8",
+    "text": "¿Cuál número falta? 2, 9, 28, 65, 126, ___",
+    "options": [
+      "210",
+      "215",
+      "217",
+      "220"
+    ],
+    "dimension": "logico",
+    "correct": 2
+  },
+  {
+    "id": "cm_l9",
+    "text": "¿Cuál sigue? A, Z, B, Y, C, X, ___",
+    "options": [
+      "D",
+      "W",
+      "D y W",
+      "V"
+    ],
+    "dimension": "logico",
+    "correct": 0
+  },
+  {
+    "id": "cm_l10",
+    "text": "¿Cuál sigue? A, B, D, H, P, ___",
+    "options": [
+      "AD",
+      "AF",
+      "AH",
+      "AI"
+    ],
+    "dimension": "logico",
+    "correct": 3
+  },
+  {
+    "id": "cm_l11",
+    "text": "¿Cuál sigue? Z, A, Y, B, X, C, ___",
+    "options": [
+      "D",
+      "W",
+      "W y D",
+      "W"
+    ],
+    "dimension": "logico",
+    "correct": 3
+  },
+  {
+    "id": "cm_l12",
+    "text": "¿Cuál sigue? A, E, J, P, ___",
+    "options": [
+      "V",
+      "W",
+      "X",
+      "Y"
+    ],
+    "dimension": "logico",
+    "correct": 1
+  },
+  {
+    "id": "cm_l13",
+    "text": "¿Cuál sigue? B, C, E, G, K, M, ___",
+    "options": [
+      "O",
+      "P",
+      "Q",
+      "R"
+    ],
+    "dimension": "logico",
+    "correct": 2
+  },
+  {
+    "id": "cm_l14",
+    "text": "¿Cuál sigue? A, B, D, G, K, P, ___",
+    "options": [
+      "U",
+      "V",
+      "W",
+      "X"
+    ],
+    "dimension": "logico",
+    "correct": 1
+  },
+  {
+    "id": "cm_l15",
+    "text": "Solo los empleados con más de 2 años y evaluación mayor a 8 pueden aplicar al programa de liderazgo. Rosa tiene 3 años y evaluación 7.5. Pedro tiene 1 año y evaluación 9. ¿Quién puede aplicar?",
+    "options": [
+      "Solo Rosa",
+      "Solo Pedro",
+      "Ambos",
+      "Ninguno"
+    ],
+    "dimension": "logico",
+    "correct": 3
+  },
+  {
+    "id": "cm_l16",
+    "text": "En una bodega los productos A siempre van antes que los B, y los B antes que los C. Hoy llegaron productos C antes que A. ¿Qué concluyes?",
+    "options": [
+      "El proceso fue correcto",
+      "Solo se violó la regla A-B",
+      "Se violaron ambas reglas",
+      "No se puede determinar"
+    ],
+    "dimension": "logico",
+    "correct": 2
+  },
+  {
+    "id": "cm_l17",
+    "text": "Si la venta supera $5,000 se aplica descuento X. Si el cliente es frecuente se aplica descuento Y. Una venta fue de $6,000 a un cliente nuevo. ¿Qué descuento aplica?",
+    "options": [
+      "X y Y",
+      "Solo X",
+      "Solo Y",
+      "Ninguno"
+    ],
+    "dimension": "logico",
+    "correct": 1
+  },
+  {
+    "id": "cm_l18",
+    "text": "Hay 5 personas en una fila: Ana, Beto, Carlos, Diana y Elena. Ana no está junto a Beto. Carlos está entre Diana y Elena. Beto está primero. ¿Quién puede estar segundo?",
+    "options": [
+      "Ana",
+      "Carlos",
+      "Diana",
+      "Elena"
+    ],
+    "dimension": "logico",
+    "correct": 2
+  },
+  {
+    "id": "cm_l19",
+    "text": "Un sistema se apaga si: la temperatura supera 90° Y la humedad supera 70%, O si la presión baja de 20. Hoy la temperatura fue 95°, la humedad 65% y la presión 25. ¿Se apagó el sistema?",
+    "options": [
+      "Sí, por temperatura",
+      "Sí, por presión",
+      "No",
+      "No se puede determinar"
+    ],
+    "dimension": "logico",
+    "correct": 2
+  },
+  {
+    "id": "cm_l20",
+    "text": "Cuatro amigos W, X, Y, Z se sientan en fila. W no está junto a Z. X siempre está junto a Y. Z está en un extremo. ¿Cuál es un orden válido?",
+    "options": [
+      "Z, W, X, Y",
+      "Z, X, Y, W",
+      "W, Z, X, Y",
+      "X, Y, Z, W"
+    ],
+    "dimension": "logico",
+    "correct": 1
+  },
+  {
+    "id": "cm_n1",
+    "text": "Suma:",
+    "options": [
+      "55,788",
+      "55,888",
+      "55,988",
+      "56,088"
+    ],
+    "dimension": "numerico",
+    "correct": 1,
+    "svg": "<svg viewBox='0 0 220 134' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='220' height='134' fill='white' rx='4'/><text x='170' y='30' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>12,456</text><text x='170' y='58' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>34,789</text><text x='50' y='86' font-family='monospace' font-size='20' fill='#333' text-anchor='start'>+</text><text x='170' y='86' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>8,643</text><line x1='45' y1='98' x2='175' y2='98' stroke='#333' stroke-width='2'/></svg>"
+  },
+  {
+    "id": "cm_n2",
+    "text": "Suma:",
+    "options": [
+      "91,920",
+      "92,020",
+      "92,120",
+      "92,220"
+    ],
+    "dimension": "numerico",
+    "correct": 2,
+    "svg": "<svg viewBox='0 0 220 134' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='220' height='134' fill='white' rx='4'/><text x='170' y='30' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>45,321</text><text x='170' y='58' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>28,956</text><text x='50' y='86' font-family='monospace' font-size='20' fill='#333' text-anchor='start'>+</text><text x='170' y='86' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>17,843</text><line x1='45' y1='98' x2='175' y2='98' stroke='#333' stroke-width='2'/></svg>"
+  },
+  {
+    "id": "cm_n3",
+    "text": "Suma:",
+    "options": [
+      "134,471",
+      "134,571",
+      "134,671",
+      "134,771"
+    ],
+    "dimension": "numerico",
+    "correct": 2,
+    "svg": "<svg viewBox='0 0 220 134' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='220' height='134' fill='white' rx='4'/><text x='170' y='30' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>63,450</text><text x='170' y='58' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>41,875</text><text x='50' y='86' font-family='monospace' font-size='20' fill='#333' text-anchor='start'>+</text><text x='170' y='86' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>29,346</text><line x1='45' y1='98' x2='175' y2='98' stroke='#333' stroke-width='2'/></svg>"
+  },
+  {
+    "id": "cm_n4",
+    "text": "Suma:",
+    "options": [
+      "156,895",
+      "156,995",
+      "157,095",
+      "157,195"
+    ],
+    "dimension": "numerico",
+    "correct": 2,
+    "svg": "<svg viewBox='0 0 220 134' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='220' height='134' fill='white' rx='4'/><text x='170' y='30' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>87,654</text><text x='170' y='58' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>23,478</text><text x='50' y='86' font-family='monospace' font-size='20' fill='#333' text-anchor='start'>+</text><text x='170' y='86' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>45,963</text><line x1='45' y1='98' x2='175' y2='98' stroke='#333' stroke-width='2'/></svg>"
+  },
+  {
+    "id": "cm_n5",
+    "text": "Suma:",
+    "options": [
+      "114,398",
+      "114,498",
+      "114,598",
+      "114,698"
+    ],
+    "dimension": "numerico",
+    "correct": 2,
+    "svg": "<svg viewBox='0 0 220 134' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='220' height='134' fill='white' rx='4'/><text x='170' y='30' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>19,875</text><text x='170' y='58' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>56,432</text><text x='50' y='86' font-family='monospace' font-size='20' fill='#333' text-anchor='start'>+</text><text x='170' y='86' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>38,291</text><line x1='45' y1='98' x2='175' y2='98' stroke='#333' stroke-width='2'/></svg>"
+  },
+  {
+    "id": "cm_n6",
+    "text": "Suma:",
+    "options": [
+      "156,429",
+      "156,529",
+      "156,629",
+      "156,729"
+    ],
+    "dimension": "numerico",
+    "correct": 2,
+    "svg": "<svg viewBox='0 0 220 134' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='220' height='134' fill='white' rx='4'/><text x='170' y='30' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>74,123</text><text x='170' y='58' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>48,659</text><text x='50' y='86' font-family='monospace' font-size='20' fill='#333' text-anchor='start'>+</text><text x='170' y='86' font-family='monospace' font-size='20' fill='#333' text-anchor='end'>33,847</text><line x1='45' y1='98' x2='175' y2='98' stroke='#333' stroke-width='2'/></svg>"
+  },
+  {
+    "id": "cm_n7",
+    "text": "¿Cuál es la ganancia total?",
+    "options": [
+      "$460",
+      "$465",
+      "$470",
+      "$475"
+    ],
+    "dimension": "numerico",
+    "correct": 1,
+    "svg": "<svg viewBox='0 0 315 110' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='315' height='110' fill='white' rx='4'/><rect x='10' y='4' width='110' height='24' fill='#333' rx='2'/><text x='65' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Producto</text><rect x='120' y='4' width='70' height='24' fill='#333' rx='2'/><text x='155' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Precio</text><rect x='190' y='4' width='60' height='24' fill='#333' rx='2'/><text x='220' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Costo</text><rect x='250' y='4' width='55' height='24' fill='#333' rx='2'/><text x='277.5' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Cantidad</text><rect x='10' y='32' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Camisa</text><rect x='120' y='32' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$25.00</text><rect x='190' y='32' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$12.00</text><rect x='250' y='32' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>12</text><rect x='10' y='56' width='110' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='65' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Pantalón</text><rect x='120' y='56' width='70' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='155' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$45.00</text><rect x='190' y='56' width='60' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='220' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$22.00</text><rect x='250' y='56' width='55' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>8</text><rect x='10' y='80' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Zapatos</text><rect x='120' y='80' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$60.00</text><rect x='190' y='80' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$35.00</text><rect x='250' y='80' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>5</text></svg>"
+  },
+  {
+    "id": "cm_n8",
+    "text": "¿Cuál es la ganancia total?",
+    "options": [
+      "$248",
+      "$253",
+      "$258",
+      "$263"
+    ],
+    "dimension": "numerico",
+    "correct": 3,
+    "svg": "<svg viewBox='0 0 315 110' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='315' height='110' fill='white' rx='4'/><rect x='10' y='4' width='110' height='24' fill='#333' rx='2'/><text x='65' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Producto</text><rect x='120' y='4' width='70' height='24' fill='#333' rx='2'/><text x='155' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Precio</text><rect x='190' y='4' width='60' height='24' fill='#333' rx='2'/><text x='220' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Costo</text><rect x='250' y='4' width='55' height='24' fill='#333' rx='2'/><text x='277.5' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Cantidad</text><rect x='10' y='32' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Plato del día</text><rect x='120' y='32' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$12.00</text><rect x='190' y='32' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$4.50</text><rect x='250' y='32' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>25</text><rect x='10' y='56' width='110' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='65' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Bebida</text><rect x='120' y='56' width='70' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='155' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$3.00</text><rect x='190' y='56' width='60' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='220' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$0.75</text><rect x='250' y='56' width='55' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>18</text><rect x='10' y='80' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Postre</text><rect x='120' y='80' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$5.00</text><rect x='190' y='80' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$1.50</text><rect x='250' y='80' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>10</text></svg>"
+  },
+  {
+    "id": "cm_n9",
+    "text": "¿Cuál es la ganancia total?",
+    "options": [
+      "$91",
+      "$92.5",
+      "$94",
+      "$95.5"
+    ],
+    "dimension": "numerico",
+    "correct": 3,
+    "svg": "<svg viewBox='0 0 315 110' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='315' height='110' fill='white' rx='4'/><rect x='10' y='4' width='110' height='24' fill='#333' rx='2'/><text x='65' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Producto</text><rect x='120' y='4' width='70' height='24' fill='#333' rx='2'/><text x='155' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Precio</text><rect x='190' y='4' width='60' height='24' fill='#333' rx='2'/><text x='220' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Costo</text><rect x='250' y='4' width='55' height='24' fill='#333' rx='2'/><text x='277.5' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Cantidad</text><rect x='10' y='32' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Cable (metro)</text><rect x='120' y='32' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$3.50</text><rect x='190' y='32' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$1.20</text><rect x='250' y='32' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>15</text><rect x='10' y='56' width='110' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='65' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Llave inglesa</text><rect x='120' y='56' width='70' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='155' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$18.00</text><rect x='190' y='56' width='60' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='220' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$9.00</text><rect x='250' y='56' width='55' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>6</text><rect x='10' y='80' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Tornillo</text><rect x='120' y='80' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$0.50</text><rect x='190' y='80' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$0.15</text><rect x='250' y='80' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>20</text></svg>"
+  },
+  {
+    "id": "cm_n10",
+    "text": "¿Cuál es la ganancia total?",
+    "options": [
+      "$337.5",
+      "$342.5",
+      "$347.5",
+      "$352.5"
+    ],
+    "dimension": "numerico",
+    "correct": 1,
+    "svg": "<svg viewBox='0 0 315 110' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='315' height='110' fill='white' rx='4'/><rect x='10' y='4' width='110' height='24' fill='#333' rx='2'/><text x='65' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Producto</text><rect x='120' y='4' width='70' height='24' fill='#333' rx='2'/><text x='155' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Precio</text><rect x='190' y='4' width='60' height='24' fill='#333' rx='2'/><text x='220' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Costo</text><rect x='250' y='4' width='55' height='24' fill='#333' rx='2'/><text x='277.5' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Cantidad</text><rect x='10' y='32' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Medicamento A</text><rect x='120' y='32' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$8.00</text><rect x='190' y='32' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$3.50</text><rect x='250' y='32' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>30</text><rect x='10' y='56' width='110' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='65' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Medicamento B</text><rect x='120' y='56' width='70' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='155' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$15.00</text><rect x='190' y='56' width='60' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='220' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$7.00</text><rect x='250' y='56' width='55' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>15</text><rect x='10' y='80' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Vitaminas</text><rect x='120' y='80' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$6.00</text><rect x='190' y='80' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$2.50</text><rect x='250' y='80' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>25</text></svg>"
+  },
+  {
+    "id": "cm_n11",
+    "text": "¿Cuál es la ganancia total?",
+    "options": [
+      "$641",
+      "$646",
+      "$651",
+      "$656"
+    ],
+    "dimension": "numerico",
+    "correct": 0,
+    "svg": "<svg viewBox='0 0 315 110' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='315' height='110' fill='white' rx='4'/><rect x='10' y='4' width='110' height='24' fill='#333' rx='2'/><text x='65' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Producto</text><rect x='120' y='4' width='70' height='24' fill='#333' rx='2'/><text x='155' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Precio</text><rect x='190' y='4' width='60' height='24' fill='#333' rx='2'/><text x='220' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Costo</text><rect x='250' y='4' width='55' height='24' fill='#333' rx='2'/><text x='277.5' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Cantidad</text><rect x='10' y='32' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Libro</text><rect x='120' y='32' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$18.00</text><rect x='190' y='32' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$8.00</text><rect x='250' y='32' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>40</text><rect x='10' y='56' width='110' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='65' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Agenda</text><rect x='120' y='56' width='70' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='155' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$12.00</text><rect x='190' y='56' width='60' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='220' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$5.00</text><rect x='250' y='56' width='55' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>25</text><rect x='10' y='80' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Bolígrafo</text><rect x='120' y='80' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$1.50</text><rect x='190' y='80' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$0.40</text><rect x='250' y='80' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>60</text></svg>"
+  },
+  {
+    "id": "cm_n12",
+    "text": "¿Cuál es la ganancia total?",
+    "options": [
+      "$76.25",
+      "$77.75",
+      "$79.25",
+      "$80.75"
+    ],
+    "dimension": "numerico",
+    "correct": 1,
+    "svg": "<svg viewBox='0 0 315 110' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='315' height='110' fill='white' rx='4'/><rect x='10' y='4' width='110' height='24' fill='#333' rx='2'/><text x='65' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Producto</text><rect x='120' y='4' width='70' height='24' fill='#333' rx='2'/><text x='155' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Precio</text><rect x='190' y='4' width='60' height='24' fill='#333' rx='2'/><text x='220' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Costo</text><rect x='250' y='4' width='55' height='24' fill='#333' rx='2'/><text x='277.5' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Cantidad</text><rect x='10' y='32' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Leche (litro)</text><rect x='120' y='32' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$1.80</text><rect x='190' y='32' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$0.90</text><rect x='250' y='32' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>50</text><rect x='10' y='56' width='110' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='65' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Arroz (kg)</text><rect x='120' y='56' width='70' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='155' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$1.20</text><rect x='190' y='56' width='60' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='220' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$0.55</text><rect x='250' y='56' width='55' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>35</text><rect x='10' y='80' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Azúcar (kg)</text><rect x='120' y='80' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$0.90</text><rect x='190' y='80' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$0.40</text><rect x='250' y='80' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>20</text></svg>"
+  },
+  {
+    "id": "cm_n13",
+    "text": "¿Cuál es la ganancia total?",
+    "options": [
+      "$2,353",
+      "$2,393",
+      "$2,433",
+      "$2,473"
+    ],
+    "dimension": "numerico",
+    "correct": 0,
+    "svg": "<svg viewBox='0 0 315 110' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='315' height='110' fill='white' rx='4'/><rect x='10' y='4' width='110' height='24' fill='#333' rx='2'/><text x='65' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Producto</text><rect x='120' y='4' width='70' height='24' fill='#333' rx='2'/><text x='155' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Precio</text><rect x='190' y='4' width='60' height='24' fill='#333' rx='2'/><text x='220' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Costo</text><rect x='250' y='4' width='55' height='24' fill='#333' rx='2'/><text x='277.5' y='19' font-family='sans-serif' font-size='9' fill='white' text-anchor='middle' font-weight='bold'>Cantidad</text><rect x='10' y='32' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Laptop</text><rect x='120' y='32' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$850.00</text><rect x='190' y='32' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$620.00</text><rect x='250' y='32' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='48' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>8</text><rect x='10' y='56' width='110' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='65' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Teclado</text><rect x='120' y='56' width='70' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='155' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$45.00</text><rect x='190' y='56' width='60' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='220' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$22.00</text><rect x='250' y='56' width='55' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='72' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>15</text><rect x='10' y='80' width='110' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='65' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>Mouse</text><rect x='120' y='80' width='70' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='155' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$25.00</text><rect x='190' y='80' width='60' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='220' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>$11.00</text><rect x='250' y='80' width='55' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='277.5' y='96' font-family='sans-serif' font-size='9' fill='#333' text-anchor='middle'>12</text></svg>"
+  },
+  {
+    "id": "cm_n14",
+    "text": "Movimientos de cuenta bancaria:",
+    "options": [
+      "$19,600",
+      "$19,700",
+      "$19,800",
+      "$19,900"
+    ],
+    "dimension": "numerico",
+    "correct": 2,
+    "svg": "<svg viewBox='0 0 280 158' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='280' height='158' fill='white' rx='4'/><rect x='10' y='4' width='140' height='24' fill='#333' rx='2'/><text x='80' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Movimiento</text><rect x='150' y='4' width='100' height='24' fill='#333' rx='2'/><text x='200' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Monto</text><rect x='10' y='32' width='140' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='80' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Saldo inicial</text><rect x='150' y='32' width='100' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='200' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>$15,000</text><rect x='10' y='56' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='72' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='56' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='72' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$8,500</text><rect x='10' y='80' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='96' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='80' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='96' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$3,200</text><rect x='10' y='104' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='120' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='104' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='120' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$4,800</text><rect x='10' y='128' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='144' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='128' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='144' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$2,100</text></svg>"
+  },
+  {
+    "id": "cm_n15",
+    "text": "Movimientos de cuenta bancaria:",
+    "options": [
+      "$28,480",
+      "$28,580",
+      "$28,680",
+      "$28,780"
+    ],
+    "dimension": "numerico",
+    "correct": 2,
+    "svg": "<svg viewBox='0 0 280 158' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='280' height='158' fill='white' rx='4'/><rect x='10' y='4' width='140' height='24' fill='#333' rx='2'/><text x='80' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Movimiento</text><rect x='150' y='4' width='100' height='24' fill='#333' rx='2'/><text x='200' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Monto</text><rect x='10' y='32' width='140' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='80' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Saldo inicial</text><rect x='150' y='32' width='100' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='200' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>$32,500</text><rect x='10' y='56' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='72' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='56' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='72' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$8,750</text><rect x='10' y='80' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='96' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='80' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='96' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$4,320</text><rect x='10' y='104' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='120' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='104' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='120' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$6,800</text><rect x='10' y='128' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='144' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='128' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='144' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$2,450</text></svg>"
+  },
+  {
+    "id": "cm_n16",
+    "text": "Movimientos de cuenta bancaria:",
+    "options": [
+      "$47,500",
+      "$48,000",
+      "$48,500",
+      "$49,000"
+    ],
+    "dimension": "numerico",
+    "correct": 0,
+    "svg": "<svg viewBox='0 0 280 182' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='280' height='182' fill='white' rx='4'/><rect x='10' y='4' width='140' height='24' fill='#333' rx='2'/><text x='80' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Movimiento</text><rect x='150' y='4' width='100' height='24' fill='#333' rx='2'/><text x='200' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Monto</text><rect x='10' y='32' width='140' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='80' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Saldo inicial</text><rect x='150' y='32' width='100' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='200' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>$50,000</text><rect x='10' y='56' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='72' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='56' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='72' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$8,500</text><rect x='10' y='80' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='96' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='80' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='96' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$8,500</text><rect x='10' y='104' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='120' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='104' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='120' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$8,500</text><rect x='10' y='128' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='144' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='128' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='144' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$12,000</text><rect x='10' y='152' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='168' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='152' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='168' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$12,000</text></svg>"
+  },
+  {
+    "id": "cm_n17",
+    "text": "Movimientos de cuenta bancaria:",
+    "options": [
+      "$96,800",
+      "$97,000",
+      "$97,200",
+      "$97,400"
+    ],
+    "dimension": "numerico",
+    "correct": 1,
+    "svg": "<svg viewBox='0 0 280 182' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='280' height='182' fill='white' rx='4'/><rect x='10' y='4' width='140' height='24' fill='#333' rx='2'/><text x='80' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Movimiento</text><rect x='150' y='4' width='100' height='24' fill='#333' rx='2'/><text x='200' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Monto</text><rect x='10' y='32' width='140' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='80' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Saldo inicial</text><rect x='150' y='32' width='100' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='200' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>$125,000</text><rect x='10' y='56' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='72' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='56' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='72' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$28,400</text><rect x='10' y='80' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='96' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='80' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='96' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$15,600</text><rect x='10' y='104' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='120' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='104' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='120' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$9,800</text><rect x='10' y='128' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='144' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='128' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='144' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$18,500</text><rect x='10' y='152' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='168' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='152' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='168' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$7,300</text></svg>"
+  },
+  {
+    "id": "cm_n18",
+    "text": "Movimientos de cuenta bancaria:",
+    "options": [
+      "$8,500",
+      "$8,600",
+      "$8,700",
+      "$8,800"
+    ],
+    "dimension": "numerico",
+    "correct": 0,
+    "svg": "<svg viewBox='0 0 280 158' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='280' height='158' fill='white' rx='4'/><rect x='10' y='4' width='140' height='24' fill='#333' rx='2'/><text x='80' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Movimiento</text><rect x='150' y='4' width='100' height='24' fill='#333' rx='2'/><text x='200' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Monto</text><rect x='10' y='32' width='140' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='80' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Saldo inicial</text><rect x='150' y='32' width='100' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='200' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>$8,750</text><rect x='10' y='56' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='72' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='56' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='72' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$4,320</text><rect x='10' y='80' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='96' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='80' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='96' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$2,180</text><rect x='10' y='104' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='120' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='104' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='120' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$1,650</text><rect x='10' y='128' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='144' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='128' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='144' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$3,840</text></svg>"
+  },
+  {
+    "id": "cm_n19",
+    "text": "Movimientos de cuenta bancaria:",
+    "options": [
+      "$142,400",
+      "$143,400",
+      "$144,400",
+      "$145,400"
+    ],
+    "dimension": "numerico",
+    "correct": 0,
+    "svg": "<svg viewBox='0 0 280 230' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='280' height='230' fill='white' rx='4'/><rect x='10' y='4' width='140' height='24' fill='#333' rx='2'/><text x='80' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Movimiento</text><rect x='150' y='4' width='100' height='24' fill='#333' rx='2'/><text x='200' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Monto</text><rect x='10' y='32' width='140' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='80' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Saldo inicial</text><rect x='150' y='32' width='100' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='200' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>$200,000</text><rect x='10' y='56' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='72' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='56' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='72' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$22,500</text><rect x='10' y='80' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='96' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='80' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='96' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$22,500</text><rect x='10' y='104' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='120' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='104' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='120' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$22,500</text><rect x='10' y='128' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='144' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='128' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='144' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$22,500</text><rect x='10' y='152' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='168' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='152' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='168' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$15,800</text><rect x='10' y='176' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='192' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='176' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='192' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$15,800</text><rect x='10' y='200' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='216' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='200' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='216' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$15,800</text></svg>"
+  },
+  {
+    "id": "cm_n20",
+    "text": "Movimientos de cuenta bancaria:",
+    "options": [
+      "$34,090",
+      "$34,290",
+      "$34,490",
+      "$34,690"
+    ],
+    "dimension": "numerico",
+    "correct": 0,
+    "svg": "<svg viewBox='0 0 280 182' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='280' height='182' fill='white' rx='4'/><rect x='10' y='4' width='140' height='24' fill='#333' rx='2'/><text x='80' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Movimiento</text><rect x='150' y='4' width='100' height='24' fill='#333' rx='2'/><text x='200' y='19' font-family='sans-serif' font-size='10' fill='white' text-anchor='middle' font-weight='bold'>Monto</text><rect x='10' y='32' width='140' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='80' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Saldo inicial</text><rect x='150' y='32' width='100' height='22' fill='#f0f0f0' stroke='#eee' stroke-width='0.5'/><text x='200' y='48' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>$45,600</text><rect x='10' y='56' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='72' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='56' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='72' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$12,350</text><rect x='10' y='80' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='96' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='80' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='96' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$8,920</text><rect x='10' y='104' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='120' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='104' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='120' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$5,430</text><rect x='10' y='128' width='140' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='80' y='144' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Depósito</text><rect x='150' y='128' width='100' height='22' fill='#f9f9f9' stroke='#eee' stroke-width='0.5'/><text x='200' y='144' font-family='sans-serif' font-size='10' fill='#090' text-anchor='middle'>+$11,280</text><rect x='10' y='152' width='140' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='80' y='168' font-family='sans-serif' font-size='10' fill='#333' text-anchor='middle'>Retiro</text><rect x='150' y='152' width='100' height='22' fill='#fff' stroke='#eee' stroke-width='0.5'/><text x='200' y='168' font-family='sans-serif' font-size='10' fill='#c00' text-anchor='middle'>-$6,750</text></svg>"
+  },
+  {
+    "id": "cm_e1",
+    "text": "¿Cuál opción muestra esta figura rotada 90° en sentido horario?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"22\" y=\"10\" width=\"6\" height=\"40\" fill=\"#1f2937\"/><polygon points=\"28,10 50,20 28,30\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><rect x=\"22\" y=\"10\" width=\"6\" height=\"40\" fill=\"#1f2937\"/><polygon points=\"28,10 50,20 28,30\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"22\" y=\"10\" width=\"6\" height=\"40\" fill=\"#1f2937\"/><polygon points=\"28,10 50,20 28,30\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"22\" y=\"10\" width=\"6\" height=\"40\" fill=\"#1f2937\"/><polygon points=\"28,10 50,20 28,30\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"22\" y=\"10\" width=\"6\" height=\"40\" fill=\"#1f2937\"/><polygon points=\"28,10 50,20 28,30\" fill=\"#1f2937\"/></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 1
+  },
+  {
+    "id": "cm_e2",
+    "text": "¿Cuál opción muestra esta figura rotada 90° en sentido antihorario?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"38\" width=\"20\" height=\"7\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"38\" width=\"20\" height=\"7\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"38\" width=\"20\" height=\"7\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"38\" width=\"20\" height=\"7\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"38\" width=\"20\" height=\"7\" fill=\"#1f2937\"/></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 0
+  },
+  {
+    "id": "cm_e3",
+    "text": "¿Cuál opción muestra esta figura rotada 180°?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 1
+  },
+  {
+    "id": "cm_e4",
+    "text": "¿Cuál opción muestra esta figura rotada 90° en sentido horario?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><polygon points=\"30,12 48,44 12,44\" fill=\"#1f2937\"/><circle cx=\"42\" cy=\"40\" r=\"3.5\" fill=\"white\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><polygon points=\"30,12 48,44 12,44\" fill=\"#1f2937\"/><circle cx=\"42\" cy=\"40\" r=\"3.5\" fill=\"white\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><polygon points=\"30,12 48,44 12,44\" fill=\"#1f2937\"/><circle cx=\"42\" cy=\"40\" r=\"3.5\" fill=\"white\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><polygon points=\"30,12 48,44 12,44\" fill=\"#1f2937\"/><circle cx=\"42\" cy=\"40\" r=\"3.5\" fill=\"white\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><polygon points=\"30,12 48,44 12,44\" fill=\"#1f2937\"/><circle cx=\"42\" cy=\"40\" r=\"3.5\" fill=\"white\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 2
+  },
+  {
+    "id": "cm_e5",
+    "text": "¿Cuál opción muestra esta figura rotada 180°?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"32\" y=\"12\" width=\"7\" height=\"28\" fill=\"#1f2937\"/><rect x=\"20\" y=\"33\" width=\"19\" height=\"7\" fill=\"#1f2937\"/><rect x=\"20\" y=\"27\" width=\"7\" height=\"13\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"32\" y=\"12\" width=\"7\" height=\"28\" fill=\"#1f2937\"/><rect x=\"20\" y=\"33\" width=\"19\" height=\"7\" fill=\"#1f2937\"/><rect x=\"20\" y=\"27\" width=\"7\" height=\"13\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"32\" y=\"12\" width=\"7\" height=\"28\" fill=\"#1f2937\"/><rect x=\"20\" y=\"33\" width=\"19\" height=\"7\" fill=\"#1f2937\"/><rect x=\"20\" y=\"27\" width=\"7\" height=\"13\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><rect x=\"32\" y=\"12\" width=\"7\" height=\"28\" fill=\"#1f2937\"/><rect x=\"20\" y=\"33\" width=\"19\" height=\"7\" fill=\"#1f2937\"/><rect x=\"20\" y=\"27\" width=\"7\" height=\"13\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"32\" y=\"12\" width=\"7\" height=\"28\" fill=\"#1f2937\"/><rect x=\"20\" y=\"33\" width=\"19\" height=\"7\" fill=\"#1f2937\"/><rect x=\"20\" y=\"27\" width=\"7\" height=\"13\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 3
+  },
+  {
+    "id": "cm_e6",
+    "text": "¿Cuál opción muestra esta figura rotada 90° en sentido horario?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><path d=\"M20,12 L40,12 L40,28 L28,28 L28,45 L20,45 Z\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><path d=\"M20,12 L40,12 L40,28 L28,28 L28,45 L20,45 Z\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><path d=\"M20,12 L40,12 L40,28 L28,28 L28,45 L20,45 Z\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M20,12 L40,12 L40,28 L28,28 L28,45 L20,45 Z\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><path d=\"M20,12 L40,12 L40,28 L28,28 L28,45 L20,45 Z\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 0
+  },
+  {
+    "id": "cm_e7",
+    "text": "¿Cuál opción muestra esta figura rotada 90° en sentido antihorario?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"27\" y=\"18\" width=\"6\" height=\"27\" fill=\"#1f2937\"/><rect x=\"16\" y=\"12\" width=\"22\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"27\" y=\"18\" width=\"6\" height=\"27\" fill=\"#1f2937\"/><rect x=\"16\" y=\"12\" width=\"22\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"27\" y=\"18\" width=\"6\" height=\"27\" fill=\"#1f2937\"/><rect x=\"16\" y=\"12\" width=\"22\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><rect x=\"27\" y=\"18\" width=\"6\" height=\"27\" fill=\"#1f2937\"/><rect x=\"16\" y=\"12\" width=\"22\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"27\" y=\"18\" width=\"6\" height=\"27\" fill=\"#1f2937\"/><rect x=\"16\" y=\"12\" width=\"22\" height=\"8\" fill=\"#1f2937\"/></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 2
+  },
+  {
+    "id": "cm_e8",
+    "text": "¿Cuál opción muestra esta figura rotada 180°?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"13\" y=\"15\" width=\"30\" height=\"6\" fill=\"#1f2937\"/><rect x=\"22\" y=\"21\" width=\"6\" height=\"24\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"13\" y=\"15\" width=\"30\" height=\"6\" fill=\"#1f2937\"/><rect x=\"22\" y=\"21\" width=\"6\" height=\"24\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"13\" y=\"15\" width=\"30\" height=\"6\" fill=\"#1f2937\"/><rect x=\"22\" y=\"21\" width=\"6\" height=\"24\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><rect x=\"13\" y=\"15\" width=\"30\" height=\"6\" fill=\"#1f2937\"/><rect x=\"22\" y=\"21\" width=\"6\" height=\"24\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"13\" y=\"15\" width=\"30\" height=\"6\" fill=\"#1f2937\"/><rect x=\"22\" y=\"21\" width=\"6\" height=\"24\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 3
+  },
+  {
+    "id": "cm_e9",
+    "text": "¿Cuál opción muestra el reflejo horizontal de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><polygon points=\"12,28 30,12 48,28 48,46 12,46\" fill=\"#1f2937\"/><rect x=\"38\" y=\"14\" width=\"5\" height=\"10\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><polygon points=\"12,28 30,12 48,28 48,46 12,46\" fill=\"#1f2937\"/><rect x=\"38\" y=\"14\" width=\"5\" height=\"10\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><polygon points=\"12,28 30,12 48,28 48,46 12,46\" fill=\"#1f2937\"/><rect x=\"38\" y=\"14\" width=\"5\" height=\"10\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><polygon points=\"12,28 30,12 48,28 48,46 12,46\" fill=\"#1f2937\"/><rect x=\"38\" y=\"14\" width=\"5\" height=\"10\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><polygon points=\"12,28 30,12 48,28 48,46 12,46\" fill=\"#1f2937\"/><rect x=\"38\" y=\"14\" width=\"5\" height=\"10\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 2
+  },
+  {
+    "id": "cm_e10",
+    "text": "¿Cuál opción muestra el reflejo vertical de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><polygon points=\"10,42 50,42 44,50 16,50\" fill=\"#1f2937\"/><rect x=\"29\" y=\"12\" width=\"2\" height=\"30\" fill=\"#1f2937\"/><polygon points=\"31,12 31,40 46,40\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><polygon points=\"10,42 50,42 44,50 16,50\" fill=\"#1f2937\"/><rect x=\"29\" y=\"12\" width=\"2\" height=\"30\" fill=\"#1f2937\"/><polygon points=\"31,12 31,40 46,40\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><polygon points=\"10,42 50,42 44,50 16,50\" fill=\"#1f2937\"/><rect x=\"29\" y=\"12\" width=\"2\" height=\"30\" fill=\"#1f2937\"/><polygon points=\"31,12 31,40 46,40\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><polygon points=\"10,42 50,42 44,50 16,50\" fill=\"#1f2937\"/><rect x=\"29\" y=\"12\" width=\"2\" height=\"30\" fill=\"#1f2937\"/><polygon points=\"31,12 31,40 46,40\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><polygon points=\"10,42 50,42 44,50 16,50\" fill=\"#1f2937\"/><rect x=\"29\" y=\"12\" width=\"2\" height=\"30\" fill=\"#1f2937\"/><polygon points=\"31,12 31,40 46,40\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 0
+  },
+  {
+    "id": "cm_e11",
+    "text": "¿Cuál opción muestra el reflejo horizontal de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"22\" y=\"10\" width=\"12\" height=\"28\" fill=\"#1f2937\"/><rect x=\"22\" y=\"32\" width=\"24\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"22\" y=\"10\" width=\"12\" height=\"28\" fill=\"#1f2937\"/><rect x=\"22\" y=\"32\" width=\"24\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"22\" y=\"10\" width=\"12\" height=\"28\" fill=\"#1f2937\"/><rect x=\"22\" y=\"32\" width=\"24\" height=\"8\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><rect x=\"22\" y=\"10\" width=\"12\" height=\"28\" fill=\"#1f2937\"/><rect x=\"22\" y=\"32\" width=\"24\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><rect x=\"22\" y=\"10\" width=\"12\" height=\"28\" fill=\"#1f2937\"/><rect x=\"22\" y=\"32\" width=\"24\" height=\"8\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 3
+  },
+  {
+    "id": "cm_e12",
+    "text": "¿Cuál opción muestra el reflejo vertical de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"14\" y=\"22\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"14\" y=\"12\" width=\"4\" height=\"14\" fill=\"#1f2937\"/><rect x=\"16\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/><rect x=\"31\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><rect x=\"14\" y=\"22\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"14\" y=\"12\" width=\"4\" height=\"14\" fill=\"#1f2937\"/><rect x=\"16\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/><rect x=\"31\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><rect x=\"14\" y=\"22\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"14\" y=\"12\" width=\"4\" height=\"14\" fill=\"#1f2937\"/><rect x=\"16\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/><rect x=\"31\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"14\" y=\"22\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"14\" y=\"12\" width=\"4\" height=\"14\" fill=\"#1f2937\"/><rect x=\"16\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/><rect x=\"31\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"14\" y=\"22\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"14\" y=\"12\" width=\"4\" height=\"14\" fill=\"#1f2937\"/><rect x=\"16\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/><rect x=\"31\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 1
+  },
+  {
+    "id": "cm_e13",
+    "text": "¿Cuál opción muestra el reflejo horizontal de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"18\" y=\"12\" width=\"7\" height=\"34\" fill=\"#1f2937\"/><rect x=\"18\" y=\"12\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><rect x=\"31\" y=\"12\" width=\"7\" height=\"17\" fill=\"#1f2937\"/><rect x=\"18\" y=\"22\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><polygon points=\"25,29 31,29 42,46 36,46\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><rect x=\"18\" y=\"12\" width=\"7\" height=\"34\" fill=\"#1f2937\"/><rect x=\"18\" y=\"12\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><rect x=\"31\" y=\"12\" width=\"7\" height=\"17\" fill=\"#1f2937\"/><rect x=\"18\" y=\"22\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><polygon points=\"25,29 31,29 42,46 36,46\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><rect x=\"18\" y=\"12\" width=\"7\" height=\"34\" fill=\"#1f2937\"/><rect x=\"18\" y=\"12\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><rect x=\"31\" y=\"12\" width=\"7\" height=\"17\" fill=\"#1f2937\"/><rect x=\"18\" y=\"22\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><polygon points=\"25,29 31,29 42,46 36,46\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"18\" y=\"12\" width=\"7\" height=\"34\" fill=\"#1f2937\"/><rect x=\"18\" y=\"12\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><rect x=\"31\" y=\"12\" width=\"7\" height=\"17\" fill=\"#1f2937\"/><rect x=\"18\" y=\"22\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><polygon points=\"25,29 31,29 42,46 36,46\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"18\" y=\"12\" width=\"7\" height=\"34\" fill=\"#1f2937\"/><rect x=\"18\" y=\"12\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><rect x=\"31\" y=\"12\" width=\"7\" height=\"17\" fill=\"#1f2937\"/><rect x=\"18\" y=\"22\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><polygon points=\"25,29 31,29 42,46 36,46\" fill=\"#1f2937\"/></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 0
+  },
+  {
+    "id": "cm_e14",
+    "text": "¿Cuál opción muestra el reflejo vertical de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><polygon points=\"32,8 18,28 28,28 22,46 40,22 30,22 36,8\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><polygon points=\"32,8 18,28 28,28 22,46 40,22 30,22 36,8\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><polygon points=\"32,8 18,28 28,28 22,46 40,22 30,22 36,8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><polygon points=\"32,8 18,28 28,28 22,46 40,22 30,22 36,8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><polygon points=\"32,8 18,28 28,28 22,46 40,22 30,22 36,8\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 2
+  },
+  {
+    "id": "cm_e15",
+    "text": "¿Cuál opción muestra el reflejo horizontal de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><polygon points=\"10,24 34,24 34,16 48,30 34,44 34,36 18,36 18,46 10,46\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><polygon points=\"10,24 34,24 34,16 48,30 34,44 34,36 18,36 18,46 10,46\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><polygon points=\"10,24 34,24 34,16 48,30 34,44 34,36 18,36 18,46 10,46\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><polygon points=\"10,24 34,24 34,16 48,30 34,44 34,36 18,36 18,46 10,46\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><polygon points=\"10,24 34,24 34,16 48,30 34,44 34,36 18,36 18,46 10,46\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 1
+  },
+  {
+    "id": "cm_e16",
+    "text": "¿Cuál opción muestra el reflejo vertical de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><circle cx=\"16\" cy=\"30\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"16\" cy=\"30\" r=\"2.2\" fill=\"white\"/><rect x=\"22\" y=\"28\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"32\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/><rect x=\"40\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><circle cx=\"16\" cy=\"30\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"16\" cy=\"30\" r=\"2.2\" fill=\"white\"/><rect x=\"22\" y=\"28\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"32\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/><rect x=\"40\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"16\" cy=\"30\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"16\" cy=\"30\" r=\"2.2\" fill=\"white\"/><rect x=\"22\" y=\"28\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"32\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/><rect x=\"40\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><circle cx=\"16\" cy=\"30\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"16\" cy=\"30\" r=\"2.2\" fill=\"white\"/><rect x=\"22\" y=\"28\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"32\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/><rect x=\"40\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><circle cx=\"16\" cy=\"30\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"16\" cy=\"30\" r=\"2.2\" fill=\"white\"/><rect x=\"22\" y=\"28\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"32\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/><rect x=\"40\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 3
+  },
+  {
+    "id": "cm_e17",
+    "text": "¿Cuál de estas figuras simples está escondida dentro de la figura compleja?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n      <polygon points=\"60,18 102,60 60,102 18,60\"/>\n      <circle cx=\"92\" cy=\"58\" r=\"22\"/>\n      <line x1=\"20\" y1=\"20\" x2=\"100\" y2=\"100\"/>\n    </g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,10 47,20 47,40 30,50 13,40 13,20\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,46 12,46\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,25 41,46 19,46 12,25\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,10 50,30 30,50 10,30\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 3
+  },
+  {
+    "id": "cm_e18",
+    "text": "¿Cuál de estas figuras simples está escondida dentro de la figura compleja?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n      <circle cx=\"60\" cy=\"60\" r=\"42\"/>\n      <polygon points=\"60,20 95,40 95,80 60,100 25,80 25,40\"/>\n      <line x1=\"10\" y1=\"60\" x2=\"110\" y2=\"60\"/>\n    </g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,10 47,20 47,40 30,50 13,40 13,20\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,25 41,46 19,46 12,25\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"15\" y=\"15\" width=\"30\" height=\"30\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,46 12,46\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 0
+  },
+  {
+    "id": "cm_e19",
+    "text": "¿Cuál de estas figuras simples está escondida dentro de la figura compleja?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n      <polygon points=\"60,15 75,52 115,52 84,75 95,113 60,90 25,113 36,75 5,52 45,52\"/>\n      <polygon points=\"60,30 88,50 78,82 42,82 32,50\"/>\n      <line x1=\"20\" y1=\"100\" x2=\"100\" y2=\"100\"/>\n    </g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,10 47,20 47,40 30,50 13,40 13,20\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"15\" y=\"15\" width=\"30\" height=\"30\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,25 41,46 19,46 12,25\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,46 12,46\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 2
+  },
+  {
+    "id": "cm_e20",
+    "text": "¿Cuál de estas figuras simples está escondida dentro de la figura compleja?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n      <path d=\"M14,52 L70,52 L70,36 L104,60 L70,84 L70,68 L14,68 Z\"/>\n      <circle cx=\"70\" cy=\"60\" r=\"38\"/>\n      <line x1=\"20\" y1=\"105\" x2=\"100\" y2=\"15\"/>\n    </g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"15\" y=\"15\" width=\"30\" height=\"30\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><path d=\"M10,28 L34,28 L34,20 L50,30 L34,40 L34,32 L10,32 Z\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,10 47,20 47,40 30,50 13,40 13,20\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,46 12,46\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 1
+  },
+  {
+    "id": "cm_a1",
+    "text": "¿Qué figura completa esta matriz?",
+    "svg": "<svg viewBox=\"0 0 320 320\" xmlns=\"http://www.w3.org/2000/svg\">\n    <g fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\">\n      <rect x=\"0\"   y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"220\" width=\"100\" height=\"100\"/>\n    </g><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"50,33.2 65.4,62.6 34.599999999999994,62.6\"/><polygon points=\"142,39.2 151.9,58.1 132.1,58.1\"/><polygon points=\"178,39.2 187.9,58.1 168.1,58.1\"/><polygon points=\"245,42.2 252.15,55.85 237.85,55.85\"/><polygon points=\"270,42.2 277.15,55.85 262.85,55.85\"/><polygon points=\"295,42.2 302.15,55.85 287.85,55.85\"/><rect x=\"32\" y=\"142\" width=\"36\" height=\"36\"/><rect x=\"131\" y=\"149\" width=\"22\" height=\"22\"/><rect x=\"167\" y=\"149\" width=\"22\" height=\"22\"/><rect x=\"237.5\" y=\"152.5\" width=\"15\" height=\"15\"/><rect x=\"262.5\" y=\"152.5\" width=\"15\" height=\"15\"/><rect x=\"287.5\" y=\"152.5\" width=\"15\" height=\"15\"/><circle cx=\"50\" cy=\"270\" r=\"20\"/><circle cx=\"142\" cy=\"270\" r=\"14\"/><circle cx=\"178\" cy=\"270\" r=\"14\"/></g><text x=\"270\" y=\"287\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"56\" font-weight=\"600\" fill=\"#9ca3af\">?</text></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"7\" y=\"23\" width=\"14\" height=\"14\"/><rect x=\"23\" y=\"23\" width=\"14\" height=\"14\"/><rect x=\"39\" y=\"23\" width=\"14\" height=\"14\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"40\" cy=\"30\" r=\"14\"/><circle cx=\"20\" cy=\"30\" r=\"14\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"15\" cy=\"30\" r=\"9\"/><circle cx=\"30\" cy=\"30\" r=\"9\"/><circle cx=\"45\" cy=\"30\" r=\"9\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"15,40 23,22 7,22\"/><polygon points=\"30,40 38,22 22,22\"/><polygon points=\"45,40 53,22 37,22\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 2
+  },
+  {
+    "id": "cm_a2",
+    "text": "¿Qué figura completa esta matriz?",
+    "svg": "<svg viewBox=\"0 0 320 320\" xmlns=\"http://www.w3.org/2000/svg\">\n    <g fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\">\n      <rect x=\"0\"   y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"220\" width=\"100\" height=\"100\"/>\n    </g><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(0 50 50)\"><polygon points=\"50,28 69,65 31,65\"/></g><g transform=\"rotate(45 160 50)\"><polygon points=\"160,28 179,65 141,65\"/></g><g transform=\"rotate(90 270 50)\"><polygon points=\"270,28 289,65 251,65\"/></g><g transform=\"rotate(45 50 160)\"><polygon points=\"50,138 69,175 31,175\"/></g><g transform=\"rotate(90 160 160)\"><polygon points=\"160,138 179,175 141,175\"/></g><g transform=\"rotate(135 270 160)\"><polygon points=\"270,138 289,175 251,175\"/></g><g transform=\"rotate(90 50 270)\"><polygon points=\"50,248 69,285 31,285\"/></g><g transform=\"rotate(135 160 270)\"><polygon points=\"160,248 179,285 141,285\"/></g></g><text x=\"270\" y=\"287\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"56\" font-weight=\"600\" fill=\"#9ca3af\">?</text></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(180 30 30)\"><polygon points=\"30,12 48,42 12,42\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(135 30 30)\"><polygon points=\"30,12 48,42 12,42\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(0 30 30)\"><polygon points=\"30,12 48,42 12,42\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(225 30 30)\"><polygon points=\"30,12 48,42 12,42\"/></g></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 0
+  },
+  {
+    "id": "cm_a3",
+    "text": "¿Qué figura completa esta matriz?",
+    "svg": "<svg viewBox=\"0 0 320 320\" xmlns=\"http://www.w3.org/2000/svg\">\n    <g fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\">\n      <rect x=\"0\"   y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"220\" width=\"100\" height=\"100\"/>\n    </g><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"50\" cy=\"50\" r=\"10\" fill=\"#1f2937\"/><circle cx=\"142\" cy=\"50\" r=\"7\" fill=\"#1f2937\"/><circle cx=\"178\" cy=\"50\" r=\"7\" fill=\"#1f2937\"/><circle cx=\"245\" cy=\"50\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"270\" cy=\"50\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"295\" cy=\"50\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"32\" cy=\"160\" r=\"7\" fill=\"#1f2937\"/><circle cx=\"68\" cy=\"160\" r=\"7\" fill=\"#1f2937\"/><circle cx=\"135\" cy=\"160\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"160\" cy=\"160\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"185\" cy=\"160\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"240\" cy=\"160\" r=\"5\" fill=\"#1f2937\"/><circle cx=\"260\" cy=\"160\" r=\"5\" fill=\"#1f2937\"/><circle cx=\"280\" cy=\"160\" r=\"5\" fill=\"#1f2937\"/><circle cx=\"300\" cy=\"160\" r=\"5\" fill=\"#1f2937\"/><circle cx=\"25\" cy=\"270\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"50\" cy=\"270\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"75\" cy=\"270\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"130\" cy=\"270\" r=\"5\" fill=\"#1f2937\"/><circle cx=\"150\" cy=\"270\" r=\"5\" fill=\"#1f2937\"/><circle cx=\"170\" cy=\"270\" r=\"5\" fill=\"#1f2937\"/><circle cx=\"190\" cy=\"270\" r=\"5\" fill=\"#1f2937\"/></g><text x=\"270\" y=\"287\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"56\" font-weight=\"600\" fill=\"#9ca3af\">?</text></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"16.5\" cy=\"30\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"25.5\" cy=\"30\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"34.5\" cy=\"30\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"43.5\" cy=\"30\" r=\"4\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"14\" cy=\"30\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"22\" cy=\"30\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"30\" cy=\"30\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"38\" cy=\"30\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"46\" cy=\"30\" r=\"4\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"19\" cy=\"30\" r=\"5\" fill=\"#1f2937\"/><circle cx=\"30\" cy=\"30\" r=\"5\" fill=\"#1f2937\"/><circle cx=\"41\" cy=\"30\" r=\"5\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"10\" cy=\"30\" r=\"3.5\" fill=\"#1f2937\"/><circle cx=\"18\" cy=\"30\" r=\"3.5\" fill=\"#1f2937\"/><circle cx=\"26\" cy=\"30\" r=\"3.5\" fill=\"#1f2937\"/><circle cx=\"34\" cy=\"30\" r=\"3.5\" fill=\"#1f2937\"/><circle cx=\"42\" cy=\"30\" r=\"3.5\" fill=\"#1f2937\"/><circle cx=\"50\" cy=\"30\" r=\"3.5\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 1
+  },
+  {
+    "id": "cm_a4",
+    "text": "¿Qué figura completa esta matriz?",
+    "svg": "<svg viewBox=\"0 0 320 320\" xmlns=\"http://www.w3.org/2000/svg\">\n    <g fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\">\n      <rect x=\"0\"   y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"220\" width=\"100\" height=\"100\"/>\n    </g><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"50\" cy=\"50\" r=\"7\"/><circle cx=\"160\" cy=\"50\" r=\"12\"/><circle cx=\"270\" cy=\"50\" r=\"17\"/><circle cx=\"50\" cy=\"160\" r=\"12\"/><circle cx=\"160\" cy=\"160\" r=\"17\"/><circle cx=\"270\" cy=\"160\" r=\"22\"/><circle cx=\"50\" cy=\"270\" r=\"17\"/><circle cx=\"160\" cy=\"270\" r=\"22\"/></g><text x=\"270\" y=\"287\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"56\" font-weight=\"600\" fill=\"#9ca3af\">?</text></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"7\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"13\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"19\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"25\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 3
+  },
+  {
+    "id": "cm_a5",
+    "text": "¿Qué figura completa esta matriz?",
+    "svg": "<svg viewBox=\"0 0 320 320\" xmlns=\"http://www.w3.org/2000/svg\">\n    <g fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\">\n      <rect x=\"0\"   y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"220\" width=\"100\" height=\"100\"/>\n    </g><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"50\" cy=\"50\" r=\"10\"/><rect x=\"150\" y=\"40\" width=\"20\" height=\"20\"/><polygon points=\"270,39.5 279.5,58 260.5,58\"/><circle cx=\"50\" cy=\"160\" r=\"16\"/><rect x=\"144\" y=\"144\" width=\"32\" height=\"32\"/><polygon points=\"270,143.2 285.2,172.8 254.8,172.8\"/><circle cx=\"50\" cy=\"270\" r=\"22\"/><rect x=\"138\" y=\"248\" width=\"44\" height=\"44\"/></g><text x=\"270\" y=\"287\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"56\" font-weight=\"600\" fill=\"#9ca3af\">?</text></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,9 50,48 10,48\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,18 42,42 18,42\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"10\" y=\"10\" width=\"40\" height=\"40\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"22\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 0
+  },
+  {
+    "id": "cm_a6",
+    "text": "¿Qué figura completa esta matriz?",
+    "svg": "<svg viewBox=\"0 0 320 320\" xmlns=\"http://www.w3.org/2000/svg\">\n    <g fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\">\n      <rect x=\"0\"   y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"220\" width=\"100\" height=\"100\"/>\n    </g><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><line x1=\"22\" y1=\"50\" x2=\"78\" y2=\"50\"/><line x1=\"160\" y1=\"22\" x2=\"160\" y2=\"78\"/><line x1=\"242\" y1=\"50\" x2=\"298\" y2=\"50\"/><line x1=\"270\" y1=\"22\" x2=\"270\" y2=\"78\"/><circle cx=\"50\" cy=\"160\" r=\"22\"/><polygon points=\"160,138 184,180 136,180\"/><circle cx=\"270\" cy=\"160\" r=\"24\"/><polygon points=\"270,144 286,176 254,176\"/><rect x=\"30\" y=\"240\" width=\"40\" height=\"40\"/><circle cx=\"160\" cy=\"270\" r=\"6\" fill=\"#1f2937\"/></g><text x=\"270\" y=\"287\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"56\" font-weight=\"600\" fill=\"#9ca3af\">?</text></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"13\" y=\"13\" width=\"34\" height=\"34\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"5\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"13\" y=\"13\" width=\"34\" height=\"34\"/><circle cx=\"30\" cy=\"30\" r=\"4\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"13\" y=\"13\" width=\"34\" height=\"34\"/><circle cx=\"20\" cy=\"20\" r=\"3\" fill=\"#1f2937\"/><circle cx=\"40\" cy=\"40\" r=\"3\" fill=\"#1f2937\"/><circle cx=\"40\" cy=\"20\" r=\"3\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 2
+  },
+  {
+    "id": "cm_a7",
+    "text": "¿Qué figura completa esta matriz?",
+    "svg": "<svg viewBox=\"0 0 320 320\" xmlns=\"http://www.w3.org/2000/svg\">\n    <g fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\">\n      <rect x=\"0\"   y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"220\" width=\"100\" height=\"100\"/>\n    </g><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"50\" cy=\"50\" r=\"22\"/><circle cx=\"160\" cy=\"50\" r=\"22\"/><path d=\"M160 28 A 22 22 0 0 1 160 72 Z\" fill=\"#1f2937\"/><circle cx=\"270\" cy=\"50\" r=\"22\" fill=\"#1f2937\"/><circle cx=\"50\" cy=\"160\" r=\"22\"/><path d=\"M50 138 A 22 22 0 0 1 50 182 Z\" fill=\"#1f2937\"/><circle cx=\"160\" cy=\"160\" r=\"22\" fill=\"#1f2937\"/><circle cx=\"270\" cy=\"160\" r=\"22\"/><circle cx=\"50\" cy=\"270\" r=\"22\" fill=\"#1f2937\"/><circle cx=\"160\" cy=\"270\" r=\"22\"/></g><text x=\"270\" y=\"287\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"56\" font-weight=\"600\" fill=\"#9ca3af\">?</text></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"18\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"18\"/><path d=\"M30 12 A 18 18 0 0 1 30 48 Z\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"18\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"12\" y=\"12\" width=\"36\" height=\"36\"/><path d=\"M30 12 L48 30 L30 48 L12 30 Z\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 1
+  },
+  {
+    "id": "cm_a8",
+    "text": "¿Qué figura completa esta matriz?",
+    "svg": "<svg viewBox=\"0 0 320 320\" xmlns=\"http://www.w3.org/2000/svg\">\n    <g fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\">\n      <rect x=\"0\"   y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"0\"   width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"110\" width=\"100\" height=\"100\"/>\n      <rect x=\"0\"   y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"110\" y=\"220\" width=\"100\" height=\"100\"/>\n      <rect x=\"220\" y=\"220\" width=\"100\" height=\"100\"/>\n    </g><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(0 50 50)\"><polygon points=\"50,39.5 59.5,58.5 40.5,58.5\"/></g><g transform=\"rotate(0 160 50)\"><polygon points=\"160,33.2 175.2,63.6 144.8,63.6\"/></g><g transform=\"rotate(0 270 50)\"><polygon points=\"270,26.9 290.9,68.7 249.1,68.7\"/></g><g transform=\"rotate(90 50 160)\"><polygon points=\"50,149.5 59.5,168.5 40.5,168.5\"/></g><g transform=\"rotate(90 160 160)\"><polygon points=\"160,143.2 175.2,173.6 144.8,173.6\"/></g><g transform=\"rotate(90 270 160)\"><polygon points=\"270,136.9 290.9,178.7 249.1,178.7\"/></g><g transform=\"rotate(180 50 270)\"><polygon points=\"50,259.5 59.5,278.5 40.5,278.5\"/></g><g transform=\"rotate(180 160 270)\"><polygon points=\"160,253.2 175.2,283.6 144.8,283.6\"/></g></g><text x=\"270\" y=\"287\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"56\" font-weight=\"600\" fill=\"#9ca3af\">?</text></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(0 30 30)\"><polygon points=\"30,9 49,46 11,46\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(180 30 30)\"><polygon points=\"30,19.5 39.5,38 20.5,38\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(90 30 30)\"><polygon points=\"30,9 49,46 11,46\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(180 30 30)\"><polygon points=\"30,9 49,46 11,46\"/></g></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 3
+  },
+  {
+    "id": "cm_a9",
+    "text": "¿Cuál figura continúa la serie?",
+    "svg": "<svg viewBox=\"0 0 400 80\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(0 40 40)\"><polygon points=\"40,16 62,58 18,58\"/></g><g transform=\"rotate(45 120 40)\"><polygon points=\"120,16 142,58 98,58\"/></g><g transform=\"rotate(90 200 40)\"><polygon points=\"200,16 222,58 178,58\"/></g><g transform=\"rotate(135 280 40)\"><polygon points=\"280,16 302,58 258,58\"/></g></g><rect x=\"336\" y=\"8\" width=\"56\" height=\"64\" fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\"/><text x=\"364\" y=\"52.8\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"38\" font-weight=\"600\" fill=\"#9ca3af\">?</text></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(0 30 30)\"><polygon points=\"30,12 48,42 12,42\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(180 30 30)\"><polygon points=\"30,12 48,42 12,42\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(225 30 30)\"><polygon points=\"30,12 48,42 12,42\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(270 30 30)\"><polygon points=\"30,12 48,42 12,42\"/></g></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 1
+  },
+  {
+    "id": "cm_a10",
+    "text": "¿Cuál figura continúa la serie?",
+    "svg": "<svg viewBox=\"0 0 400 80\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"40\" cy=\"40\" r=\"6\"/><circle cx=\"114.5\" cy=\"40\" r=\"6\"/><circle cx=\"125.5\" cy=\"40\" r=\"6\"/><circle cx=\"189\" cy=\"40\" r=\"6\"/><circle cx=\"200\" cy=\"40\" r=\"6\"/><circle cx=\"211\" cy=\"40\" r=\"6\"/><circle cx=\"263.5\" cy=\"40\" r=\"6\"/><circle cx=\"274.5\" cy=\"40\" r=\"6\"/><circle cx=\"285.5\" cy=\"40\" r=\"6\"/><circle cx=\"296.5\" cy=\"40\" r=\"6\"/></g><rect x=\"336\" y=\"8\" width=\"56\" height=\"64\" fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\"/><text x=\"364\" y=\"52.8\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"38\" font-weight=\"600\" fill=\"#9ca3af\">?</text></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"17\" cy=\"30\" r=\"7\"/><circle cx=\"30\" cy=\"30\" r=\"7\"/><circle cx=\"43\" cy=\"30\" r=\"7\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"13.5\" cy=\"30\" r=\"6\"/><circle cx=\"24.5\" cy=\"30\" r=\"6\"/><circle cx=\"35.5\" cy=\"30\" r=\"6\"/><circle cx=\"46.5\" cy=\"30\" r=\"6\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"7.5\" cy=\"30\" r=\"5\"/><circle cx=\"16.5\" cy=\"30\" r=\"5\"/><circle cx=\"25.5\" cy=\"30\" r=\"5\"/><circle cx=\"34.5\" cy=\"30\" r=\"5\"/><circle cx=\"43.5\" cy=\"30\" r=\"5\"/><circle cx=\"52.5\" cy=\"30\" r=\"5\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"30\" r=\"5\"/><circle cx=\"21\" cy=\"30\" r=\"5\"/><circle cx=\"30\" cy=\"30\" r=\"5\"/><circle cx=\"39\" cy=\"30\" r=\"5\"/><circle cx=\"48\" cy=\"30\" r=\"5\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 3
+  },
+  {
+    "id": "cm_a11",
+    "text": "¿Cuál figura continúa la serie?",
+    "svg": "<svg viewBox=\"0 0 400 80\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"40\" cy=\"40\" r=\"8\"/><circle cx=\"120\" cy=\"40\" r=\"13\"/><circle cx=\"200\" cy=\"40\" r=\"18\"/><circle cx=\"280\" cy=\"40\" r=\"24\"/></g><rect x=\"336\" y=\"8\" width=\"56\" height=\"64\" fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\"/><text x=\"364\" y=\"52.8\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"38\" font-weight=\"600\" fill=\"#9ca3af\">?</text></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"27\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"22\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"8\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"3\" y=\"3\" width=\"54\" height=\"54\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 0
+  },
+  {
+    "id": "cm_a12",
+    "text": "¿Cuál figura continúa la serie?",
+    "svg": "<svg viewBox=\"0 0 400 80\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"14\" y=\"14\" width=\"52\" height=\"52\" rx=\"0\" ry=\"0\"/><rect x=\"94\" y=\"14\" width=\"52\" height=\"52\" rx=\"6\" ry=\"6\"/><rect x=\"174\" y=\"14\" width=\"52\" height=\"52\" rx=\"14\" ry=\"14\"/><rect x=\"254\" y=\"14\" width=\"52\" height=\"52\" rx=\"22\" ry=\"22\"/></g><rect x=\"336\" y=\"8\" width=\"56\" height=\"64\" fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\"/><text x=\"364\" y=\"52.8\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"38\" font-weight=\"600\" fill=\"#9ca3af\">?</text></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"6\" y=\"6\" width=\"48\" height=\"48\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"6\" y=\"6\" width=\"48\" height=\"48\" rx=\"6\" ry=\"6\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"24\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><ellipse cx=\"30\" cy=\"30\" rx=\"26\" ry=\"16\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 2
+  },
+  {
+    "id": "cm_a13",
+    "text": "Completa la analogía: ¿qué figura corresponde al lugar del signo de interrogación?",
+    "svg": "<svg viewBox=\"0 0 400 80\" xmlns=\"http://www.w3.org/2000/svg\">\n      <g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n        <circle cx=\"40\" cy=\"40\" r=\"22\"/><circle cx=\"130\" cy=\"40\" r=\"22\"/><path d=\"M130 18 A 22 22 0 0 1 130 62 Z\" fill=\"#1f2937\"/><rect x=\"218\" y=\"18\" width=\"44\" height=\"44\"/>\n      </g>\n      <g fill=\"#9ca3af\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"34\" font-weight=\"600\">\n        <text x=\"85\" y=\"52\" text-anchor=\"middle\">:</text>\n        <text x=\"185\" y=\"52\" text-anchor=\"middle\">::</text>\n        <text x=\"285\" y=\"52\" text-anchor=\"middle\">:</text>\n      </g>\n      <rect x=\"300\" y=\"10\" width=\"60\" height=\"60\" fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\"/><text x=\"330\" y=\"52\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"36\" font-weight=\"600\" fill=\"#9ca3af\">?</text>\n    </svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"10\" y=\"10\" width=\"40\" height=\"40\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"10\" y=\"10\" width=\"40\" height=\"40\"/><rect x=\"30\" y=\"10\" width=\"20\" height=\"40\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"10\" y=\"10\" width=\"40\" height=\"40\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"6\" y=\"18\" width=\"48\" height=\"24\"/><rect x=\"30\" y=\"18\" width=\"24\" height=\"24\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 1
+  },
+  {
+    "id": "cm_a14",
+    "text": "Completa la analogía: ¿qué figura corresponde al lugar del signo de interrogación?",
+    "svg": "<svg viewBox=\"0 0 400 80\" xmlns=\"http://www.w3.org/2000/svg\">\n      <g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n        <rect x=\"32\" y=\"32\" width=\"16\" height=\"16\"/><rect x=\"108\" y=\"18\" width=\"44\" height=\"44\"/><circle cx=\"240\" cy=\"40\" r=\"8\"/>\n      </g>\n      <g fill=\"#9ca3af\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"34\" font-weight=\"600\">\n        <text x=\"85\" y=\"52\" text-anchor=\"middle\">:</text>\n        <text x=\"185\" y=\"52\" text-anchor=\"middle\">::</text>\n        <text x=\"285\" y=\"52\" text-anchor=\"middle\">:</text>\n      </g>\n      <rect x=\"300\" y=\"10\" width=\"60\" height=\"60\" fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\"/><text x=\"330\" y=\"52\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"36\" font-weight=\"600\" fill=\"#9ca3af\">?</text>\n    </svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"8\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"14\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"24\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"6\" y=\"6\" width=\"48\" height=\"48\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 2
+  },
+  {
+    "id": "cm_a15",
+    "text": "Completa la analogía: ¿qué figura corresponde al lugar del signo de interrogación?",
+    "svg": "<svg viewBox=\"0 0 400 80\" xmlns=\"http://www.w3.org/2000/svg\">\n      <g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n        <polygon points=\"40,18 59.8,55.4 20.2,55.4\"/><g transform=\"rotate(180 130 40)\"><polygon points=\"130,18 149.8,55.4 110.2,55.4\"/></g><g transform=\"rotate(90 240 40)\"><polygon points=\"240,18 259.8,55.4 220.2,55.4\"/></g>\n      </g>\n      <g fill=\"#9ca3af\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"34\" font-weight=\"600\">\n        <text x=\"85\" y=\"52\" text-anchor=\"middle\">:</text>\n        <text x=\"185\" y=\"52\" text-anchor=\"middle\">::</text>\n        <text x=\"285\" y=\"52\" text-anchor=\"middle\">:</text>\n      </g>\n      <rect x=\"300\" y=\"10\" width=\"60\" height=\"60\" fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\"/><text x=\"330\" y=\"52\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"36\" font-weight=\"600\" fill=\"#9ca3af\">?</text>\n    </svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(270 30 30)\"><polygon points=\"30,8 50,46 10,46\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(0 30 30)\"><polygon points=\"30,8 50,46 10,46\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(90 30 30)\"><polygon points=\"30,8 50,46 10,46\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(180 30 30)\"><polygon points=\"30,8 50,46 10,46\"/></g></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 0
+  },
+  {
+    "id": "cm_a16",
+    "text": "Completa la analogía: ¿qué figura corresponde al lugar del signo de interrogación?",
+    "svg": "<svg viewBox=\"0 0 400 80\" xmlns=\"http://www.w3.org/2000/svg\">\n      <g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n        <circle cx=\"40\" cy=\"40\" r=\"22\"/><circle cx=\"130\" cy=\"40\" r=\"22\"/><circle cx=\"130\" cy=\"40\" r=\"4\" fill=\"#1f2937\"/><rect x=\"218\" y=\"18\" width=\"44\" height=\"44\"/>\n      </g>\n      <g fill=\"#9ca3af\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"34\" font-weight=\"600\">\n        <text x=\"85\" y=\"52\" text-anchor=\"middle\">:</text>\n        <text x=\"185\" y=\"52\" text-anchor=\"middle\">::</text>\n        <text x=\"285\" y=\"52\" text-anchor=\"middle\">:</text>\n      </g>\n      <rect x=\"300\" y=\"10\" width=\"60\" height=\"60\" fill=\"none\" stroke=\"#d1d5db\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\"/><text x=\"330\" y=\"52\" text-anchor=\"middle\" font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\" font-size=\"36\" font-weight=\"600\" fill=\"#9ca3af\">?</text>\n    </svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"10\" y=\"10\" width=\"40\" height=\"40\"/><circle cx=\"30\" cy=\"30\" r=\"14\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"10\" y=\"10\" width=\"40\" height=\"40\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"10\" y=\"10\" width=\"40\" height=\"40\"/><line x1=\"30\" y1=\"14\" x2=\"30\" y2=\"46\"/><line x1=\"14\" y1=\"30\" x2=\"46\" y2=\"30\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"10\" y=\"10\" width=\"40\" height=\"40\"/><circle cx=\"30\" cy=\"30\" r=\"4\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 3
+  },
+  {
+    "id": "cm_a17",
+    "text": "¿Cuál de estas figuras es diferente a las otras tres?",
+    "svg": "<svg viewBox=\"0 0 320 80\" xmlns=\"http://www.w3.org/2000/svg\">\n    <g font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\">\n      <text x=\"160\" y=\"44\" text-anchor=\"middle\" font-size=\"18\" fill=\"#9ca3af\" font-weight=\"500\">\n        Compará las opciones\n      </text>\n      <text x=\"160\" y=\"64\" text-anchor=\"middle\" font-size=\"13\" fill=\"#9ca3af\">\n        tres siguen un patrón, una no\n      </text>\n    </g>\n  </svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"#1f2937\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><g fill=\"#1f2937\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><g fill=\"#1f2937\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><g fill=\"#1f2937\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></g></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 2
+  },
+  {
+    "id": "cm_a18",
+    "text": "¿Cuál de estas figuras es diferente a las otras tres?",
+    "svg": "<svg viewBox=\"0 0 320 80\" xmlns=\"http://www.w3.org/2000/svg\">\n    <g font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\">\n      <text x=\"160\" y=\"44\" text-anchor=\"middle\" font-size=\"18\" fill=\"#9ca3af\" font-weight=\"500\">\n        Compará las opciones\n      </text>\n      <text x=\"160\" y=\"64\" text-anchor=\"middle\" font-size=\"13\" fill=\"#9ca3af\">\n        tres siguen un patrón, una no\n      </text>\n    </g>\n  </svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><path d=\"M15 12 L23 12 L23 38 L42 38 L42 46 L15 46 Z\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 50,46 10,46\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"14\" y=\"14\" width=\"32\" height=\"32\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><circle cx=\"30\" cy=\"30\" r=\"18\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 0
+  },
+  {
+    "id": "cm_a19",
+    "text": "¿Cuál de estas figuras es diferente a las otras tres?",
+    "svg": "<svg viewBox=\"0 0 320 80\" xmlns=\"http://www.w3.org/2000/svg\">\n    <g font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\">\n      <text x=\"160\" y=\"44\" text-anchor=\"middle\" font-size=\"18\" fill=\"#9ca3af\" font-weight=\"500\">\n        Compará las opciones\n      </text>\n      <text x=\"160\" y=\"64\" text-anchor=\"middle\" font-size=\"13\" fill=\"#9ca3af\">\n        tres siguen un patrón, una no\n      </text>\n    </g>\n  </svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(0 30 30)\"><polygon points=\"30,10 49,24 42,46 18,46 11,24\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,10 47,20 47,40 30,50 13,40 13,20\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(72 30 30)\"><polygon points=\"30,10 49,24 42,46 18,46 11,24\"/></g></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><g transform=\"rotate(144 30 30)\"><polygon points=\"30,10 49,24 42,46 18,46 11,24\"/></g></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 1
+  },
+  {
+    "id": "cm_a20",
+    "text": "¿Cuál de estas figuras es diferente a las otras tres?",
+    "svg": "<svg viewBox=\"0 0 320 80\" xmlns=\"http://www.w3.org/2000/svg\">\n    <g font-family=\"ui-sans-serif, system-ui, Helvetica, Arial, sans-serif\">\n      <text x=\"160\" y=\"44\" text-anchor=\"middle\" font-size=\"18\" fill=\"#9ca3af\" font-weight=\"500\">\n        Compará las opciones\n      </text>\n      <text x=\"160\" y=\"64\" text-anchor=\"middle\" font-size=\"13\" fill=\"#9ca3af\">\n        tres siguen un patrón, una no\n      </text>\n    </g>\n  </svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"14\" y=\"14\" width=\"32\" height=\"32\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 50,46 10,46\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,10 47,20 47,40 30,50 13,40 13,20\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><path d=\"M44 14 L18 14 L18 46 L44 46\"/></g></svg>"
+    ],
+    "dimension": "abstracto",
+    "correct": 3
+  }
+]

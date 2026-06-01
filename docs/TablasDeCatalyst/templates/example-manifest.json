@@ -1,0 +1,112 @@
+{
+  "_generated_at": "2026-05-11",
+  "_source": "ejemplo manual para referencia",
+  "_catalyst_api": {
+    "create_table_endpoint": "POST https://console.catalyst.zoho.com/baas/v1/project/{projectId}/table",
+    "create_column_endpoint": "POST https://console.catalyst.zoho.com/baas/v1/project/{projectId}/table/{id}/column",
+    "scopes_required": [
+      "ZohoCatalyst.tables.CREATE",
+      "ZohoCatalyst.tables.columns.CREATE"
+    ],
+    "notes": [
+      "Eventual consistency 5-60s entre POST /table y POST /table/{id}/column",
+      "Boolean fields (is_mandatory, is_unique, search_index_enabled, audit_consent) van como STRING 'true'/'false', no como boolean",
+      "Si una tabla queda huérfana (timeout), borrarla manual desde UI Console antes de reintentar"
+    ]
+  },
+  "tables": [
+    {
+      "name": "Customers",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "email",
+          "data_type": "varchar",
+          "max_length": 255,
+          "is_mandatory": "true",
+          "is_unique": "true",
+          "search_index_enabled": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "name",
+          "data_type": "varchar",
+          "max_length": 255,
+          "is_mandatory": "true",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "phone",
+          "data_type": "varchar",
+          "max_length": 50,
+          "is_mandatory": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "is_active",
+          "data_type": "boolean",
+          "is_mandatory": "true",
+          "search_index_enabled": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "metadata_json",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "search_index_enabled": "true",
+          "audit_consent": "false"
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "customer_id",
+          "data_type": "varchar",
+          "max_length": 255,
+          "is_mandatory": "true",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "total_usd",
+          "data_type": "double",
+          "is_mandatory": "true",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "audit_consent": "false",
+          "decimal_digits": 2
+        },
+        {
+          "column_name": "status",
+          "data_type": "varchar",
+          "max_length": 50,
+          "is_mandatory": "true",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "search_index_enabled": "true",
+          "audit_consent": "false"
+        }
+      ]
+    }
+  ]
+}

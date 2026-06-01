@@ -1,0 +1,9 @@
+Tabla,Columna,Tipo,Largo,Obligatorio,Único,Default,Notas
+Jobs,ideal_profile,Text,8000,No,No,,JSON con DISC ideal + VELNA + competencias + boss profile + auto_rejection_rules + report_lang
+Jobs,tech_questions_cache,Text,32000,No,No,,JSON array con las preguntas técnicas que IA generó - se cachea para no regenerarlas cada vez
+Jobs,slug,Var Char,100,No,No,,Para URLs amigables: /apply/<tenant>/<slug> (alternativa al ROWID)
+Jobs,assessment_modules,Text,500,No,No,,JSON array de módulos a correr ej: ["disc","velna","integrity"] - para flujo demo del marketing funnel
+Results,sign_request_id,Var Char,80,No,No,,ID del sign request de Zoho Sign cuando se manda oferta - mapea webhook entrante a la application
+Jobs,english_required,Boolean,,No,No,false,Si el puesto requiere test de inglés
+Jobs,english_min_level,Var Char,4,No,No,,Nivel CEFR mínimo si english_required: A2 / B1 / B2 / C1
+Jobs,mindset_test_enabled,Boolean,,No,No,true,Si correr el test de mentalidades (default true para todos los puestos nuevos)

@@ -108,6 +108,7 @@
     display: block;
     overflow-x: auto;
     white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
   }
   .page-title { font-size: 1.4rem; }
   .section-title { font-size: 1.1rem; }
@@ -123,6 +124,62 @@
   .job-detail-toolbar {
     flex-wrap: wrap;
   }
+  /* Filters bar — stack vertical en mobile */
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem !important;
+  }
+  .filter-pills {
+    flex-wrap: wrap;
+  }
+  /* Phase tabs — scrolleable horizontal */
+  .phase-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .phase-tab {
+    flex-shrink: 0;
+  }
+  /* Stub cards más compactas */
+  .stub-card {
+    padding: 1rem;
+  }
+  /* Settings tabs — más cómodos en mobile */
+  .settings-list .settings-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .settings-item-actions {
+    flex-wrap: wrap;
+  }
+  /* Bot review queue cards más compactas */
+  .bot-queue-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  /* Inbox messages */
+  .inbox-msg-header {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .inbox-msg-channel {
+    align-self: flex-start;
+  }
+  /* Forms — labels y inputs full width */
+  .job-form-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Pantallas muy pequeñas (iPhone SE, etc.) */
+@media (max-width: 380px) {
+  .page-title { font-size: 1.2rem; }
+  .section-title { font-size: 1rem; }
+  .stat-value { font-size: 1.2rem; }
+  body { font-size: 0.9rem; }
 }
 
 .data-table thead {
@@ -239,6 +296,12 @@
   gap: 0.75rem;
   overflow-x: auto;
   padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+
+.kanban-col {
+  scroll-snap-align: start;
 }
 
 .kanban-col {
@@ -400,6 +463,85 @@
 .kanban-col-danger {
   border: 1px solid var(--st-danger);
   background: var(--st-danger-soft);
+}
+
+/* Drag & drop kanban */
+.kanban-hint {
+  margin: -0.5rem 0 0.75rem;
+  font-size: 0.75rem;
+}
+
+.kanban-card-draggable {
+  position: relative;
+  cursor: grab;
+  transition: transform 0.12s, opacity 0.12s, box-shadow 0.12s;
+}
+
+.kanban-card-draggable:active {
+  cursor: grabbing;
+}
+
+.kanban-card-draggable.is-dragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+}
+
+.kanban-card-link-inner {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.kanban-card-link-inner:hover {
+  text-decoration: none;
+}
+
+.kanban-drag-handle {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 0.75rem;
+  color: var(--st-fg-muted-2);
+  letter-spacing: -2px;
+  user-select: none;
+  pointer-events: none;
+}
+
+.kanban-col.is-drop-hover {
+  outline: 2px dashed var(--st-accent);
+  outline-offset: -4px;
+  background: var(--st-accent-soft);
+}
+
+.kanban-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--st-accent);
+  color: var(--st-accent-fg);
+  padding: 0.65rem 1.1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  z-index: 60;
+  animation: kanban-toast-in 0.2s ease-out;
+}
+
+.kanban-toast.is-error {
+  background: var(--st-danger);
+  color: #fff;
+}
+
+@keyframes kanban-toast-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kanban-toast { animation: none; }
+  .kanban-card-draggable { transition: none; }
 }
 
 /* Job detail toolbar */

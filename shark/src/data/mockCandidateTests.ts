@@ -160,7 +160,9 @@ export type VelnaSubtestKey = 'verbal' | 'espacial' | 'logica' | 'numerica' | 'a
 export type VelnaQuestion = {
   id: string;
   question: string;
-  options: { id: string; text: string }[];
+  /** SVG inline para preguntas con contenido visual (espacial, numérica, abstracta). */
+  question_svg?: string;
+  options: { id: string; text: string; svg?: string }[];
   correct_option_id: string;
 };
 

@@ -1,25 +1,50 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { config } from '../config';
 import { MOCK_JOBS } from '../data/mockJobs';
 import { MOCK_APPLICATIONS, STATE_LABELS } from '../data/mockApplications';
 import { MOCK_DRAFTS } from '../data/mockDrafts';
 import { MOCK_MESSAGES } from '../data/mockOutreach';
 import { MOCK_REPORTS } from '../data/mockReports';
+import SetupChecklist from '../components/SetupChecklist';
+import { useApi } from '../lib/api';
+import { useApiData } from '../hooks/useApiData';
 import './pages.css';
 import './dashboard.css';
 
 const NEUTRAL = '#8a93a3';
-const ACCENT = '#c5fc6f';
+const ACCENT = '#dafd6f';
 const COLORS_DISC = { D: '#ef4444', I: '#f59e0b', S: '#10b981', C: '#3b82f6' };
-const COLORS_SOURCE = ['#c5fc6f', '#f59e0b', '#3b82f6', '#a855f7', '#10b981'];
+const COLORS_SOURCE = ['#dafd6f', '#f59e0b', '#3b82f6', '#a855f7', '#10b981'];
 
 export default function Dashboard() {
-  const activeJobs = MOCK_JOBS.filter((j) => j.status === 'active').length;
-  const totalApps = MOCK_APPLICATIONS.length;
-  const inProgress = MOCK_APPLICATIONS.filter((a) =>
-    !['hired', 'rejected_by_admin', 'auto_rejected_low_score'].includes(a.state),
-  ).length;
-  const finalists = MOCK_APPLICATIONS.filter((a) => a.state === 'finalist').length;
+  const api = useApi();
+  // Counts en vivo del backend cuando useApi=true. Fallback a mock.
+  const { data: jobsData } = useApiData(
+    () => (config.useApi ? api.jobs.list() : Promise.resolve(null)),
+    [config.useApi],
+  );
+  const { data: appsData } = useApiData(
+    () => (config.useApi ? api.applications.list({ limit: 500 }) : Promise.resolve(null)),
+    [config.useApi],
+  );
+
+  const liveJobs = config.useApi && jobsData ? jobsData.jobs : null;
+  const liveApps = config.useApi && appsData ? appsData.applications : null;
+
+  const activeJobs = liveJobs
+    ? liveJobs.filter((j) => j.is_active).length
+    : MOCK_JOBS.filter((j) => j.status === 'active').length;
+  const totalApps = liveApps ? liveApps.length : MOCK_APPLICATIONS.length;
+  const inProgress = liveApps
+    ? liveApps.filter((a) => !['hired', 'rejected_by_admin', 'auto_rejected_low_score', 'offer_declined', 'withdrew'].includes(a.pipeline_stage)).length
+    : MOCK_APPLICATIONS.filter((a) =>
+        !['hired', 'rejected_by_admin', 'auto_rejected_low_score'].includes(a.state),
+      ).length;
+  const finalists = liveApps
+    ? liveApps.filter((a) => ['finalist', 'awaiting_client_review', 'interview_scheduled', 'offered', 'hired'].includes(a.pipeline_stage)).length
+    : MOCK_APPLICATIONS.filter((a) => a.state === 'finalist').length;
 
   // Action queue: lo que requiere atención de Cris HOY
   const draftsPending = MOCK_DRAFTS.filter((d) => d.status === 'draft_generated' || d.status === 'in_review');
@@ -72,7 +97,12 @@ export default function Dashboard() {
         {totalActions === 0
           ? 'Todo bajo control. No hay nada urgente que requiera tu atención.'
           : `Hay ${totalActions} ${totalActions === 1 ? 'cosa' : 'cosas'} que requieren tu atención hoy.`}
+        {config.useApi && (liveJobs || liveApps) && (
+          <span className="muted small"> · Counts en vivo del backend</span>
+        )}
       </p>
+
+      <SetupChecklist />
 
       {totalActions > 0 && (
         <section className="action-queue">
@@ -207,6 +237,10 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <CostsWidget />
+
+      <MarketingFunnelWidget />
+
       <h2 className="section-title">Estados del pipeline</h2>
       <div className="dashboard-states-grid">
         {Object.entries(STATE_LABELS).map(([state, label]) => {
@@ -276,5 +310,157 @@ function ActionItem({
       </div>
       <div className="action-cta">{cta} →</div>
     </Link>
+  );
+}
+
+function CostsWidget() {
+  const [data, setData] = useState<{ total: number; calls: number } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [missing, setMissing] = useState(false);
+
+  useEffect(() => {
+    if (!config.useApi) {
+      setLoading(false);
+      return;
+    }
+    fetch(`${config.apiBase}/api/admin/token-usage?hours=720`, { credentials: 'include' })
+      .then(async (res) => {
+        if (res.status === 503) {
+          setMissing(true);
+          return;
+        }
+        if (!res.ok) return;
+        const body = await res.json();
+        const rows = (body.usage ?? []) as Array<{ cost_usd_estimated?: number }>;
+        const total = rows.reduce((sum, r) => sum + (r.cost_usd_estimated ?? 0), 0);
+        setData({ total, calls: rows.length });
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (!config.useApi || loading || missing) return null;
+  if (!data || data.calls === 0) return null;
+
+  return (
+    <section style={{
+      marginTop: '1.5rem',
+      padding: '1rem 1.25rem',
+      background: 'rgba(245, 158, 11, 0.08)',
+      border: '1px solid rgba(245, 158, 11, 0.3)',
+      borderRadius: '8px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    }}>
+      <div>
+        <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--st-fg-muted)', letterSpacing: '0.05em' }}>
+          Costo IA — últimos 30 días
+        </div>
+        <div style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '0.25rem' }}>
+          ${data.total.toFixed(2)} USD
+        </div>
+        <div style={{ fontSize: '0.85rem', color: 'var(--st-fg-muted)' }}>
+          {data.calls} llamadas a Claude
+        </div>
+      </div>
+      <Link to="/settings?tab=costs" className="link" style={{ fontSize: '0.85rem' }}>
+        Ver detalle →
+      </Link>
+    </section>
+  );
+}
+
+type FunnelStats = {
+  total: number;
+  new: number;
+  eval_requested: number;
+  eval_completed: number;
+  call_booked: number;
+  won: number;
+  lost: number;
+};
+
+function MarketingFunnelWidget() {
+  const [stats, setStats] = useState<FunnelStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [tableMissing, setTableMissing] = useState(false);
+
+  useEffect(() => {
+    if (!config.useApi) {
+      setLoading(false);
+      return;
+    }
+    fetch(`${config.apiBase}/api/marketing/leads?limit=1`, { credentials: 'include' })
+      .then(async (res) => {
+        if (res.status === 503) {
+          setTableMissing(true);
+          return;
+        }
+        if (!res.ok) return;
+        const body = await res.json();
+        if (body.stats) setStats(body.stats as FunnelStats);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (!config.useApi || loading || tableMissing) return null;
+  if (!stats || stats.total === 0) return null;
+
+  const stages: Array<{ key: keyof FunnelStats; label: string; emoji: string }> = [
+    { key: 'new', label: 'Nuevos', emoji: '🆕' },
+    { key: 'eval_requested', label: 'Eval pedida', emoji: '⏳' },
+    { key: 'eval_completed', label: 'Eval completa', emoji: '✅' },
+    { key: 'call_booked', label: 'Call agendada', emoji: '📞' },
+    { key: 'won', label: 'Won', emoji: '🏆' },
+    { key: 'lost', label: 'Lost', emoji: '❌' },
+  ];
+
+  const conversionRate = stats.total > 0 ? Math.round((stats.won / stats.total) * 100) : 0;
+
+  return (
+    <section style={{
+      marginTop: '1.5rem',
+      padding: '1rem 1.25rem',
+      background: 'rgba(99, 102, 241, 0.08)',
+      border: '1px solid rgba(99, 102, 241, 0.3)',
+      borderRadius: '8px',
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.75rem' }}>
+        <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--st-fg-muted)', letterSpacing: '0.05em' }}>
+          📥 Funnel marketing — {stats.total} leads
+        </div>
+        <Link to="/settings?tab=leads" className="link" style={{ fontSize: '0.85rem' }}>
+          Ver leads →
+        </Link>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {stages.map((s) => {
+          const value = stats[s.key];
+          const pct = stats.total > 0 ? Math.round((value / stats.total) * 100) : 0;
+          return (
+            <div key={s.key} style={{
+              flex: '1 1 100px',
+              minWidth: 100,
+              padding: '8px 12px',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid var(--border)',
+              borderRadius: 6,
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 13, color: 'var(--st-fg-muted)' }}>{s.emoji} {s.label}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, marginTop: 4 }}>{value}</div>
+              <div style={{ fontSize: 11, color: 'var(--st-fg-muted)' }}>{pct}%</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--st-fg-muted)' }}>
+        Conversion rate (won/total): <strong style={{ color: stats.won > 0 ? '#22c55e' : 'inherit' }}>{conversionRate}%</strong>
+      </div>
+    </section>
   );
 }

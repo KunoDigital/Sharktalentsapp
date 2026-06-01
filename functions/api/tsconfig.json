@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "commonjs",
+    "module": "node16",
     "lib": ["ES2022"],
     "outDir": "./",
     "rootDir": "./src",
@@ -18,7 +18,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node16"
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "**/*.test.ts"]

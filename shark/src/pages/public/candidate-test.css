@@ -20,7 +20,7 @@
   padding: 2rem;
 }
 
-.ct-not-found h1 { color: #c5fc6f; }
+.ct-not-found h1 { color: #dafd6f; }
 
 .ct-header,
 .ct-test-header {
@@ -37,7 +37,7 @@
 
 .ct-brand,
 .ct-test-brand {
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 700;
   font-size: 1rem;
 }
@@ -66,14 +66,14 @@
 
 .ct-progress-bar-fill {
   height: 100%;
-  background: #c5fc6f;
+  background: #dafd6f;
   border-radius: 4px;
   transition: width 0.3s;
 }
 
 .ct-progress-text {
   font-size: 0.85rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 600;
 }
 
@@ -140,8 +140,8 @@
 }
 
 .ct-progress-item.is-done .ct-progress-dot {
-  background: #c5fc6f;
-  border-color: #c5fc6f;
+  background: #dafd6f;
+  border-color: #dafd6f;
   color: #0a0e15;
 }
 
@@ -188,7 +188,7 @@
 
 .ct-current-tag {
   display: inline-block;
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
   padding: 0.25rem 0.7rem;
   border-radius: 4px;
@@ -227,12 +227,12 @@
   content: '•';
   position: absolute;
   left: 0.4rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 700;
 }
 
 .ct-start-btn {
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
   border: none;
   padding: 0.85rem 1.75rem;
@@ -261,7 +261,7 @@
 }
 
 .ct-help a {
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 /* Test page (questions) */
@@ -280,7 +280,7 @@
 }
 
 .ct-instructions strong {
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 .ct-anticheat-warning {
@@ -334,7 +334,7 @@
 .ct-question-num {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #c5fc6f;
+  color: #dafd6f;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 1rem;
@@ -392,7 +392,7 @@
 }
 
 .ct-opt-btn:hover:not(:disabled) {
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
   color: #f3f4f6;
 }
 
@@ -402,9 +402,9 @@
 }
 
 .ct-opt-most.is-active {
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
 }
 
 .ct-opt-least.is-active {
@@ -432,7 +432,7 @@
 }
 
 .ct-test-back:hover:not(:disabled) {
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
   color: #f3f4f6;
 }
 
@@ -454,7 +454,7 @@
 }
 
 .ct-thanks h1 {
-  color: #c5fc6f;
+  color: #dafd6f;
   margin: 0 0 0.75rem;
 }
 
@@ -472,7 +472,7 @@
 
 .ct-thanks-icon {
   font-size: 3rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   margin-bottom: 1rem;
 }
 
@@ -526,14 +526,14 @@
 }
 
 .ct-mc-option.is-selected {
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
   background: rgba(197, 252, 111, 0.08);
   color: #f3f4f6;
 }
 
 .ct-mc-letter {
   background: #1c2230;
-  color: #c5fc6f;
+  color: #dafd6f;
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -546,7 +546,7 @@
 }
 
 .ct-mc-option.is-selected .ct-mc-letter {
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
 }
 
@@ -571,7 +571,7 @@
 
 .ct-open-textarea:focus {
   outline: none;
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
 }
 
 .ct-open-counter {
@@ -602,7 +602,7 @@
 .ct-subtest-num {
   width: 28px;
   height: 28px;
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
   border-radius: 50%;
   display: flex;
@@ -630,13 +630,13 @@
 
 .ct-subtest-time {
   font-size: 0.85rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 500;
 }
 
 .ct-timer {
   background: rgba(197, 252, 111, 0.15);
-  color: #c5fc6f;
+  color: #dafd6f;
   padding: 0.4rem 0.85rem;
   border-radius: 6px;
   font-size: 0.9rem;
@@ -682,7 +682,7 @@
 }
 
 .ct-integrity-num {
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 700;
   margin-right: 0.4rem;
 }
@@ -706,14 +706,14 @@
 }
 
 .ct-likert-btn:hover {
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
   color: #f3f4f6;
 }
 
 .ct-likert-btn.is-selected {
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
 }
 
 .ct-likert-legend {
@@ -746,7 +746,7 @@
 
 .ct-consent-card h2 {
   font-size: 1.25rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   margin: 0 0 1rem;
 }
 
@@ -768,7 +768,7 @@
   content: '•';
   position: absolute;
   left: 0.4rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 700;
 }
 
@@ -828,7 +828,7 @@
 }
 
 .ct-vq-mod-tab.is-active {
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
 }
 
@@ -890,7 +890,7 @@
 }
 
 .ct-vq-attempts-info strong {
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 .ct-vq-saved {
@@ -906,11 +906,11 @@
 
 .ct-vq-saved-icon {
   font-size: 1.5rem;
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 .ct-vq-saved-title {
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 600;
   margin-bottom: 0.15rem;
 }
@@ -932,7 +932,7 @@
 
 .ct-score-card h2 {
   font-size: 1.15rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   margin: 0 0 1rem;
 }
 
@@ -972,7 +972,7 @@
 
 .ct-score-bar-val {
   font-size: 0.85rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 600;
   text-align: right;
 }

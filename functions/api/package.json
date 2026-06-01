@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@clerk/backend": "^3.4.2",
@@ -14,7 +16,8 @@
     "zcatalyst-sdk-node": "^2.5.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.0",
-    "typescript": "^5.6.3"
+    "@types/node": "^20.19.39",
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.5"
   }
 }

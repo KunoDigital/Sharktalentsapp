@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MOCK_JOBS, getJobById } from '../data/mockJobs';
 import {
@@ -9,6 +9,12 @@ import {
 } from '../data/mockApplications';
 import { exportCandidatesToExcel } from '../lib/excelExport';
 import { slugifyForFilename } from '../lib/pdfExport';
+import { setPhaseState } from '../lib/applicationOverrides';
+import { isTransitionAllowed, type PhaseState } from '../lib/scoring';
+import PoolMatchPanel from '../components/PoolMatchPanel';
+import { useApi } from '../lib/api';
+import { adaptToMockApplication } from '../lib/applicationAdapter';
+import { config } from '../config';
 import './pages.css';
 
 type Phase = 'tecnica' | 'conductual' | 'integridad';
@@ -80,8 +86,47 @@ function CardKpi({ app, phase }: { app: Application; phase: Phase }): React.Reac
 
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>();
+  const api = useApi();
   const job = id ? getJobById(id) : undefined;
   const [phase, setPhase] = useState<Phase>('tecnica');
+  const [draggedAppId, setDraggedAppId] = useState<string | null>(null);
+  const [hoverColumn, setHoverColumn] = useState<string | null>(null);
+  const [tickToast, setTickToast] = useState<string | null>(null);
+  const [bumpKey, setBumpKey] = useState(0);
+  const [liveApps, setLiveApps] = useState<Application[] | null>(null);
+  const [liveLoadFailed, setLiveLoadFailed] = useState(false);
+
+  useEffect(() => {
+    if (!id || !config.useApi) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const [appsResp, candResp] = await Promise.all([
+          api.applications.list({ jobId: id, limit: 200 }),
+          api.candidates.list({ limit: 500 }),
+        ]);
+        if (cancelled) return;
+        const candById = new Map(candResp.candidates.map((c) => [c.ROWID, c]));
+        const adapted = await Promise.all(
+          appsResp.applications.map(async (a) => {
+            try {
+              const s = await api.applications.readScores(a.ROWID);
+              return adaptToMockApplication(a, candById.get(a.candidate_id), s.scores, s.integrity_dimensions);
+            } catch {
+              return adaptToMockApplication(a, candById.get(a.candidate_id), null, []);
+            }
+          }),
+        );
+        if (!cancelled) setLiveApps(adapted);
+      } catch {
+        if (!cancelled) setLiveLoadFailed(true);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, api]);
 
   if (!job) {
     return (
@@ -93,12 +138,56 @@ export default function JobDetail() {
     );
   }
 
-  const applications = getApplicationsByJobId(job.id);
+  const applications = liveApps ?? getApplicationsByJobId(job.id);
   const columns = PHASE_COLUMNS[phase];
+  const usingFallbackMock = config.useApi && liveLoadFailed && !liveApps;
+
+  function getCurrentPhaseState(app: Application, p: Phase): PhaseState {
+    if (p === 'tecnica') return app.tecnica_state as PhaseState;
+    if (p === 'conductual') return app.conductual_state as PhaseState;
+    return app.integridad_state as PhaseState;
+  }
+
+  function handleDrop(targetColKey: string, e: React.DragEvent) {
+    e.preventDefault();
+    setHoverColumn(null);
+    if (!draggedAppId) return;
+    const app = applications.find((a) => a.id === draggedAppId);
+    if (!app) return;
+
+    const currentState = getCurrentPhaseState(app, phase);
+    const targetState = targetColKey as PhaseState;
+
+    if (currentState === targetState) {
+      setDraggedAppId(null);
+      return;
+    }
+
+    if (!isTransitionAllowed(currentState, targetState)) {
+      setTickToast(`✕ No podés mover de "${currentState}" a "${targetState}" (regla del state machine)`);
+      setTimeout(() => setTickToast(null), 3500);
+      setDraggedAppId(null);
+      return;
+    }
+
+    setPhaseState(app.id, phase, targetState);
+    // mutación in-memory para reflejar al instante (mock — backend haría refetch)
+    if (phase === 'tecnica') app.tecnica_state = targetState as Application['tecnica_state'];
+    else if (phase === 'conductual') app.conductual_state = targetState as Application['conductual_state'];
+    else app.integridad_state = targetState as Application['integridad_state'];
+
+    setTickToast(`✓ ${app.candidate_name} movido a "${targetState}"`);
+    setTimeout(() => setTickToast(null), 2500);
+    setDraggedAppId(null);
+    setBumpKey((k) => k + 1);
+  }
 
   return (
     <div>
       <Link to="/jobs" className="back-link">← Jobs</Link>
+      {usingFallbackMock && (
+        <p className="muted-note">⚠️ Backend no respondió — mostrando candidatos mock para esta vista.</p>
+      )}
 
       <div className="page-header-row">
         <div>
@@ -116,6 +205,33 @@ export default function JobDetail() {
           </Link>
           <button className="btn-toolbar" onClick={() => exportCandidatesToExcel(applications, MOCK_JOBS, `candidatos-${slugifyForFilename(job.title)}.xlsx`)}>
             Exportar Excel
+          </button>
+          <button
+            className="btn-toolbar"
+            title="Manda email al cliente con el aviso 'tu reporte de finalistas está listo'"
+            onClick={async () => {
+              const finalistsCount = applications.filter((a) => a.integridad_state === 'llamar_entrevista').length;
+              const clientEmail = window.prompt(
+                `Email del cliente (lo va a recibir como aviso "reporte listo")\n\nFinalistas detectados: ${finalistsCount}`,
+                '',
+              );
+              if (!clientEmail || !clientEmail.includes('@')) return;
+              const clientName = window.prompt('Nombre del cliente (cómo lo saludamos)', '') ?? '';
+              try {
+                await api.jobs.notifyClientReportReady(job.id, {
+                  client_email: clientEmail.trim(),
+                  client_name: clientName.trim(),
+                  finalist_count: finalistsCount,
+                });
+                setTickToast(`✓ Aviso enviado a ${clientEmail}`);
+                setTimeout(() => setTickToast(null), 3500);
+              } catch (err) {
+                setTickToast(`✗ Error al enviar: ${(err as Error).message}`);
+                setTimeout(() => setTickToast(null), 5000);
+              }
+            }}
+          >
+            📤 Avisar cliente reporte listo
           </button>
           <span className={`status-tag status-${job.status}`}>{job.status}</span>
         </div>
@@ -140,6 +256,12 @@ export default function JobDetail() {
         </div>
       </div>
 
+      <PoolMatchPanel
+        jobId={job.id}
+        areaTags={job.competencias_ideales?.map((c) => c.name.toLowerCase()) ?? []}
+        requiresEnglish={false}
+      />
+
       <h2 className="section-title">Pipeline — {PHASE_LABEL[phase]}</h2>
 
       <div className="phase-tabs">
@@ -157,32 +279,66 @@ export default function JobDetail() {
         </span>
       </div>
 
-      <div className="kanban">
+      <p className="muted small kanban-hint">
+        💡 Arrastrá una tarjeta entre columnas para cambiar su estado. Las transiciones inválidas se rechazan.
+      </p>
+
+      <div className="kanban" key={bumpKey}>
         {columns.map((col) => {
           const items = applications.filter(col.match);
+          const isHover = hoverColumn === col.key;
           return (
-            <div key={col.key} className={`kanban-col${col.highlight ? ` kanban-col-${col.highlight}` : ''}`}>
+            <div
+              key={col.key}
+              className={`kanban-col${col.highlight ? ` kanban-col-${col.highlight}` : ''}${isHover ? ' is-drop-hover' : ''}`}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (hoverColumn !== col.key) setHoverColumn(col.key);
+              }}
+              onDragLeave={(e) => {
+                if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+                if (hoverColumn === col.key) setHoverColumn(null);
+              }}
+              onDrop={(e) => handleDrop(col.key, e)}
+            >
               <div className="kanban-col-header">
                 <span>{col.label}</span>
                 <span className="kanban-count">{items.length}</span>
               </div>
               <div className="kanban-col-body">
                 {items.map((app) => (
-                  <Link key={app.id} to={`/candidates/${app.id}`} className="kanban-card kanban-card-link">
-                    <div className="kanban-card-name">{app.candidate_name}</div>
-                    <div className="kanban-card-meta">
-                      <span className="source-tag">{SOURCE_LABELS[app.source]}</span>
-                    </div>
-                    <div className="kanban-card-detail muted">
-                      {app.candidate_age} a · ${app.salary_aspiration_usd}/mes
-                    </div>
-                    <CardKpi app={app} phase={phase} />
-                    {app.anti_cheat_events.length > 0 && (
-                      <div className="kanban-card-detail kanban-card-warn">
-                        ⚠️ {app.anti_cheat_events.length} eventos anti-trampa
+                  <div
+                    key={app.id}
+                    draggable
+                    onDragStart={(e) => {
+                      setDraggedAppId(app.id);
+                      e.dataTransfer.effectAllowed = 'move';
+                      e.dataTransfer.setData('text/plain', app.id);
+                    }}
+                    onDragEnd={() => {
+                      setDraggedAppId(null);
+                      setHoverColumn(null);
+                    }}
+                    className={`kanban-card kanban-card-draggable${draggedAppId === app.id ? ' is-dragging' : ''}`}
+                  >
+                    <Link to={`/candidates/${app.id}`} className="kanban-card-link-inner">
+                      <div className="kanban-card-name">{app.candidate_name}</div>
+                      <div className="kanban-card-meta">
+                        <span className="source-tag">{SOURCE_LABELS[app.source]}</span>
                       </div>
-                    )}
-                  </Link>
+                      <div className="kanban-card-detail muted">
+                        {app.candidate_age} a · ${app.salary_aspiration_usd}/mes
+                      </div>
+                      <CardKpi app={app} phase={phase} />
+                      {app.anti_cheat_events.length > 0 && (
+                        <div className="kanban-card-detail kanban-card-warn">
+                          ⚠️ {app.anti_cheat_events.length} eventos anti-trampa
+                        </div>
+                      )}
+                    </Link>
+                    <span className="kanban-drag-handle" aria-hidden="true">⋮⋮</span>
+                  </div>
                 ))}
                 {items.length === 0 && <div className="kanban-empty">Sin candidatos</div>}
               </div>
@@ -190,6 +346,12 @@ export default function JobDetail() {
           );
         })}
       </div>
+
+      {tickToast && (
+        <div className={`kanban-toast${tickToast.startsWith('✕') ? ' is-error' : ''}`}>
+          {tickToast}
+        </div>
+      )}
 
       {applications.length > 0 && (
         <>

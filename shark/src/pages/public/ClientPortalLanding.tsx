@@ -1,10 +1,17 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getPortalByToken, type PortalJob, type PortalJobStage } from '../../data/mockClientPortals';
+import { config } from '../../config';
+import { publicApi, type PortalApi, type PortalJobApi, type PortalJobStage } from '../../lib/publicApi';
+import { trackPortalEvent } from '../../lib/portalTracker';
+import { ApiError } from '../../lib/api';
+import { logger } from '../../lib/logger';
+import { getPortalByToken } from '../../data/mockClientPortals';
 import './client-portal.css';
+
+const log = logger('CLIENT_PORTAL_LANDING');
 
 const STAGE_INFO: Record<PortalJobStage, { label: string; color: string; cta: string }> = {
   profile_pending: { label: 'Perfil pendiente de aprobar', color: 'warn', cta: 'Aprobar perfil' },
-  profile_approved: { label: 'Perfil aprobado', color: 'mid', cta: 'Ver detalle' },
   search_started: { label: 'Búsqueda iniciada', color: 'mid', cta: 'Ver tracking' },
   funnel_active: { label: 'Candidatos en evaluación', color: 'mid', cta: 'Ver tracking' },
   finalists_ready: { label: 'Finalistas listos', color: 'good', cta: 'Ver finalistas' },
@@ -13,9 +20,69 @@ const STAGE_INFO: Record<PortalJobStage, { label: string; color: string; cta: st
 
 export default function ClientPortalLanding() {
   const { token } = useParams<{ token: string }>();
-  const portal = token ? getPortalByToken(token) : undefined;
+  const [portal, setPortal] = useState<PortalApi | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  if (!portal) {
+  useEffect(() => {
+    let cancelled = false;
+    if (!token) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
+
+    // Track open event una sola vez por sesión
+    trackPortalEvent(token, { event_type: 'portal.opened' }, `opened:${token}`);
+
+    async function load() {
+      try {
+        if (config.useApi) {
+          const res = await publicApi.getClientPortal(token!);
+          if (cancelled) return;
+          if (res?.portal) {
+            setPortal(res.portal);
+            setLoading(false);
+            return;
+          }
+        }
+        // Fallback: mock data (modo dev sin backend)
+        const mock = getPortalByToken(token!);
+        if (cancelled) return;
+        if (mock) {
+          setPortal(mockToApi(mock));
+        } else {
+          setNotFound(true);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        log.warn('portal load failed', { error: (err as Error).message });
+        if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
+          setNotFound(true);
+        } else {
+          // Errores transitorios: caer al mock para que la UI no se rompa
+          const mock = getPortalByToken(token!);
+          if (mock) setPortal(mockToApi(mock));
+          else setNotFound(true);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [token]);
+
+  if (loading) {
+    return (
+      <div className="cp-not-found">
+        <h1>Cargando…</h1>
+      </div>
+    );
+  }
+
+  if (notFound || !portal) {
     return (
       <div className="cp-not-found">
         <h1>Portal no encontrado</h1>
@@ -65,16 +132,20 @@ export default function ClientPortalLanding() {
         )}
 
         <h2 className="cp-section-title">Tus puestos</h2>
-        <div className="cp-jobs-grid">
-          {portal.jobs.map((job) => (
-            <JobCard key={job.id} job={job} token={portal.token} />
-          ))}
-        </div>
+        {portal.jobs.length === 0 ? (
+          <p className="cp-section-text">Todavía no hay puestos abiertos.</p>
+        ) : (
+          <div className="cp-jobs-grid">
+            {portal.jobs.map((job) => (
+              <JobCard key={job.id} job={job} token={token!} />
+            ))}
+          </div>
+        )}
 
         <div className="cp-help-box">
           <div className="cp-help-title">¿Algo no está claro?</div>
           <p>
-            Escribime a <a href={`mailto:${portal.agency_name === 'Kuno Digital' ? 'cris@kunodigital.com' : 'hola@sharktalents.ai'}`} className="cp-help-link">cris@kunodigital.com</a> o por WhatsApp.
+            Escribime a <a href="mailto:cris@kunodigital.com" className="cp-help-link">cris@kunodigital.com</a> o por WhatsApp.
           </p>
         </div>
       </main>
@@ -87,7 +158,7 @@ export default function ClientPortalLanding() {
   );
 }
 
-function JobCard({ job, token }: { job: PortalJob; token: string }) {
+function JobCard({ job, token }: { job: PortalJobApi; token: string }) {
   const info = STAGE_INFO[job.stage];
   const completed = job.milestones.filter((m) => m.completed_at !== null).length;
   return (
@@ -107,4 +178,25 @@ function JobCard({ job, token }: { job: PortalJob; token: string }) {
       <div className="cp-job-cta">{info.cta} →</div>
     </Link>
   );
+}
+
+// Convierte el shape del mock al shape del backend para evitar branching en la UI.
+function mockToApi(mock: ReturnType<typeof getPortalByToken>): PortalApi {
+  if (!mock) throw new Error('mock undefined');
+  return {
+    client_name: mock.client_name,
+    client_email: mock.client_email,
+    client_company: mock.client_company,
+    agency_name: mock.agency_name,
+    jobs: mock.jobs.map((j) => ({
+      id: j.id,
+      job_id: j.job_id,
+      display_title: j.display_title,
+      stage: j.stage === 'profile_approved' ? 'search_started' : j.stage,
+      created_at: j.created_at,
+      funnel: j.funnel,
+      report_token: j.report_token,
+      milestones: j.milestones,
+    })),
+  };
 }

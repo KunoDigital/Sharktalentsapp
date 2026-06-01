@@ -3,7 +3,10 @@ import ReactDOM from 'react-dom/client';
 import { ClerkProvider } from '@clerk/clerk-react';
 import App from './App';
 import { config } from './config';
+import { initErrorTracker } from './lib/errorTracker';
 import './index.css';
+
+initErrorTracker();
 
 const PUBLISHABLE_KEY = config.clerkPublishableKey;
 const isPlaceholder = PUBLISHABLE_KEY.includes('replace') || PUBLISHABLE_KEY === 'pk_test_xxxxx';
@@ -25,7 +28,14 @@ if (isPlaceholder) {
 } else {
   root.render(
     <React.StrictMode>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+      <ClerkProvider
+        publishableKey={PUBLISHABLE_KEY}
+        afterSignOutUrl="/app/"
+        signInForceRedirectUrl="/app/"
+        signUpForceRedirectUrl="/app/"
+        signInFallbackRedirectUrl="/app/"
+        signUpFallbackRedirectUrl="/app/"
+      >
         <App />
       </ClerkProvider>
     </React.StrictMode>,

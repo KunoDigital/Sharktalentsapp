@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>VELNA · Validación visual — 3 pilotos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --ink: #1f2937;
+    --ink-soft: #4b5563;
+    --ink-faint: #9ca3af;
+    --line: #e5e7eb;
+    --line-strong: #d1d5db;
+    --bg: #f5f5f4;
+    --card: #ffffff;
+    --ok: #16a34a;
+    --ok-bg: #ecfdf5;
+    --tag-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 96px; }
+
+  header.doc {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 28px;
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 12px;
+  }
+  h1.doc-title {
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    letter-spacing: -0.015em;
+  }
+  p.doc-lede {
+    font-size: 15px;
+    color: var(--ink-soft);
+    max-width: 720px;
+    margin: 0;
+    line-height: 1.55;
+  }
+  .doc-meta {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .doc-meta b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- piloto card ---------- */
+  .piloto {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin-bottom: 40px;
+    overflow: hidden;
+  }
+  .piloto-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 20px 28px 16px;
+    border-bottom: 1px solid var(--line);
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .piloto-id {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+  }
+  .piloto-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--tag-bg);
+    color: var(--ink-soft);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  .tag.dim-espacial { background: #fef3c7; color: #92400e; }
+  .tag.dim-abstracta { background: #dbeafe; color: #1e40af; }
+
+  .piloto-rule {
+    padding: 14px 28px 18px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    background: #fafaf9;
+    border-bottom: 1px solid var(--line);
+    line-height: 1.5;
+  }
+  .piloto-rule b { color: var(--ink); font-weight: 600; }
+
+  .stem {
+    padding: 26px 28px 4px;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+
+  .qbody {
+    padding: 24px 28px 28px;
+    display: grid;
+    grid-template-columns: minmax(0, 560px) 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+  @media (max-width: 920px) {
+    .qbody { grid-template-columns: 1fr; }
+  }
+
+  .main-figure {
+    width: 560px;
+    height: 400px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+  }
+  .main-figure svg { display: block; }
+
+  .options-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .options-label {
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 80px);
+    gap: 16px 18px;
+  }
+  .opt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .opt-letter {
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    letter-spacing: 0.05em;
+  }
+  .opt-box {
+    width: 80px;
+    height: 80px;
+    background: white;
+    border: 1px solid var(--line-strong);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .opt-box svg { display: block; width: 64px; height: 64px; }
+  .opt.is-correct .opt-box {
+    border-color: var(--ok);
+    box-shadow: 0 0 0 1px var(--ok) inset;
+    background: var(--ok-bg);
+  }
+  .opt.is-correct::after {
+    content: "✓";
+    position: absolute;
+    margin-top: 96px;
+    color: var(--ok);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* ---------- real-render preview (chip strip) ---------- */
+  .preview-strip {
+    padding: 18px 28px 24px;
+    border-top: 1px dashed var(--line);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    background: #fafaf9;
+  }
+  .preview-strip .label {
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  .chip {
+    width: 64px; height: 64px;
+    background: white;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .chip svg { width: 56px; height: 56px; display:block; }
+  .chip.correct { border-color: var(--ok); background: var(--ok-bg); }
+
+  /* ---------- meta footer per piloto ---------- */
+  .piloto-foot {
+    padding: 14px 28px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  .piloto-foot b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- checklist box ---------- */
+  .checklist {
+    margin-top: 56px;
+    padding: 28px 32px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  .checklist h2 {
+    font-size: 16px;
+    margin: 0 0 14px;
+    letter-spacing: -0.005em;
+  }
+  .checklist ul { margin: 0; padding-left: 18px; }
+  .checklist li {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+  .checklist li b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="doc">
+    <div class="eyebrow">VELNA · SharkTalents · v2 — pilotos</div>
+    <h1 class="doc-title">Validación visual de 3 preguntas piloto</h1>
+    <p class="doc-lede">
+      Antes de generar las 40 preguntas, validamos el approach con 3 piezas representativas: una rotación 2D
+      (Espacial, rellenos sólidos), una matriz 3×3 estilo Raven's (Abstracta, outline puro) y una serie visual
+      (Abstracta, outline). Cada pregunta se renderiza al tamaño exacto de producción: figura principal en
+      contenedor 560×400 y opciones en cuadrados 80×80 con SVG interno 64×64.
+    </p>
+    <div class="doc-meta">
+      <span><b>Stroke espacial:</b> rellenos sólidos #1f2937</span>
+      <span><b>Stroke abstracta:</b> outline 6–10px, fill none</span>
+      <span><b>Distribución correct:</b> a balancear sobre las 40</span>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       PILOTO 1 · ESPACIAL · ROTACIÓN 2D (E1)
+       Figura: bandera con asta (asimétrica en X y Y)
+       Pregunta: rotada 90° horario → correcta: B (correct: 1)
+       ============================================================ -->
+  <article class="piloto">
+    <div class="piloto-head">
+      <div class="piloto-id">cm_e_piloto_01 · Espacial · Tipo E1 (rotación 2D)</div>
+      <div class="piloto-tags">
+        <span class="tag dim-espacial">espacial</span>
+        <span class="tag">rotación</span>
+        <span class="tag">relleno sólido</span>
+      </div>
+    </div>
+    <div class="piloto-rule">
+      <b>Regla:</b> bandera con asta — figura asimétrica en ambos ejes, así las 4 rotaciones (0°, 90°, 180°, 270°)
+      son visualmente distintas y un eventual reflejo también es distinguible. Distractores: rotación opuesta,
+      rotación completa (180°) y figura original sin rotar.
+    </div>
+
+    <div class="stem">¿Cuál opción muestra esta figura rotada 90° en sentido horario?</div>
+
+    <div class="qbody">
+      <div class="main-figure">
+        <!-- figura principal — bandera vertical, asta a la izquierda, bandera arriba-derecha -->
+        <svg viewBox="0 0 120 120" width="320" height="320" xmlns="http://www.w3.org/2000/svg">
+          <g fill="#1f2937">
+            <!-- asta -->
+            <rect x="44" y="20" width="12" height="80" />
+            <!-- bandera (triángulo apuntando a la derecha desde el tope del asta) -->
+            <polygon points="56,20 100,40 56,60" />
+          </g>
+        </svg>
+      </div>
+
+      <div class="options-wrap">
+        <div class="options-label">Opciones · 80×80 / SVG 64×64</div>
+        <div class="options-grid">
+
+          <!-- A: 90° antihorario (270°) — distractor -->
+          <div class="opt">
+            <span class="opt-letter">A</span>
+            <div class="opt-box">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <g fill="#1f2937" transform="rotate(270 60 60)">
+                  <rect x="44" y="20" width="12" height="80" />
+                  <polygon points="56,20 100,40 56,60" />
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- B: 90° horario ✓ correcta -->
+          <div class="opt is-correct">
+            <span class="opt-letter">B</span>
+            <div class="opt-box">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <g fill="#1f2937" transform="rotate(90 60 60)">
+                  <rect x="44" y="20" width="12" height="80" />
+                  <polygon points="56,20 100,40 56,60" />
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- C: 180° — distractor -->
+          <div class="opt">
+            <span class="opt-letter">C</span>
+            <div class="opt-box">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <g fill="#1f2937" transform="rotate(180 60 60)">
+                  <rect x="44" y="20" width="12" height="80" />
+                  <polygon points="56,20 100,40 56,60" />
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- D: 0° (original) — distractor "no rotó" -->
+          <div class="opt">
+            <span class="opt-letter">D</span>
+            <div class="opt-box">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <g fill="#1f2937">
+                  <rect x="44" y="20" width="12" height="80" />
+                  <polygon points="56,20 100,40 56,60" />
+                </g>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-strip">
+      <span class="label">Render real 64×64:</span>
+      <div class="chip">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <g fill="#1f2937" transform="rotate(270 60 60)"><rect x="44" y="20" width="12" height="80"/><polygon points="56,20 100,40 56,60"/></g>
+        </svg>
+      </div>
+      <div class="chip correct">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <g fill="#1f2937" transform="rotate(90 60 60)"><rect x="44" y="20" width="12" height="80"/><polygon points="56,20 100,40 56,60"/></g>
+        </svg>
+      </div>
+      <div class="chip">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <g fill="#1f2937" transform="rotate(180 60 60)"><rect x="44" y="20" width="12" height="80"/><polygon points="56,20 100,40 56,60"/></g>
+        </svg>
+      </div>
+      <div class="chip">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <g fill="#1f2937"><rect x="44" y="20" width="12" height="80"/><polygon points="56,20 100,40 56,60"/></g>
+        </svg>
+      </div>
+    </div>
+
+    <div class="piloto-foot">
+      <span><b>correct:</b> 1 (B)</span>
+      <span><b>dimension:</b> "espacial"</span>
+      <span><b>distribución 4 opciones:</b> 270° · 90° ✓ · 180° · 0°</span>
+    </div>
+  </article>
+
+
+  <!-- ============================================================
+       PILOTO 2 · ABSTRACTA · MATRIZ 3×3 (A1) — Raven's-style
+       Regla: forma por fila (▲ ▢ ○) + cantidad por columna (1 2 3)
+       Celda faltante: fila 3 col 3 = 3 círculos
+       Correcta: C (correct: 2)
+       ============================================================ -->
+  <article class="piloto">
+    <div class="piloto-head">
+      <div class="piloto-id">cm_a_piloto_01 · Abstracta · Tipo A1 (matriz 3×3 Raven's)</div>
+      <div class="piloto-tags">
+        <span class="tag dim-abstracta">abstracta</span>
+        <span class="tag">matriz 3×3</span>
+        <span class="tag">outline puro</span>
+      </div>
+    </div>
+    <div class="piloto-rule">
+      <b>Regla escondida:</b> la forma cambia por fila (fila 1 = triángulo, fila 2 = cuadrado, fila 3 = círculo)
+      y la cantidad de elementos cambia por columna (col 1 = 1, col 2 = 2, col 3 = 3). La celda faltante es
+      fila 3 / col 3 ⇒ <b>3 círculos</b>. Distractores: forma correcta pero cantidad incorrecta; cantidad correcta
+      pero forma incorrecta (incluyendo formas de otras filas).
+    </div>
+
+    <div class="stem">¿Qué figura completa esta matriz?</div>
+
+    <div class="qbody">
+      <div class="main-figure">
+        <!-- figura principal — matriz 3x3 outline -->
+        <svg viewBox="0 0 320 320" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke="#1f2937" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+
+            <!-- celdas (bordes sutiles) -->
+            <g stroke="#d1d5db" stroke-width="1.5">
+              <rect x="0"   y="0"   width="100" height="100"/>
+              <rect x="110" y="0"   width="100" height="100"/>
+              <rect x="220" y="0"   width="100" height="100"/>
+              <rect x="0"   y="110" width="100" height="100"/>
+              <rect x="110" y="110" width="100" height="100"/>
+              <rect x="220" y="110" width="100" height="100"/>
+              <rect x="0"   y="220" width="100" height="100"/>
+              <rect x="110" y="220" width="100" height="100"/>
+              <rect x="220" y="220" width="100" height="100"/>
+            </g>
+
+            <!-- FILA 1 — triángulos -->
+            <!-- (0,0): 1 triángulo grande centrado -->
+            <polygon points="50,30 72,68 28,68"/>
+            <!-- (1,0): 2 triángulos -->
+            <polygon points="140,32 158,64 122,64"/>
+            <polygon points="180,32 198,64 162,64"/>
+            <!-- (2,0): 3 triángulos -->
+            <polygon points="244,34 260,62 228,62"/>
+            <polygon points="276,34 292,62 260,62"/>
+            <polygon points="308,34 324,62 292,62"/>
+
+            <!-- FILA 2 — cuadrados -->
+            <!-- (0,1): 1 cuadrado grande -->
+            <rect x="30" y="135" width="40" height="40"/>
+            <!-- (1,1): 2 cuadrados -->
+            <rect x="120" y="140" width="32" height="32"/>
+            <rect x="166" y="140" width="32" height="32"/>
+            <!-- (2,1): 3 cuadrados -->
+            <rect x="228" y="143" width="26" height="26"/>
+            <rect x="260" y="143" width="26" height="26"/>
+            <rect x="292" y="143" width="26" height="26"/>
+
+            <!-- FILA 3 — círculos -->
+            <!-- (0,2): 1 círculo grande -->
+            <circle cx="50" cy="270" r="22"/>
+            <!-- (1,2): 2 círculos -->
+            <circle cx="138" cy="270" r="16"/>
+            <circle cx="182" cy="270" r="16"/>
+            <!-- (2,2): celda faltante con "?" -->
+          </g>
+
+          <!-- signo de interrogación en celda faltante -->
+          <text x="270" y="287" text-anchor="middle"
+                font-family="ui-sans-serif, system-ui, Helvetica, Arial, sans-serif"
+                font-size="56" font-weight="600" fill="#9ca3af">?</text>
+        </svg>
+      </div>
+
+      <div class="options-wrap">
+        <div class="options-label">Opciones · 80×80 / SVG 64×64</div>
+        <div class="options-grid">
+
+          <!-- A: 3 cuadrados — forma incorrecta (rompe regla fila) -->
+          <div class="opt">
+            <span class="opt-letter">A</span>
+            <div class="opt-box">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <g fill="none" stroke="#1f2937" stroke-width="5">
+                  <rect x="15" y="48" width="24" height="24"/>
+                  <rect x="48" y="48" width="24" height="24"/>
+                  <rect x="81" y="48" width="24" height="24"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- B: 2 círculos — cantidad incorrecta -->
+          <div class="opt">
+            <span class="opt-letter">B</span>
+            <div class="opt-box">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <g fill="none" stroke="#1f2937" stroke-width="5">
+                  <circle cx="40" cy="60" r="18"/>
+                  <circle cx="80" cy="60" r="18"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- C: 3 círculos ✓ -->
+          <div class="opt is-correct">
+            <span class="opt-letter">C</span>
+            <div class="opt-box">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <g fill="none" stroke="#1f2937" stroke-width="5">
+                  <circle cx="25" cy="60" r="15"/>
+                  <circle cx="60" cy="60" r="15"/>
+                  <circle cx="95" cy="60" r="15"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- D: 3 triángulos — forma incorrecta -->
+          <div class="opt">
+            <span class="opt-letter">D</span>
+            <div class="opt-box">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <g fill="none" stroke="#1f2937" stroke-width="5" stroke-linejoin="round">
+                  <polygon points="25,45 40,75 10,75"/>
+                  <polygon points="60,45 75,75 45,75"/>
+                  <polygon points="95,45 110,75 80,75"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-strip">
+      <span class="label">Render real 64×64:</span>
+      <div class="chip">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#1f2937" stroke-width="5"><rect x="15" y="48" width="24" height="24"/><rect x="48" y="48" width="24" height="24"/><rect x="81" y="48" width="24" height="24"/></g></svg>
+      </div>
+      <div class="chip">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#1f2937" stroke-width="5"><circle cx="40" cy="60" r="18"/><circle cx="80" cy="60" r="18"/></g></svg>
+      </div>
+      <div class="chip correct">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#1f2937" stroke-width="5"><circle cx="25" cy="60" r="15"/><circle cx="60" cy="60" r="15"/><circle cx="95" cy="60" r="15"/></g></svg>
+      </div>
+      <div class="chip">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#1f2937" stroke-width="5" stroke-linejoin="round"><polygon points="25,45 40,75 10,75"/><polygon points="60,45 75,75 45,75"/><polygon points="95,45 110,75 80,75"/></g></svg>
+      </div>
+    </div>
+
+    <div class="piloto-foot">
+      <span><b>correct:</b> 2 (C)</span>
+      <span><b>dimension:</b> "abstracta"</span>
+      <span><b>distractores:</b> forma mala (□□□, △△△) + cantidad mala (○○)</span>
+    </div>
+  </article>
+
+
+  <!-- ============================================================
+       PILOTO 3 · ABSTRACTA · SERIE VISUAL (A2)
+       Patrón: triángulo rota 45° por paso
+       ↑ (0°) → ↗ (45°) → → (90°) → ↘ (135°) → ? = ↓ (180°)
+       Correcta: B (correct: 1)
+       ============================================================ -->
+  <article class="piloto">
+    <div class="piloto-head">
+      <div class="piloto-id">cm_a_piloto_02 · Abstracta · Tipo A2 (serie visual)</div>
+      <div class="piloto-tags">
+        <span class="tag dim-abstracta">abstracta</span>
+        <span class="tag">serie</span>
+        <span class="tag">rotación progresiva</span>
+      </div>
+    </div>
+    <div class="piloto-rule">
+      <b>Patrón:</b> el triángulo rota 45° en sentido horario en cada paso de la serie. Pasos visibles: 0°, 45°,
+      90°, 135°. La continuación correcta es <b>180°</b> (triángulo apuntando hacia abajo). Distractores: vuelta
+      al inicio (0°), pasada (225°), y un salto incorrecto (270°).
+    </div>
+
+    <div class="stem">¿Cuál figura continúa la serie?</div>
+
+    <div class="qbody">
+      <div class="main-figure">
+        <!-- figura principal — 4 figuras en serie + "?" -->
+        <svg viewBox="0 0 400 80" width="500" height="100" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round">
+            <!-- step 1: 0° (apuntando arriba) — centro 40, 40 -->
+            <polygon points="40,16 64,60 16,60"/>
+            <!-- step 2: 45° — centro 120, 40 -->
+            <polygon points="120,16 144,60 96,60" transform="rotate(45 120 40)"/>
+            <!-- step 3: 90° — centro 200, 40 -->
+            <polygon points="200,16 224,60 176,60" transform="rotate(90 200 40)"/>
+            <!-- step 4: 135° — centro 280, 40 -->
+            <polygon points="280,16 304,60 256,60" transform="rotate(135 280 40)"/>
+          </g>
+          <!-- celda con ? -->
+          <rect x="332" y="8" width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="364" y="56" text-anchor="middle"
+                font-family="ui-sans-serif, system-ui, Helvetica, Arial, sans-serif"
+                font-size="40" font-weight="600" fill="#9ca3af">?</text>
+        </svg>
+      </div>
+
+      <div class="options-wrap">
+        <div class="options-label">Opciones · 80×80 / SVG 64×64</div>
+        <div class="options-grid">
+
+          <!-- A: 0° (vuelve al inicio) — distractor "ciclo" -->
+          <div class="opt">
+            <span class="opt-letter">A</span>
+            <div class="opt-box">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="60,25 95,90 25,90" fill="none" stroke="#1f2937" stroke-width="6" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- B: 180° ✓ -->
+          <div class="opt is-correct">
+            <span class="opt-letter">B</span>
+            <div class="opt-box">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="60,25 95,90 25,90" fill="none" stroke="#1f2937" stroke-width="6" stroke-linejoin="round" transform="rotate(180 60 60)"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- C: 225° (pasada) — distractor "se pasó un paso" -->
+          <div class="opt">
+            <span class="opt-letter">C</span>
+            <div class="opt-box">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="60,25 95,90 25,90" fill="none" stroke="#1f2937" stroke-width="6" stroke-linejoin="round" transform="rotate(225 60 60)"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- D: 270° (salto) — distractor "salteó" -->
+          <div class="opt">
+            <span class="opt-letter">D</span>
+            <div class="opt-box">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="60,25 95,90 25,90" fill="none" stroke="#1f2937" stroke-width="6" stroke-linejoin="round" transform="rotate(270 60 60)"/>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-strip">
+      <span class="label">Render real 64×64:</span>
+      <div class="chip">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><polygon points="60,25 95,90 25,90" fill="none" stroke="#1f2937" stroke-width="6" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="chip correct">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><polygon points="60,25 95,90 25,90" fill="none" stroke="#1f2937" stroke-width="6" stroke-linejoin="round" transform="rotate(180 60 60)"/></svg>
+      </div>
+      <div class="chip">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><polygon points="60,25 95,90 25,90" fill="none" stroke="#1f2937" stroke-width="6" stroke-linejoin="round" transform="rotate(225 60 60)"/></svg>
+      </div>
+      <div class="chip">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><polygon points="60,25 95,90 25,90" fill="none" stroke="#1f2937" stroke-width="6" stroke-linejoin="round" transform="rotate(270 60 60)"/></svg>
+      </div>
+    </div>
+
+    <div class="piloto-foot">
+      <span><b>correct:</b> 1 (B)</span>
+      <span><b>dimension:</b> "abstracta"</span>
+      <span><b>distractores:</b> 0° · 225° · 270° (todos rotaciones plausibles incorrectas)</span>
+    </div>
+  </article>
+
+
+  <!-- ============================================================
+       checklist
+       ============================================================ -->
+  <section class="checklist">
+    <h2>Qué validar en esta vuelta</h2>
+    <ul>
+      <li><b>Legibilidad a 64×64:</b> mirá la "Render real 64×64" al pie de cada piloto. Las 4 opciones deben ser inequívocas a ese tamaño — si dos se parecen, ajustamos antes de generar las 37 restantes.</li>
+      <li><b>Estilo por dimensión:</b> espacial con relleno sólido (piloto 1), abstractas con outline puro (pilotos 2 y 3). ¿Va el criterio o quieren más grosor / menos grosor en los strokes?</li>
+      <li><b>Matriz 3×3:</b> ¿el viewBox 320×320 con celdas de 100px se lee bien? ¿Mantienen los bordes sutiles de cada celda o las quieren sin marco?</li>
+      <li><b>Serie visual:</b> ¿queda clara la dirección del patrón con 4 pasos visibles + una celda "?" punteada al final, o prefieren mostrar solo las 4 figuras sin el placeholder?</li>
+      <li><b>Distractores:</b> en cada piloto los distractores siguen el principio "plausibles pero definitivamente incorrectos". Confirmen si el nivel de plausibilidad está bien calibrado o si lo quieren más difícil / más fácil.</li>
+      <li><b>Enunciado:</b> español neutro LatAm. Sin "vos / tenés / podés".</li>
+    </ul>
+  </section>
+
+</div>
+</body>
+</html>

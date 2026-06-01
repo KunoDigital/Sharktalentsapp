@@ -1,0 +1,324 @@
+[
+  {
+    "id": "b1_v01",
+    "type": "vocab",
+    "text": "She felt very _____ when she got the promotion.",
+    "options": ["disappointed", "excited", "bored", "tired"],
+    "correct": 1
+  },
+  {
+    "id": "b1_v02",
+    "type": "vocab",
+    "text": "I have to meet a strict _____ on Friday for this report.",
+    "options": ["deadline", "agenda", "client", "salary"],
+    "correct": 0
+  },
+  {
+    "id": "b1_v03",
+    "type": "vocab",
+    "text": "Before flying, you have to check in your _____ at the airport.",
+    "options": ["passport", "luggage", "ticket", "phone"],
+    "correct": 1
+  },
+  {
+    "id": "b1_v04",
+    "type": "vocab",
+    "text": "I _____ with my coworkers — we have a great relationship.",
+    "options": ["get along", "look up", "give up", "take off"],
+    "correct": 0
+  },
+  {
+    "id": "b1_v05",
+    "type": "vocab",
+    "text": "If you don't know a word, _____ in the dictionary.",
+    "options": ["look it up", "look it after", "look it down", "look it for"],
+    "correct": 0
+  },
+  {
+    "id": "b1_v06",
+    "type": "vocab",
+    "text": "He's not coming to the party — he's feeling a bit _____.",
+    "options": ["under the weather", "over the moon", "on the road", "out of the blue"],
+    "correct": 0
+  },
+  {
+    "id": "b1_v07",
+    "type": "vocab",
+    "text": "_____, I think we should postpone the meeting.",
+    "options": ["By the way", "In my opinion", "On time", "At last"],
+    "correct": 1
+  },
+  {
+    "id": "b1_v08",
+    "type": "vocab",
+    "text": "She quit her job because the _____ was too low.",
+    "options": ["salary", "office", "client", "schedule"],
+    "correct": 0
+  },
+  {
+    "id": "b1_v09",
+    "type": "vocab",
+    "text": "After the long hike, my legs were really _____.",
+    "options": ["thirsty", "sore", "wet", "wide"],
+    "correct": 1
+  },
+  {
+    "id": "b1_v10",
+    "type": "vocab",
+    "text": "We need to _____ our plans because of the rain.",
+    "options": ["cancel", "celebrate", "remember", "open"],
+    "correct": 0
+  },
+  {
+    "id": "b1_v11",
+    "type": "vocab",
+    "text": "I haven't seen Marco in years — running into him was completely _____.",
+    "options": ["expected", "unexpected", "boring", "regular"],
+    "correct": 1
+  },
+  {
+    "id": "b1_v12",
+    "type": "vocab",
+    "text": "The traffic was terrible, so I _____ late for the interview.",
+    "options": ["arrived", "left", "stayed", "answered"],
+    "correct": 0
+  },
+  {
+    "id": "b1_v13",
+    "type": "vocab",
+    "text": "I wasn't sure about the new menu, but I decided to _____.",
+    "options": ["give it a try", "give it a break", "give it away", "give in"],
+    "correct": 0
+  },
+  {
+    "id": "b1_v14",
+    "type": "vocab",
+    "text": "The company has a big _____ next month — they expect high sales.",
+    "options": ["argument", "launch", "regret", "loss"],
+    "correct": 1
+  },
+  {
+    "id": "b1_v15",
+    "type": "vocab",
+    "text": "He's a really _____ person — always thinking of others.",
+    "options": ["selfish", "thoughtful", "rude", "lazy"],
+    "correct": 1
+  },
+  {
+    "id": "b1_v16",
+    "type": "vocab",
+    "text": "If you're not feeling well, you should see a _____.",
+    "options": ["lawyer", "teacher", "doctor", "manager"],
+    "correct": 2
+  },
+
+  {
+    "id": "b1_g01",
+    "type": "grammar",
+    "text": "I _____ in this company for five years.",
+    "options": ["work", "am working", "have worked", "worked"],
+    "correct": 2
+  },
+  {
+    "id": "b1_g02",
+    "type": "grammar",
+    "text": "If it _____ tomorrow, we will cancel the picnic.",
+    "options": ["rain", "rains", "will rain", "rained"],
+    "correct": 1
+  },
+  {
+    "id": "b1_g03",
+    "type": "grammar",
+    "text": "She is _____ student in the class.",
+    "options": ["good", "better", "the best", "more good"],
+    "correct": 2
+  },
+  {
+    "id": "b1_g04",
+    "type": "grammar",
+    "text": "You _____ smoke in this building. It's prohibited.",
+    "options": ["can", "must not", "should", "may"],
+    "correct": 1
+  },
+  {
+    "id": "b1_g05",
+    "type": "grammar",
+    "text": "I _____ to Paris next week — the tickets are already booked.",
+    "options": ["go", "am going", "will go", "would go"],
+    "correct": 1
+  },
+  {
+    "id": "b1_g06",
+    "type": "grammar",
+    "text": "When the phone rang, I _____ dinner.",
+    "options": ["cooked", "was cooking", "cook", "had cooked"],
+    "correct": 1
+  },
+  {
+    "id": "b1_g07",
+    "type": "grammar",
+    "text": "Have you _____ been to Japan?",
+    "options": ["never", "ever", "always", "still"],
+    "correct": 1
+  },
+  {
+    "id": "b1_g08",
+    "type": "grammar",
+    "text": "She _____ play tennis when she was younger, but not anymore.",
+    "options": ["uses to", "used to", "is used to", "would"],
+    "correct": 1
+  },
+  {
+    "id": "b1_g09",
+    "type": "grammar",
+    "text": "There isn't _____ milk left in the fridge.",
+    "options": ["any", "some", "no", "much of"],
+    "correct": 0
+  },
+  {
+    "id": "b1_g10",
+    "type": "grammar",
+    "text": "Tokyo is _____ Madrid.",
+    "options": ["bigger that", "bigger than", "more big than", "the biggest"],
+    "correct": 1
+  },
+  {
+    "id": "b1_g11",
+    "type": "grammar",
+    "text": "I _____ better study tonight; the exam is tomorrow.",
+    "options": ["had", "would", "could", "should"],
+    "correct": 3
+  },
+  {
+    "id": "b1_g12",
+    "type": "grammar",
+    "text": "The book _____ I'm reading is excellent.",
+    "options": ["who", "which", "where", "what"],
+    "correct": 1
+  },
+  {
+    "id": "b1_g13",
+    "type": "grammar",
+    "text": "We _____ already eaten when they arrived.",
+    "options": ["have", "were", "had", "did"],
+    "correct": 2
+  },
+  {
+    "id": "b1_g14",
+    "type": "grammar",
+    "text": "_____ the heavy rain, the match continued.",
+    "options": ["Although", "Despite", "Because of", "Since"],
+    "correct": 1
+  },
+  {
+    "id": "b1_g15",
+    "type": "grammar",
+    "text": "I'm not sure, but it _____ rain later.",
+    "options": ["must", "might", "have to", "needs"],
+    "correct": 1
+  },
+  {
+    "id": "b1_g16",
+    "type": "grammar",
+    "text": "If I _____ you, I would take that job.",
+    "options": ["am", "was", "were", "be"],
+    "correct": 2
+  },
+
+  {
+    "id": "b1_r01",
+    "type": "reading",
+    "text": "Read: \"Marta moved to Madrid three years ago for a new job. At first, she felt lonely because all her family lived in Argentina. But over time, she made new friends, joined a hiking club, and now she says Madrid feels like home. She still misses her family, but she visits them every December.\"\n\nWhy did Marta initially feel lonely?",
+    "options": [
+      "She didn't like her job",
+      "Her family lived far away",
+      "She didn't speak Spanish",
+      "She lived alone"
+    ],
+    "correct": 1
+  },
+  {
+    "id": "b1_r02",
+    "type": "reading",
+    "text": "Read: \"The new café on Oak Street opens at 7 a.m. and closes at 9 p.m. on weekdays. On weekends, the hours are slightly different — they open at 8 a.m. and stay open until 11 p.m. They are closed on Mondays.\"\n\nIf you want to visit the café on Monday, what should you do?",
+    "options": [
+      "Go before 9 a.m.",
+      "Go in the afternoon",
+      "Wait until Tuesday",
+      "Call to confirm"
+    ],
+    "correct": 2
+  },
+  {
+    "id": "b1_r03",
+    "type": "reading",
+    "text": "Read: \"Daniel had been preparing for his marathon for six months. He trained four times a week, watched his diet, and got plenty of rest. On race day, he didn't break any records, but he finished — and that was what mattered most to him.\"\n\nWhat was most important to Daniel about the marathon?",
+    "options": [
+      "Breaking a record",
+      "Finishing the race",
+      "Beating his friends",
+      "Training schedule"
+    ],
+    "correct": 1
+  },
+  {
+    "id": "b1_r04",
+    "type": "reading",
+    "text": "Read: \"In my opinion, working from home has both advantages and disadvantages. On one hand, you save time on commuting and can focus better. On the other hand, it's easy to feel disconnected from your team. I prefer a hybrid arrangement: two days at the office and three at home.\"\n\nWhat does the speaker prefer?",
+    "options": [
+      "Always working from home",
+      "Always working from the office",
+      "A mix of office and home",
+      "Working only on weekends"
+    ],
+    "correct": 2
+  },
+  {
+    "id": "b1_r05",
+    "type": "reading",
+    "text": "Read: \"Sara had never been on a plane before. She was nervous during takeoff, but as soon as she saw the clouds from the window, she relaxed. By the end of the flight, she was already wondering when she could travel again.\"\n\nHow did Sara feel by the end of the flight?",
+    "options": [
+      "Still nervous",
+      "Eager to travel more",
+      "Disappointed",
+      "Tired and bored"
+    ],
+    "correct": 1
+  },
+  {
+    "id": "b1_r06",
+    "type": "reading",
+    "text": "Read: \"Office buildings often have rules about noise. Employees should keep their phones on silent mode and avoid loud conversations near workstations. If you need to take a long call, please use one of the meeting rooms on the second floor.\"\n\nWhere should you go for a long phone call?",
+    "options": [
+      "At your desk",
+      "In the cafeteria",
+      "Meeting rooms on the second floor",
+      "Outside the building"
+    ],
+    "correct": 2
+  },
+  {
+    "id": "b1_r07",
+    "type": "reading",
+    "text": "Read: \"Carla learned to cook from her grandmother. Every Sunday, they would prepare a traditional Italian meal together: pasta, fresh sauce, and homemade bread. Now that her grandmother is gone, Carla cooks the same meal every Sunday to remember her.\"\n\nWhy does Carla cook the same meal every Sunday now?",
+    "options": [
+      "She doesn't know other recipes",
+      "It's the easiest meal to prepare",
+      "To remember her grandmother",
+      "Her family demands it"
+    ],
+    "correct": 2
+  },
+  {
+    "id": "b1_r08",
+    "type": "reading",
+    "text": "Read: \"The company offers three types of training programs: technical (for engineers), leadership (for managers), and language (for everyone). Employees can take up to two programs per year. The deadline to apply is the end of January.\"\n\nWho can take the language training?",
+    "options": [
+      "Only engineers",
+      "Only managers",
+      "All employees",
+      "Only new employees"
+    ],
+    "correct": 2
+  }
+]

@@ -1,0 +1,69 @@
+{
+  "$comment": "Configuración del test de mentalidades. Mapea cada mentalidad a su eje + polo (limitante/adaptable). Usado para scoring.",
+  "axes": {
+    "1": {
+      "name": "Aprendizaje",
+      "limitante": "fija",
+      "adaptable": "crecimiento"
+    },
+    "2": {
+      "name": "Conocimiento",
+      "limitante": "experto",
+      "adaptable": "curiosa"
+    },
+    "3": {
+      "name": "Resolución",
+      "limitante": "reactiva",
+      "adaptable": "creativa"
+    },
+    "4": {
+      "name": "Locus de control",
+      "limitante": "victima",
+      "adaptable": "agente"
+    },
+    "5": {
+      "name": "Recursos",
+      "limitante": "escasez",
+      "adaptable": "abundancia"
+    },
+    "6": {
+      "name": "Estructura",
+      "limitante": "certeza",
+      "adaptable": "exploracion"
+    },
+    "7": {
+      "name": "Riesgo",
+      "limitante": "proteccion",
+      "adaptable": "oportunidad"
+    }
+  },
+  "mindset_to_axis": {
+    "fija": { "axis": 1, "polo": "limitante" },
+    "crecimiento": { "axis": 1, "polo": "adaptable" },
+    "experto": { "axis": 2, "polo": "limitante" },
+    "curiosa": { "axis": 2, "polo": "adaptable" },
+    "reactiva": { "axis": 3, "polo": "limitante" },
+    "creativa": { "axis": 3, "polo": "adaptable" },
+    "victima": { "axis": 4, "polo": "limitante" },
+    "agente": { "axis": 4, "polo": "adaptable" },
+    "escasez": { "axis": 5, "polo": "limitante" },
+    "abundancia": { "axis": 5, "polo": "adaptable" },
+    "certeza": { "axis": 6, "polo": "limitante" },
+    "exploracion": { "axis": 6, "polo": "adaptable" },
+    "proteccion": { "axis": 7, "polo": "limitante" },
+    "oportunidad": { "axis": 7, "polo": "adaptable" }
+  },
+  "thresholds": {
+    "adaptable_min_pct": 70,
+    "limitante_max_pct": 49,
+    "$comment": "Score >= 70% → 'Adaptable'. Score <= 49% → 'Limitante'. 50-69% → 'Mixto'."
+  },
+  "framework": {
+    "name": "McKinsey Forward — Adaptabilidad y Resiliencia",
+    "version": "v1",
+    "total_questions": 10,
+    "options_per_question": 6,
+    "axes_per_question": 3,
+    "estimated_time_seconds": 420
+  }
+}

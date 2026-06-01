@@ -426,3 +426,123 @@ Este documento + los 11 anteriores son el **contrato** del refactor. Si durante 
 ## Fin
 
 Fin del master plan. Go to [00_INDEX.md](00_INDEX.md) para volver al inicio.
+
+---
+
+## Snapshot estado real al 2026-05-04 (post-deploy v2)
+
+> Esta sección se actualiza después de cada hito mayor. No la borres — es la fuente de verdad de lo que está hecho vs pendiente.
+
+### ✅ Completado
+
+**Backend (`functions/api/`):**
+- ~80 endpoints HTTP en producción
+- Multi-tenant via Clerk organizations
+- Pipeline completo de evaluación (DISC + VELNA + integridad + emocional + técnica doble eje)
+- Bot decisor cold/warm/hot con RAG + training examples
+- Pool interno + matching algoritmo
+- Reportes multi-candidato con narrativas IA cacheadas (es/en)
+- Outbox events + 6 dispatchers (email, translation, recruit sync, outreach DM, briefing autodraft, lead sync CRM)
+- 6 webhooks entrantes con HMAC + idempotencia (Clerk, HeyReach, Zia, Zoho Sign, Zoho Recruit, WhatsApp)
+- Anti-cheat events tracking
+- Audit log completo
+- Rate limiting per-tenant
+- Circuit breakers para 7 integraciones
+- Sentry error tracking (envelope sin SDK)
+- Performance metrics in-memory + endpoint /admin/metrics
+- /admin/health-check con outbox stats + circuit breakers + integraciones configuradas
+- 693 tests pasando
+
+**Frontend (`shark/`):**
+- React 18 + Vite + TypeScript estricto
+- Lazy loading per-route (bundle 362KB main, -45% vs eager)
+- HashRouter para SPA
+- ClerkProvider auth + multi-org
+- 25+ pages wired al backend con fallback a mock
+- Mobile responsive con breakpoints
+- 133 tests pasando
+
+**Integraciones (15):**
+- ✅ activas en producción: Anthropic Claude Haiku 4.5, Clerk, Catalyst Email Service
+- ⚙️ código listo (esperando OAuth/keys): HeyReach (in/out), Zoho Recruit (in/out), Zoho Bookings, Zoho Sign (in/out), Zoho CRM, Zia, Whisper, WhatsApp, Sentry, Cloudflare Turnstile, Catalyst File Store
+
+**Tablas Catalyst:**
+- 21 creadas (Block 1 + 17 nuevas)
+- 24 pendientes para próxima sesión (ver `docs/master-plan/MIGRATIONS_NUEVAS.csv`)
+
+**Operacional:**
+- Catalyst Development environment deployado y operativo
+- Health check pasando 100%
+- 6 GitHub Actions workflows: CI, deploy, cron-outbox, cron-purge-videos, backup-tables semanal, smoke-test post-deploy
+- Scripts: `validate-deploy.sh`, `smoke-test.sh`, `generate-secret.sh`, `deploy-backend.sh`, `deploy-frontend.sh`, `backup-tables.sh`
+
+**Documentación:**
+- Master plan: 24 docs (00-23) + extras (API_CLIENT_GUIDE, ENV_VARS, DEPLOYMENT, MIGRATIONS_*)
+- Marketing funnel docs (24_MARKETING_FUNNEL + tech brief para coworker)
+- Aprendizajes: manual de patrones del proyecto
+- SECURITY_NOTES.md: análisis de vulnerabilities npm + decisiones
+
+### ⛔ Pendiente
+
+**Tablas Catalyst (alta prioridad):**
+- `Notifications` — habilita campana del recruiter
+- `JobProfileDrafts` — habilita auto-draft IA del briefing Zia
+- `ReviewQueue` — habilita cola visual del bot decisor
+
+**Tablas Catalyst (media prioridad):**
+- `PrefilterQuestions` + `PrefilterAnswers` — cuestionario inicial pre-test
+- `VideoQuestions` + `VideoResponses` + `VideoConsents` — videos dinámicos
+- `JobTrackingSnapshots` — audit del portal cliente
+
+**Tablas Catalyst (baja prioridad):**
+- `OutreachCampaigns` + `OutreachInbox` + `OutreachContacts` + `OutreachTemplates` — LinkedIn outbound
+- `MarketingLeads` — funnel de captación
+- `RecruitStageMappings` + `RecruitJobMappings` + `RecruitSyncQueue` — sync Recruit
+
+**Tablas Catalyst (opcionales):**
+- `TokenUsage`, `TechLibrary`, `JobBossProfiles`, `ReportCandidates`, `IntegrationSecrets`, `ZohoMeetings`, `IntegrationHealth`
+
+**Configuración prod:**
+- Activar integraciones reales (Zoho Sign, Bookings, HeyReach, WhatsApp) cuando se vayan a usar
+- Custom domain en Catalyst (opcional)
+- Production environment de Catalyst (cuando salga del Development)
+
+**Migración v1→v2:**
+- Postergada por orden explícita de Cris (sigue usando v1 productivo)
+
+### 📊 Métricas finales del proyecto v2 (2026-05-04)
+
+- Líneas de código backend: ~15k TypeScript
+- Líneas de código frontend: ~10k TypeScript/TSX
+- Tests: 693 (backend) + 133 (frontend) = **826 total**
+- Endpoints: ~80
+- Webhooks entrantes: 6
+- Integraciones externas: 15 (3 activas + 12 con código listo)
+- Tablas Catalyst: 21/45 (47%)
+- Frontend bundle main: 362KB unzipped (112KB gzip)
+- Días de desarrollo activo: ~30 (~3 meses calendar incluyendo iteraciones)
+
+---
+
+## 📈 Snapshot estado real al 2026-05-08
+
+**Operativo de Cris (esta semana):**
+- ✅ 3 folders File Store creados: `candidatevideos`, `englishlistening`, `largecontent`
+- ✅ 4 MP3s del listening CEFR (A2/B1/B2/C1) subidos
+- ✅ ZeptoMail Mail Agent "Shark" + dominio `sharktalents.ai` verificado, test email entregado
+- ✅ Env vars `FILESTORE_*` + `ZEPTOMAIL_API_TOKEN` seteadas en Catalyst Console (Development)
+
+**Cambios estructurales (2026-05-08):**
+- 🔧 **Catalyst Text 10K limit refactor** — discovery: límite real 10K chars (no 64KB). Refactor de FIELD_LIMITS + `lib/largeContentStore.ts` para overflow via File Store. Doc: [../CATALYST_TEXT_LIMITS.md](../CATALYST_TEXT_LIMITS.md)
+- 📧 **Email strategy clarificada:** candidato vía Zoho Recruit; ZeptoMail solo para 2 emails al cliente (`client_portal_access`, `client_report_ready`) + `recovery_link` al candidato
+- 🔄 **Env vars rename:** `CATALYST_*_FOLDER_ID` → `FILESTORE_*_FOLDER_ID` (Catalyst reserva el prefijo `CATALYST_`)
+- ⚙️ **Settings → tab Operacional** con botón manual para procesar outbox sin esperar al cron
+- 📤 **Notify client report ready** wireado: endpoint backend + botón en JobDetail
+- 🆘 **Recovery flow** wireado: candidato puede pedir reenvío de su link en `/apply/:tenant/:job/recover`
+
+### 📊 Métricas al 2026-05-08
+
+- Tests: 799 (backend) + ~185 (frontend) = **~984 total** (+158 desde 2026-05-04)
+- Endpoints: ~90 (+10 nuevos: notify-client-report-ready, outbox/process-now, recover, etc.)
+- Tablas Catalyst: 16/45 + 3 folders File Store activos
+- Integraciones activas: 4 (Clerk, Anthropic, ZeptoMail, HeyReach) + 8 con código listo

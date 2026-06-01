@@ -1,0 +1,122 @@
+name: Deploy
+
+# Deploy automático a Catalyst Development cuando se hace push a main.
+# Para que esto funcione, en GitHub repo → Settings → Secrets:
+#   - CATALYST_TOKEN: token generado con `catalyst token:generate` (el que vive en .catalystrc)
+#   - CATALYST_PROJECT_ID: 28606000000676053
+#   - CATALYST_ORG_ID: 883996440
+#
+# Si el deploy falla, el workflow se rompe y GitHub te manda email.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # también ejecutable manual desde Actions tab
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend a Catalyst Dev
+    runs-on: ubuntu-latest
+    # Solo si el job CI pasó (el push debió pasar tests primero)
+    needs: []
+    defaults:
+      run:
+        working-directory: functions/api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: functions/api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Catalyst CLI
+        run: npm install -g zcatalyst-cli
+
+      - name: Deploy
+        env:
+          CATALYST_TOKEN: ${{ secrets.CATALYST_TOKEN }}
+          CATALYST_PROJECT_ID: ${{ secrets.CATALYST_PROJECT_ID }}
+          CATALYST_ORG_ID: ${{ secrets.CATALYST_ORG_ID }}
+        run: |
+          if [ -z "$CATALYST_TOKEN" ] || [ -z "$CATALYST_PROJECT_ID" ]; then
+            echo "::error::Missing CATALYST_TOKEN or CATALYST_PROJECT_ID secret. Configurar en GitHub repo → Settings → Secrets."
+            exit 1
+          fi
+          cd ../..
+          catalyst deploy \
+            --only functions:api \
+            --token "$CATALYST_TOKEN" \
+            -p "$CATALYST_PROJECT_ID" \
+            --org "$CATALYST_ORG_ID"
+
+      - name: Smoke test post-deploy
+        if: success()
+        env:
+          BASE_URL: https://sharktalentsapp-883996440.development.catalystserverless.com/server/api
+        run: |
+          set -e
+
+          # 1. Health check con retry exponencial (deploy puede tardar en estar listo)
+          echo "▶ Health check..."
+          for attempt in 1 2 3 4 5; do
+            sleep $((attempt * 3))
+            RESPONSE=$(curl -s -w "\n%{http_code}" "$BASE_URL/health" || true)
+            STATUS=$(echo "$RESPONSE" | tail -1)
+            BODY=$(echo "$RESPONSE" | sed '$d')
+            if [ "$STATUS" = "200" ]; then
+              echo "✓ /health OK (attempt $attempt)"
+              echo "$BODY" | head -c 500
+              break
+            fi
+            if [ $attempt -eq 5 ]; then
+              echo "::error::Health check failed after 5 attempts. Last status=$STATUS body=$BODY"
+              exit 1
+            fi
+            echo "  attempt $attempt status=$STATUS — retrying"
+          done
+
+          # 2. Verify status field is 'ok' or 'degraded' (not missing)
+          if ! echo "$BODY" | grep -qE '"status":"(ok|degraded)"'; then
+            echo "::error::Health response missing status field or unexpected format"
+            echo "$BODY"
+            exit 1
+          fi
+
+          # 3. Verify OpenAPI spec is reachable (rutas registradas correctamente)
+          echo "▶ OpenAPI spec check..."
+          OPENAPI_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/openapi.json" || echo "000")
+          if [ "$OPENAPI_STATUS" != "200" ]; then
+            echo "::error::OpenAPI endpoint returned $OPENAPI_STATUS (expected 200). Routes may not be registered."
+            exit 1
+          fi
+          echo "✓ /api/openapi.json OK"
+
+          # 4. Detailed health-check (admin endpoint) si tenemos INTERNAL_API_KEY
+          if [ -n "${{ secrets.INTERNAL_API_KEY }}" ]; then
+            echo "▶ Detailed health-check..."
+            DETAILED=$(curl -s -H "X-Internal-Key: ${{ secrets.INTERNAL_API_KEY }}" "$BASE_URL/admin/health-check" || true)
+            DETAILED_STATUS=$(echo "$DETAILED" | grep -oE '"status":"[a-z]+"' | head -1 | cut -d'"' -f4)
+            echo "  Detailed status: ${DETAILED_STATUS:-unknown}"
+            if [ "$DETAILED_STATUS" = "critical" ]; then
+              echo "::error::Detailed health-check returned critical status"
+              echo "$DETAILED" | head -c 1000
+              exit 1
+            fi
+            if [ "$DETAILED_STATUS" = "degraded" ]; then
+              echo "::warning::Detailed health-check returned degraded status (deploy OK, pero hay issues)"
+              echo "$DETAILED" | head -c 1000
+            fi
+          fi
+
+          echo ""
+          echo "✓ Smoke test passed"

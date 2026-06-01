@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>VELNA · Validación visual v2 — 40 preguntas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --ink: #1f2937;
+    --ink-soft: #4b5563;
+    --ink-faint: #9ca3af;
+    --line: #e5e7eb;
+    --line-strong: #d1d5db;
+    --bg: #f5f5f4;
+    --card: #ffffff;
+    --ok: #16a34a;
+    --ok-bg: #ecfdf5;
+    --tag-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page { max-width: 1180px; margin: 0 auto; padding: 56px 40px 96px; }
+
+  header.doc {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+  }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 12px;
+  }
+  h1.doc-title {
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    letter-spacing: -0.015em;
+  }
+  p.doc-lede {
+    font-size: 15px;
+    color: var(--ink-soft);
+    max-width: 760px;
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  /* ---------- distribución summary ---------- */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-top: 28px;
+  }
+  .summary .stat {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+  .summary .stat-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-family: ui-monospace, monospace;
+  }
+  .summary .stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  .summary .stat-sub { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+
+  /* ---------- section dividers ---------- */
+  h2.section {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 56px 0 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line-strong);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  h2.section .sub {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    font-family: ui-monospace, monospace;
+  }
+
+  /* ---------- piloto card ---------- */
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .q-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 16px 24px 14px;
+    border-bottom: 1px solid var(--line);
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .q-id {
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .q-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--tag-bg);
+    color: var(--ink-soft);
+    font-family: ui-monospace, monospace;
+  }
+  .tag.espacial { background: #fef3c7; color: #92400e; }
+  .tag.abstracta { background: #dbeafe; color: #1e40af; }
+
+  .stem {
+    padding: 20px 24px 4px;
+    font-size: 16.5px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+
+  .qbody {
+    padding: 18px 24px 22px;
+    display: grid;
+    grid-template-columns: minmax(0, 560px) 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  @media (max-width: 980px) {
+    .qbody { grid-template-columns: 1fr; }
+  }
+
+  .main-figure {
+    width: 100%;
+    max-width: 560px;
+    aspect-ratio: 7 / 5;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+  }
+  .main-figure.series, .main-figure.analogy {
+    aspect-ratio: 7 / 1.4;
+    padding: 18px 12px;
+  }
+  .main-figure.compare {
+    aspect-ratio: 4 / 1;
+    padding: 14px 12px;
+  }
+  .main-figure svg { display: block; width: 100%; height: 100%; max-height: 380px; }
+  .main-figure.series svg, .main-figure.analogy svg { max-height: 110px; }
+  .main-figure.compare svg { max-height: 90px; }
+
+  .options-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .options-label {
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: ui-monospace, monospace;
+  }
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 80px);
+    gap: 14px 16px;
+  }
+  .opt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    position: relative;
+  }
+  .opt-letter {
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-family: ui-monospace, monospace;
+    letter-spacing: 0.05em;
+  }
+  .opt-box {
+    width: 80px;
+    height: 80px;
+    background: white;
+    border: 1px solid var(--line-strong);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .opt-box svg { display: block; width: 64px; height: 64px; }
+  .opt.is-correct .opt-box {
+    border-color: var(--ok);
+    box-shadow: 0 0 0 1px var(--ok) inset;
+    background: var(--ok-bg);
+  }
+  .opt-correct-tick {
+    position: absolute;
+    bottom: -16px;
+    color: var(--ok);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .q-foot {
+    padding: 12px 24px;
+    border-top: 1px solid var(--line);
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-family: ui-monospace, monospace;
+    background: #fafaf9;
+  }
+  .q-foot b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- jump nav ---------- */
+  .nav {
+    position: sticky;
+    top: 0;
+    background: rgba(245,245,244,0.95);
+    backdrop-filter: blur(8px);
+    padding: 10px 0;
+    margin: 0 -40px 24px;
+    padding-left: 40px;
+    padding-right: 40px;
+    z-index: 10;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 12px;
+  }
+  .nav a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: white;
+    font-family: ui-monospace, monospace;
+  }
+  .nav a:hover { color: var(--ink); border-color: var(--line-strong); }
+  .nav .nav-title { font-weight: 600; color: var(--ink); margin-right: 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="doc">
+    <div class="eyebrow">VELNA · SharkTalents · v2 · validación visual final</div>
+    <h1 class="doc-title">40 preguntas renderizadas a tamaño real</h1>
+    <p class="doc-lede">
+      20 Espaciales (rellenos sólidos) + 20 Abstractas (outline puro estilo Raven's). Cada pregunta se renderiza
+      con la figura principal en el contenedor estándar y las 4 opciones en cuadrados 80×80 con SVG interno 64×64
+      — exactamente como las va a ver el candidato. La opción correcta queda marcada en verde con un ✓.
+    </p>
+
+    <div class="summary" id="summary"></div>
+  </header>
+
+  <nav class="nav">
+    <span class="nav-title">Saltar a:</span>
+    <a href="#esp-rot">Esp · rotación (E1–E8)</a>
+    <a href="#esp-ref">Esp · reflejo (E9–E16)</a>
+    <a href="#esp-ins">Esp · inscrita (E17–E20)</a>
+    <a href="#abs-mat">Abs · matriz (A1–A8)</a>
+    <a href="#abs-ser">Abs · serie (A9–A12)</a>
+    <a href="#abs-ana">Abs · analogía (A13–A16)</a>
+    <a href="#abs-dif">Abs · diferente (A17–A20)</a>
+  </nav>
+
+  <main id="content"></main>
+
+</div>
+
+<script src="data-velna.js"></script>
+<script>
+(function(){
+  const { espacial, abstracta } = window.VELNA_DATA;
+
+  // ----- distribución summary -----
+  const all = [...espacial, ...abstracta];
+  const counts = [0,0,0,0];
+  all.forEach(q => counts[q.correct]++);
+  const summary = document.getElementById('summary');
+  ["A","B","C","D"].forEach((letter, i) => {
+    const div = document.createElement('div');
+    div.className = 'stat';
+    div.innerHTML = `
+      <div class="stat-label">Correct ${letter}</div>
+      <div class="stat-value">${counts[i]}</div>
+      <div class="stat-sub">objetivo: 10 ±2</div>
+    `;
+    summary.appendChild(div);
+  });
+
+  // ----- main rendering -----
+  const sections = [
+    { id: "esp-rot", title: "Espacial · Rotación 2D",       sub: "E1–E8 · 8 preguntas",  filter: q => q.dimension === "espacial" && q.tipo === "rotacion" },
+    { id: "esp-ref", title: "Espacial · Reflejo",            sub: "E9–E16 · 8 preguntas", filter: q => q.dimension === "espacial" && q.tipo === "reflejo" },
+    { id: "esp-ins", title: "Espacial · Figura inscrita",    sub: "E17–E20 · 4 preguntas",filter: q => q.dimension === "espacial" && q.tipo === "figura_inscrita" },
+    { id: "abs-mat", title: "Abstracta · Matriz 3×3",        sub: "A1–A8 · 8 preguntas",  filter: q => q.dimension === "abstracta" && q.tipo === "matriz_3x3" },
+    { id: "abs-ser", title: "Abstracta · Serie visual",      sub: "A9–A12 · 4 preguntas", filter: q => q.dimension === "abstracta" && q.tipo === "serie" },
+    { id: "abs-ana", title: "Abstracta · Analogía",          sub: "A13–A16 · 4 preguntas",filter: q => q.dimension === "abstracta" && q.tipo === "analogia" },
+    { id: "abs-dif", title: "Abstracta · Figura diferente",  sub: "A17–A20 · 4 preguntas",filter: q => q.dimension === "abstracta" && q.tipo === "figura_diferente" },
+  ];
+
+  const content = document.getElementById('content');
+
+  sections.forEach(sec => {
+    const matches = all.filter(sec.filter);
+    const h2 = document.createElement('h2');
+    h2.className = 'section';
+    h2.id = sec.id;
+    h2.innerHTML = `${sec.title}<span class="sub">${sec.sub}</span>`;
+    content.appendChild(h2);
+
+    matches.forEach(q => content.appendChild(renderCard(q)));
+  });
+
+  function renderCard(q) {
+    const card = document.createElement('article');
+    card.className = 'q-card';
+
+    // determine main-figure variant for sizing
+    const variant =
+      q.tipo === "serie"             ? "series"  :
+      q.tipo === "analogia"          ? "analogy" :
+      q.tipo === "figura_diferente"  ? "compare" : "";
+
+    const correctLetter = ["A","B","C","D"][q.correct];
+
+    card.innerHTML = `
+      <div class="q-head">
+        <div class="q-id">${q.id}</div>
+        <div class="q-tags">
+          <span class="tag ${q.dimension}">${q.dimension}</span>
+          <span class="tag">${q.tipo.replace(/_/g,' ')}</span>
+        </div>
+      </div>
+      <div class="stem">${q.text}</div>
+      <div class="qbody">
+        <div class="main-figure ${variant}">${q.svg}</div>
+        <div class="options-wrap">
+          <div class="options-label">Opciones · 80×80 con SVG 64×64</div>
+          <div class="options-grid">
+            ${q.options.map((letter, i) => `
+              <div class="opt ${i === q.correct ? 'is-correct' : ''}">
+                <span class="opt-letter">${letter}</span>
+                <div class="opt-box">${q.options_svg[i]}</div>
+                ${i === q.correct ? '<span class="opt-correct-tick">✓ correcta</span>' : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="q-foot">
+        <span><b>correct:</b> ${q.correct} (${correctLetter})</span>
+        <span><b>dimension:</b> "${q.dimension}"</span>
+        <span><b>tipo:</b> ${q.tipo}</span>
+      </div>
+    `;
+    return card;
+  }
+})();
+</script>
+</body>
+</html>

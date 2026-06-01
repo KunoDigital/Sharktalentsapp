@@ -599,7 +599,7 @@ confidence       Decimal (3,2, nullable)   (si fue bot)
 transitioned_at  DateTime
 ```
 
-### `PrefilterQuestions`
+### `PrefQuestions` (ex-`PrefilterQuestions` — renombrada 2026-05-11 por bug intermitente de Catalyst Schema API que dejó el nombre original "envenenado")
 
 ```
 ROWID                BigInt

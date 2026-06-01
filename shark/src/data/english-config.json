@@ -1,0 +1,202 @@
+{
+  "$comment": "Configuración del test de inglés. Bancos multiple-choice por nivel viven en questions/english-{level}.json. Acá: listening scripts, writing prompts, thresholds, settings.",
+
+  "levels": {
+    "A2": {
+      "ux_label": "Comunicación básica — entiende y se hace entender",
+      "pass_threshold_pct": 60,
+      "writing_min_words": 50,
+      "writing_time_seconds": 300,
+      "audio_duration_seconds": 30
+    },
+    "B1": {
+      "ux_label": "Profesional intermedio — sostiene reuniones simples",
+      "pass_threshold_pct": 65,
+      "writing_min_words": 100,
+      "writing_time_seconds": 480,
+      "audio_duration_seconds": 45
+    },
+    "B2": {
+      "ux_label": "Profesional fluido — maneja discusiones complejas",
+      "pass_threshold_pct": 70,
+      "writing_min_words": 150,
+      "writing_time_seconds": 600,
+      "audio_duration_seconds": 60
+    },
+    "C1": {
+      "ux_label": "Avanzado — negocia, presenta, escribe formal",
+      "pass_threshold_pct": 75,
+      "writing_min_words": 200,
+      "writing_time_seconds": 900,
+      "audio_duration_seconds": 90
+    }
+  },
+
+  "weights": {
+    "$comment": "Pesos para calcular score total ponderado",
+    "multiple_choice": 0.50,
+    "listening": 0.25,
+    "writing": 0.25
+  },
+
+  "session": {
+    "questions_per_session": 20,
+    "$comment": "El backend selecciona 20 al azar del banco del nivel solicitado"
+  },
+
+  "writing_prompts": {
+    "A2": {
+      "prompt": "Describe what you did last weekend. Tell us who you were with, where you went, and what you ate. Write at least 50 words.",
+      "min_words": 50
+    },
+    "B1": {
+      "prompt": "Tell us about a job you would like to have in the future. Why does it interest you? What skills do you think you need? What would you do in your first month? Write at least 100 words.",
+      "min_words": 100
+    },
+    "B2": {
+      "prompt": "Some companies allow employees to work fully remote, while others require people in the office every day. What are the benefits and drawbacks of each option? Which would you prefer for your career, and why? Write at least 150 words.",
+      "min_words": 150
+    },
+    "C1": {
+      "prompt": "Describe a recent professional or academic challenge you faced. Explain what made it difficult, what specific actions you took to address it, what the outcome was, and — looking back — what you would do differently next time. Write at least 200 words.",
+      "min_words": 200
+    }
+  },
+
+  "listening": {
+    "$comment": "Scripts + preguntas para cada audio. Los MP3 viven en Catalyst File Store, folder 'english-listening'.",
+
+    "A2": {
+      "audio_filename": "english-listening-a2.mp3",
+      "voice_id_elevenlabs": "21m00Tcm4TlvDq8ikWAM",
+      "voice_name": "Rachel (American female, conversational)",
+      "script": "Hi, my name is Maria. I live in a small apartment in the city center. Every morning I wake up at 7 o'clock. I drink a cup of coffee and eat toast for breakfast. I walk to work because my office is very close — only ten minutes from my home. I usually arrive at 8:30. After work I like to go to the park or read at home.",
+      "questions": [
+        {
+          "id": "a2_l01",
+          "text": "What does Maria eat for breakfast?",
+          "options": ["Cereal", "Toast", "Eggs", "Fruit"],
+          "correct": 1
+        },
+        {
+          "id": "a2_l02",
+          "text": "How does Maria go to work?",
+          "options": ["By bus", "By car", "She walks", "By train"],
+          "correct": 2
+        }
+      ]
+    },
+
+    "B1": {
+      "audio_filename": "english-listening-b1.mp3",
+      "voice_id_elevenlabs": "pNInz6obpgDQGcFmaJgB",
+      "voice_name": "Adam (American male, casual)",
+      "script": "Last summer I traveled to Mexico for two weeks. It was my first time visiting a country in Latin America. I stayed in three different cities — Mexico City, Oaxaca, and the coast of Yucatán. The food was amazing and the people were incredibly welcoming. I had wanted to learn some Spanish before the trip, so I spent a few months using a language app. It really helped me communicate, especially in smaller towns where fewer people spoke English. By the end of the trip, I was already planning my next visit.",
+      "questions": [
+        {
+          "id": "b1_l01",
+          "text": "How long did the speaker stay in Mexico?",
+          "options": ["One week", "Two weeks", "Three weeks", "A month"],
+          "correct": 1
+        },
+        {
+          "id": "b1_l02",
+          "text": "Why was the language app useful?",
+          "options": [
+            "It made the trip cheaper",
+            "It helped him plan the route",
+            "People in small towns spoke less English",
+            "He needed it for work"
+          ],
+          "correct": 2
+        }
+      ]
+    },
+
+    "B2": {
+      "audio_filename": "english-listening-b2.mp3",
+      "voice_id_elevenlabs": "21m00Tcm4TlvDq8ikWAM",
+      "voice_name": "Rachel (American female, professional context)",
+      "script": "At a recent team meeting, our manager announced that the company would be moving to a hybrid work model starting next quarter. From now on, everyone will be expected to come to the office at least three days a week, while having the option to work remotely for the other two. The decision generated mixed reactions. Some colleagues argued that being together more often will improve collaboration and team culture, especially for newer employees who are still building their networks. Others, however, expressed concerns about losing the flexibility that has helped them balance work with personal commitments. The leadership team asked for feedback before finalizing the policy, so we have until the end of the month to share our thoughts.",
+      "questions": [
+        {
+          "id": "b2_l01",
+          "text": "How many days per week will employees be required in the office?",
+          "options": ["Two", "Three", "Four", "Five"],
+          "correct": 1
+        },
+        {
+          "id": "b2_l02",
+          "text": "What concern did some colleagues raise?",
+          "options": [
+            "The salary would decrease",
+            "The office would be too crowded",
+            "They would lose flexibility",
+            "The new model is illegal"
+          ],
+          "correct": 2
+        }
+      ]
+    },
+
+    "C1": {
+      "audio_filename": "english-listening-c1.mp3",
+      "voice_id_elevenlabs": "pNInz6obpgDQGcFmaJgB",
+      "voice_name": "Adam (American male, professional)",
+      "script": "There has been growing debate about the role of artificial intelligence in the workplace. While some industries have embraced AI as a tool to streamline operations and reduce costs, others remain cautious about the potential consequences for employment. Critics argue that automation could displace millions of jobs, particularly those involving routine tasks, leaving workers without clear pathways to transition into new careers. Supporters, on the other hand, contend that history has consistently shown that technological progress, although disruptive in the short term, ultimately creates new categories of employment that we cannot yet imagine. What seems undeniable is that the nature of work itself is shifting. Roles that emphasize creativity, emotional intelligence, and ethical judgment are increasingly valued, while purely repetitive functions are gradually being delegated to machines. Companies that wish to remain competitive must therefore invest not only in technology but also in continuous learning programs that allow their workforce to adapt. The challenge for governments, meanwhile, is to design policies that protect workers during this transition without stifling innovation. How well societies navigate this balance will likely define economic outcomes for decades to come.",
+      "questions": [
+        {
+          "id": "c1_l01",
+          "text": "According to the speaker, what type of jobs are most at risk?",
+          "options": [
+            "Creative roles",
+            "Roles requiring emotional intelligence",
+            "Routine, repetitive jobs",
+            "Ethical judgment positions"
+          ],
+          "correct": 2
+        },
+        {
+          "id": "c1_l02",
+          "text": "What do supporters of AI argue based on history?",
+          "options": [
+            "Technology eliminates more jobs than it creates",
+            "Disruption is permanent",
+            "New job categories eventually emerge",
+            "Governments cannot regulate progress"
+          ],
+          "correct": 2
+        },
+        {
+          "id": "c1_l03",
+          "text": "What role do governments play, according to the speaker?",
+          "options": [
+            "Replace workers with machines",
+            "Stop technological progress completely",
+            "Balance worker protection with innovation",
+            "Train all workers in AI directly"
+          ],
+          "correct": 2
+        }
+      ]
+    }
+  },
+
+  "anti_cheat": {
+    "$comment": "Configuración para el módulo anti-paste/anti-cheat del writing",
+    "block_paste": true,
+    "block_copy_prompt": true,
+    "block_context_menu": true,
+    "track_focus_loss": true,
+    "track_keystroke_count": true,
+    "flag_if_focus_lost_more_than": 3,
+    "flag_if_keystroke_to_word_ratio_below": 3.0
+  },
+
+  "framework": {
+    "name": "CEFR — Common European Framework of Reference for Languages",
+    "url": "https://www.coe.int/en/web/common-european-framework-reference-languages",
+    "version": "v1",
+    "last_updated": "2026-05-05"
+  }
+}

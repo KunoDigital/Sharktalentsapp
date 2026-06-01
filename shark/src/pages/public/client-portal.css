@@ -23,8 +23,8 @@
   padding: 2rem;
 }
 
-.cp-not-found h1 { color: #c5fc6f; margin-bottom: 0.5rem; }
-.cp-not-found a { color: #c5fc6f; }
+.cp-not-found h1 { color: #dafd6f; margin-bottom: 0.5rem; }
+.cp-not-found a { color: #dafd6f; }
 
 .cp-header {
   background: #0a0e15;
@@ -45,7 +45,7 @@
 }
 
 .cp-brand {
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 700;
   font-size: 1rem;
 }
@@ -98,7 +98,7 @@
 }
 
 .cp-back:hover {
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 .cp-job-title-big {
@@ -138,7 +138,7 @@
 }
 
 .cp-callout-warn .cp-callout-title { color: #fbbf24; }
-.cp-callout-good .cp-callout-title { color: #c5fc6f; }
+.cp-callout-good .cp-callout-title { color: #dafd6f; }
 
 .cp-callout-text {
   font-size: 0.9rem;
@@ -174,12 +174,12 @@
 }
 
 .cp-job-card:hover {
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
   transform: translateY(-2px);
 }
 
 .cp-stage-warn { border-left: 4px solid #fbbf24; }
-.cp-stage-good { border-left: 4px solid #c5fc6f; }
+.cp-stage-good { border-left: 4px solid #dafd6f; }
 .cp-stage-mid { border-left: 4px solid #6366f1; }
 .cp-stage-muted { border-left: 4px solid #2c3442; opacity: 0.7; }
 
@@ -200,7 +200,7 @@
 }
 
 .cp-stage-tag-warn { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
-.cp-stage-tag-good { background: rgba(197, 252, 111, 0.15); color: #c5fc6f; }
+.cp-stage-tag-good { background: rgba(197, 252, 111, 0.15); color: #dafd6f; }
 .cp-stage-tag-mid { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
 .cp-stage-tag-muted { background: rgba(140, 148, 159, 0.15); color: #8a93a3; }
 
@@ -223,7 +223,7 @@
 }
 
 .cp-job-dot.is-done {
-  background: #c5fc6f;
+  background: #dafd6f;
 }
 
 .cp-job-progress-text {
@@ -240,7 +240,7 @@
 
 .cp-job-cta {
   font-size: 0.85rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 500;
 }
 
@@ -266,7 +266,7 @@
 }
 
 .cp-help-link {
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 /* Footer */
@@ -303,7 +303,7 @@
 }
 
 .cp-section-text strong {
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 /* Tracking estilo Uber Eats */
@@ -351,8 +351,8 @@
 }
 
 .cp-track-dot.is-done {
-  background: #c5fc6f;
-  border-color: #c5fc6f;
+  background: #dafd6f;
+  border-color: #dafd6f;
   color: #0a0e15;
 }
 
@@ -378,7 +378,7 @@
 }
 
 .cp-track-line.is-done {
-  background: #c5fc6f;
+  background: #dafd6f;
 }
 
 .cp-track-info {
@@ -424,7 +424,7 @@
 
 .cp-draft-label {
   font-size: 0.75rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 700;
@@ -458,7 +458,7 @@
 
 .cp-draft-bullets li::before {
   content: '— ';
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 .cp-draft-grid {
@@ -500,14 +500,14 @@
 }
 
 .cp-dec-btn:hover {
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
   color: #f3f4f6;
 }
 
 .cp-dec-approve.is-selected {
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
 }
 
 .cp-dec-changes.is-selected {
@@ -537,7 +537,7 @@
 
 .cp-draft-comment:focus {
   outline: none;
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
 }
 
 .cp-draft-hint {
@@ -547,7 +547,7 @@
 }
 
 .cp-submit-btn {
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
   border: none;
   padding: 0.85rem 1.75rem;
@@ -571,12 +571,12 @@
 
 .cp-draft-thanks {
   text-align: center;
-  border: 1px solid #c5fc6f;
+  border: 1px solid #dafd6f;
   background: rgba(197, 252, 111, 0.05);
 }
 
 .cp-draft-thanks h2 {
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 /* Funnel */
@@ -608,14 +608,14 @@
 
 .cp-funnel-fill {
   height: 100%;
-  background: linear-gradient(90deg, #c5fc6f, #34d399);
+  background: linear-gradient(90deg, #dafd6f, #34d399);
   border-radius: 6px;
   transition: width 0.4s ease;
 }
 
 .cp-funnel-val {
   font-size: 0.95rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   text-align: right;
   font-weight: 700;
 }
@@ -627,7 +627,7 @@
 }
 
 .cp-finalists-ready h2 {
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 @media (max-width: 768px) {

@@ -1,0 +1,382 @@
+[
+  {
+    "id": "cm_e1",
+    "text": "¿Cuál opción muestra esta figura rotada 90° en sentido horario?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"22\" y=\"10\" width=\"6\" height=\"40\" fill=\"#1f2937\"/><polygon points=\"28,10 50,20 28,30\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><rect x=\"22\" y=\"10\" width=\"6\" height=\"40\" fill=\"#1f2937\"/><polygon points=\"28,10 50,20 28,30\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"22\" y=\"10\" width=\"6\" height=\"40\" fill=\"#1f2937\"/><polygon points=\"28,10 50,20 28,30\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"22\" y=\"10\" width=\"6\" height=\"40\" fill=\"#1f2937\"/><polygon points=\"28,10 50,20 28,30\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"22\" y=\"10\" width=\"6\" height=\"40\" fill=\"#1f2937\"/><polygon points=\"28,10 50,20 28,30\" fill=\"#1f2937\"/></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 1
+  },
+  {
+    "id": "cm_e2",
+    "text": "¿Cuál opción muestra esta figura rotada 90° en sentido antihorario?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"38\" width=\"20\" height=\"7\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"38\" width=\"20\" height=\"7\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"38\" width=\"20\" height=\"7\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"38\" width=\"20\" height=\"7\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"38\" width=\"20\" height=\"7\" fill=\"#1f2937\"/></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 0
+  },
+  {
+    "id": "cm_e3",
+    "text": "¿Cuál opción muestra esta figura rotada 180°?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><rect x=\"20\" y=\"15\" width=\"7\" height=\"30\" fill=\"#1f2937\"/><rect x=\"20\" y=\"15\" width=\"20\" height=\"6\" fill=\"#1f2937\"/><rect x=\"20\" y=\"26\" width=\"15\" height=\"6\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 1
+  },
+  {
+    "id": "cm_e4",
+    "text": "¿Cuál opción muestra esta figura rotada 90° en sentido horario?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><polygon points=\"30,12 48,44 12,44\" fill=\"#1f2937\"/><circle cx=\"42\" cy=\"40\" r=\"3.5\" fill=\"white\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><polygon points=\"30,12 48,44 12,44\" fill=\"#1f2937\"/><circle cx=\"42\" cy=\"40\" r=\"3.5\" fill=\"white\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><polygon points=\"30,12 48,44 12,44\" fill=\"#1f2937\"/><circle cx=\"42\" cy=\"40\" r=\"3.5\" fill=\"white\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><polygon points=\"30,12 48,44 12,44\" fill=\"#1f2937\"/><circle cx=\"42\" cy=\"40\" r=\"3.5\" fill=\"white\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><polygon points=\"30,12 48,44 12,44\" fill=\"#1f2937\"/><circle cx=\"42\" cy=\"40\" r=\"3.5\" fill=\"white\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 2
+  },
+  {
+    "id": "cm_e5",
+    "text": "¿Cuál opción muestra esta figura rotada 180°?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"32\" y=\"12\" width=\"7\" height=\"28\" fill=\"#1f2937\"/><rect x=\"20\" y=\"33\" width=\"19\" height=\"7\" fill=\"#1f2937\"/><rect x=\"20\" y=\"27\" width=\"7\" height=\"13\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"32\" y=\"12\" width=\"7\" height=\"28\" fill=\"#1f2937\"/><rect x=\"20\" y=\"33\" width=\"19\" height=\"7\" fill=\"#1f2937\"/><rect x=\"20\" y=\"27\" width=\"7\" height=\"13\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"32\" y=\"12\" width=\"7\" height=\"28\" fill=\"#1f2937\"/><rect x=\"20\" y=\"33\" width=\"19\" height=\"7\" fill=\"#1f2937\"/><rect x=\"20\" y=\"27\" width=\"7\" height=\"13\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><rect x=\"32\" y=\"12\" width=\"7\" height=\"28\" fill=\"#1f2937\"/><rect x=\"20\" y=\"33\" width=\"19\" height=\"7\" fill=\"#1f2937\"/><rect x=\"20\" y=\"27\" width=\"7\" height=\"13\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"32\" y=\"12\" width=\"7\" height=\"28\" fill=\"#1f2937\"/><rect x=\"20\" y=\"33\" width=\"19\" height=\"7\" fill=\"#1f2937\"/><rect x=\"20\" y=\"27\" width=\"7\" height=\"13\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 3
+  },
+  {
+    "id": "cm_e6",
+    "text": "¿Cuál opción muestra esta figura rotada 90° en sentido horario?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><path d=\"M20,12 L40,12 L40,28 L28,28 L28,45 L20,45 Z\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><path d=\"M20,12 L40,12 L40,28 L28,28 L28,45 L20,45 Z\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><path d=\"M20,12 L40,12 L40,28 L28,28 L28,45 L20,45 Z\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M20,12 L40,12 L40,28 L28,28 L28,45 L20,45 Z\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><path d=\"M20,12 L40,12 L40,28 L28,28 L28,45 L20,45 Z\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 0
+  },
+  {
+    "id": "cm_e7",
+    "text": "¿Cuál opción muestra esta figura rotada 90° en sentido antihorario?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"27\" y=\"18\" width=\"6\" height=\"27\" fill=\"#1f2937\"/><rect x=\"16\" y=\"12\" width=\"22\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"27\" y=\"18\" width=\"6\" height=\"27\" fill=\"#1f2937\"/><rect x=\"16\" y=\"12\" width=\"22\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"27\" y=\"18\" width=\"6\" height=\"27\" fill=\"#1f2937\"/><rect x=\"16\" y=\"12\" width=\"22\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><rect x=\"27\" y=\"18\" width=\"6\" height=\"27\" fill=\"#1f2937\"/><rect x=\"16\" y=\"12\" width=\"22\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"27\" y=\"18\" width=\"6\" height=\"27\" fill=\"#1f2937\"/><rect x=\"16\" y=\"12\" width=\"22\" height=\"8\" fill=\"#1f2937\"/></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 2
+  },
+  {
+    "id": "cm_e8",
+    "text": "¿Cuál opción muestra esta figura rotada 180°?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"13\" y=\"15\" width=\"30\" height=\"6\" fill=\"#1f2937\"/><rect x=\"22\" y=\"21\" width=\"6\" height=\"24\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"13\" y=\"15\" width=\"30\" height=\"6\" fill=\"#1f2937\"/><rect x=\"22\" y=\"21\" width=\"6\" height=\"24\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"13\" y=\"15\" width=\"30\" height=\"6\" fill=\"#1f2937\"/><rect x=\"22\" y=\"21\" width=\"6\" height=\"24\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-90 30 30)\"><rect x=\"13\" y=\"15\" width=\"30\" height=\"6\" fill=\"#1f2937\"/><rect x=\"22\" y=\"21\" width=\"6\" height=\"24\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"13\" y=\"15\" width=\"30\" height=\"6\" fill=\"#1f2937\"/><rect x=\"22\" y=\"21\" width=\"6\" height=\"24\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 3
+  },
+  {
+    "id": "cm_e9",
+    "text": "¿Cuál opción muestra el reflejo horizontal de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><polygon points=\"12,28 30,12 48,28 48,46 12,46\" fill=\"#1f2937\"/><rect x=\"38\" y=\"14\" width=\"5\" height=\"10\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><polygon points=\"12,28 30,12 48,28 48,46 12,46\" fill=\"#1f2937\"/><rect x=\"38\" y=\"14\" width=\"5\" height=\"10\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><polygon points=\"12,28 30,12 48,28 48,46 12,46\" fill=\"#1f2937\"/><rect x=\"38\" y=\"14\" width=\"5\" height=\"10\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><polygon points=\"12,28 30,12 48,28 48,46 12,46\" fill=\"#1f2937\"/><rect x=\"38\" y=\"14\" width=\"5\" height=\"10\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><polygon points=\"12,28 30,12 48,28 48,46 12,46\" fill=\"#1f2937\"/><rect x=\"38\" y=\"14\" width=\"5\" height=\"10\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 2
+  },
+  {
+    "id": "cm_e10",
+    "text": "¿Cuál opción muestra el reflejo vertical de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><polygon points=\"10,42 50,42 44,50 16,50\" fill=\"#1f2937\"/><rect x=\"29\" y=\"12\" width=\"2\" height=\"30\" fill=\"#1f2937\"/><polygon points=\"31,12 31,40 46,40\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><polygon points=\"10,42 50,42 44,50 16,50\" fill=\"#1f2937\"/><rect x=\"29\" y=\"12\" width=\"2\" height=\"30\" fill=\"#1f2937\"/><polygon points=\"31,12 31,40 46,40\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><polygon points=\"10,42 50,42 44,50 16,50\" fill=\"#1f2937\"/><rect x=\"29\" y=\"12\" width=\"2\" height=\"30\" fill=\"#1f2937\"/><polygon points=\"31,12 31,40 46,40\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><polygon points=\"10,42 50,42 44,50 16,50\" fill=\"#1f2937\"/><rect x=\"29\" y=\"12\" width=\"2\" height=\"30\" fill=\"#1f2937\"/><polygon points=\"31,12 31,40 46,40\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><polygon points=\"10,42 50,42 44,50 16,50\" fill=\"#1f2937\"/><rect x=\"29\" y=\"12\" width=\"2\" height=\"30\" fill=\"#1f2937\"/><polygon points=\"31,12 31,40 46,40\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 0
+  },
+  {
+    "id": "cm_e11",
+    "text": "¿Cuál opción muestra el reflejo horizontal de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"22\" y=\"10\" width=\"12\" height=\"28\" fill=\"#1f2937\"/><rect x=\"22\" y=\"32\" width=\"24\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><rect x=\"22\" y=\"10\" width=\"12\" height=\"28\" fill=\"#1f2937\"/><rect x=\"22\" y=\"32\" width=\"24\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"22\" y=\"10\" width=\"12\" height=\"28\" fill=\"#1f2937\"/><rect x=\"22\" y=\"32\" width=\"24\" height=\"8\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><rect x=\"22\" y=\"10\" width=\"12\" height=\"28\" fill=\"#1f2937\"/><rect x=\"22\" y=\"32\" width=\"24\" height=\"8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><rect x=\"22\" y=\"10\" width=\"12\" height=\"28\" fill=\"#1f2937\"/><rect x=\"22\" y=\"32\" width=\"24\" height=\"8\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 3
+  },
+  {
+    "id": "cm_e12",
+    "text": "¿Cuál opción muestra el reflejo vertical de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"14\" y=\"22\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"14\" y=\"12\" width=\"4\" height=\"14\" fill=\"#1f2937\"/><rect x=\"16\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/><rect x=\"31\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><rect x=\"14\" y=\"22\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"14\" y=\"12\" width=\"4\" height=\"14\" fill=\"#1f2937\"/><rect x=\"16\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/><rect x=\"31\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><rect x=\"14\" y=\"22\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"14\" y=\"12\" width=\"4\" height=\"14\" fill=\"#1f2937\"/><rect x=\"16\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/><rect x=\"31\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"14\" y=\"22\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"14\" y=\"12\" width=\"4\" height=\"14\" fill=\"#1f2937\"/><rect x=\"16\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/><rect x=\"31\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"14\" y=\"22\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"14\" y=\"12\" width=\"4\" height=\"14\" fill=\"#1f2937\"/><rect x=\"16\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/><rect x=\"31\" y=\"26\" width=\"3\" height=\"20\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 1
+  },
+  {
+    "id": "cm_e13",
+    "text": "¿Cuál opción muestra el reflejo horizontal de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><rect x=\"18\" y=\"12\" width=\"7\" height=\"34\" fill=\"#1f2937\"/><rect x=\"18\" y=\"12\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><rect x=\"31\" y=\"12\" width=\"7\" height=\"17\" fill=\"#1f2937\"/><rect x=\"18\" y=\"22\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><polygon points=\"25,29 31,29 42,46 36,46\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><rect x=\"18\" y=\"12\" width=\"7\" height=\"34\" fill=\"#1f2937\"/><rect x=\"18\" y=\"12\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><rect x=\"31\" y=\"12\" width=\"7\" height=\"17\" fill=\"#1f2937\"/><rect x=\"18\" y=\"22\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><polygon points=\"25,29 31,29 42,46 36,46\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><rect x=\"18\" y=\"12\" width=\"7\" height=\"34\" fill=\"#1f2937\"/><rect x=\"18\" y=\"12\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><rect x=\"31\" y=\"12\" width=\"7\" height=\"17\" fill=\"#1f2937\"/><rect x=\"18\" y=\"22\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><polygon points=\"25,29 31,29 42,46 36,46\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><rect x=\"18\" y=\"12\" width=\"7\" height=\"34\" fill=\"#1f2937\"/><rect x=\"18\" y=\"12\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><rect x=\"31\" y=\"12\" width=\"7\" height=\"17\" fill=\"#1f2937\"/><rect x=\"18\" y=\"22\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><polygon points=\"25,29 31,29 42,46 36,46\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"18\" y=\"12\" width=\"7\" height=\"34\" fill=\"#1f2937\"/><rect x=\"18\" y=\"12\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><rect x=\"31\" y=\"12\" width=\"7\" height=\"17\" fill=\"#1f2937\"/><rect x=\"18\" y=\"22\" width=\"20\" height=\"7\" fill=\"#1f2937\"/><polygon points=\"25,29 31,29 42,46 36,46\" fill=\"#1f2937\"/></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 0
+  },
+  {
+    "id": "cm_e14",
+    "text": "¿Cuál opción muestra el reflejo vertical de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><polygon points=\"32,8 18,28 28,28 22,46 40,22 30,22 36,8\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><polygon points=\"32,8 18,28 28,28 22,46 40,22 30,22 36,8\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><polygon points=\"32,8 18,28 28,28 22,46 40,22 30,22 36,8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><polygon points=\"32,8 18,28 28,28 22,46 40,22 30,22 36,8\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><polygon points=\"32,8 18,28 28,28 22,46 40,22 30,22 36,8\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 2
+  },
+  {
+    "id": "cm_e15",
+    "text": "¿Cuál opción muestra el reflejo horizontal de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><polygon points=\"10,24 34,24 34,16 48,30 34,44 34,36 18,36 18,46 10,46\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><polygon points=\"10,24 34,24 34,16 48,30 34,44 34,36 18,36 18,46 10,46\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><polygon points=\"10,24 34,24 34,16 48,30 34,44 34,36 18,36 18,46 10,46\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><polygon points=\"10,24 34,24 34,16 48,30 34,44 34,36 18,36 18,46 10,46\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(90 30 30)\"><polygon points=\"10,24 34,24 34,16 48,30 34,44 34,36 18,36 18,46 10,46\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 1
+  },
+  {
+    "id": "cm_e16",
+    "text": "¿Cuál opción muestra el reflejo vertical de esta figura?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"scale(2)\"><circle cx=\"16\" cy=\"30\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"16\" cy=\"30\" r=\"2.2\" fill=\"white\"/><rect x=\"22\" y=\"28\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"32\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/><rect x=\"40\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(180 30 30)\"><circle cx=\"16\" cy=\"30\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"16\" cy=\"30\" r=\"2.2\" fill=\"white\"/><rect x=\"22\" y=\"28\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"32\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/><rect x=\"40\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"16\" cy=\"30\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"16\" cy=\"30\" r=\"2.2\" fill=\"white\"/><rect x=\"22\" y=\"28\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"32\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/><rect x=\"40\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(60 0) scale(-1 1)\"><circle cx=\"16\" cy=\"30\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"16\" cy=\"30\" r=\"2.2\" fill=\"white\"/><rect x=\"22\" y=\"28\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"32\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/><rect x=\"40\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(0 60) scale(1 -1)\"><circle cx=\"16\" cy=\"30\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"16\" cy=\"30\" r=\"2.2\" fill=\"white\"/><rect x=\"22\" y=\"28\" width=\"22\" height=\"4\" fill=\"#1f2937\"/><rect x=\"32\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/><rect x=\"40\" y=\"32\" width=\"3\" height=\"6\" fill=\"#1f2937\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 3
+  },
+  {
+    "id": "cm_e17",
+    "text": "¿Cuál de estas figuras simples está escondida dentro de la figura compleja?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n      <polygon points=\"60,18 102,60 60,102 18,60\"/>\n      <circle cx=\"92\" cy=\"58\" r=\"22\"/>\n      <line x1=\"20\" y1=\"20\" x2=\"100\" y2=\"100\"/>\n    </g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,10 47,20 47,40 30,50 13,40 13,20\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,46 12,46\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,25 41,46 19,46 12,25\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,10 50,30 30,50 10,30\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 3
+  },
+  {
+    "id": "cm_e18",
+    "text": "¿Cuál de estas figuras simples está escondida dentro de la figura compleja?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n      <circle cx=\"60\" cy=\"60\" r=\"42\"/>\n      <polygon points=\"60,20 95,40 95,80 60,100 25,80 25,40\"/>\n      <line x1=\"10\" y1=\"60\" x2=\"110\" y2=\"60\"/>\n    </g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,10 47,20 47,40 30,50 13,40 13,20\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,25 41,46 19,46 12,25\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"15\" y=\"15\" width=\"30\" height=\"30\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,46 12,46\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 0
+  },
+  {
+    "id": "cm_e19",
+    "text": "¿Cuál de estas figuras simples está escondida dentro de la figura compleja?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n      <polygon points=\"60,15 75,52 115,52 84,75 95,113 60,90 25,113 36,75 5,52 45,52\"/>\n      <polygon points=\"60,30 88,50 78,82 42,82 32,50\"/>\n      <line x1=\"20\" y1=\"100\" x2=\"100\" y2=\"100\"/>\n    </g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,10 47,20 47,40 30,50 13,40 13,20\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"15\" y=\"15\" width=\"30\" height=\"30\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,25 41,46 19,46 12,25\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,46 12,46\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 2
+  },
+  {
+    "id": "cm_e20",
+    "text": "¿Cuál de estas figuras simples está escondida dentro de la figura compleja?",
+    "svg": "<svg viewBox=\"0 0 120 120\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n      <path d=\"M14,52 L70,52 L70,36 L104,60 L70,84 L70,68 L14,68 Z\"/>\n      <circle cx=\"70\" cy=\"60\" r=\"38\"/>\n      <line x1=\"20\" y1=\"105\" x2=\"100\" y2=\"15\"/>\n    </g></svg>",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "options_svg": [
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"15\" y=\"15\" width=\"30\" height=\"30\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><path d=\"M10,28 L34,28 L34,20 L50,30 L34,40 L34,32 L10,32 Z\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,10 47,20 47,40 30,50 13,40 13,20\"/></g></svg>",
+      "<svg viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"#1f2937\" stroke-width=\"5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><polygon points=\"30,12 48,46 12,46\"/></g></svg>"
+    ],
+    "dimension": "espacial",
+    "correct": 1
+  }
+]

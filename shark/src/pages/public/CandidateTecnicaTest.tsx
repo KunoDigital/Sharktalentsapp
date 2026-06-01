@@ -1,9 +1,23 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getTestSession, TECNICA_QUESTIONS, type TecnicaQuestion } from '../../data/mockCandidateTests';
+import { getJobById } from '../../data/mockJobs';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
 import { usePersistedState, hasPersistedState } from '../../hooks/usePersistedState';
+import { shuffleOptions } from '../../lib/shuffle';
+import { publicApi } from '../../lib/publicApi';
+import { ApiError } from '../../lib/api';
+import { logger } from '../../lib/logger';
 import './candidate-test.css';
+
+const log = logger('TECNICA');
+
+/** Hash simple para seed reproducible del shuffle por pregunta. */
+function simpleHash(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return h;
+}
 
 type Answer = {
   question_id: string;
@@ -25,7 +39,7 @@ export default function CandidateTecnicaTest() {
 
   const currentQ = questions[currentIdx];
 
-  const { count: antiCheatCount } = useAntiCheat({
+  const { count: antiCheatCount, events: antiCheatEvents } = useAntiCheat({
     enabled: !submitted,
     current_question_id: currentQ?.id ?? null,
   });
@@ -76,6 +90,31 @@ export default function CandidateTecnicaTest() {
       const scorable = questions.filter((q) => q.correct_option_id != null);
       const correct = scorable.filter((q) => answers[q.id]?.selected_option_id === q.correct_option_id).length;
       const pct = scorable.length > 0 ? Math.round((correct / scorable.length) * 100) : 0;
+
+      // Submit al backend
+      if (token && scorable.length > 0) {
+        const job = session ? getJobById(session.job_id) : undefined;
+        const minRequired = job?.tecnica_minimo_pct ?? 60;
+        publicApi.submitTest(token, {
+          tecnica: {
+            total_questions: scorable.length,
+            total_correct: correct,
+            min_required: minRequired,
+          },
+          anti_cheat: antiCheatEvents.length > 0 ? {
+            count: antiCheatEvents.length,
+            events: antiCheatEvents.map((e) => ({ type: e.type, question_id: e.question_id, duration_ms: e.duration_ms })),
+            phase: 'tecnica',
+          } : undefined,
+        }).catch((err: unknown) => {
+          if (err instanceof ApiError) {
+            log.warn('submit falló', { status: err.status, code: err.code, msg: err.message });
+          } else {
+            log.warn('submit error', { error: (err as Error).message });
+          }
+        });
+      }
+
       setTimeout(() => navigate(`/test/${token}/done?phase=tecnica`, {
         state: {
           score: {
@@ -147,6 +186,20 @@ export default function CandidateTecnicaTest() {
             {currentIdx + 1}/{questions.length} · {currentQ.area}
             {currentQ.type === 'situational' && <span className="ct-tag-situational"> · Situacional</span>}
           </div>
+          {currentQ.type === 'situational' ? (
+            <p className="ct-situational-hint" style={{
+              fontSize: '0.85rem',
+              color: '#a5b4fc',
+              padding: '0.5rem 0.75rem',
+              background: 'rgba(99, 102, 241, 0.08)',
+              border: '1px solid rgba(99, 102, 241, 0.3)',
+              borderRadius: '6px',
+              marginBottom: '0.75rem',
+            }}>
+              💡 No hay una respuesta única "correcta" — marcá la opción que <em>realmente harías</em> en este escenario.
+              Más de una opción puede ser válida; lo que evaluamos es tu estilo de trabajo.
+            </p>
+          ) : null}
           <h2 className="ct-question-text">{currentQ.question}</h2>
           <QuestionInput
             q={currentQ}
@@ -195,17 +248,26 @@ function QuestionInput({
     );
   }
 
+  // Shuffle: orden de opciones rota por pregunta para evitar sesgo de posición.
+  // Seed = hash del id → mismo orden si el candidato refresca la página.
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const shuffled = useMemo(() => {
+    if (!q.options || q.options.length === 0) return [];
+    return shuffleOptions(q.options, simpleHash(q.id)).shuffled;
+  }, [q.id]);
+
   return (
     <div className="ct-mc-options">
-      {(q.options ?? []).map((opt) => {
+      {shuffled.map((opt, displayIdx) => {
         const isSelected = answer?.selected_option_id === opt.id;
+        const displayLetter = ['A', 'B', 'C', 'D', 'E'][displayIdx] ?? opt.id.toUpperCase();
         return (
           <button
             key={opt.id}
             className={`ct-mc-option ${isSelected ? 'is-selected' : ''}`}
             onClick={() => onOption(opt.id)}
           >
-            <span className="ct-mc-letter">{opt.id.toUpperCase()}</span>
+            <span className="ct-mc-letter">{displayLetter}</span>
             <span className="ct-mc-text">{opt.text}</span>
           </button>
         );

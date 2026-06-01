@@ -53,3 +53,12 @@ Thumbs.db
 
 # Catalyst
 .catalyst/
+
+# Audios del test de inglés — viven en Catalyst File Store, no en git
+# (binarios grandes, generados por scripts/generate-english-audios.sh)
+english-listening/*.mp3
+
+# Playwright outputs
+test-results/
+playwright-report/
+playwright/.cache/

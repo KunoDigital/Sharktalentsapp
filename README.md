@@ -133,3 +133,102 @@ npm run build                              # → shark/dist
 3. **Técnica** — preguntas IA contextualizadas + axis doble (knowledge + situational con autonomy_vs_consult).
 4. **Emoción** — reactividad emocional.
 5. **Integridad** — multidimensional con detector de deseabilidad social.
+
+## Estado actual (2026-05-04)
+
+**Backend:** ~80 endpoints HTTP, 693 tests pasando, multi-tenant Clerk operativo.
+**Frontend:** 109 tests, 25+ pages wired, lazy-loaded (bundle main 362KB).
+**Webhooks entrantes (6):** Clerk, HeyReach, Zia, Zoho Sign, Zoho Recruit, WhatsApp — todos con HMAC + idempotencia.
+
+### Integraciones en código (15)
+
+| Integración | Estado | Uso |
+|---|---|---|
+| Anthropic Claude Haiku 4.5 | ✅ activa | Drafts IA, narrativas reportes, bot decisor |
+| Clerk | ✅ activa | Auth + organizations multi-tenant |
+| Catalyst Email Service | ✅ activa | Outbox dispatcher de emails |
+| Sentry (envelope sin SDK) | ✅ código listo | Error tracking opcional |
+| Cloudflare Turnstile | ⚙️ env vars | Captcha para landing marketing |
+| HeyReach | ⚙️ código listo | Outbound LinkedIn |
+| Zoho Recruit (in/out) | ⚙️ código listo | Sync candidatos |
+| Zoho Bookings | ⚙️ código listo | Briefing cliente |
+| Zoho Sign (in/out) | ⚙️ código listo | Firma electrónica oferta |
+| Zoho CRM | ⚙️ código listo | Sync marketing leads |
+| Zia | ⚙️ webhook listo | Transcripción meetings |
+| Whisper (OpenAI) | ⚙️ código listo | Fallback transcripción |
+| WhatsApp Cloud API | ⚙️ código listo | Mensajería transaccional |
+| MCP Server | ✅ separado en `mcp/` | 12 tools para agentes IA |
+
+⚙️ = código completo, esperando OAuth tokens / API keys en env vars producción.
+
+### Features end-to-end completos
+
+**Pipeline candidato:** apply → prefilter → DISC → VELNA → integridad → emocional → técnica (doble eje) → videos dinámicos → bot decisor → finalist → review queue → oferta firmada → hired.
+
+**Onboarding cliente:** booking briefing (Zoho Bookings) → meeting con Zia → transcript automático → IA arma draft del puesto → Cris revisa → cliente aprueba → Job activo.
+
+**Reporte cliente:** narrativas IA por candidato (es/en) + conclusión con recomendación → portal cliente con tracking de aperturas + funnel + draft approval.
+
+**Marketing funnel:** landing externa (Astro, no implementada) → quiz scoring → captura lead → eval gratis demo (DISC + Cognitiva + Integridad) → reporte automático → llamada → contrato.
+
+### Tablas Catalyst pendientes
+
+42 tablas pendientes de crear en Catalyst Console. Ver:
+- [docs/master-plan/MIGRATIONS_AGREGAR_COLUMNAS.csv](docs/master-plan/MIGRATIONS_AGREGAR_COLUMNAS.csv) — 5 columnas a agregar a tablas existentes (Jobs, Results)
+- [docs/master-plan/MIGRATIONS_NUEVAS.csv](docs/master-plan/MIGRATIONS_NUEVAS.csv) — 35 tablas a crear desde cero
+
+El backend tolera todas las ausencias con fallback graceful (devuelve `table_ready: false` o lista vacía sin romper UI).
+
+### Smoke test post-deploy
+
+```bash
+CATALYST_API_URL=https://...catalystserverless.com/server/api \
+INTERNAL_API_KEY=... \
+./scripts/smoke-test.sh
+```
+
+Pega a 20+ endpoints (públicos + admin) y reporta pass/fail. Útil para verificar deploys.
+
+## Diagrama de flujo (lectura rápida)
+
+```
+                          ┌──────────────────┐
+                          │  Landing externa │ (Astro, deferred)
+                          │  marketing funnel│
+                          └────────┬─────────┘
+                                   │ POST /api/marketing/lead
+                                   ▼
+   ┌──────────────────────────────────────────────────────────────────┐
+   │                  PLATAFORMA SHARKTALENTS                          │
+   │                  (Catalyst Advanced I/O)                          │
+   │                                                                   │
+   │  ┌────────────────┐  ┌──────────────┐  ┌──────────────────┐     │
+   │  │  Frontend      │  │  Backend     │  │  Outbox          │     │
+   │  │  React + Vite  │──│  ~80 routes  │──│  Async events    │     │
+   │  │  Clerk auth    │  │  ~25 features│  │  → integraciones │     │
+   │  └────────────────┘  └──────────────┘  └────────┬─────────┘     │
+   │                              │                    │               │
+   │                              ▼                    ▼               │
+   │                       ┌──────────────┐    ┌──────────────┐       │
+   │                       │  Catalyst    │    │  External    │       │
+   │                       │  Datastore   │    │  APIs        │       │
+   │                       │  + FileStore │    │  (Anthropic, │       │
+   │                       └──────────────┘    │   Zoho, etc) │       │
+   │                                            └──────────────┘       │
+   │                                                                   │
+   │  ┌────────── 6 webhooks entrantes ───────────────────────┐       │
+   │  │ /api/webhooks/{clerk, heyreach, zia, zoho-sign,      │       │
+   │  │                zoho-recruit, whatsapp}                │       │
+   │  │ HMAC + idempotency via ProcessedEvents                │       │
+   │  └───────────────────────────────────────────────────────┘       │
+   └──────────────────────────────────────────────────────────────────┘
+                                   ▲
+                                   │  Reportes públicos /report/<token>
+                                   │  Portal cliente   /portal/<token>
+                                   │  Test candidato   /test/<token>
+                                   ▼
+                          ┌────────────────┐
+                          │  Cliente final │
+                          │  + candidatos  │
+                          └────────────────┘
+```

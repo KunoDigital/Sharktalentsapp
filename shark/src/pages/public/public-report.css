@@ -23,7 +23,7 @@
   padding: 2rem;
 }
 
-.pr-not-found h1 { color: #c5fc6f; margin-bottom: 0.5rem; }
+.pr-not-found h1 { color: #dafd6f; margin-bottom: 0.5rem; }
 
 /* Header */
 .pr-header {
@@ -45,7 +45,7 @@
 }
 
 .pr-brand {
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 700;
   font-size: 1rem;
   letter-spacing: -0.01em;
@@ -57,7 +57,7 @@
 }
 
 .pr-header-finalists {
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
   padding: 0.4rem 0.9rem;
   border-radius: 999px;
@@ -73,8 +73,8 @@
 
 .pr-download-btn {
   background: transparent;
-  color: #c5fc6f;
-  border: 1px solid #c5fc6f;
+  color: #dafd6f;
+  border: 1px solid #dafd6f;
   padding: 0.4rem 0.9rem;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -84,7 +84,7 @@
 }
 
 .pr-download-btn:hover:not(:disabled) {
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
 }
 
@@ -115,7 +115,7 @@
 }
 
 .pr-subtitle {
-  color: #c5fc6f;
+  color: #dafd6f;
   font-size: 1.05rem;
   font-weight: 500;
   margin-bottom: 0.25rem;
@@ -130,7 +130,7 @@
 .pr-confidential {
   display: inline-block;
   background: #1c2230;
-  color: #c5fc6f;
+  color: #dafd6f;
   padding: 0.3rem 0.9rem;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -187,7 +187,7 @@
 .pr-overview-title {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #c5fc6f;
+  color: #dafd6f;
   margin-bottom: 0.85rem;
   border-bottom: 1px solid #1c2230;
   padding-bottom: 0.5rem;
@@ -204,7 +204,7 @@
 
 .pr-overview-list li::before {
   content: '• ';
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 .pr-overview-comp {
@@ -225,7 +225,7 @@
 .pr-overview-comp li:last-child { border-bottom: none; }
 
 .pr-overview-comp-pct {
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 600;
 }
 
@@ -237,7 +237,7 @@
 }
 
 .pr-overview-min strong {
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 .pr-overview-velna {
@@ -265,13 +265,13 @@
 
 .pr-velna-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #c5fc6f);
+  background: linear-gradient(90deg, #6366f1, #dafd6f);
   border-radius: 3px;
 }
 
 .pr-velna-val {
   font-size: 0.75rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 600;
   text-align: right;
 }
@@ -328,12 +328,12 @@
 
 .pr-disc-mini-bar-val {
   font-size: 0.65rem;
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 .pr-pk {
   font-size: 0.75rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   margin-top: 0.4rem;
   font-weight: 500;
 }
@@ -374,19 +374,19 @@
 
 .pr-table-affinity-tag {
   font-size: 0.7rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   margin-top: 0.15rem;
 }
 
 .pr-table-affinity {
-  color: #c5fc6f;
+  color: #dafd6f;
   font-weight: 700;
   font-size: 1rem;
 }
 
 /* Candidate cards */
 .pr-candidate-card {
-  border-left: 4px solid #c5fc6f;
+  border-left: 4px solid #dafd6f;
 }
 
 .pr-affinity-mid.pr-candidate-card {
@@ -409,7 +409,7 @@
 
 .pr-candidate-affinity-tag {
   font-size: 0.7rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 0.3rem;
@@ -428,7 +428,7 @@
 
 .pr-candidate-initials {
   background: #1c2230;
-  color: #c5fc6f;
+  color: #dafd6f;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -451,7 +451,7 @@
 .pr-candidate-affinity-pct {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #c5fc6f;
+  color: #dafd6f;
   line-height: 1;
 }
 
@@ -510,13 +510,13 @@
 
 .pr-affinity-fill {
   height: 100%;
-  background: linear-gradient(90deg, #c5fc6f, #34d399);
+  background: linear-gradient(90deg, #dafd6f, #34d399);
   border-radius: 4px;
 }
 
 .pr-affinity-val {
   font-size: 0.85rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   text-align: right;
   font-weight: 600;
 }
@@ -538,7 +538,7 @@
 
 .pr-style-label {
   font-size: 0.75rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   text-transform: uppercase;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -583,7 +583,7 @@
   text-transform: uppercase;
 }
 
-.pr-fortalezas-good .pr-fortalezas-label { color: #c5fc6f; }
+.pr-fortalezas-good .pr-fortalezas-label { color: #dafd6f; }
 .pr-fortalezas-warn .pr-fortalezas-label { color: #fbbf24; }
 
 .pr-fortalezas-card ul {
@@ -616,7 +616,7 @@
 .pr-emocional-label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #c5fc6f;
+  color: #dafd6f;
   margin-bottom: 0.4rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -639,7 +639,7 @@
 
 .pr-tecnica-pill {
   background: rgba(197, 252, 111, 0.15);
-  color: #c5fc6f;
+  color: #dafd6f;
   padding: 0.4rem 0.85rem;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -690,14 +690,14 @@
 }
 
 .pr-fb-btn:hover {
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
   color: #f3f4f6;
 }
 
 .pr-fb-interview.is-selected {
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
 }
 
 .pr-fb-maybe.is-selected {
@@ -726,7 +726,7 @@
 
 .pr-feedback-comment:focus {
   outline: none;
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
 }
 
 /* Conclusion */
@@ -747,7 +747,7 @@
 .pr-conclusion-label {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #c5fc6f;
+  color: #dafd6f;
   letter-spacing: 0.06em;
   margin-bottom: 0.5rem;
 }
@@ -770,12 +770,12 @@
 
 /* Final feedback CTA */
 .pr-feedback-section {
-  border: 1px solid #c5fc6f;
+  border: 1px solid #dafd6f;
   background: rgba(197, 252, 111, 0.04);
 }
 
 .pr-submit-btn {
-  background: #c5fc6f;
+  background: #dafd6f;
   color: #0a0e15;
   border: none;
   padding: 0.85rem 1.75rem;
@@ -797,7 +797,7 @@
 
 .pr-feedback-thanks {
   background: rgba(197, 252, 111, 0.15);
-  color: #c5fc6f;
+  color: #dafd6f;
   padding: 1rem 1.25rem;
   border-radius: 8px;
   font-weight: 500;
@@ -840,7 +840,7 @@
   .pr-header {
     position: static;
     background: #fff;
-    border-bottom: 2px solid #c5fc6f;
+    border-bottom: 2px solid #dafd6f;
     padding: 1rem 1.5rem;
   }
   .pr-header-actions,

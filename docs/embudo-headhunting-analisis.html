@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embudo de candidatos pasivos — Análisis estratégico</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    line-height: 1.65;
+    padding: 32px 16px;
+  }
+  .doc {
+    max-width: 980px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+
+  /* HEADER */
+  .header { background: #0e1218; color: #fff; padding: 48px 56px; border-bottom: 4px solid #dafd6f; }
+  .header .brand { color: #dafd6f; font-size: 12px; font-weight: bold; letter-spacing: 2.5px; margin-bottom: 14px; }
+  .header h1 { font-size: 32px; font-weight: bold; margin-bottom: 10px; line-height: 1.2; }
+  .header .subtitle { color: #8a93a3; font-size: 16px; }
+  .header .meta {
+    margin-top: 22px; padding-top: 18px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    color: #8a93a3; font-size: 13px;
+    display: flex; gap: 28px; flex-wrap: wrap;
+  }
+  .header .meta strong { color: #e6e8eb; }
+
+  /* SECTIONS */
+  .body { padding: 56px; }
+  section { margin-bottom: 56px; }
+  section:last-child { margin-bottom: 0; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 11px; font-weight: bold;
+    color: #6b7280; letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+  h2 { font-size: 24px; color: #1f2937; margin-bottom: 8px; line-height: 1.3; }
+  h2 + .section-intro { color: #6b7280; font-size: 14px; margin-bottom: 22px; }
+  h3 { font-size: 17px; color: #1f2937; margin: 28px 0 12px 0; }
+  p { color: #374151; margin-bottom: 14px; font-size: 15px; }
+
+  /* PROBLEM CALLOUT */
+  .problem-callout {
+    background: linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%);
+    border: 1px solid #fde68a;
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .problem-callout .stat-big {
+    font-size: 48px; font-weight: bold;
+    color: #92400e; line-height: 1;
+    margin-bottom: 6px;
+  }
+  .problem-callout .stat-label {
+    color: #78350f; font-size: 14px;
+    margin-bottom: 14px;
+  }
+  .problem-callout p { color: #78350f; margin-bottom: 0; font-size: 15px; }
+  .problem-callout strong { color: #451a03; }
+
+  /* IDEA BOX */
+  .idea-box {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+  }
+  .idea-box h3 { margin-top: 0; color: #1f2937; }
+  .idea-box ol { padding-left: 22px; margin-top: 10px; }
+  .idea-box li { margin-bottom: 8px; color: #374151; font-size: 14.5px; }
+
+  /* PERSPECTIVE CARDS */
+  .perspectives { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px; }
+  .pcard {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .pcard-header {
+    padding: 20px 28px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .pcard-icon {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: #1f2937;
+    color: #dafd6f;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .pcard-title-block { flex: 1; }
+  .pcard-tag { font-size: 11px; color: #6b7280; letter-spacing: 1.5px; font-weight: bold; }
+  .pcard-title { font-size: 18px; color: #1f2937; font-weight: bold; margin-top: 2px; }
+  .pcard-body { padding: 22px 28px; }
+  .pcard-good, .pcard-bad { padding: 12px 0; }
+  .pcard-good { border-bottom: 1px solid #f3f4f6; }
+  .pcard-section-label {
+    font-size: 11px; font-weight: bold;
+    letter-spacing: 1px; margin-bottom: 8px;
+  }
+  .pcard-good .pcard-section-label { color: #166534; }
+  .pcard-bad .pcard-section-label { color: #991b1b; }
+  .pcard-good p, .pcard-bad p { font-size: 14px; color: #374151; margin-bottom: 8px; }
+  .pcard-bad ul { padding-left: 18px; }
+  .pcard-bad li { font-size: 14px; color: #374151; margin-bottom: 6px; }
+
+  /* RISKS GRID */
+  .risks {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-top: 20px;
+  }
+  .risk-card {
+    background: #fff;
+    border: 1px solid #fecaca;
+    border-left: 4px solid #ef4444;
+    border-radius: 8px;
+    padding: 20px 24px;
+  }
+  .risk-card h4 {
+    color: #991b1b;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  .risk-card .risk-tag {
+    display: inline-block;
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 10px;
+    border-radius: 99px;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .risk-card p { font-size: 14px; color: #7f1d1d; margin: 0; }
+
+  /* PROPOSAL */
+  .proposal {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfccb 100%);
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 32px 36px;
+    margin-top: 24px;
+  }
+  .proposal .proposal-label {
+    display: inline-block;
+    background: #dafd6f;
+    color: #1f2937;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 4px 12px;
+    border-radius: 99px;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+  .proposal h3 { color: #166534; font-size: 20px; margin: 0 0 14px 0; }
+  .proposal p { color: #14532d; font-size: 15px; }
+
+  .step {
+    display: flex; gap: 18px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(22, 101, 52, 0.1);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #166534;
+    color: #dafd6f;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; flex-shrink: 0;
+    font-size: 14px;
+  }
+  .step-content h4 { color: #14532d; font-size: 15px; margin-bottom: 4px; }
+  .step-content p { color: #166534; font-size: 14px; margin: 0; }
+
+  /* COMPARISON */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+  }
+  .compare-table th {
+    background: #1f2937;
+    color: #fff;
+    padding: 14px 18px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  .compare-table th:first-child { width: 30%; }
+  .compare-table td {
+    padding: 14px 18px;
+    border-top: 1px solid #f3f4f6;
+    font-size: 14px;
+    vertical-align: top;
+  }
+  .compare-table tr:hover td { background: #f9fafb; }
+  .compare-table .row-label { font-weight: 600; color: #1f2937; background: #f9fafb; }
+  .check { color: #166534; font-weight: bold; }
+  .cross { color: #991b1b; font-weight: bold; }
+  .partial { color: #92400e; font-weight: bold; }
+
+  /* QA SECTION */
+  .qa { margin-top: 28px; }
+  .qa-item {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 18px 24px;
+    margin-bottom: 14px;
+  }
+  .qa-q {
+    color: #1f2937;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+  .qa-q::before { content: "Q · "; color: #dafd6f; background: #1f2937; padding: 1px 8px; border-radius: 4px; font-size: 11px; margin-right: 8px; vertical-align: middle; }
+  .qa-a { color: #374151; font-size: 14.5px; line-height: 1.65; }
+
+  /* NEXT STEPS */
+  .next-steps {
+    background: #0e1218;
+    color: #fff;
+    padding: 36px 40px;
+    border-radius: 10px;
+    margin-top: 32px;
+  }
+  .next-steps .label {
+    color: #dafd6f;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .next-steps h3 { color: #fff; font-size: 22px; margin-bottom: 18px; }
+  .next-steps ol {
+    padding-left: 24px;
+    color: #e6e8eb;
+  }
+  .next-steps li { margin-bottom: 12px; font-size: 15px; line-height: 1.6; }
+  .next-steps li strong { color: #dafd6f; }
+
+  /* FOOTER */
+  .footer {
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    padding: 28px 56px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 13px;
+  }
+  .footer strong { color: #1f2937; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .doc { box-shadow: none; border-radius: 0; max-width: 100%; }
+    section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">SHARKTALENTS · ANÁLISIS ESTRATÉGICO</div>
+    <h1>Embudo paralelo para candidatos pasivos</h1>
+    <div class="subtitle">Análisis honesto desde 3 perspectivas + propuesta alternativa</div>
+    <div class="meta">
+      <span><strong>Fecha:</strong> 13 mayo 2026</span>
+      <span><strong>Para:</strong> Dirección de SharkTalents</span>
+      <span><strong>Tema:</strong> Diferenciación de pools de candidatos</span>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- PROBLEMA -->
+    <section>
+      <div class="section-label">PROBLEMA VALIDADO EN CAMPO</div>
+      <h2>El proceso manual actual no escala</h2>
+
+      <div class="problem-callout">
+        <div class="stat-big">14 entrevistas / semana</div>
+        <div class="stat-label">a 1 posición × ≥10 posiciones simultáneas = inviable sin alguien full-time dedicado solo a esto</div>
+        <p>El equipo ya validó el insight manualmente: <strong>los candidatos pasivos no responden bien si se les manda directo a pruebas formales</strong>. Necesitan una conversación previa. Pero hacerla en persona, en cámara, 14 veces por semana, no escala más allá de 1-2 posiciones simultáneas.</p>
+        <p style="margin-top:14px;"><strong>Conclusión:</strong> existe un problema real que merece solución técnica. La pregunta no es si automatizarlo — la pregunta es cómo, sin perder lo que funciona hoy.</p>
+      </div>
+    </section>
+
+    <!-- LA IDEA -->
+    <section>
+      <div class="section-label">PROPUESTA ORIGINAL</div>
+      <h2>Dos embudos paralelos con primer touchpoint distinto</h2>
+      <p class="section-intro">Resumen de la idea de Dirección, tal como fue planteada.</p>
+
+      <div class="idea-box">
+        <h3>Embudo 1 — Candidatos activos (ya existe)</h3>
+        <p>Aplican desde la landing pública / Zoho Recruit → pruebas (DISC, cognitiva, integridad) → reporte al cliente.</p>
+
+        <h3>Embudo 2 — Headhunting / pasivos (nuevo)</h3>
+        <ol>
+          <li>SharkTalents contacta al candidato en LinkedIn con un DM frío.</li>
+          <li>El candidato graba un <strong>video corto con 3 preguntas</strong>: quién es, dónde trabaja hoy, expectativa salarial.</li>
+          <li>La IA analiza el video y decide si el perfil encaja.</li>
+          <li>Si encaja → segundo DM con link a pruebas formales.</li>
+          <li>Pruebas + reporte al cliente.</li>
+        </ol>
+
+        <h3>Diferenciación al cliente</h3>
+        <p>En el reporte final, dos secciones: <strong>"Tus candidatos"</strong> (los que aplicaron a tu salario) y <strong>"Candidatos que cazamos para vos"</strong> (los pasivos, con su expectativa salarial real).</p>
+      </div>
+    </section>
+
+    <!-- 3 PERSPECTIVAS -->
+    <section>
+      <div class="section-label">ANÁLISIS DESDE TRES PERSPECTIVAS</div>
+      <h2>Cómo se ve esta idea desde cada lado</h2>
+
+      <div class="perspectives">
+
+        <!-- CANDIDATO -->
+        <div class="pcard">
+          <div class="pcard-header">
+            <div class="pcard-icon">👤</div>
+            <div class="pcard-title-block">
+              <div class="pcard-tag">PERSPECTIVA 1</div>
+              <div class="pcard-title">El candidato pasivo</div>
+            </div>
+          </div>
+          <div class="pcard-body">
+            <div class="pcard-good">
+              <div class="pcard-section-label">✓ LO QUE FUNCIONA</div>
+              <p>Le dan voz primero, antes de pedirle 60+ minutos de pruebas. Eso baja la fricción mental de la primera interacción.</p>
+            </div>
+            <div class="pcard-bad">
+              <div class="pcard-section-label">✗ DÓNDE LA IDEA SE ROMPE</div>
+              <ul>
+                <li><strong>Grabar un video por un DM frío es muy raro en 2026.</strong> A alguien con trabajo estable que no está buscando, esta fricción inicial le va a parecer un casting. Predicción realista: conversión menor al 5%, y los que conviertan van a ser los que ya estaban medio buscando trabajo igual.</li>
+                <li><strong>Pedirle expectativa salarial antes de mostrarle el rango es un juego adversario.</strong> Si tira alto, lo descartás. Si tira bajo, se cortó solo. Los mejores candidatos saben jugarlo y van a tirar el doble; los honestos van a tirar realista y van a sentirse manipulados después.</li>
+                <li><strong>Asimetría de información.</strong> Le pedís cara, voz y situación laboral antes de decirle qué empresa es, qué stack, dónde está la oficina, qué pagan.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- CLIENTE -->
+        <div class="pcard">
+          <div class="pcard-header">
+            <div class="pcard-icon">💼</div>
+            <div class="pcard-title-block">
+              <div class="pcard-tag">PERSPECTIVA 2</div>
+              <div class="pcard-title">El cliente que paga SharkTalents</div>
+            </div>
+          </div>
+          <div class="pcard-body">
+            <div class="pcard-good">
+              <div class="pcard-section-label">✓ LO QUE FUNCIONA</div>
+              <p>Ver dos pools diferenciados con su expectativa salarial real le da contexto. Tu equipo ya validó esto: el cliente aprecia entender por qué un candidato vale más.</p>
+            </div>
+            <div class="pcard-bad">
+              <div class="pcard-section-label">✗ DÓNDE LA IDEA SE ROMPE</div>
+              <ul>
+                <li><strong>Riesgo de percepción negativa del presupuesto.</strong> "Con tu $1500 te traemos estos; con $2500-3000 te conseguimos estos otros" puede leerse como crítica al presupuesto del cliente, aunque no sea la intención.</li>
+                <li><strong>Bajás tu valor percibido si los buenos solo aparecen vía headhunting.</strong> El cliente puede pensar: "¿entonces qué hace tu landing pasiva?". Estás compitiendo contra tu propia propuesta de valor.</li>
+                <li><strong>El cliente quiere un ranking, no dos pilas.</strong> En el momento de decidir, lo que importa es: "para mi presupuesto y mi rol, ¿quiénes son los mejores?". Dos secciones separadas obligan al cliente a hacer un trabajo extra que vos podés hacer por él.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- DESARROLLO -->
+        <div class="pcard">
+          <div class="pcard-header">
+            <div class="pcard-icon">⚙️</div>
+            <div class="pcard-title-block">
+              <div class="pcard-tag">PERSPECTIVA 3</div>
+              <div class="pcard-title">El equipo de desarrollo</div>
+            </div>
+          </div>
+          <div class="pcard-body">
+            <div class="pcard-good">
+              <div class="pcard-section-label">✓ LO BARATO</div>
+              <p>Agregar fuente al candidato (LinkedIn / landing / referido / pool) es trivial. Reusar el módulo de video que ya existe es viable. Sumar dos estados al pipeline (<em>prescreening_video_pending</em> / <em>completed</em>) es directo.</p>
+            </div>
+            <div class="pcard-bad">
+              <div class="pcard-section-label">✗ LO CARO Y PROBLEMÁTICO</div>
+              <ul>
+                <li><strong>El módulo de video actual asume candidato enrolado.</strong> Para que un desconocido de LinkedIn grabe video hay que armar un flow público nuevo (registro mínimo, token firmado, endpoint dedicado). 1-2 días.</li>
+                <li><strong>La IA actual compara el video contra un perfil ideal de un Job concreto.</strong> El pasivo no aplicó a un Job — es exploratorio. Hay que decidir contra qué referencia evalúa la IA. Cada opción tiene costo distinto en tokens y desarrollo.</li>
+                <li><strong>El "no pasó el screening" tiene consecuencias de marca.</strong> Si descartamos a alguien tras su video y nadie le responde, ese candidato te quema con 5 conocidos. Hay que diseñar el rechazo diplomático O dejarlos en pool para futuras posiciones.</li>
+                <li><strong>Diferenciar pools en el reporte requiere modificar UI</strong> en una dirección opuesta a la decisión reciente de unificar el reporte con placeholders. Más trabajo de producto que ya quedó tomado.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- RIESGOS CLAVE -->
+    <section>
+      <div class="section-label">LOS 3 RIESGOS QUE NO PODEMOS IGNORAR</div>
+      <h2>Antes de aprobar, conviene mirar esto</h2>
+
+      <div class="risks">
+
+        <div class="risk-card">
+          <span class="risk-tag">RIESGO 1 · ALTO</span>
+          <h4>El primer touchpoint tiene la fricción mal puesta</h4>
+          <p>Las empresas que mejor convierten talento pasivo (Hired, Otta, Mercor) hacen lo opuesto: <strong>bajan la fricción al máximo</strong> en el primer DM. Mensaje específico, rango salarial visible desde el inicio, llamada corta antes de pedir cualquier evaluación. Pedir video grabado de entrada va contra el patrón validado del mercado.</p>
+        </div>
+
+        <div class="risk-card">
+          <span class="risk-tag">RIESGO 2 · ALTO</span>
+          <h4>La pregunta de salario está al revés</h4>
+          <p>Pedirle al candidato su expectativa antes de mostrarle el rango es información asimétrica negativa para ambas partes. <strong>El estándar de la industria es mostrar el rango primero</strong> — eso es parte de por qué los candidatos pasivos abren el mensaje. Hacerlo al revés filtra a los buenos (tiran alto) y manipula a los honestos (tiran realista).</p>
+        </div>
+
+        <div class="risk-card">
+          <span class="risk-tag">RIESGO 3 · MEDIO</span>
+          <h4>El reporte con dos pilas separadas hace trabajo extra al cliente</h4>
+          <p>El cliente quiere un ranking ordenado por afinidad. <strong>La columna "expectativa salarial" puede vivir dentro del ranking unificado</strong> sin separar las secciones. El delta se ve naturalmente, sin sugerir comparación "buenos vs baratos".</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PROPUESTA -->
+    <section>
+      <div class="section-label">PROPUESTA ALTERNATIVA</div>
+      <h2>Cómo automatizar el insight de tu equipo sin los riesgos</h2>
+      <p class="section-intro">Misma intuición de fondo, distinta ejecución. Resuelve el problema de escala sin las fricciones de la propuesta original.</p>
+
+      <div class="proposal">
+        <span class="proposal-label">PROPUESTA SHARKTALENTS</span>
+        <h3>Embudo único, diferenciación interna, primer touchpoint potente</h3>
+        <p>El objetivo de fondo (escalar el sourcing de pasivos a 10 posiciones simultáneas) se logra sin las 3 fricciones identificadas arriba. Cinco pasos:</p>
+
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Tracking de fuente en cada candidato</h4>
+            <p>Cada Candidate registra de dónde vino: <em>linkedin_outbound</em>, <em>landing_apply</em>, <em>pool_interno</em>, <em>referral</em>. Esto vive en la base, no en la cara del cliente. Te sirve a vos para medir ROI por canal.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Primer DM ultra-específico, con rango salarial visible</h4>
+            <p>"Vimos tu experiencia en X con Y stack. Tenemos un puesto en Z empresa por $A-B con [beneficios concretos]. ¿15 min de charla?". Esto es lo que las plataformas que sí convierten pasivos hacen. La conversión sube de 5% a 20%+.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Pre-screening asíncrono SOLO después de interés mutuo</h4>
+            <p>Si el candidato responde positivo, recién ahí le ofrecés grabar el video con 3 preguntas (puede ser texto si prefiere). Reemplaza al prefiltro tradicional. El candidato ya sabe qué empresa es, qué stack, qué pagan — ahora el video tiene sentido.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h4>Pruebas formales con todos los candidatos por igual</h4>
+            <p>Activos y pasivos hacen las mismas DISC + cognitiva + integridad. La equidad del proceso es importante para que el cliente confíe en los resultados.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <h4>Reporte unificado con expectativa salarial como dato visible</h4>
+            <p>Un solo ranking ordenado por afinidad. La columna "expectativa salarial" muestra el delta de forma natural. Badge sutil para los headhunteados (ej. icono pequeño "🔍 Cazado para vos"), pero sin separar las secciones.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPARACIÓN -->
+    <section>
+      <div class="section-label">PROPUESTA ORIGINAL VS ALTERNATIVA</div>
+      <h2>Comparación directa</h2>
+
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Criterio</th>
+            <th>Propuesta original</th>
+            <th>Alternativa SharkTalents</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-label">Resuelve el problema de escala</td>
+            <td><span class="check">✓</span> Sí</td>
+            <td><span class="check">✓</span> Sí</td>
+          </tr>
+          <tr>
+            <td class="row-label">Conversión esperada del primer DM</td>
+            <td><span class="cross">~5%</span> (video frío de entrada)</td>
+            <td><span class="check">~20%+</span> (DM con rango y contexto)</td>
+          </tr>
+          <tr>
+            <td class="row-label">Sensación del candidato pasivo</td>
+            <td><span class="cross">Casting / juego adversario</span></td>
+            <td><span class="check">Conversación profesional</span></td>
+          </tr>
+          <tr>
+            <td class="row-label">Sensación del cliente</td>
+            <td><span class="partial">Mixto — puede sentirse como crítica al presupuesto</span></td>
+            <td><span class="check">Asesoría — un solo pool ordenado por afinidad</span></td>
+          </tr>
+          <tr>
+            <td class="row-label">Equidad de proceso entre candidatos</td>
+            <td><span class="partial">Distinta para activos vs pasivos</span></td>
+            <td><span class="check">Mismo proceso para todos</span></td>
+          </tr>
+          <tr>
+            <td class="row-label">Costo de desarrollo</td>
+            <td><span class="partial">Alto — flow público nuevo + IA contra perfil indefinido + UI reporte modificada</span></td>
+            <td><span class="check">Medio — tracking de fuente + templates de DM + métricas por canal</span></td>
+          </tr>
+          <tr>
+            <td class="row-label">Riesgo de marca si la IA descarta a alguien</td>
+            <td><span class="cross">Alto — rechazo de video sin contraparte</span></td>
+            <td><span class="check">Bajo — el candidato ya no respondió antes del video</span></td>
+          </tr>
+          <tr>
+            <td class="row-label">Mide ROI por canal de sourcing</td>
+            <td><span class="check">Sí</span></td>
+            <td><span class="check">Sí</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- QA -->
+    <section>
+      <div class="section-label">PREGUNTAS QUE SURGIERON</div>
+      <h2>Aclaraciones que recibimos del equipo</h2>
+
+      <div class="qa">
+        <div class="qa-item">
+          <div class="qa-q">¿La diferenciación de pools busca subir el contrato con el cliente?</div>
+          <div class="qa-a">No. El contrato ya está firmado a un valor cerrado. El objetivo de la diferenciación es <strong>aportar valor de asesoría</strong>, no upsell. Eso elimina un riesgo que habíamos identificado y refuerza la viabilidad ética del enfoque. Nuestra propuesta alternativa mantiene esta intención sin separar las pilas visualmente.</div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q">¿El equipo ya probó esto manualmente?</div>
+          <div class="qa-a">Sí — 14 entrevistas en una semana para validar el insight. La conclusión fue clara: <strong>existe valor en la conversación previa con pasivos</strong>, pero el formato manual no escala más allá de 2-3 posiciones simultáneas. La automatización es necesaria; la pregunta es cómo.</div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-q">¿Por qué no usar el mismo flow de pruebas para ambos pools?</div>
+          <div class="qa-a">Esa es exactamente la propuesta alternativa. <strong>Diferenciar en cómo los contactás (el primer DM)</strong>, no en cómo los evaluás. La equidad del proceso de evaluación es lo que le da confianza al cliente en los resultados. El sourcing puede ser distinto; las pruebas no.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEXT STEPS -->
+    <section>
+      <div class="next-steps">
+        <div class="label">RECOMENDACIÓN OPERATIVA</div>
+        <h3>Próximos pasos sugeridos</h3>
+        <ol>
+          <li><strong>Validar la alternativa con 1 posición real esta semana:</strong> elegir 1 puesto del cliente, mandar 20 DMs ultra-específicos con rango salarial visible. Medir tasa de respuesta vs lo que vienen viendo con los manuales.</li>
+          <li><strong>Si la conversión sube de 5% a 15%+:</strong> tenemos validación para construir las funciones técnicas (templates personalizados, tracking de fuente, dashboard de ROI por canal). Estimado: 1-2 semanas de desarrollo.</li>
+          <li><strong>Si la conversión sigue baja</strong> incluso con DM ultra-específico: el problema no es el formato del touchpoint, es la propuesta de valor del puesto. En ese caso, no construyamos automatización hasta revisar el ofrecimiento de fondo.</li>
+          <li><strong>Mientras tanto, el video grabado asíncrono como reemplazo del prefiltro</strong> queda en backlog. Es valioso pero NO como primer touchpoint — sólo después de que el candidato ya mostró interés.</li>
+        </ol>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <strong>SharkTalents</strong> · Una evaluación con criterio<br>
+    Documento preparado para discusión interna · 13 mayo 2026
+  </div>
+
+</div>
+
+</body>
+</html>

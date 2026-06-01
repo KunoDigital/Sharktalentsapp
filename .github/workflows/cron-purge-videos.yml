@@ -1,0 +1,32 @@
+name: Cron — Purge Old Videos
+
+# Borra archivos físicos de video de candidatos cerrados (>30d post-cierre).
+# Ley Panamá / GDPR: data retention obliga a purgar.
+#
+# Setup: usar los mismos secrets que cron-outbox.yml (CATALYST_API_URL, INTERNAL_API_KEY).
+# Frecuencia: diaria (3:30 UTC ≈ medianoche en Panamá).
+
+on:
+  schedule:
+    - cron: '30 3 * * *'  # 03:30 UTC diario
+  workflow_dispatch:
+
+jobs:
+  purge-videos:
+    name: Purge expired candidate videos
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Purge old videos
+        env:
+          CATALYST_API_URL: ${{ secrets.CATALYST_API_URL }}
+          INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
+        run: |
+          if [ -z "$CATALYST_API_URL" ] || [ -z "$INTERNAL_API_KEY" ]; then
+            echo "::warning::Secrets no configurados — skip"
+            exit 0
+          fi
+          chmod +x scripts/cron-purge-videos.sh
+          scripts/cron-purge-videos.sh

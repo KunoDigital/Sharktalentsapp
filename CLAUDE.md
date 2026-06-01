@@ -5,7 +5,19 @@ SharkTalents — plataforma multi-tenant de evaluación de candidatos con IA, op
 
 **Stack:** Zoho Catalyst Advanced I/O (Node 20) + React 18 + Vite + TypeScript + Anthropic Claude Haiku 4.5 + Clerk (auth) + Zoho Recruit/Meeting/Bookings/Sign + HeyReach (LinkedIn outbound).
 
-**Estado actual:** refactor v2 desde cero. Ver [docs/master-plan/](docs/master-plan/) — el plan manda.
+**Estado actual:** refactor v2 con backend code-complete + frontend mostly-wired. La v1 sigue productiva — Cris no va a migrar todavía (regla en memoria `feedback_no_migrar_hasta_orden.md`). Ver [docs/master-plan/](docs/master-plan/) — el plan manda.
+
+**Lo que está vivo (al 2026-05-02):**
+- Backend: ~60 endpoints HTTP, 264 tests, multi-tenant con Clerk, scoring DISC + VELNA + integridad + emocional + técnica doble eje, bot decisor cold/warm/hot con RAG, videos dinámicos con análisis IA, pool interno de candidatos con matching, portal cliente con embudo + reporte multi-candidato (narrativas IA + cache), GDPR retention, audit log, outbox events.
+- Frontend: 68 tests, multi-tenant guard, Settings con tabs (portales, API keys, equipo, bot config), JobForm con perfil ideal + boss profile, BotReviewQueue, CandidateVideosPanel, PoolMatchPanel, Reportes wired, DraftsList wired, candidato apply/test/videos wired.
+- MCP Server: paquete npm separado en `mcp/` con 12 tools.
+
+**Lo que NO está creado todavía (esperando sesión de Cris):**
+- ~11 tablas Block 2 en Catalyst Console — lista en memoria `project_tablas_pendientes_v2.md`. El backend tolera todas las ausencias con fallback graceful o 503 con mensaje claro.
+
+**Reglas activas en memoria** (no contradecirlas):
+- `feedback_no_parar_por_tablas.md` — NO interrumpir a Cris para crear tablas, acumular en `project_tablas_pendientes_v2.md`.
+- `feedback_no_migrar_hasta_orden.md` — NO ofrecer migración v1→v2 hasta orden explícita.
 
 ## Antes de escribir código
 
@@ -14,7 +26,7 @@ SharkTalents — plataforma multi-tenant de evaluación de candidatos con IA, op
 3. **El plan manda.** Si la realidad del repo entra en conflicto con el master plan, alineá la realidad al plan, no al revés.
 4. **NUNCA hardcodees URLs** — usar [shark/src/config.ts](shark/src/config.ts) o [functions/api/src/lib/env.ts](functions/api/src/lib/env.ts).
 5. **NUNCA loguees secrets/PII** — si necesitás un secret en logs, usá fragmento (primeros 4 + últimos 4 chars).
-6. **TODO query ZCQL** debe pasar por `escapeSql()` (en [functions/api/src/db/helpers.ts](functions/api/src/db/helpers.ts)).
+6. **TODO query ZCQL** debe pasar por `escapeSql()` (en [functions/api/src/lib/dbHelpers.ts](functions/api/src/lib/dbHelpers.ts)).
 7. **NUNCA `await fetch(...)` sin timeout.** Usar `fetchWithTimeout` o el SDK con timeout configurado.
 
 ## Convenciones de código

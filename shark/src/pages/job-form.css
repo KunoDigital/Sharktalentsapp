@@ -146,3 +146,14 @@
   display: inline-flex;
   align-items: center;
 }
+
+.job-form-undo-bar {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.job-form-undo-bar .btn-toolbar:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

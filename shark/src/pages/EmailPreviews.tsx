@@ -1,6 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useApi } from '../lib/api';
+import { config } from '../config';
 import './pages.css';
 import './email-previews.css';
+
+type BackendTemplate = {
+  key: string;
+  locale: string;
+  raw: { subject: string; body_text: string; body_html: string };
+  rendered: { subject: string; body_text: string; body_html: string };
+  variables: string[];
+};
 
 type EmailTemplate = {
   id: string;
@@ -118,7 +128,36 @@ No tenés que hacer nada. Te avisamos cuando estén los finalistas.`,
 ];
 
 export default function EmailPreviews() {
+  const api = useApi();
   const [filter, setFilter] = useState<'all' | 'candidato' | 'cliente'>('all');
+  const [locale, setLocale] = useState<'es' | 'en'>('es');
+  const [backendTemplates, setBackendTemplates] = useState<BackendTemplate[]>([]);
+  const [loadingBackend, setLoadingBackend] = useState(config.useApi);
+  const [backendError, setBackendError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!config.useApi) {
+      setLoadingBackend(false);
+      return;
+    }
+    let cancelled = false;
+    api.emailTemplates.list(locale)
+      .then((r) => {
+        if (cancelled) return;
+        setBackendTemplates(r.templates);
+      })
+      .catch((e: Error) => {
+        if (cancelled) return;
+        setBackendError(e.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingBackend(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [api, locale]);
+
   const filtered = TEMPLATES.filter((t) => filter === 'all' || t.audience === filter);
 
   return (
@@ -126,6 +165,60 @@ export default function EmailPreviews() {
       <h1 className="page-title">Email templates</h1>
       <p className="page-subtitle">
         Vista previa de los emails que el sistema manda automáticamente. Cada uno se dispara por un evento del flujo.
+      </p>
+
+      <section style={{ marginBottom: '2rem', padding: '1rem 1.25rem', background: 'rgba(184,255,87,0.05)', border: '1px solid rgba(184,255,87,0.2)', borderRadius: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.75rem' }}>
+          <div>
+            <strong>Templates reales del backend</strong> ({backendTemplates.length})
+            <p className="muted small" style={{ marginTop: '0.25rem' }}>
+              Estos son los templates que se envían en producción desde <code>functions/api/src/lib/emailTemplates.ts</code>.
+              Renderizados con valores de ejemplo.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {(['es', 'en'] as const).map((l) => (
+              <button
+                key={l}
+                className={`filter-pill ${locale === l ? 'is-active' : ''}`}
+                onClick={() => setLocale(l)}
+              >
+                {l === 'es' ? 'Español' : 'English'}
+              </button>
+            ))}
+          </div>
+        </div>
+        {loadingBackend && <p className="muted small">Cargando templates del backend...</p>}
+        {backendError && (
+          <p className="muted small" style={{ color: 'var(--st-warn-fg)' }}>
+            ⚠️ Backend no disponible: {backendError}
+          </p>
+        )}
+        {!loadingBackend && backendTemplates.length > 0 && (
+          <div style={{ display: 'grid', gap: '0.75rem' }}>
+            {backendTemplates.map((t) => (
+              <details key={t.key} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '6px', padding: '0.6rem 0.9rem' }}>
+                <summary style={{ cursor: 'pointer', fontWeight: 600 }}>
+                  <code style={{ marginRight: '0.5rem' }}>{t.key}</code>
+                  — {t.rendered.subject}
+                </summary>
+                <div style={{ marginTop: '0.6rem', paddingTop: '0.6rem', borderTop: '1px solid var(--border)' }}>
+                  <div className="muted small" style={{ marginBottom: '0.4rem' }}>
+                    Variables: {t.variables.length > 0 ? t.variables.map((v) => <code key={v} style={{ marginRight: '0.3rem' }}>{`{{${v}}}`}</code>) : <em>ninguna</em>}
+                  </div>
+                  <div style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.78rem', background: 'rgba(0,0,0,0.2)', padding: '0.6rem', borderRadius: '4px', maxHeight: '300px', overflow: 'auto' }}>
+                    {t.rendered.body_text}
+                  </div>
+                </div>
+              </details>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <h2 className="section-title" style={{ marginTop: '2rem' }}>Templates de diseño (reference)</h2>
+      <p className="muted small" style={{ marginBottom: '1rem' }}>
+        Maquetas de cómo deberían lucir los emails con UI rica + CTAs. Algunos no están implementados aún en backend.
       </p>
 
       <div className="filters-bar">

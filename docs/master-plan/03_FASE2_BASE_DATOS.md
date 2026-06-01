@@ -713,7 +713,7 @@ transitioned_at      DateTime
 INDEX idx_app_trans (application_id, transitioned_at)
 ```
 
-### 29. PrefilterQuestions (NUEVA — [18](18_PIPELINE_OPERATIVO.md))
+### 29. PrefQuestions (ex-PrefilterQuestions — renombrada 2026-05-11 por bug Catalyst con name original; ver [18](18_PIPELINE_OPERATIVO.md))
 
 Preguntas de prefiltro configurables por job.
 

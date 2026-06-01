@@ -1,12 +1,22 @@
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   getApplicationById,
   STATE_LABELS,
   SOURCE_LABELS,
+  type Application,
   type TimelineEvent,
 } from '../data/mockApplications';
 import { getJobById } from '../data/mockJobs';
 import { Term } from '../components/Tooltip';
+import CandidateVideosPanel from '../components/CandidateVideosPanel';
+import CandidateMindsetPanel from '../components/CandidateMindsetPanel';
+import CandidateEnglishPanel from '../components/CandidateEnglishPanel';
+import PrefilterAnswersPanel from '../components/PrefilterAnswersPanel';
+import OfferForm from '../components/OfferForm';
+import { useApi, ApiError } from '../lib/api';
+import { adaptToMockApplication } from '../lib/applicationAdapter';
+import { config } from '../config';
 import './pages.css';
 import './candidate-detail.css';
 import './bot.css';
@@ -29,13 +39,80 @@ const ACTOR_LABEL: Record<TimelineEvent['actor'], string> = {
 
 export default function CandidateDetail() {
   const { id } = useParams<{ id: string }>();
-  const app = id ? getApplicationById(id) : undefined;
+  const api = useApi();
+  const [liveApp, setLiveApp] = useState<Application | null>(null);
+  const [loading, setLoading] = useState(config.useApi);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id || !config.useApi) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    async function load() {
+      try {
+        const appResp = await api.applications.get(id!);
+        const a = appResp.application;
+        const [candResp, scoresResp, integrityResp] = await Promise.all([
+          api.candidates.get(a.candidate_id).catch(() => null),
+          api.applications.readScores(a.ROWID).catch(() => null),
+          api.applications.readIntegrity(a.ROWID).catch(() => null),
+        ]);
+        if (cancelled) return;
+        const adapted = adaptToMockApplication(
+          {
+            ROWID: a.ROWID,
+            assessment_id: a.assessment_id,
+            candidate_id: a.candidate_id,
+            pipeline_stage: a.pipeline_stage,
+            started_at: a.started_at,
+            completed_at: a.completed_at,
+          },
+          candResp ? {
+            name: candResp.candidate.name,
+            email: candResp.candidate.email,
+            phone: candResp.candidate.phone,
+            age: candResp.candidate.age ?? null,
+          } : undefined,
+          scoresResp?.scores ?? null,
+          (integrityResp?.integrity?.dimensions ?? []).map((d) => ({
+            dimension: d.dimension,
+            nivel: d.nivel,
+            pct: d.pct,
+          })),
+        );
+        setLiveApp(adapted);
+      } catch (e) {
+        if (cancelled) return;
+        if (e instanceof ApiError && e.status === 404) {
+          setLoadError('Application no encontrada en backend.');
+        } else {
+          setLoadError((e as Error).message);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, api]);
+
+  const mockApp = id ? getApplicationById(id) : undefined;
+  const app: Application | undefined = liveApp ?? mockApp;
+
+  if (loading && !app) {
+    return <div><p className="muted">Cargando candidato…</p></div>;
+  }
 
   if (!app) {
     return (
       <div>
         <p>
           Candidato no encontrado. <Link to="/candidates">Volver</Link>
+          {loadError && <span className="muted small"> · {loadError}</span>}
         </p>
       </div>
     );
@@ -43,9 +120,13 @@ export default function CandidateDetail() {
 
   const job = getJobById(app.job_id);
   const hasAntiCheat = app.anti_cheat_events.length > 0;
+  const usingFallbackMock = config.useApi && !liveApp && mockApp;
 
   return (
     <div className="candidate-detail">
+      {usingFallbackMock && (
+        <p className="muted-note">⚠️ Datos del backend no disponibles — mostrando mock para esta vista.</p>
+      )}
       {job && (
         <Link to={`/jobs/${job.id}`} className="back-link">
           ← {job.title}
@@ -72,6 +153,18 @@ export default function CandidateDetail() {
         <div className="cd-summary-label">RESUMEN EJECUTIVO (IA)</div>
         <p className="cd-summary-text">{app.ia_summary}</p>
       </section>
+
+      <PrefilterAnswersPanel applicationId={app.id} />
+
+      {app.state === 'finalist' && (
+        <section style={{ marginBottom: '1rem' }}>
+          <OfferForm
+            applicationId={app.id}
+            candidateName={app.candidate_name}
+            jobTitle={job?.title}
+          />
+        </section>
+      )}
 
       {app.bot_decision && (
         <section className={`cd-bot-section ${app.bot_decision.needs_review ? 'cd-bot-needs-review-card' : ''}`}>
@@ -250,6 +343,12 @@ export default function CandidateDetail() {
           )}
         </div>
       </section>
+
+      <CandidateMindsetPanel applicationId={app.id} />
+
+      <CandidateEnglishPanel applicationId={app.id} />
+
+      <CandidateVideosPanel applicationId={app.id} />
 
       <section>
         <h2 className="section-title">Timeline</h2>

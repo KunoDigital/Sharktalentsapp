@@ -623,7 +623,12 @@ function loadDemoExtras(): Application[] {
   }
 }
 
-export const MOCK_APPLICATIONS: Application[] = [...HARDCODED_APPLICATIONS, ...loadDemoExtras()];
+import { applyPhaseOverrides } from '../lib/applicationOverrides';
+
+export const MOCK_APPLICATIONS: Application[] = applyPhaseOverrides([
+  ...HARDCODED_APPLICATIONS,
+  ...loadDemoExtras(),
+]);
 
 export function getApplicationsByJobId(jobId: string): Application[] {
   return MOCK_APPLICATIONS.filter((a) => a.job_id === jobId);

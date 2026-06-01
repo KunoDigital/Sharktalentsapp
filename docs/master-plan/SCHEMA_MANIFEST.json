@@ -1,0 +1,2682 @@
+{
+  "_generated_at": "2026-05-11",
+  "_source": "functions/api/src/features/admin.ts EXPECTED constant",
+  "_catalyst_api": {
+    "create_table_endpoint": "POST https://console.catalyst.zoho.com/baas/v1/project/{projectId}/table",
+    "create_column_endpoint": "POST https://console.catalyst.zoho.com/baas/v1/project/{projectId}/table/{id}/column",
+    "scopes_required": [
+      "ZohoCatalyst.tables.CREATE",
+      "ZohoCatalyst.tables.columns.CREATE"
+    ],
+    "type_mapping_applied": {
+      "Text": "text",
+      "Var Char": "varchar",
+      "Email": "varchar",
+      "Integer": "int",
+      "Int": "int",
+      "BigInt": "bigint",
+      "Boolean": "boolean",
+      "DateTime": "datetime",
+      "Date": "date",
+      "Decimal": "double"
+    },
+    "notes": [
+      "Eventual consistency 5-60s entre POST /table y poder POSTear /column",
+      "Si timeout, la tabla queda huerfana permanente (table_id roto, name reservado)",
+      "Si un name queda envenenado, renombrar y actualizar referencias"
+    ]
+  },
+  "tables": [
+    {
+      "name": "Tenants",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "clerk_org_id",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "name",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "slug",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "plan",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "status",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "max_active_jobs",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "max_candidates_per_month",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "features_enabled",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "branding_config",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "billing_email",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "ProcessedEvents",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "event_id",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "provider",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "received_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "title",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "company",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "tech_prompt",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "cognitive_level",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "is_active",
+          "data_type": "boolean",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "company_context",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "ideal_profile",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "tech_questions_cache",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "created_by",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "Candidates",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "name",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "email",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "phone",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "age",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "salary_expectation",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "availability",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "interview_file_id",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        }
+      ]
+    },
+    {
+      "name": "Results",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "assessment_id",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "candidate_id",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "answers",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "pipeline_stage",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "started_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "completed_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "report_downloaded_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "idempotency_key",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        }
+      ]
+    },
+    {
+      "name": "PipelineTransitions",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "result_id",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "from_stage",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "to_stage",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "actor",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "reason",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "transitioned_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "Scores",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "result_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "true",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "disc_raw_d",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "disc_raw_i",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "disc_raw_s",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "disc_raw_c",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "disc_norm_d",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "disc_norm_i",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "disc_norm_s",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "disc_norm_c",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "disc_perfil_dominante",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "disc_pk_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "velna_verbal",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "velna_espacial",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "velna_logica",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "velna_numerica",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "velna_abstracta",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "velna_total",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "velna_max",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "velna_indice",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "emo_score",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "emo_perfil",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "tec_score_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "tec_total_correct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "tec_total_questions",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "tec_passed",
+          "data_type": "boolean",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "int_overall",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "int_overall_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "int_recomendacion",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "int_buena_impresion",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "int_buena_impresion_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "disc_completed_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "velna_completed_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "emo_completed_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "tec_completed_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "int_completed_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "tec_situational_validity_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "tec_style_autonomy_consult",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "tec_style_match_with_boss_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "IntegrityDimensions",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "result_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "dimension",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "nivel",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "pct",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "AuditLog",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "actor_user",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "action",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "resource_type",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "resource_id",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "changes",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "ip",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "user_agent",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        }
+      ]
+    },
+    {
+      "name": "OutboxEvents",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "event_type",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "payload",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "status",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "retry_count",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "last_error",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        },
+        {
+          "column_name": "processed_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "Config",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "config_key",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "value",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "value_type",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "description",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "updated_by",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "BotDecisions",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "result_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "job_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "from_stage",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "to_stage_proposed",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "decision",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "confidence",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "rationale",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "similar_cases",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "auto_executed",
+          "data_type": "boolean",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "executed_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "overridden",
+          "data_type": "boolean",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "overridden_by",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "overridden_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "overridden_reason",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        }
+      ]
+    },
+    {
+      "name": "ReviewQueue",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "result_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "bot_decision_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "reason",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "review_priority",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "resolved_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "resolved_by",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "resolution",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        }
+      ]
+    },
+    {
+      "name": "ApiKeys",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "name",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "key_hash",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "true",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "key_prefix",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "created_by_user",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "permissions",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "rate_limit_per_min",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "last_used_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "expires_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "is_active",
+          "data_type": "boolean",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "revoked_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        }
+      ]
+    },
+    {
+      "name": "ClientReports",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "job_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "cache_key",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "true",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "bundle_payload",
+          "data_type": "text",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "status",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "opened_count",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "last_opened_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "generated_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "expires_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "CandidatePool",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "candidate_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "tags",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "languages",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "disponible_para_outreach",
+          "data_type": "boolean",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "last_active",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "contact_preference",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "times_contacted",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "last_contacted_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "notes_internal",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "disc_d",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "disc_i",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "disc_s",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "disc_c",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "velna_indice",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "cognitive_level",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "added_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "EnglishTestSessions",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "result_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "level_required",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "started_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "completed_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mc_score_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "listening_score_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "writing_score_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "total_score_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "passed",
+          "data_type": "boolean",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "writing_text",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "writing_word_count",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "writing_time_seconds",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "writing_paste_attempts",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "writing_focus_lost_count",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "audio_listening_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "video_response_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "writing_analysis_json",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        }
+      ]
+    },
+    {
+      "name": "MindsetScores",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "result_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "true",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "started_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "completed_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_growth_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_curious_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_creative_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_agent_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_abundance_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_exploration_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_opportunity_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_fija_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_experto_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_reactiva_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_victima_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_escasez_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_certeza_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "mindset_proteccion_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "adaptability_score_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "adaptability_pattern",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "answers_json",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        }
+      ]
+    },
+    {
+      "name": "JobTrackingSnapshots",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "job_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "portal_token_hash",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "event_type",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "event_data",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "client_ip_masked",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "user_agent",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "occurred_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "MarketingLeads",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "email",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "true",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "contact_name",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "company",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "whatsapp",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "quiz_data",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "calculator_data",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "score_quality",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "urgency",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "salary_target",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "source",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "utm_source",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "utm_medium",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "utm_campaign",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "utm_content",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "utm_term",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "status",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "eval_result_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "eval_completed_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "demo_report_url",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "call_booking_url",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "zoho_crm_lead_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "visit_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "meta_event_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "deletion_token_hash",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "deletion_token_expires_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "PrefQuestions",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "job_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "question_text",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "type",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "options",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "expected_answer",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "is_disqualifier",
+          "data_type": "boolean",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "order_index",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        }
+      ]
+    },
+    {
+      "name": "PrefilterAnswers",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "result_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "question_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "answer_value",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "is_match",
+          "data_type": "boolean",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        }
+      ]
+    },
+    {
+      "name": "BotTrainingExamples",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "application_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "job_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "job_cognitive_level",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "candidate_disc_d",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "candidate_disc_i",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "candidate_disc_s",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "candidate_disc_c",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "candidate_cognitive_indice",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "candidate_technical_pct",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "candidate_integrity_overall",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "from_stage",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "to_stage_chosen",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "chosen_by",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "rationale_human",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "bot_had_suggested",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "bot_confidence",
+          "data_type": "int",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "was_override",
+          "data_type": "boolean",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "quality",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        }
+      ]
+    },
+    {
+      "name": "Briefings",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "client_email",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "client_name",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "client_company",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "booking_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "meeting_url",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "transcript_url",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "transcript_text",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "draft_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "status",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "scheduled_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "completed_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        }
+      ]
+    },
+    {
+      "name": "ContinueTokens",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "result_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "token_hash",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "true",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "last_block_completed",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "reminder_sent_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "expires_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true"
+        },
+        {
+          "column_name": "used_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    },
+    {
+      "name": "TokenUsage",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "true",
+          "max_length": 255
+        },
+        {
+          "column_name": "feature",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "model",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "input_tokens",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "cached_input_tokens",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "output_tokens",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "latency_ms",
+          "data_type": "int",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "trace_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "cost_usd_estimated",
+          "data_type": "double",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        },
+        {
+          "column_name": "occurred_at",
+          "data_type": "datetime",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "is_unique": "false",
+          "search_index_enabled": "false"
+        }
+      ]
+    }
+  ]
+}

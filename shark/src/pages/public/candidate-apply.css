@@ -11,7 +11,7 @@
 .apply-job-tag {
   display: inline-block;
   background: rgba(197, 252, 111, 0.15);
-  color: #c5fc6f;
+  color: #dafd6f;
   padding: 0.25rem 0.7rem;
   border-radius: 4px;
   font-size: 0.7rem;
@@ -38,7 +38,7 @@
 }
 
 .apply-job-meta strong {
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 .apply-job-desc {
@@ -88,7 +88,7 @@
 .apply-form h3 {
   font-size: 1rem;
   margin: 1.5rem 0 0.75rem;
-  color: #c5fc6f;
+  color: #dafd6f;
 }
 
 .apply-grid-2 {
@@ -103,7 +103,7 @@
 
 .apply-field-label {
   font-size: 0.75rem;
-  color: #c5fc6f;
+  color: #dafd6f;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 700;
@@ -136,7 +136,7 @@
 .apply-field-input select:focus,
 .apply-field-input textarea:focus {
   outline: none;
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
 }
 
 .apply-field-input.has-error input,
@@ -161,7 +161,7 @@
   align-items: center;
   gap: 0.5rem;
   background: #1c2230;
-  color: #c5fc6f;
+  color: #dafd6f;
   border: 1px dashed #2c3442;
   padding: 0.65rem 1rem;
   border-radius: 6px;
@@ -170,7 +170,7 @@
 }
 
 .apply-file-input:hover .apply-file-btn {
-  border-color: #c5fc6f;
+  border-color: #dafd6f;
 }
 
 .apply-file-hint {

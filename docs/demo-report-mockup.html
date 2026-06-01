@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte demo SharkTalents — Daniela Morales</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 32px 16px;
+  }
+  .report-wrapper {
+    max-width: 920px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+
+  /* HEADER */
+  .header { background: #0e1218; color: #fff; padding: 40px 48px; border-bottom: 4px solid #dafd6f; }
+  .header .brand { color: #dafd6f; font-size: 13px; font-weight: bold; letter-spacing: 2px; margin-bottom: 12px; }
+  .header h1 { font-size: 32px; font-weight: bold; margin-bottom: 4px; }
+  .header .subtitle { color: #8a93a3; font-size: 15px; }
+  .header .meta { margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); color: #8a93a3; font-size: 13px; display: flex; gap: 24px; flex-wrap: wrap; }
+  .header .meta strong { color: #e6e8eb; }
+
+  /* BODY */
+  .body { padding: 48px; }
+
+  .intro { background: #f9fafb; border-left: 4px solid #dafd6f; padding: 20px 24px; border-radius: 6px; margin-bottom: 40px; font-size: 15px; color: #374151; }
+
+  .section { margin-bottom: 56px; }
+  .section-label { display: inline-block; font-size: 11px; font-weight: bold; color: #6b7280; letter-spacing: 2px; margin-bottom: 10px; }
+  .section-title { font-size: 24px; font-weight: bold; color: #1f2937; margin-bottom: 8px; }
+  .section-subtitle { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
+  .section-body { font-size: 15px; color: #374151; line-height: 1.75; margin-bottom: 20px; }
+
+  /* DISC */
+  .disc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .disc-row { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 18px 22px; }
+  .disc-row.dominant { border-color: #dafd6f; border-width: 2px; background: #fdfff5; }
+  .disc-row .header-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .disc-row .letter { font-size: 28px; font-weight: bold; color: #1f2937; }
+  .disc-row.dominant .letter { color: #1f2937; }
+  .disc-row .pct { font-size: 18px; font-weight: bold; color: #1f2937; }
+  .disc-row .name { font-size: 13px; color: #6b7280; margin-bottom: 10px; }
+  .disc-bar { height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+  .disc-bar-fill { height: 100%; background: linear-gradient(90deg, #dafd6f 0%, #c5fc6f 100%); border-radius: 3px; }
+  .disc-row .descr { font-size: 13px; color: #4b5563; margin-top: 10px; line-height: 1.55; }
+
+  /* NARRATIVE BOX */
+  .narrative-box { background: #fffbeb; border-left: 4px solid #facc15; padding: 20px 24px; border-radius: 6px; margin: 20px 0; }
+  .narrative-box h4 { font-size: 13px; color: #713f12; letter-spacing: 1px; margin-bottom: 10px; }
+  .narrative-box p { font-size: 14px; color: #422006; margin-bottom: 10px; }
+  .narrative-box p:last-child { margin-bottom: 0; }
+
+  /* ESTILO 4-grid */
+  .style-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+  .style-card { background: #f9fafb; border-radius: 8px; padding: 18px 20px; }
+  .style-card h4 { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; }
+  .style-card p { font-size: 14px; color: #1f2937; line-height: 1.6; }
+
+  /* COGNITIVA */
+  .cognitive-score { display: flex; align-items: center; gap: 28px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 28px; margin-bottom: 16px; }
+  .cognitive-score .big-number { font-size: 64px; font-weight: bold; color: #1f2937; line-height: 1; }
+  .cognitive-score .big-number .pct-sign { font-size: 28px; color: #6b7280; margin-left: 4px; }
+  .cognitive-score .interpretation { flex: 1; }
+  .cognitive-score .level { display: inline-block; background: #dafd6f; color: #1f2937; font-size: 12px; font-weight: bold; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .cognitive-score p { font-size: 14px; color: #4b5563; }
+  .percentile { font-size: 13px; color: #6b7280; margin-top: 8px; }
+
+  .cognitive-detail { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .cognitive-detail-item { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
+  .cognitive-detail-item .label { font-size: 12px; color: #6b7280; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .cognitive-detail-item .value { font-size: 24px; font-weight: bold; color: #1f2937; margin-bottom: 6px; }
+  .cognitive-detail-item .descr { font-size: 12px; color: #6b7280; line-height: 1.4; }
+
+  /* INTEGRIDAD */
+  .integrity-summary { display: flex; align-items: flex-start; gap: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 24px; margin-bottom: 20px; }
+  .integrity-icon { width: 56px; height: 56px; background: #dafd6f; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
+  .integrity-text h3 { font-size: 18px; font-weight: bold; color: #166534; margin-bottom: 6px; }
+  .integrity-text p { font-size: 14px; color: #15803d; }
+
+  .integrity-dimensions { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; }
+  .integrity-dimensions h4 { font-size: 12px; color: #6b7280; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+  .dim-row { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+  .dim-row:last-child { border-bottom: none; }
+  .dim-row .dim-name { font-weight: 500; color: #1f2937; }
+  .dim-row .dim-bar { width: 60px; height: 4px; background: #e5e7eb; border-radius: 2px; overflow: hidden; }
+  .dim-row .dim-bar-fill { height: 100%; }
+  .dim-row .dim-bar-fill.bajo { background: #22c55e; }
+  .dim-row .dim-bar-fill.medio { background: #facc15; }
+  .dim-row .dim-bar-fill.alto { background: #ef4444; }
+  .dim-row .dim-status { font-size: 11px; font-weight: bold; padding: 3px 9px; border-radius: 99px; }
+  .dim-status.ok { background: #dcfce7; color: #166534; }
+  .dim-status.warn { background: #fef9c3; color: #713f12; }
+  .dim-status.alert { background: #fee2e2; color: #991b1b; }
+
+  /* INTERPRETACIÓN GENERAL */
+  .insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .insight-card { background: #f9fafb; border-radius: 8px; padding: 22px; border-left: 3px solid #e5e7eb; }
+  .insight-card.good { border-left-color: #22c55e; }
+  .insight-card.watch { border-left-color: #facc15; }
+  .insight-card.role { border-left-color: #3b82f6; }
+  .insight-card.risk { border-left-color: #ef4444; }
+  .insight-card h4 { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .insight-card p { font-size: 14px; color: #1f2937; line-height: 1.65; }
+  .insight-card ul { margin-top: 8px; padding-left: 20px; }
+  .insight-card ul li { font-size: 13.5px; color: #374151; margin-bottom: 4px; }
+
+  /* MANAGEMENT TIPS */
+  .mgmt-section { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
+  .mgmt-section h3 { color: #1e3a8a; font-size: 16px; margin-bottom: 12px; }
+  .mgmt-section .mgmt-row { padding: 10px 0; border-bottom: 1px solid #dbeafe; font-size: 14px; color: #1e3a8a; }
+  .mgmt-section .mgmt-row:last-child { border-bottom: none; }
+  .mgmt-section .mgmt-row strong { color: #1e3a8a; }
+
+  /* RECOMENDACIÓN */
+  .recommendation { background: #0e1218; color: #fff; padding: 32px; border-radius: 8px; border-left: 4px solid #dafd6f; }
+  .recommendation h3 { color: #dafd6f; font-size: 13px; font-weight: bold; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .recommendation .decision { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #dafd6f; }
+  .recommendation p { font-size: 15px; line-height: 1.75; color: #e6e8eb; margin-bottom: 12px; }
+  .recommendation p:last-child { margin-bottom: 0; }
+  .recommendation .next-steps { background: rgba(218, 253, 111, 0.08); border-radius: 6px; padding: 16px 20px; margin-top: 16px; }
+  .recommendation .next-steps strong { color: #dafd6f; display: block; margin-bottom: 6px; font-size: 13px; letter-spacing: 0.5px; }
+  .recommendation .next-steps p { font-size: 14px; color: #e6e8eb; }
+
+  /* CTA */
+  .cta { background: linear-gradient(135deg, #fdfff5 0%, #f0fdf4 100%); border: 1px solid #bbf7d0; border-radius: 8px; padding: 32px; margin-top: 48px; text-align: center; }
+  .cta h3 { font-size: 22px; margin-bottom: 8px; color: #1f2937; }
+  .cta p { color: #4b5563; font-size: 15px; margin-bottom: 20px; max-width: 500px; margin-left: auto; margin-right: auto; }
+  .cta button { background: #dafd6f; color: #1f2937; border: none; padding: 14px 32px; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; }
+
+  /* FOOTER */
+  .footer { background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 24px 48px; text-align: center; color: #6b7280; font-size: 13px; }
+  .footer strong { color: #1f2937; }
+
+  /* INFO TIP */
+  .info-tip { background: #f0f9ff; border: 1px dashed #93c5fd; border-radius: 6px; padding: 12px 16px; font-size: 13px; color: #1e40af; margin: 16px 0; }
+  .info-tip strong { color: #1e3a8a; }
+</style>
+</head>
+<body>
+
+<div class="report-wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">SHARKTALENTS · REPORTE DE EVALUACIÓN</div>
+    <h1>Daniela Morales</h1>
+    <div class="subtitle">Evaluación gratuita · Demo SharkTalents</div>
+    <div class="meta">
+      <span><strong>Fecha:</strong> 12 mayo 2026</span>
+      <span><strong>Duración total:</strong> 58 min</span>
+      <span><strong>Validez del análisis:</strong> Alta</span>
+      <span><strong>Anti-trampa:</strong> Sin alertas</span>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- INTRO -->
+    <div class="intro">
+      Este reporte sintetiza los resultados de Daniela en las 2 evaluaciones que completó: <strong>conductual</strong> (DISC + capacidad cognitiva) e <strong>integridad</strong> (13 dimensiones). El objetivo es darte criterio claro sobre su perfil — cómo piensa, cómo se comporta y qué nivel de riesgo presenta — antes de cualquier decisión laboral.
+    </div>
+
+    <!-- DISC -->
+    <section class="section">
+      <div class="section-label">EVALUACIÓN 1 · CONDUCTUAL · BLOQUE A</div>
+      <h2 class="section-title">Perfil DISC</h2>
+      <p class="section-subtitle">Cómo se comporta Daniela naturalmente bajo presión y en el día a día.</p>
+
+      <p class="section-body">
+        DISC mide cuatro dimensiones de comportamiento humano. No hay perfiles "buenos" o "malos" — cada combinación funciona mejor para ciertos roles. Veamos el de Daniela.
+      </p>
+
+      <div class="disc-grid">
+        <div class="disc-row dominant">
+          <div class="header-row"><span class="letter">D</span><span class="pct">78%</span></div>
+          <div class="name">DOMINANCIA · Orientación a resultados</div>
+          <div class="disc-bar"><div class="disc-bar-fill" style="width: 78%"></div></div>
+          <div class="descr">Toma decisiones rápido, asume riesgos calculados y exige resultados. Es la dimensión más alta de Daniela.</div>
+        </div>
+        <div class="disc-row">
+          <div class="header-row"><span class="letter">I</span><span class="pct">52%</span></div>
+          <div class="name">INFLUENCIA · Habilidad social</div>
+          <div class="disc-bar"><div class="disc-bar-fill" style="width: 52%"></div></div>
+          <div class="descr">Comunicación directa pero correcta. No es alguien que busque socializar — prefiere conversaciones con propósito.</div>
+        </div>
+        <div class="disc-row">
+          <div class="header-row"><span class="letter">S</span><span class="pct">41%</span></div>
+          <div class="name">ESTABILIDAD · Constancia y paciencia</div>
+          <div class="disc-bar"><div class="disc-bar-fill" style="width: 41%"></div></div>
+          <div class="descr">Bajo nivel de estabilidad: tolera mal la rutina y los procesos lentos. Necesita variedad y ritmo en sus tareas.</div>
+        </div>
+        <div class="disc-row">
+          <div class="header-row"><span class="letter">C</span><span class="pct">67%</span></div>
+          <div class="name">CUMPLIMIENTO · Atención al detalle</div>
+          <div class="disc-bar"><div class="disc-bar-fill" style="width: 67%"></div></div>
+          <div class="descr">Le importa la calidad y exige estándares altos a sí misma y a otros. No improvisa cuando hay datos disponibles.</div>
+        </div>
+      </div>
+
+      <div class="narrative-box">
+        <h4>SÍNTESIS DEL PERFIL</h4>
+        <p><strong>Perfil dominante: Directiva-Analítica (D + C alto).</strong> Daniela es alguien que toma decisiones rápido, pero las toma con datos. No es impulsiva — analiza antes de actuar, pero una vez decidida, ejecuta sin dudar.</p>
+        <p>Funciona mejor con autonomía y objetivos claros. En equipos con baja S, su intensidad puede generar fricción — se la puede percibir como exigente o impaciente con quienes no llevan su ritmo.</p>
+        <p>Es el perfil típico de gerentes técnicos, líderes de proyecto, founders de startups en fase de tracción y especialistas senior que han llegado a posiciones de mando por mérito técnico.</p>
+      </div>
+
+      <h3 style="font-size: 16px; margin: 24px 0 12px 0; color: #1f2937;">Cómo se manifiesta en el trabajo</h3>
+      <div class="style-grid">
+        <div class="style-card">
+          <h4>TOMA DE DECISIONES</h4>
+          <p>Rápida y analítica. Pide datos pero no se queda atrapada esperando "la información perfecta". Asume riesgo cuando el costo de no decidir es alto.</p>
+        </div>
+        <div class="style-card">
+          <h4>TRABAJO EN EQUIPO</h4>
+          <p>Funciona mejor como líder o experta independiente. En roles puramente colaborativos sin claridad de mando, puede fricción con perfiles de alta S o I dominante.</p>
+        </div>
+        <div class="style-card">
+          <h4>BAJO PRESIÓN</h4>
+          <p>Se enfoca y simplifica. No paraliza ni busca consenso — toma decisiones aunque queme algunas relaciones en el camino. Recupera bien después de errores.</p>
+        </div>
+        <div class="style-card">
+          <h4>COMUNICACIÓN</h4>
+          <p>Directa, concreta y orientada a la acción. Prefiere reuniones cortas con decisión. Le impacientan las conversaciones que no llegan a un punto en 10 min.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- COGNITIVA -->
+    <section class="section">
+      <div class="section-label">EVALUACIÓN 1 · CONDUCTUAL · BLOQUE B</div>
+      <h2 class="section-title">Capacidad cognitiva</h2>
+      <p class="section-subtitle">Razonamiento lógico, verbal y numérico bajo presión de tiempo.</p>
+
+      <p class="section-body">
+        La prueba VELNA mide la capacidad de Daniela para procesar información nueva, encontrar patrones y resolver problemas que no había visto antes. Es un buen predictor del aprendizaje en roles complejos.
+      </p>
+
+      <div class="cognitive-score">
+        <div class="big-number">82<span class="pct-sign">%</span></div>
+        <div class="interpretation">
+          <div class="level">CAPACIDAD ALTA</div>
+          <p>Daniela resuelve problemas complejos con agilidad. Aprende rápido y maneja bien la ambigüedad.</p>
+          <div class="percentile">Está en el <strong>percentil 87</strong> frente a la población general evaluada por SharkTalents (más de 4.000 personas).</div>
+        </div>
+      </div>
+
+      <div class="cognitive-detail">
+        <div class="cognitive-detail-item">
+          <div class="label">Razonamiento lógico</div>
+          <div class="value">85%</div>
+          <div class="descr">Identifica patrones, relaciones de causa-efecto y inferencia con velocidad por encima del promedio.</div>
+        </div>
+        <div class="cognitive-detail-item">
+          <div class="label">Verbal</div>
+          <div class="value">79%</div>
+          <div class="descr">Comprende y procesa textos complejos. Buen manejo de instrucciones implícitas y contexto.</div>
+        </div>
+        <div class="cognitive-detail-item">
+          <div class="label">Numérico</div>
+          <div class="value">83%</div>
+          <div class="descr">Resuelve cálculos y problemas cuantitativos con precisión, incluso sin calculadora visible.</div>
+        </div>
+      </div>
+
+      <div class="info-tip">
+        <strong>Cómo leer este número:</strong> el 82% no significa "8 de cada 10 respuestas correctas". Es un score normalizado contra benchmarks de complejidad. Un 70% ya se considera apto para roles analíticos; un 80%+ es perfil de manager senior o especialista de alta exigencia.
+      </div>
+    </section>
+
+    <!-- INTEGRIDAD -->
+    <section class="section">
+      <div class="section-label">EVALUACIÓN 2</div>
+      <h2 class="section-title">Integridad</h2>
+      <p class="section-subtitle">13 dimensiones que predicen riesgo conductual en el trabajo.</p>
+
+      <p class="section-body">
+        SharkTalents evalúa integridad en 13 dimensiones independientes, basadas en investigación criminológica y de psicología organizacional. Cada una mide un tipo distinto de riesgo. El resultado se clasifica en 3 niveles: <strong>bajo</strong> (sin alertas), <strong>medio</strong> (vale conversar) o <strong>alto</strong> (riesgo concreto).
+      </p>
+
+      <div class="integrity-summary">
+        <div class="integrity-icon">✓</div>
+        <div class="integrity-text">
+          <h3>Perfil de integridad: SÓLIDO</h3>
+          <p>12 de las 13 dimensiones en nivel BAJO. Una observación en "imparcialidad" que conviene conversar en entrevista. Sin alertas críticas.</p>
+        </div>
+      </div>
+
+      <div class="integrity-dimensions">
+        <h4>13 DIMENSIONES EVALUADAS</h4>
+        <div class="dim-grid">
+          <div class="dim-row"><span class="dim-name">Honestidad</span><span class="dim-bar"><span class="dim-bar-fill bajo" style="width:18%"></span></span><span class="dim-status ok">Bajo</span></div>
+          <div class="dim-row"><span class="dim-name">Confiabilidad</span><span class="dim-bar"><span class="dim-bar-fill bajo" style="width:12%"></span></span><span class="dim-status ok">Bajo</span></div>
+          <div class="dim-row"><span class="dim-name">Autenticidad</span><span class="dim-bar"><span class="dim-bar-fill bajo" style="width:22%"></span></span><span class="dim-status ok">Bajo</span></div>
+          <div class="dim-row"><span class="dim-name">Sencillez</span><span class="dim-bar"><span class="dim-bar-fill bajo" style="width:28%"></span></span><span class="dim-status ok">Bajo</span></div>
+          <div class="dim-row"><span class="dim-name">Dominio personal</span><span class="dim-bar"><span class="dim-bar-fill bajo" style="width:24%"></span></span><span class="dim-status ok">Bajo</span></div>
+          <div class="dim-row"><span class="dim-name">Inteligencia social</span><span class="dim-bar"><span class="dim-bar-fill bajo" style="width:30%"></span></span><span class="dim-status ok">Bajo</span></div>
+          <div class="dim-row"><span class="dim-name">Imparcialidad</span><span class="dim-bar"><span class="dim-bar-fill medio" style="width:54%"></span></span><span class="dim-status warn">Medio</span></div>
+          <div class="dim-row"><span class="dim-name">Buena impresión</span><span class="dim-bar"><span class="dim-bar-fill bajo" style="width:34%"></span></span><span class="dim-status ok">Bajo</span></div>
+          <div class="dim-row"><span class="dim-name">Hurto</span><span class="dim-bar"><span class="dim-bar-fill bajo" style="width:8%"></span></span><span class="dim-status ok">Bajo</span></div>
+          <div class="dim-row"><span class="dim-name">Soborno</span><span class="dim-bar"><span class="dim-bar-fill bajo" style="width:11%"></span></span><span class="dim-status ok">Bajo</span></div>
+          <div class="dim-row"><span class="dim-name">Drogas</span><span class="dim-bar"><span class="dim-bar-fill bajo" style="width:7%"></span></span><span class="dim-status ok">Bajo</span></div>
+          <div class="dim-row"><span class="dim-name">Alcohol</span><span class="dim-bar"><span class="dim-bar-fill bajo" style="width:21%"></span></span><span class="dim-status ok">Bajo</span></div>
+          <div class="dim-row"><span class="dim-name">Apuestas</span><span class="dim-bar"><span class="dim-bar-fill bajo" style="width:6%"></span></span><span class="dim-status ok">Bajo</span></div>
+        </div>
+      </div>
+
+      <div class="narrative-box" style="background:#fef9c3; border-left-color:#facc15;">
+        <h4>OBSERVACIÓN · IMPARCIALIDAD (nivel medio)</h4>
+        <p>Daniela mostró respuestas inconsistentes en escenarios que evalúan el favoritismo hacia personas cercanas. Esto no implica deshonestidad — es común en perfiles de alta dominancia que confían más en su criterio personal que en procesos formales.</p>
+        <p><strong>Qué preguntar en entrevista:</strong> "Contame una decisión difícil donde tuviste que elegir entre lo que era correcto institucionalmente y lo que era más fácil para alguien de tu equipo cercano." La respuesta te va a dar contexto.</p>
+      </div>
+    </section>
+
+    <!-- SÍNTESIS -->
+    <section class="section">
+      <div class="section-label">SÍNTESIS Y RECOMENDACIONES</div>
+      <h2 class="section-title">¿Para qué tipo de rol funciona Daniela?</h2>
+
+      <div class="insight-grid">
+        <div class="insight-card good">
+          <h4>FUNCIONA BIEN EN</h4>
+          <ul>
+            <li>Roles de gerencia técnica o liderazgo de equipos pequeños orientados a resultado</li>
+            <li>Posiciones de toma de decisiones con datos (analista senior, jefa de operaciones, líder de producto)</li>
+            <li>Entornos exigentes con métricas claras y autonomía operativa</li>
+            <li>Roles que requieran transformar caos en orden (turnarounds, integraciones, restructuraciones)</li>
+          </ul>
+        </div>
+        <div class="insight-card role">
+          <h4>FORTALEZAS CLAVE</h4>
+          <ul>
+            <li>Capacidad analítica alta (percentil 87 cognitivo)</li>
+            <li>Orientación natural a la ejecución y al cierre</li>
+            <li>Criterio ético sólido en 12 de 13 dimensiones</li>
+            <li>Atención al detalle sin perder velocidad</li>
+            <li>Resiliencia bajo presión</li>
+          </ul>
+        </div>
+        <div class="insight-card watch">
+          <h4>A TOMAR EN CUENTA</h4>
+          <ul>
+            <li>Baja S: no funciona bien en roles altamente repetitivos o procesos lentos</li>
+            <li>Necesita objetivos claros y métricas — sin eso pierde enfoque</li>
+            <li>Puede tener fricción con equipos que requieran mucha contención emocional</li>
+            <li>Su comunicación directa puede leerse como dura por perfiles S/I altos</li>
+          </ul>
+        </div>
+        <div class="insight-card risk">
+          <h4>RIESGOS A OBSERVAR</h4>
+          <ul>
+            <li>Imparcialidad en nivel medio: validar en entrevista cómo maneja decisiones que afectan a personas cercanas</li>
+            <li>Probable resistencia a procesos formales si los percibe como burocráticos</li>
+            <li>En roles de comunicación con clientes "blandos" puede requerir coaching</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 style="font-size: 18px; margin: 32px 0 16px 0; color: #1f2937;">Cómo gerenciar a Daniela (si la contratas)</h3>
+      <div class="mgmt-section">
+        <div class="mgmt-row"><strong>Dale autonomía operativa:</strong> definí el objetivo y soltala. Microgestión va a generar fricción.</div>
+        <div class="mgmt-row"><strong>Métricas visibles:</strong> dashboards y KPIs claros la mantienen enfocada y motivada.</div>
+        <div class="mgmt-row"><strong>Feedback directo:</strong> no necesita rodeos. Decile qué está mal y por qué — lo va a tomar bien.</div>
+        <div class="mgmt-row"><strong>Reuniones cortas con decisión:</strong> evitá sesiones largas sin agenda concreta.</div>
+        <div class="mgmt-row"><strong>Validar imparcialidad:</strong> implementá procesos formales para decisiones que afecten a personas cercanas (ascensos, asignaciones, evaluaciones).</div>
+      </div>
+
+      <!-- RECOMENDACIÓN FINAL -->
+      <div class="recommendation">
+        <h3>RECOMENDACIÓN FINAL</h3>
+        <div class="decision">✓ Avanzar a entrevista personal</div>
+        <p>Daniela es un perfil <strong>sólido, confiable y con capacidad técnica alta</strong>. Su combinación de alta dominancia + alta cognición + criterio ético la hace una candidata fuerte para roles de gerencia o especialista senior.</p>
+        <p>La observación en imparcialidad no es bloqueante — es información útil para tener una conversación específica en la entrevista y para diseñar los procesos a su alrededor.</p>
+        <div class="next-steps">
+          <strong>SIGUIENTE PASO SUGERIDO</strong>
+          <p>Entrevista personal de 45 min enfocada en: (1) ejemplo concreto de decisión difícil donde tuvo que priorizar criterio institucional sobre relación personal; (2) cómo maneja equipos de bajo ritmo; (3) un caso real donde tuvo que cambiar de opinión con nuevos datos.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <div class="cta">
+      <h3>¿Quieres evaluar a más colaboradores?</h3>
+      <p>Este demo gratuito te dio un vistazo del producto. El servicio completo incluye pruebas técnicas a medida del rol, evaluaciones por video con IA, comparativos entre candidatos, integración con tu ATS y reportes personalizados por puesto.</p>
+      <button>Hablemos del servicio completo</button>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <strong>SharkTalents</strong> · Una evaluación con criterio<br>
+    Reporte generado el 12/05/2026 · Equipo SharkTalents · proyectos@kunodigital.com
+  </div>
+
+</div>
+
+</body>
+</html>

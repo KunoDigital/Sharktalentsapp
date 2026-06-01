@@ -1,0 +1,36 @@
+Columna,Tipo,Largo,Obligatorio,Único,Default
+result_id,Var Char,50,Sí,Sí,
+disc_raw_d,Int,,No,No,0
+disc_raw_i,Int,,No,No,0
+disc_raw_s,Int,,No,No,0
+disc_raw_c,Int,,No,No,0
+disc_norm_d,Int,,No,No,0
+disc_norm_i,Int,,No,No,0
+disc_norm_s,Int,,No,No,0
+disc_norm_c,Int,,No,No,0
+disc_perfil_dominante,Var Char,1,No,No,
+disc_pk_id,Var Char,10,No,No,
+velna_verbal,Int,,No,No,0
+velna_espacial,Int,,No,No,0
+velna_logica,Int,,No,No,0
+velna_numerica,Int,,No,No,0
+velna_abstracta,Int,,No,No,0
+velna_total,Int,,No,No,0
+velna_max,Int,,No,No,0
+velna_indice,Int,,No,No,0
+emo_score,Int,,No,No,0
+emo_perfil,Var Char,12,No,No,
+tec_score_pct,Int,,No,No,0
+tec_total_correct,Int,,No,No,0
+tec_total_questions,Int,,No,No,0
+tec_passed,Boolean,,No,No,false
+int_overall,Var Char,10,No,No,
+int_overall_pct,Int,,No,No,0
+int_recomendacion,Var Char,100,No,No,
+int_buena_impresion,Var Char,10,No,No,
+int_buena_impresion_pct,Int,,No,No,0
+disc_completed_at,DateTime,,No,No,
+velna_completed_at,DateTime,,No,No,
+emo_completed_at,DateTime,,No,No,
+tec_completed_at,DateTime,,No,No,
+int_completed_at,DateTime,,No,No,

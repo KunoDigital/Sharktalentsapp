@@ -1,0 +1,88 @@
+Tabla,Columna,Tipo,Largo,Obligatorio,Único,Default,Notas
+JobTrackingSnapshots,tenant_id,Var Char,40,Sí,No,,
+JobTrackingSnapshots,job_id,Var Char,50,No,No,,Null si el evento no es de un job específico
+JobTrackingSnapshots,portal_token_hash,Var Char,32,No,No,,SHA-256 del token (no guardar token raw)
+JobTrackingSnapshots,event_type,Var Char,40,Sí,No,,portal.opened / report_viewed / draft_approved / etc
+JobTrackingSnapshots,event_data,Text,,No,No,,JSON con info no-PII
+JobTrackingSnapshots,client_ip_masked,Var Char,40,No,No,,IP enmascarada (192.xx.xx.xx)
+JobTrackingSnapshots,user_agent,Var Char,255,No,No,,
+JobTrackingSnapshots,occurred_at,DateTime,,Sí,No,,
+MarketingLeads,email,Var Char,255,Sí,Sí,,
+MarketingLeads,contact_name,Var Char,255,No,No,,
+MarketingLeads,company,Var Char,255,No,No,,
+MarketingLeads,whatsapp,Var Char,50,No,No,,
+MarketingLeads,quiz_data,Text,,No,No,,JSON con respuestas del quiz
+MarketingLeads,calculator_data,Text,,No,No,,JSON con cálculos del riesgo
+MarketingLeads,score_quality,Int,,No,No,,0-100
+MarketingLeads,urgency,Var Char,40,No,No,,
+MarketingLeads,salary_target,Var Char,80,No,No,,
+MarketingLeads,source,Var Char,50,No,No,,
+MarketingLeads,utm_source,Var Char,255,No,No,,
+MarketingLeads,utm_medium,Var Char,255,No,No,,
+MarketingLeads,utm_campaign,Var Char,255,No,No,,
+MarketingLeads,utm_content,Var Char,255,No,No,,
+MarketingLeads,utm_term,Var Char,255,No,No,,
+MarketingLeads,created_at,DateTime,,Sí,No,,
+PrefilterQuestions,job_id,Var Char,50,Sí,No,,
+PrefilterQuestions,question_text,Var Char,255,Sí,No,,
+PrefilterQuestions,type,Var Char,20,Sí,No,,yes_no/multi_choice/number/text
+PrefilterQuestions,options,Text,,No,No,,JSON array si es multi_choice
+PrefilterQuestions,expected_answer,Var Char,200,No,No,,
+PrefilterQuestions,is_disqualifier,Boolean,,Sí,No,false,Si la respuesta wrong descarta al candidato
+PrefilterQuestions,order_index,Int,,Sí,No,0,
+PrefilterQuestions,created_at,DateTime,,Sí,No,,
+PrefilterAnswers,result_id,Var Char,40,Sí,No,,
+PrefilterAnswers,question_id,Var Char,40,Sí,No,,
+PrefilterAnswers,answer_value,Text,,No,No,,
+PrefilterAnswers,is_match,Boolean,,No,No,,True si matchea expected_answer
+PrefilterAnswers,created_at,DateTime,,Sí,No,,
+BotTrainingExamples,tenant_id,Var Char,40,Sí,No,,
+BotTrainingExamples,application_id,Var Char,40,Sí,No,,
+BotTrainingExamples,job_id,Var Char,40,Sí,No,,
+BotTrainingExamples,job_cognitive_level,Var Char,20,Sí,No,,
+BotTrainingExamples,candidate_disc_d,Int,,No,No,,
+BotTrainingExamples,candidate_disc_i,Int,,No,No,,
+BotTrainingExamples,candidate_disc_s,Int,,No,No,,
+BotTrainingExamples,candidate_disc_c,Int,,No,No,,
+BotTrainingExamples,candidate_cognitive_indice,Int,,No,No,,
+BotTrainingExamples,candidate_technical_pct,Int,,No,No,,
+BotTrainingExamples,candidate_integrity_overall,Var Char,20,No,No,,
+BotTrainingExamples,from_stage,Var Char,40,Sí,No,,
+BotTrainingExamples,to_stage_chosen,Var Char,40,Sí,No,,
+BotTrainingExamples,chosen_by,Var Char,80,Sí,No,,
+BotTrainingExamples,rationale_human,Text,,No,No,,
+BotTrainingExamples,bot_had_suggested,Var Char,40,No,No,,
+BotTrainingExamples,bot_confidence,Int,,No,No,,
+BotTrainingExamples,was_override,Boolean,,Sí,No,false,
+BotTrainingExamples,quality,Var Char,20,Sí,No,standard,standard/excellent/poor
+BotTrainingExamples,created_at,DateTime,,Sí,No,,
+Briefings,tenant_id,Var Char,40,Sí,No,,
+Briefings,client_email,Var Char,255,Sí,No,,
+Briefings,client_name,Var Char,255,No,No,,
+Briefings,client_company,Var Char,255,No,No,,
+Briefings,booking_id,Var Char,80,No,No,,De Zoho Bookings
+Briefings,meeting_url,Var Char,500,No,No,,
+Briefings,transcript_url,Var Char,500,No,No,,
+Briefings,transcript_text,Text,,No,No,,
+Briefings,draft_id,Var Char,40,No,No,,FK a JobProfileDrafts cuando se genera
+Briefings,status,Var Char,20,Sí,No,scheduled,scheduled/completed/transcribed/drafted/failed
+Briefings,scheduled_at,DateTime,,No,No,,
+Briefings,completed_at,DateTime,,No,No,,
+Briefings,created_at,DateTime,,Sí,No,,
+ContinueTokens,result_id,Var Char,40,Sí,No,,
+ContinueTokens,token_hash,Var Char,32,Sí,Sí,,SHA-256 truncado del token raw
+ContinueTokens,last_block_completed,Var Char,40,Sí,No,,disc/mindset/velna/integrity/emotional/tech
+ContinueTokens,reminder_sent_at,DateTime,,No,No,,
+ContinueTokens,expires_at,DateTime,,Sí,No,,Default 7 días desde created_at
+ContinueTokens,created_at,DateTime,,Sí,No,,
+ContinueTokens,used_at,DateTime,,No,No,,Marca cuándo se canjeó el token
+TokenUsage,tenant_id,Var Char,40,No,No,,Null si la llamada es admin/sin tenant
+TokenUsage,feature,Var Char,40,Sí,No,,writing_analysis/tech_questions/report_narratives/etc
+TokenUsage,model,Var Char,80,Sí,No,,claude-haiku-4-5-20251001
+TokenUsage,input_tokens,Int,,Sí,No,0,
+TokenUsage,cached_input_tokens,Int,,Sí,No,0,
+TokenUsage,output_tokens,Int,,Sí,No,0,
+TokenUsage,latency_ms,Int,,Sí,No,0,
+TokenUsage,trace_id,Var Char,40,No,No,,
+TokenUsage,cost_usd_estimated,Decimal,10,No,No,,5 decimales para tracking de fracciones
+TokenUsage,occurred_at,DateTime,,Sí,No,,

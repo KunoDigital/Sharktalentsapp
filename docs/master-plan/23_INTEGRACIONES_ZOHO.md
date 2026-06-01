@@ -521,3 +521,88 @@ Alerta a Slack cuando un provider pasa de ok→down (no en cada chequeo).
 
 - Volvé a [00_INDEX.md](00_INDEX.md) para confirmar el orden total.
 - Si vas a implementar: arrancá por [02_FASE1_FUNDAMENTOS.md](02_FASE1_FUNDAMENTOS.md) que ya incluye las env vars Zoho.
+
+---
+
+## Status de implementación (al 2026-05-03)
+
+Todas las integraciones core fueron implementadas en código. Pendiente: setear OAuth tokens + configurar webhooks en cada Console Zoho. Quick reference:
+
+### Recruit (saliente: SharkTalents → Recruit)
+
+- **Dispatcher:** `features/outbox.ts:dispatchRecruitSync`
+- **Producer:** cualquier transición de pipeline encolea evento `sync.recruit`
+- **Endpoint:** REST API Recruit con OAuth Bearer + circuit breaker `zoho_recruit`
+- **Env vars:** `ZOHO_RECRUIT_API_URL`, `ZOHO_RECRUIT_OAUTH_TOKEN`
+- **Status:** ✅ código listo
+
+### Recruit (entrante: Recruit → SharkTalents)
+
+- **Webhook:** `features/zohoRecruitWebhook.ts` → `POST /api/webhooks/zoho-recruit`
+- **Eventos:** `candidate.hired`, `candidate.rejected`, `candidate.status_changed`
+- **Status mapping:** `mapRecruitStatusToStage()` traduce 8 statuses Recruit a nuestro pipeline
+- **Validación state machine:** si Recruit hace una transición no allowed, loggea + 200 con `transition_not_allowed`
+- **HMAC:** `ZOHO_RECRUIT_WEBHOOK_SECRET`. Idempotencia: `ProcessedEvents` con `provider='zoho_recruit_webhook'`
+- **Status:** ✅ código listo
+
+### Bookings (briefing cliente)
+
+- **Cliente HTTP:** `lib/zohoBookingsClient.ts`
+- **Endpoint local:** `POST /api/briefings/schedule` (auth tenant)
+- **Frontend:** componente `BriefingForm` embedded en DraftsList → form colapsable "Agendar nuevo briefing"
+- **Env vars:** `ZOHO_BOOKINGS_API_URL`, `ZOHO_BOOKINGS_OAUTH_TOKEN`, `ZOHO_BOOKINGS_WORKSPACE_ID`, `ZOHO_BOOKINGS_BRIEFING_SERVICE_ID`
+- **Circuit breaker:** `zoho_bookings`
+- **Status:** ✅ código listo
+
+### Zia (transcripción meetings)
+
+- **Webhook:** `features/ziaWebhook.ts` → `POST /api/webhooks/zia`
+- **Body:** `{meeting_id, transcript, language?, duration_seconds?}`
+- **HMAC:** `ZIA_WEBHOOK_SECRET`. Idempotencia: `ProcessedEvents` con `provider='zia_webhook'`
+- **Flujo downstream:** enquea `briefing.transcript_received` → outbox dispatcher llama Anthropic → genera `JobProfileDraft` automático
+- **Status:** ✅ código + auto-draft pipeline funcional
+
+### Sign (firma electrónica de oferta)
+
+- **Cliente HTTP:** `lib/zohoSignClient.ts` (createSignRequest/getSignRequest/cancelSignRequest)
+- **Endpoint saliente:** `POST /api/applications/:id/send-offer` (auth tenant)
+- **Frontend:** `OfferForm` embedded en CandidateDetail (visible cuando state=finalist)
+- **Webhook entrante:** `features/zohoSignWebhook.ts` → `POST /api/webhooks/zoho-sign`
+- **Mapeo:** `completed → hired`, `declined → offer_declined`, otros (sent/expired/recalled) no-op
+- **HMAC:** `ZOHO_SIGN_WEBHOOK_SECRET`
+- **Env vars:** `ZOHO_SIGN_API_URL`, `ZOHO_SIGN_OAUTH_TOKEN`
+- **Status:** ✅ código listo
+
+### CRM (marketing leads — tanda 10)
+
+- **Cliente HTTP:** `lib/zohoCrmClient.ts` con `createLead` + `updateLeadStatus`
+- **Producer:** outbox dispatcher `lead.captured` y `lead.eval_completed` (del marketing funnel)
+- **Use case:** quiz del funnel → Lead en CRM con tag "SharkTalents Funnel" + score de calidad como description
+- **Env vars:** `ZOHO_CRM_API_URL`, `ZOHO_CRM_LEADS_MODULE` (default `Leads`) — auth comparte `ZOHO_OAUTH_REFRESH_TOKEN` con Recruit/Sign/Bookings (refactor 2026-05-12). Refresh_token tiene que incluir scope `ZohoCRM.modules.ALL`.
+- **Status:** ✅ código listo
+
+### Meeting
+
+Cubierto por Zia webhook. No requiere integración separada — cuando Cris activa Zia en sus meetings, Zia transcribe + POSTea a `/api/webhooks/zia`.
+
+---
+
+## Webhooks completos (5 total)
+
+| Webhook | Endpoint | HMAC env var | Idempotencia key |
+|---|---|---|---|
+| Clerk | `/api/webhooks/clerk` | `CLERK_WEBHOOK_SECRET` | svix-id |
+| HeyReach | `/api/webhooks/heyreach` | `HEYREACH_WEBHOOK_SECRET` | event_id |
+| Zia | `/api/webhooks/zia` | `ZIA_WEBHOOK_SECRET` | meeting_id |
+| Zoho Sign | `/api/webhooks/zoho-sign` | `ZOHO_SIGN_WEBHOOK_SECRET` | event_id |
+| Zoho Recruit | `/api/webhooks/zoho-recruit` | `ZOHO_RECRUIT_WEBHOOK_SECRET` | event_id |
+
+Todos: HMAC-SHA256 timing-safe + idempotencia via `ProcessedEvents` + audit log al aceptar.
+
+Más WhatsApp Cloud API webhook (`/api/webhooks/whatsapp`, GET para verification + POST con `X-Hub-Signature-256`) — sigue el mismo patrón pero con la convención de Meta (verify_token + app_secret en lugar de un solo HMAC).
+
+---
+
+## Whisper como fallback de Zia
+
+Si Zia no transcribe (timeout, audio corrupto), tenemos `lib/whisperClient.ts` invocable manual. Default OpenAI Whisper API. Env: `WHISPER_API_URL` (default), `WHISPER_API_KEY`. Circuit breaker `whisper`. Timeout 2min.

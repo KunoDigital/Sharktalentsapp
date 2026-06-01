@@ -44,6 +44,41 @@ export type Job = {
   competencias_ideales: IdealCompetencia[];
   tecnica_minimo_pct: number;
   context: string; // contexto de la empresa
+  // Perfil del jefe directo (doc 19) — para match estilo candidato↔jefe
+  boss?: BossProfile;
+  // Auto-rejection rules (doc 18) — si seteado, el sistema rechaza automático al fallar
+  auto_rejection_rules?: AutoRejectionRules;
+  // Idioma del reporte cliente (default 'es')
+  report_lang?: 'es' | 'en';
+  // Test de inglés (opcional por puesto) — ver doc 25
+  english_required?: boolean;
+  english_min_level?: 'A2' | 'B1' | 'B2' | 'C1';
+  // Test de mentalidades (opcional por puesto, default true) — ver doc 26
+  mindset_test_enabled?: boolean;
+};
+
+export type BossProfile = {
+  name: string;
+  role: string;
+  /** 0-1: 0 = quiere que consulten, 1 = da autonomía */
+  style_autonomy_consult: number;
+  evidence_quote?: string;
+};
+
+/** Reglas de auto-rechazo del candidato según scores. Todas opcionales. */
+export type AutoRejectionRules = {
+  /** Mínimo de similitud DISC vs ideal (0-100). */
+  disc_min_similarity?: number;
+  /** Mínimo VELNA índice (0-100). */
+  velna_min_indice?: number;
+  /** Máximo % de riesgo integridad (0-100). 0=solo bajo permitido; 100=todos pasan. */
+  integridad_max_riesgo?: number;
+  /** Mínimo score emocional (0-100). */
+  emo_min_score?: number;
+  /** Si true, rechaza al candidato que no haya pasado el test de inglés (cuando el job lo requiere). */
+  require_english_passed?: boolean;
+  /** Mínimo score de adaptabilidad (0-100). Útil para puestos donde la mentalidad es crítica. */
+  mindset_min_adaptability?: number;
 };
 
 const COMPETENCIAS_DEFAULT: IdealCompetencia[] = [
@@ -83,6 +118,9 @@ export const MOCK_JOBS: Job[] = [
     competencias_ideales: COMPETENCIAS_DEFAULT,
     tecnica_minimo_pct: 60,
     context: 'AcmeTech es un SaaS B2B en LATAM. Buscan a alguien que pueda arquitectar features complejos, comunicarse con cliente directo y mantener la calidad del código. Equipo de 8 ingenieros.',
+    english_required: true,
+    english_min_level: 'B2',
+    mindset_test_enabled: true,
   },
   {
     id: 'job_2',
@@ -128,6 +166,8 @@ export const MOCK_JOBS: Job[] = [
     ],
     tecnica_minimo_pct: 70,
     context: 'Banco Pacífico expande su división PyME. Buscan gerente con cartera propia, dispuesto a viajar a interior. Resultados ligados a comisión.',
+    english_required: false,
+    mindset_test_enabled: true,
   },
   {
     id: 'job_3',

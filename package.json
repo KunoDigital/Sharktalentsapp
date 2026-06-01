@@ -9,6 +9,14 @@
     "build:frontend": "npm run build --prefix shark",
     "build:backend": "npm run build --prefix functions/api",
     "build": "npm run build:backend && npm run build:frontend",
-    "install:all": "npm install --prefix functions/api && npm install --prefix shark"
+    "install:all": "npm install --prefix functions/api && npm install --prefix shark",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
   }
 }

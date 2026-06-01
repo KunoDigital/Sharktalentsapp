@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (functions/api)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: functions/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: functions/api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check + build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+  frontend:
+    name: Frontend (shark)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: shark
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: shark/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE: http://localhost:3002
+          VITE_APP_VERSION: ci-build
+          VITE_APP_BASE_URL: http://localhost:3000
+          VITE_CLIENT_HOSTING_PATH: /
+          VITE_CLERK_PUBLISHABLE_KEY: pk_test_ci-placeholder
+
+      - name: Run tests
+        run: npm test --if-present

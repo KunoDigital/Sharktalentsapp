@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Roadmap SharkTalents v2</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #fafafa;
+      color: #1f2937;
+    }
+    h1 { margin-top: 0; }
+    .legend {
+      display: inline-flex;
+      gap: 16px;
+      padding: 8px 16px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 16px;
+    }
+    .summary {
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 24px;
+      max-width: 900px;
+    }
+    .summary table { width: 100%; border-collapse: collapse; }
+    .summary th, .summary td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    .summary th { background: #f9fafb; }
+    .markmap-container {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+      margin-bottom: 16px;
+      min-height: 700px;
+    }
+    .markmap { width: 100%; height: 700px; }
+    .updated { color: #6b7280; font-size: 14px; margin-top: -8px; }
+    .help {
+      max-width: 900px;
+      padding: 12px 16px;
+      background: #fef9c3;
+      border-radius: 6px;
+      color: #713f12;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Roadmap SharkTalents v2</h1>
+  <p class="updated">Última actualización: 2026-05-11 (tarde) · Mind map estilo XMind (radial horizontal)</p>
+
+  <div class="legend">
+    <span>🟢 Listo</span>
+    <span>🟡 En proceso</span>
+    <span>🔴 No iniciado</span>
+  </div>
+
+  <div class="summary">
+    <h2>Resumen ejecutivo</h2>
+    <table>
+      <thead>
+        <tr><th>Hito</th><th>🟢 Listo</th><th>🟡 En proceso</th><th>🔴 No iniciado</th><th>Total</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Tablas</td><td>34</td><td>0</td><td>5</td><td>39</td></tr>
+        <tr><td>UX</td><td>30</td><td>1</td><td>0</td><td>31</td></tr>
+        <tr><td>Cliente</td><td>20</td><td>0</td><td>1</td><td>21</td></tr>
+        <tr><td>Pruebas</td><td>12</td><td>0</td><td>0</td><td>12</td></tr>
+        <tr><td>Integraciones</td><td>12</td><td>2</td><td>2</td><td>16</td></tr>
+        <tr style="font-weight:bold;"><td>TOTAL</td><td>108</td><td>3</td><td>8</td><td>119</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top: 12px;"><strong>Avance global:</strong> ~91% listo · ~3% en proceso · ~7% sin iniciar.</p>
+  </div>
+
+  <div class="markmap-container">
+    <div class="markmap">
+# SharkTalents v2
+
+## 🗂️ Tablas
+
+### 🟢 Block 1 core (10)
+- 🟢 Tenants
+- 🟢 ProcessedEvents
+- 🟢 Jobs
+- 🟢 Candidates
+- 🟢 Results
+- 🟢 PipelineTransitions
+- 🟢 Scores (doble eje)
+- 🟢 IntegrityDimensions
+- 🟢 AuditLog
+- 🟢 OutboxEvents
+
+### 🟢 Block 2 advanced (16)
+- 🟢 Config
+- 🟢 BotDecisions
+- 🟢 ReviewQueue
+- 🟢 ApiKeys
+- 🟢 ClientReports
+- 🟢 CandidatePool
+- 🟢 JobProfileDrafts
+- 🟢 Notifications
+- 🟢 VideoQuestions
+- 🟢 VideoResponses
+- 🟢 VideoConsents
+- 🟢 AntiCheatEvents
+- 🟢 BotTrainingExamples
+- 🟢 Briefings
+- 🟢 ContinueTokens
+- 🟢 ClientNotifications + Templates
+
+### 🟢 Tests nuevos (11-mayo via API)
+- 🟢 EnglishTestSessions (18 cols)
+- 🟢 MindsetScores (21 cols)
+
+### 🟢 Marketing funnel (11-mayo via API)
+- 🟢 MarketingLeads (27 cols con attribution + GDPR)
+- 🟢 PrefQuestions (ex-PrefilterQuestions)
+- 🟢 PrefilterAnswers
+- 🟢 JobTrackingSnapshots
+- 🟢 TokenUsage
+
+### 🔴 Pendientes lower priority (5)
+- 🔴 OutreachCampaigns / Contacts / Inbox / Templates (4) — para HeyReach
+- 🔴 ZohoMeetings — tracking transcripts
+
+### ❌ Obsoletas/redundantes (eliminadas del scope)
+- ❌ RecruitSync×3 → reemplazadas por outbox events
+- ❌ JobBossProfiles → columna en Jobs
+- ❌ ReportCandidates → cubierta por ClientReports
+- ❌ IntegrationSecrets/Health → no aplican
+- ❌ TechLibrary → nice-to-have, no scope
+
+## 🎨 UX
+
+### 🟢 Recruiter admin (16 live, falta deploy)
+- 🟢 Dashboard + cost widget
+- 🟢 Jobs list con badges 🔧🇺🇸🧠⚡
+- 🟢 Candidates list
+- 🟢 JobForm completo
+- 🟢 JobDetail con botón "Avisar cliente"
+- 🟢 Settings 12 tabs
+- 🟢 BotReviewQueue
+- 🟢 DraftsList + BriefingForm
+- 🟢 Reportes + Comparativo 4
+- 🟢 HelpCenter + Email templates
+- 🟢 Tooltips inline
+- 🟢 OnboardingTour 7 pasos
+- 🟢 TableNotReadyBanner
+- 🟢 Accessibility
+- 🟢 ErrorBoundary
+
+### 🟢 Candidato público (10)
+- 🟢 CandidateApply + Recovery
+- 🟢 DISC / VELNA / Técnica / Integridad
+- 🟢 Mindset
+- 🟢 English (4 secciones)
+- 🟢 Video dinámico
+- 🟢 Prefilter
+
+### 🟢 Portal cliente
+- 🟢 ClientPortalLanding (lista jobs)
+- 🟢 ClientPortalJob (funnel en vivo + milestones)
+
+### 🟡 Pendiente
+- 🟡 Re-deploy frontend (cambios 11-mayo no live)
+
+### 🔴 Pendiente
+- 🔴 Marketing landing en Slate (fuera de este repo)
+
+## 👥 Cliente
+
+### 🟢 Funcionalidades live (18)
+- 🟢 Multi-tenant guard
+- 🟢 Reporte multi-candidato + narrativas IA
+- 🟢 Cache ClientReports
+- 🟢 Comparativo 4 candidatos
+- 🟢 Bot decisor
+- 🟢 Email templates
+- 🟢 JobBossProfile
+- 🟢 HelpCenter
+- 🟢 Branding tenant
+- 🟢 Portal cliente embudo en vivo
+- 🟢 Tracking portal apertura
+- 🟢 Aprobación draft cliente
+- 🟢 Reporte con mindset + english
+- 🟢 Email client_portal_access
+- 🟢 Email client_report_ready (botón JobDetail)
+- 🟢 ZeptoMail wired
+- 🟢 Marketing landing backend
+- 🟢 Settings → 📥 Leads UI
+
+### 🔴 Pendientes
+- 🔴 WhatsApp al cliente (Meta API)
+- 🔴 Tenant interno + Job demo (eval-request)
+
+## 🧪 Pruebas
+
+### 🟢 Live en producción (11)
+- 🟢 DISC
+- 🟢 VELNA cognitiva (3 niveles)
+- 🟢 Integridad
+- 🟢 Emocional
+- 🟢 Técnica doble eje
+- 🟢 Videos IA-analyzed
+- 🟢 Mentalidades (McKinsey) end-to-end
+- 🟢 Inglés CEFR (A2/B1/B2/C1) end-to-end
+- 🟢 4 MP3s listening subidos
+- 🟢 Hook anti-paste integrado
+- 🟢 Auto-rejection 6 reglas
+- 🟢 PrefQuestions candidato
+
+### 🟢 Audios subidos
+- 🟢 4 MP3 listening (A2/B1/B2/C1) en File Store
+
+## 🔌 Integraciones
+
+### 🟢 Activas + validadas (12)
+- 🟢 Anthropic Haiku 4.5 (caching + token tracking)
+- 🟢 Clerk multi-tenant
+- 🟢 Catalyst Datastore + 3 File Store folders
+- 🟢 ZeptoMail (test enviado OK)
+- 🟢 Cloudflare Turnstile (validado real)
+- 🟢 Circuit breakers + timeouts
+- 🟢 Catalyst Schema REST API
+- 🟢 OAuth Self-Client Zoho compartido
+- 🟢 Marketing landing ↔ Backend
+- 🟢 Zoho Recruit OAuth + sync bidireccional
+- 🟢 Zoho Sign — código completo (cliente + endpoint + webhook auto-Tenant)
+- 🟢 Bookings backend endpoint (listBriefings)
+
+### 🟡 Código listo, falta OAuth setup
+- 🟡 Zoho CRM (Cristian — tag SharkTalents listo)
+- 🟡 Cron jobs Catalyst (Cristian)
+- 🟡 Sentry
+
+### 🔴 Pendientes lower priority
+- 🔴 HeyReach LinkedIn
+- 🔴 WhatsApp Business
+- 🔴 Custom domain api.sharktalents.ai
+
+### 🟡 Pendiente Cris: template Sign
+- 🟡 Cargar contrato a Zoho Sign Console como Template (guía en docs/contracts/)
+- 🟡 Setear ZOHO_SIGN_CONTRACT_TEMPLATE_ID env var
+    </div>
+  </div>
+
+  <div class="help">
+    💡 <strong>Cómo usarlo:</strong> click en cualquier nodo para colapsar/expandir esa rama. Drag para mover el mapa. Scroll/pinch para zoom. Doble click para enfocar.
+  </div>
+
+  <!-- markmap-autoloader: detecta <div class="markmap"> con markdown adentro y renderiza horizontal radial -->
+  <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@latest"></script>
+</body>
+</html>

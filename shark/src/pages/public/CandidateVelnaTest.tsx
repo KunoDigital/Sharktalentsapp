@@ -1,11 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { getTestSession, VELNA_SUBTESTS, type VelnaSubtest } from '../../data/mockCandidateTests';
+import { getTestSession, type VelnaSubtest } from '../../data/mockCandidateTests';
 import { getJobById } from '../../data/mockJobs';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
 import { usePersistedState } from '../../hooks/usePersistedState';
 import { calculateVelnaResult } from '../../lib/scoring';
+import { shuffleOptions } from '../../lib/shuffle';
+import { buildVelnaSubtestsFromReal } from '../../data/realQuestionsAdapter';
+import type { CognitiveLevel } from '../../data/questionLoader';
+import { publicApi } from '../../lib/publicApi';
+import { ApiError } from '../../lib/api';
+import { logger } from '../../lib/logger';
 import './candidate-test.css';
+
+const log = logger('VELNA');
 
 type Phase = 'intro' | 'subtest_intro' | 'subtest_running' | 'done';
 
@@ -21,10 +29,43 @@ export default function CandidateVelnaTest() {
   const [answers, setAnswers, clearAnswers] = usePersistedState<Record<string, string>>(storageKey, {});
   const [secondsLeft, setSecondsLeft] = useState(0);
 
+  // Cognitive level: viene del job. Mock no lo tiene aún, default 'mid' (100 preguntas).
+  // Cuando el frontend hable con backend real, se lee de ApiJob.cognitive_level.
+  const cognitiveLevel: CognitiveLevel = 'mid';
+
+  // VELNA_SUBTESTS se carga async (lazy import del JSON correspondiente al level).
+  // Esto saca ~500KB del bundle inicial y los carga solo cuando el candidato hace este test.
+  const [VELNA_SUBTESTS, setVelnaSubtests] = useState<VelnaSubtest[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    buildVelnaSubtestsFromReal(cognitiveLevel).then((subs) => {
+      if (!cancelled) setVelnaSubtests(subs);
+    });
+    return () => { cancelled = true; };
+  }, [cognitiveLevel]);
+
   const subtest = VELNA_SUBTESTS[subtestIdx];
   const currentQ = subtest?.questions[questionIdx];
 
-  const { count: antiCheatCount } = useAntiCheat({
+  // Shuffle: pre-calculamos un orden aleatorio de opciones por pregunta y lo cacheamos
+  // (con `useMemo` el mismo orden persiste mientras el componente esté vivo).
+  // Sin shuffle, las preguntas con la respuesta correcta siempre en posición B sesgan el resultado.
+  const shuffledOptionsByQuestionId = useMemo(() => {
+    const map: Record<string, typeof currentQ['options']> = {};
+    if (!subtest) return map;
+    for (const q of subtest.questions) {
+      // Seed = hash simple del id de la pregunta. Da reproducibilidad si el candidato
+      // recarga la página dentro de la misma sesión (no le cambia el orden).
+      const seed = simpleHash(q.id);
+      const { shuffled } = shuffleOptions(q.options, seed);
+      map[q.id] = shuffled;
+    }
+    return map;
+  }, [subtest]);
+
+  const displayedOptions = currentQ ? shuffledOptionsByQuestionId[currentQ.id] : undefined;
+
+  const { count: antiCheatCount, events: antiCheatEvents } = useAntiCheat({
     enabled: phase === 'subtest_running',
     current_question_id: currentQ?.id ?? null,
   });
@@ -40,7 +81,9 @@ export default function CandidateVelnaTest() {
     return () => clearTimeout(t);
   }, [phase, secondsLeft]);
 
-  if (!session) return <p>Link inválido. <Link to="/">Volver</Link></p>;
+  // Si no hay session (mock no encuentra el token), aceptamos si hay token real:
+  // el backend valida el token en el submit.
+  if (!token) return <p>Link inválido. <Link to="/">Volver</Link></p>;
 
   function startSubtest(idx: number) {
     const st = VELNA_SUBTESTS[idx];
@@ -58,9 +101,42 @@ export default function CandidateVelnaTest() {
     } else {
       setPhase('done');
       const job = session ? getJobById(session.job_id) : undefined;
-      const result = job
-        ? calculateVelnaResult(VELNA_SUBTESTS, answers, job.velna_ideal)
-        : null;
+      // Si no hay job (caso del demo marketing — no hay perfil ideal definido), usamos
+      // un ideal neutro (50/50/50/50/50). Esto permite que el cálculo de scores raw
+      // funcione igual y se persistan en backend. El similarity_with_ideal no es
+      // informativo en este caso, pero los scores por subtest sí.
+      const ideal = job?.velna_ideal ?? { verbal: 50, espacial: 50, logica: 50, numerica: 50, abstracta: 50 };
+      const result = calculateVelnaResult(VELNA_SUBTESTS, answers, ideal);
+
+      // Submit al backend (skip silently si useApi=false)
+      if (token) {
+        const subtestPcts = result.per_subtest;
+        const get = (k: string) => subtestPcts.find((s) => s.key === k)?.pct ?? 0;
+        publicApi.submitTest(token, {
+          velna: {
+            verbal: get('verbal'),
+            espacial: get('espacial'),
+            logica: get('logica'),
+            numerica: get('numerica'),
+            abstracta: get('abstracta'),
+            total: subtestPcts.reduce((s, x) => s + x.correct, 0),
+            max: subtestPcts.reduce((s, x) => s + x.total, 0),
+          },
+          anti_cheat: antiCheatEvents.length > 0 ? {
+            count: antiCheatEvents.length,
+            events: antiCheatEvents.map((e) => ({ type: e.type, question_id: e.question_id, duration_ms: e.duration_ms })),
+            phase: 'conductual',
+          } : undefined,
+        }).catch((err: unknown) => {
+          if (err instanceof ApiError) {
+            log.warn('submit falló', { status: err.status, code: err.code, msg: err.message });
+          } else {
+            log.warn('submit error', { error: (err as Error).message });
+          }
+          // No bloqueamos al candidato — el flow sigue. Cris ve el fallo en logs/admin.
+        });
+      }
+
       clearAnswers();
       setTimeout(() => navigate(`/test/${token}/disc`, result ? {
         state: {
@@ -180,20 +256,62 @@ export default function CandidateVelnaTest() {
         <section className="ct-question-card">
           <div className="ct-question-num">{subtest.label} · pregunta {questionIdx + 1}/{subtest.questions.length}</div>
           <h2 className="ct-question-text">{currentQ?.question}</h2>
+          {currentQ?.question_svg && (
+            <div
+              className="ct-question-svg"
+              style={{
+                background: '#fff',
+                borderRadius: 8,
+                padding: 24,
+                margin: '12px 0',
+                textAlign: 'center',
+                maxWidth: 560,
+                marginLeft: 'auto',
+                marginRight: 'auto',
+              }}
+              // Width 100% del contenedor para tablas/numéricas (ancho > alto).
+              // Max-height generoso para que figuras cuadradas también se vean bien.
+              dangerouslySetInnerHTML={{ __html: currentQ.question_svg.replace('<svg ', '<svg style="width:100%; max-height:400px; height:auto" ') }}
+            />
+          )}
           <div className="ct-mc-options">
-            {currentQ?.options.map((opt) => {
-              const isSelected = answers[currentQ.id] === opt.id;
+            {(displayedOptions ?? currentQ?.options ?? []).map((opt, displayIdx) => {
+              const isSelected = answers[currentQ?.id ?? ''] === opt.id;
+              const displayLetter = ['A', 'B', 'C', 'D', 'E'][displayIdx] ?? opt.id.toUpperCase();
               return (
                 <button
                   key={opt.id}
                   className={`ct-mc-option ${isSelected ? 'is-selected' : ''}`}
                   onClick={() => {
                     answer(opt.id);
-                    setTimeout(nextQuestion, 200); // auto-advance en VELNA
+                    // Auto-advance con delay suficiente para evitar double-click accidental
+                    // que registra el segundo click en la pregunta siguiente.
+                    setTimeout(nextQuestion, 500);
                   }}
                 >
-                  <span className="ct-mc-letter">{opt.id.toUpperCase()}</span>
-                  <span className="ct-mc-text">{opt.text}</span>
+                  <span className="ct-mc-letter">{displayLetter}</span>
+                  {opt.svg ? (
+                    <span
+                      className="ct-mc-svg"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#fff',
+                        borderRadius: 6,
+                        padding: 8,
+                        marginLeft: 12,
+                        width: 80,
+                        height: 80,
+                        flexShrink: 0,
+                      }}
+                      // Inyectamos width/height en el SVG para que ocupe el contenedor.
+                      // Sin esto, el browser le da dimensiones default minúsculas (~20px).
+                      dangerouslySetInnerHTML={{ __html: opt.svg.replace('<svg ', '<svg width="64" height="64" ') }}
+                    />
+                  ) : (
+                    <span className="ct-mc-text">{opt.text}</span>
+                  )}
                 </button>
               );
             })}
@@ -223,3 +341,10 @@ function Timer({ secondsLeft, totalSeconds }: { secondsLeft: number; totalSecond
 }
 
 export function _placeholder(_st: VelnaSubtest) { return null; }
+
+/** Hash simple para seed reproducible del shuffle por pregunta. */
+function simpleHash(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return h;
+}

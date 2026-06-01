@@ -1,19 +1,18 @@
 #!/bin/bash
 # Deploy del backend a Catalyst.
-# Uso: scripts/deploy-backend.sh [dev|prod]
+# Uso: scripts/deploy-backend.sh
+#
+# El environment activo (Development/Production) se controla desde la Catalyst Console
+# en cada proyecto. Este script asume que ya seleccionaste el env correcto en .catalystrc
+# o vía 'catalyst use:project'.
 
 set -e
-ENV=${1:-dev}
 cd "$(dirname "$0")/.."
 
 echo "▶ Building TypeScript..."
 cd functions/api && npm run build && cd ../..
 
-echo "▶ Deploying to Catalyst ($ENV)..."
-if [ "$ENV" = "prod" ]; then
-  catalyst deploy --only functions:api --env production
-else
-  catalyst deploy --only functions:api
-fi
+echo "▶ Deploying to Catalyst..."
+catalyst deploy --only functions:api
 
 echo "✓ Deploy completo"

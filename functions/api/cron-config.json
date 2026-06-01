@@ -1,0 +1,54 @@
+{
+  "_comment": "Cron jobs configuration for Catalyst Functions. Estos NO se deployan automáticamente; se crean a mano en Catalyst Console → Cron Jobs. Este archivo es la fuente de verdad para saber qué se debe configurar y cuándo.",
+  "_setup_instructions": [
+    "1. Catalyst Console → Cloud Scale → Cron Jobs → Create Cron Job",
+    "2. Para cada entry de 'jobs' abajo:",
+    "   - Cron Job Name: usar el campo 'name'",
+    "   - Cron Type: Dynamic Cron",
+    "   - Schedule: cron expression del campo 'schedule'",
+    "   - Description: copiar 'description' (opcional pero útil para debug)",
+    "   - URL: tu base URL del backend + el campo 'path'",
+    "   - HTTP Method: POST",
+    "   - Headers: agregar 'X-Internal-Key' con el valor del INTERNAL_API_KEY",
+    "3. Save → Activar"
+  ],
+  "_base_url": "https://<TU_PROJECT_DOMAIN>.catalystserverless.com/server/api",
+
+  "jobs": [
+    {
+      "name": "outbox_processor",
+      "description": "Procesa eventos pending del outbox (emails, sync, whatsapp). Si no corre, los eventos se acumulan sin enviarse.",
+      "schedule": "*/5 * * * *",
+      "schedule_human": "cada 5 minutos",
+      "path": "/server/api/admin/outbox/process",
+      "method": "POST",
+      "headers": {
+        "X-Internal-Key": "${INTERNAL_API_KEY}",
+        "Content-Type": "application/json"
+      },
+      "body": { "batch_size": 20 },
+      "priority": "ALTA — sin esto los emails no salen"
+    },
+    {
+      "name": "video_purge",
+      "description": "Borra videos de candidatos con > N días según política GDPR (config en Tenants.video_retention_days). Si no corre, retention no se aplica y crece File Store.",
+      "schedule": "0 3 * * *",
+      "schedule_human": "todos los días a las 3am",
+      "path": "/server/api/admin/gdpr/purge-old-videos",
+      "method": "POST",
+      "headers": {
+        "X-Internal-Key": "${INTERNAL_API_KEY}",
+        "Content-Type": "application/json"
+      },
+      "body": {},
+      "priority": "MEDIA — operacional, no crítico"
+    }
+  ],
+
+  "_recruit_sync_note": "Los eventos sync.recruit se procesan a través del outbox_processor (definido arriba). NO se necesita un cron separado — el outbox los despacha como cualquier otro evento. Si querés que sync.recruit corra más frecuentemente, podés crear 2 outbox crons (uno cada 1 min, otro cada 5 min).",
+
+  "_notes": {
+    "manual_trigger": "Mientras no haya cron, podés disparar manual con curl: curl -X POST 'https://<base>/server/api/admin/outbox/process' -H 'X-Internal-Key: <key>' -H 'Content-Type: application/json' -d '{\"batch_size\":20}'",
+    "ui_trigger": "El frontend tiene un botón en Settings → Operacional → 'Procesar outbox ahora' que dispara el processor sin esperar al cron."
+  }
+}

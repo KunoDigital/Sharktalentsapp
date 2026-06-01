@@ -1,13 +1,78 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getPortalJob, type PortalJob, type PortalMilestone, type PortalDraftPayload, type PortalFunnelStats } from '../../data/mockClientPortals';
+import { config } from '../../config';
+import { publicApi, type PortalJobApi, type PortalMilestone, type PortalFunnelStats } from '../../lib/publicApi';
+import { trackPortalEvent } from '../../lib/portalTracker';
+import { ApiError } from '../../lib/api';
+import { logger } from '../../lib/logger';
+import { getPortalJob, type PortalDraftPayload, type PortalJob as MockPortalJob } from '../../data/mockClientPortals';
 import './client-portal.css';
+
+const log = logger('CLIENT_PORTAL_JOB');
+
+type PortalHeader = { client_name: string; client_company: string; agency_name: string };
+type ViewState = { portal: PortalHeader; job: PortalJobApi; draft?: PortalDraftPayload };
 
 export default function ClientPortalJobView() {
   const { token, jobId } = useParams<{ token: string; jobId: string }>();
-  const data = token && jobId ? getPortalJob(token, jobId) : undefined;
+  const [view, setView] = useState<ViewState | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  if (!data) {
+  useEffect(() => {
+    let cancelled = false;
+    if (!token || !jobId) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
+
+    // Track job_viewed una vez por (token, jobId) en sesión
+    trackPortalEvent(token, { event_type: 'portal.job_viewed', job_id: jobId }, `job_viewed:${token}:${jobId}`);
+
+    async function load() {
+      try {
+        if (config.useApi) {
+          const res = await publicApi.getClientPortalJob(token!, jobId!);
+          if (cancelled) return;
+          if (res?.portal && res.job) {
+            setView({ portal: res.portal, job: res.job });
+            setLoading(false);
+            return;
+          }
+        }
+        // Fallback mock
+        const mock = getPortalJob(token!, jobId!);
+        if (cancelled) return;
+        if (mock) {
+          setView(mockToView(mock));
+        } else {
+          setNotFound(true);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        log.warn('portal job load failed', { error: (err as Error).message });
+        if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
+          setNotFound(true);
+        } else {
+          const mock = getPortalJob(token!, jobId!);
+          if (mock) setView(mockToView(mock));
+          else setNotFound(true);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [token, jobId]);
+
+  if (loading) {
+    return <div className="cp-not-found"><h1>Cargando…</h1></div>;
+  }
+
+  if (notFound || !view) {
     return (
       <div className="cp-not-found">
         <h1>Puesto no encontrado</h1>
@@ -16,7 +81,7 @@ export default function ClientPortalJobView() {
     );
   }
 
-  const { portal, job } = data;
+  const { portal, job, draft } = view;
 
   return (
     <div className="cp-root">
@@ -32,15 +97,15 @@ export default function ClientPortalJobView() {
       </header>
 
       <main className="cp-main">
-        <Link to={`/portal/${portal.token}`} className="cp-back">← Mis puestos</Link>
+        <Link to={`/portal/${token}`} className="cp-back">← Mis puestos</Link>
 
         <h1 className="cp-job-title-big">{job.display_title}</h1>
         <p className="cp-job-meta">Iniciado el {job.created_at}</p>
 
         <Tracking milestones={job.milestones} estimate={job.funnel?.estimated_finalists_ready} />
 
-        {job.stage === 'profile_pending' && job.draft && (
-          <DraftApproval draft={job.draft} job={job} />
+        {job.stage === 'profile_pending' && draft && (
+          <DraftApproval draft={draft} />
         )}
 
         {(job.stage === 'search_started' || job.stage === 'funnel_active') && job.funnel && (
@@ -68,6 +133,28 @@ export default function ClientPortalJobView() {
   );
 }
 
+function mockToView(input: { portal: { client_name: string; client_company: string; agency_name: string }; job: MockPortalJob }): ViewState {
+  const job: PortalJobApi = {
+    id: input.job.id,
+    job_id: input.job.job_id,
+    display_title: input.job.display_title,
+    stage: input.job.stage === 'profile_approved' ? 'search_started' : input.job.stage,
+    created_at: input.job.created_at,
+    funnel: input.job.funnel,
+    report_token: input.job.report_token,
+    milestones: input.job.milestones,
+  };
+  return {
+    portal: {
+      client_name: input.portal.client_name,
+      client_company: input.portal.client_company,
+      agency_name: input.portal.agency_name,
+    },
+    job,
+    draft: input.job.draft,
+  };
+}
+
 // ====== Tracking estilo Uber Eats (4 milestones) ======
 
 function Tracking({ milestones, estimate }: { milestones: PortalMilestone[]; estimate?: string }) {
@@ -77,7 +164,6 @@ function Tracking({ milestones, estimate }: { milestones: PortalMilestone[]; est
         {milestones.map((m, i) => {
           const isLast = i === milestones.length - 1;
           const done = m.completed_at !== null;
-          // current = primera milestone NO completada
           const current = !done && milestones.slice(0, i).every((p) => p.completed_at !== null);
           return (
             <div key={m.key} className="cp-track-step">
@@ -103,7 +189,7 @@ function Tracking({ milestones, estimate }: { milestones: PortalMilestone[]; est
 
 // ====== Aprobar draft del job profile (stage profile_pending) ======
 
-function DraftApproval({ draft, job: _job }: { draft: PortalDraftPayload; job: PortalJob }) {
+function DraftApproval({ draft }: { draft: PortalDraftPayload }) {
   const [decision, setDecision] = useState<'approve' | 'request_changes' | 'talk' | null>(null);
   const [comment, setComment] = useState('');
   const [submitted, setSubmitted] = useState(false);

@@ -1,0 +1,102 @@
+Tabla,Columna,Tipo,Largo,Obligatorio,Único,Default
+Tenants,clerk_org_id,Var Char,50,Sí,Sí,
+Tenants,name,Var Char,255,Sí,No,
+Tenants,slug,Var Char,100,Sí,Sí,
+Tenants,plan,Var Char,20,Sí,No,free
+Tenants,status,Var Char,20,Sí,No,active
+Tenants,max_active_jobs,Int,,Sí,No,5
+Tenants,max_candidates_per_month,Int,,Sí,No,50
+Tenants,features_enabled,Text,,No,No,
+Tenants,branding_config,Text,,No,No,
+Tenants,billing_email,Var Char,255,No,No,
+Tenants,created_at,DateTime,,Sí,No,
+Tenants,updated_at,DateTime,,Sí,No,
+ProcessedEvents,event_id,Var Char,100,Sí,Sí,
+ProcessedEvents,provider,Var Char,30,Sí,No,
+ProcessedEvents,received_at,DateTime,,Sí,No,
+Jobs,tenant_id,Var Char,50,Sí,No,
+Jobs,title,Var Char,255,Sí,No,
+Jobs,company,Var Char,255,Sí,No,
+Jobs,tech_prompt,Text,,No,No,
+Jobs,cognitive_level,Var Char,20,Sí,No,mid
+Jobs,is_active,Boolean,,Sí,No,true
+Jobs,company_context,Text,,No,No,
+Jobs,created_by,Var Char,255,Sí,No,
+Jobs,created_at,DateTime,,Sí,No,
+Jobs,updated_at,DateTime,,Sí,No,
+Candidates,name,Var Char,255,Sí,No,
+Candidates,email,Var Char,255,Sí,No,
+Candidates,phone,Var Char,50,No,No,
+Candidates,age,Int,,No,No,
+Candidates,salary_expectation,Int,,No,No,
+Candidates,availability,Var Char,30,No,No,
+Candidates,interview_file_id,Var Char,50,No,No,
+Candidates,created_at,DateTime,,Sí,No,
+Results,assessment_id,Var Char,50,Sí,No,
+Results,candidate_id,Var Char,50,Sí,No,
+Results,answers,Text,,No,No,
+Results,pipeline_stage,Var Char,30,Sí,No,prefilter_pending
+Results,started_at,DateTime,,Sí,No,
+Results,completed_at,DateTime,,No,No,
+Results,report_downloaded_at,DateTime,,No,No,
+Results,idempotency_key,Var Char,64,No,No,
+PipelineTransitions,result_id,Var Char,50,Sí,No,
+PipelineTransitions,from_stage,Var Char,30,No,No,
+PipelineTransitions,to_stage,Var Char,30,Sí,No,
+PipelineTransitions,actor,Var Char,50,Sí,No,
+PipelineTransitions,reason,Var Char,200,No,No,
+PipelineTransitions,transitioned_at,DateTime,,Sí,No,
+Scores,result_id,Var Char,50,Sí,Sí,
+Scores,disc_raw_d,Int,,No,No,0
+Scores,disc_raw_i,Int,,No,No,0
+Scores,disc_raw_s,Int,,No,No,0
+Scores,disc_raw_c,Int,,No,No,0
+Scores,disc_norm_d,Int,,No,No,0
+Scores,disc_norm_i,Int,,No,No,0
+Scores,disc_norm_s,Int,,No,No,0
+Scores,disc_norm_c,Int,,No,No,0
+Scores,disc_perfil_dominante,Var Char,1,No,No,
+Scores,disc_pk_id,Var Char,10,No,No,
+Scores,velna_verbal,Int,,No,No,0
+Scores,velna_espacial,Int,,No,No,0
+Scores,velna_logica,Int,,No,No,0
+Scores,velna_numerica,Int,,No,No,0
+Scores,velna_abstracta,Int,,No,No,0
+Scores,velna_total,Int,,No,No,0
+Scores,velna_max,Int,,No,No,0
+Scores,velna_indice,Int,,No,No,0
+Scores,emo_score,Int,,No,No,0
+Scores,emo_perfil,Var Char,12,No,No,
+Scores,tec_score_pct,Int,,No,No,0
+Scores,tec_total_correct,Int,,No,No,0
+Scores,tec_total_questions,Int,,No,No,0
+Scores,tec_passed,Boolean,,No,No,false
+Scores,int_overall,Var Char,10,No,No,
+Scores,int_overall_pct,Int,,No,No,0
+Scores,int_recomendacion,Var Char,100,No,No,
+Scores,int_buena_impresion,Var Char,10,No,No,
+Scores,int_buena_impresion_pct,Int,,No,No,0
+Scores,disc_completed_at,DateTime,,No,No,
+Scores,velna_completed_at,DateTime,,No,No,
+Scores,emo_completed_at,DateTime,,No,No,
+Scores,tec_completed_at,DateTime,,No,No,
+Scores,int_completed_at,DateTime,,No,No,
+IntegrityDimensions,result_id,Var Char,50,Sí,No,
+IntegrityDimensions,dimension,Var Char,30,Sí,No,
+IntegrityDimensions,nivel,Var Char,10,Sí,No,medio
+IntegrityDimensions,pct,Int,,Sí,No,0
+AuditLog,actor_user,Var Char,255,Sí,No,
+AuditLog,action,Var Char,50,Sí,No,
+AuditLog,resource_type,Var Char,30,Sí,No,
+AuditLog,resource_id,Var Char,50,No,No,
+AuditLog,changes,Text,,No,No,
+AuditLog,ip,Var Char,45,No,No,
+AuditLog,user_agent,Text,,No,No,
+AuditLog,created_at,DateTime,,Sí,No,
+OutboxEvents,event_type,Var Char,50,Sí,No,
+OutboxEvents,payload,Text,,Sí,No,
+OutboxEvents,status,Var Char,15,Sí,No,pending
+OutboxEvents,retry_count,Int,,Sí,No,0
+OutboxEvents,last_error,Text,,No,No,
+OutboxEvents,created_at,DateTime,,Sí,No,
+OutboxEvents,processed_at,DateTime,,No,No,

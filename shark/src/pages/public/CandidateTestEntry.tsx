@@ -71,9 +71,9 @@ export default function CandidateTestEntry() {
           <h2>{phaseTitle}</h2>
           <p>Duración estimada: <strong>{phaseDuration}</strong></p>
           <ul className="ct-rules">
-            <li>Hacela en un lugar tranquilo, sin interrupciones.</li>
+            <li>Hazla en un lugar tranquilo, sin interrupciones.</li>
             <li>No salgas de esta ventana ni copies/pegues — el sistema detecta esto y queda registrado.</li>
-            <li>Si tenés un problema técnico, podés volver al link y continuar donde quedaste.</li>
+            <li>Si tienes un problema técnico, puedes volver al link y continuar donde quedaste.</li>
           </ul>
           <Link to={phaseRoute} className="ct-start-btn">
             Empezar ahora →

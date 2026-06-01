@@ -1,0 +1,284 @@
+[
+  {
+    "id": "a2_v01",
+    "type": "vocab",
+    "text": "What is the opposite of \"big\"?",
+    "options": ["Old", "Tall", "Small", "Heavy"],
+    "correct": 2
+  },
+  {
+    "id": "a2_v02",
+    "type": "vocab",
+    "text": "My mother's brother is my:",
+    "options": ["Cousin", "Nephew", "Uncle", "Grandfather"],
+    "correct": 2
+  },
+  {
+    "id": "a2_v03",
+    "type": "vocab",
+    "text": "It's very cold today. I need my:",
+    "options": ["sandals", "sunglasses", "jacket", "shorts"],
+    "correct": 2
+  },
+  {
+    "id": "a2_v04",
+    "type": "vocab",
+    "text": "What day comes after Monday?",
+    "options": ["Sunday", "Tuesday", "Wednesday", "Friday"],
+    "correct": 1
+  },
+  {
+    "id": "a2_v05",
+    "type": "vocab",
+    "text": "Which of these is a drink?",
+    "options": ["Bread", "Water", "Cheese", "Sandwich"],
+    "correct": 1
+  },
+  {
+    "id": "a2_v06",
+    "type": "vocab",
+    "text": "What do you wear on your feet?",
+    "options": ["A hat", "Gloves", "Shoes", "A scarf"],
+    "correct": 2
+  },
+  {
+    "id": "a2_v07",
+    "type": "vocab",
+    "text": "Which one is a vegetable?",
+    "options": ["Apple", "Milk", "Carrot", "Bread"],
+    "correct": 2
+  },
+  {
+    "id": "a2_v08",
+    "type": "vocab",
+    "text": "Where do you usually buy fresh bread?",
+    "options": ["Hospital", "Bakery", "Library", "Bank"],
+    "correct": 1
+  },
+  {
+    "id": "a2_v09",
+    "type": "vocab",
+    "text": "Which season comes after winter?",
+    "options": ["Summer", "Autumn", "Spring", "Winter again"],
+    "correct": 2
+  },
+  {
+    "id": "a2_v10",
+    "type": "vocab",
+    "text": "Which animal lives in water?",
+    "options": ["Lion", "Fish", "Dog", "Cow"],
+    "correct": 1
+  },
+  {
+    "id": "a2_v11",
+    "type": "vocab",
+    "text": "What color is grass usually?",
+    "options": ["Blue", "Red", "Green", "Yellow"],
+    "correct": 2
+  },
+  {
+    "id": "a2_v12",
+    "type": "vocab",
+    "text": "Which part of your body do you use to see?",
+    "options": ["Ears", "Mouth", "Eyes", "Hands"],
+    "correct": 2
+  },
+  {
+    "id": "a2_v13",
+    "type": "vocab",
+    "text": "Which person works in a hospital?",
+    "options": ["Teacher", "Nurse", "Driver", "Cook"],
+    "correct": 1
+  },
+  {
+    "id": "a2_v14",
+    "type": "vocab",
+    "text": "How can you travel a long distance quickly?",
+    "options": ["By bicycle", "By plane", "By foot", "By boat"],
+    "correct": 1
+  },
+  {
+    "id": "a2_v15",
+    "type": "vocab",
+    "text": "What is the opposite of \"happy\"?",
+    "options": ["Tired", "Hungry", "Sad", "Quiet"],
+    "correct": 2
+  },
+  {
+    "id": "a2_v16",
+    "type": "vocab",
+    "text": "Which one is a piece of clothing?",
+    "options": ["Plate", "Shirt", "Table", "Window"],
+    "correct": 1
+  },
+
+  {
+    "id": "a2_g01",
+    "type": "grammar",
+    "text": "She _____ to school every day.",
+    "options": ["go", "goes", "going", "gone"],
+    "correct": 1
+  },
+  {
+    "id": "a2_g02",
+    "type": "grammar",
+    "text": "Yesterday I _____ to the supermarket.",
+    "options": ["go", "goes", "went", "going"],
+    "correct": 2
+  },
+  {
+    "id": "a2_g03",
+    "type": "grammar",
+    "text": "I have _____ apple in my bag.",
+    "options": ["a", "an", "the", "some"],
+    "correct": 1
+  },
+  {
+    "id": "a2_g04",
+    "type": "grammar",
+    "text": "This is my brother. _____ name is Carlos.",
+    "options": ["He", "His", "She", "Her"],
+    "correct": 1
+  },
+  {
+    "id": "a2_g05",
+    "type": "grammar",
+    "text": "She _____ like coffee. She prefers tea.",
+    "options": ["don't", "doesn't", "isn't", "not"],
+    "correct": 1
+  },
+  {
+    "id": "a2_g06",
+    "type": "grammar",
+    "text": "I have two _____ at home.",
+    "options": ["cat", "cats", "catses", "cates"],
+    "correct": 1
+  },
+  {
+    "id": "a2_g07",
+    "type": "grammar",
+    "text": "The book is _____ the table.",
+    "options": ["in", "on", "at", "of"],
+    "correct": 1
+  },
+  {
+    "id": "a2_g08",
+    "type": "grammar",
+    "text": "We have a meeting _____ Monday.",
+    "options": ["in", "at", "on", "by"],
+    "correct": 2
+  },
+  {
+    "id": "a2_g09",
+    "type": "grammar",
+    "text": "Today is _____ than yesterday.",
+    "options": ["hot", "more hot", "hotter", "hottest"],
+    "correct": 2
+  },
+  {
+    "id": "a2_g10",
+    "type": "grammar",
+    "text": "_____ you swim?",
+    "options": ["Are", "Do", "Can", "Is"],
+    "correct": 2
+  },
+  {
+    "id": "a2_g11",
+    "type": "grammar",
+    "text": "_____ four people in the room.",
+    "options": ["There is", "There are", "It is", "They are"],
+    "correct": 1
+  },
+  {
+    "id": "a2_g12",
+    "type": "grammar",
+    "text": "_____ book here is mine.",
+    "options": ["This", "These", "It", "Its"],
+    "correct": 0
+  },
+  {
+    "id": "a2_g13",
+    "type": "grammar",
+    "text": "_____ books do you have?",
+    "options": ["How much", "How many", "What much", "Which many"],
+    "correct": 1
+  },
+  {
+    "id": "a2_g14",
+    "type": "grammar",
+    "text": "Tomorrow I _____ at home.",
+    "options": ["am", "was", "will be", "be"],
+    "correct": 2
+  },
+  {
+    "id": "a2_g15",
+    "type": "grammar",
+    "text": "_____ is your name?",
+    "options": ["Who", "What", "Where", "How"],
+    "correct": 1
+  },
+  {
+    "id": "a2_g16",
+    "type": "grammar",
+    "text": "Open _____ door, please.",
+    "options": ["a", "an", "the", "of"],
+    "correct": 2
+  },
+
+  {
+    "id": "a2_r01",
+    "type": "reading",
+    "text": "Read: \"Tom is 25 years old. He works in a hospital. He is a doctor. He starts work at 8 a.m. every day.\"\n\nWhat time does Tom start work?",
+    "options": ["7 a.m.", "8 a.m.", "9 a.m.", "10 a.m."],
+    "correct": 1
+  },
+  {
+    "id": "a2_r02",
+    "type": "reading",
+    "text": "Read: \"Sara is a student. She is 18 years old. She studies English at university.\"\n\nHow old is Sara?",
+    "options": ["16", "17", "18", "19"],
+    "correct": 2
+  },
+  {
+    "id": "a2_r03",
+    "type": "reading",
+    "text": "Read: \"John works in a small office near the station. He goes to work by bus every morning.\"\n\nHow does John go to work?",
+    "options": ["By car", "By bus", "By train", "He walks"],
+    "correct": 1
+  },
+  {
+    "id": "a2_r04",
+    "type": "reading",
+    "text": "Read: \"We have a cat at home. Its name is Tom. He likes milk and is very friendly.\"\n\nWhat does the cat like?",
+    "options": ["Water", "Meat", "Milk", "Bread"],
+    "correct": 2
+  },
+  {
+    "id": "a2_r05",
+    "type": "reading",
+    "text": "Read: \"Lisa wakes up at 6 a.m. She drinks coffee, takes a shower and goes to work at 7:30.\"\n\nWhen does Lisa go to work?",
+    "options": ["6:00", "7:00", "7:30", "8:00"],
+    "correct": 2
+  },
+  {
+    "id": "a2_r06",
+    "type": "reading",
+    "text": "Read: \"There is a park near my house. I go there every Saturday with my dog.\"\n\nWhen does the speaker go to the park?",
+    "options": ["Every day", "Every Sunday", "Every Saturday", "Once a month"],
+    "correct": 2
+  },
+  {
+    "id": "a2_r07",
+    "type": "reading",
+    "text": "Read: \"Mike has two children. They are 5 and 8 years old. They go to the same school.\"\n\nHow old are Mike's children?",
+    "options": ["3 and 5", "5 and 8", "6 and 9", "8 and 10"],
+    "correct": 1
+  },
+  {
+    "id": "a2_r08",
+    "type": "reading",
+    "text": "Read: \"It's hot today. I'm going to the beach with my friends. We will swim and have lunch there.\"\n\nWhere is the speaker going?",
+    "options": ["The mountains", "The beach", "The cinema", "The park"],
+    "correct": 1
+  }
+]

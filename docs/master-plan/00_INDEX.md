@@ -19,6 +19,11 @@ Plan integral para llevar SharkTalents de "prototipo single-tenant funcional" a 
 10. **Outbound sourcing** — pool interno + HeyReach para LinkedIn (mercado Panamá) ([22](22_OUTBOUND_SOURCING.md))
 11. **Integraciones Zoho** — Recruit/Meeting/Zia/Bookings/Sign en un solo doc cross-funcional ([23](23_INTEGRACIONES_ZOHO.md))
 
+**Mejoras adicionales (sesión 2026-05-05/06):**
+12. **Test de inglés (opcional por puesto)** — multiple-choice + listening + writing IA-evaluado + speaking video, 4 niveles CEFR ([25](25_TEST_INGLES.md))
+13. **Test de Mentalidades** — Adaptabilidad y Resiliencia basado en marco McKinsey Forward (entre DISC y VELNA, sin alertar al candidato) ([26](26_TEST_MENTALIDADES.md))
+14. **ZeptoMail (Zoho transactional email)** — reemplazo de Postmark/SendGrid en el roadmap. Incluido en Zoho One de Cris, costo $0 adicional. Wire-up backend listo en `lib/zeptomailClient.ts` + `outbox.ts`. Pendiente verificar dominio + activar Mail Agent (Cris, ver [PUNCH_LIST.md](../PUNCH_LIST.md))
+
 **Estimación total:** 24–28 semanas calendario para una persona (vs 14-18 del refactor base). Se puede ir deployando por fase — cada una deja la app funcional.
 
 ---
@@ -93,6 +98,7 @@ El prototipo actual es single-tenant (un admin único, Kuno). Para escalar a má
 | 20 | [Videos dinámicos](20_VIDEOS_DINAMICOS.md) | Después de prueba técnica doble eje | 25 min |
 | 21 | [Bot decisor](21_BOT_DECISOR.md) | Después de tener data de 2-3 puestos cerrados | 25 min |
 | 22 | [Outbound sourcing](22_OUTBOUND_SOURCING.md) | Cuando inbound no alcanza — Q3+ | 25 min |
+| 22b | [Embudo headhunting Fase 2](22b_EMBUDO_HEADHUNTING_FASE2.md) | Decisión 2026-05-13: persona dedicada antes de automatizar video | 15 min |
 | 23 | [Integraciones Zoho](23_INTEGRACIONES_ZOHO.md) | Antes de tocar cualquier webhook Zoho | 25 min |
 
 **Tiempo total de lectura:** ~9 horas.
@@ -191,3 +197,33 @@ Al final del refactor, debemos poder afirmar:
 ## Siguiente paso
 
 → Leer [01_PRINCIPIOS_Y_ALCANCE.md](01_PRINCIPIOS_Y_ALCANCE.md) para confirmar scope.
+
+---
+
+## Estado real (2026-05-08)
+
+**v2 deployado en Catalyst Development.** Backend operacional + frontend wireado + Clerk auth + Anthropic conectado + ZeptoMail listo para enviar.
+
+Para detalles del estado actual ver:
+- **Resumen ejecutivo:** `README.md` raíz, sección "Estado actual"
+- **Snapshot completo:** [12_ROADMAP_EJECUCION.md](12_ROADMAP_EJECUCION.md) sección "Snapshot estado real"
+- **Punch list de Cris** (lo pendiente del lado humano): [../PUNCH_LIST.md](../PUNCH_LIST.md)
+- **Tablas pendientes:** [MIGRATIONS_PENDIENTES.xlsx](MIGRATIONS_PENDIENTES.xlsx) + CSVs auxiliares
+- **Catalyst Text 10K + File Store:** [../CATALYST_TEXT_LIMITS.md](../CATALYST_TEXT_LIMITS.md)
+- **Friday runbook** (paso-a-paso para activar todo): [../FRIDAY_RUNBOOK.md](../FRIDAY_RUNBOOK.md)
+- **Marketing funnel** (deferred): [24_MARKETING_FUNNEL.md](24_MARKETING_FUNNEL.md) + [24_MARKETING_FUNNEL_TECH_BRIEF.md](24_MARKETING_FUNNEL_TECH_BRIEF.md)
+- **Notas de seguridad:** [../SECURITY_NOTES.md](../SECURITY_NOTES.md)
+
+**Métricas al 2026-05-08:**
+- Backend: 799 tests pasando, ~90 endpoints, 7 webhooks
+- Frontend: 185 tests, 28+ pages, bundle ~370KB main
+- Tablas Catalyst: 16 creadas + ~10 pendientes (Block 2 deferred, fallback graceful)
+- Catalyst File Store: 3 folders configurados (`candidatevideos`, `englishlistening`, `largecontent`)
+- Integraciones: 4 activas (Clerk, Anthropic, ZeptoMail, HeyReach) + 8 con código listo
+
+**Cambios estructurales recientes (2026-05-08):**
+- Refactor del límite Catalyst Text de 10K chars (antes asumíamos 64KB) + `lib/largeContentStore.ts` para overflow >9.5K
+- ZeptoMail wireado + 2 emails al cliente (portal_access + report_ready) + recovery_link al candidato
+- Emails al candidato delegados a Zoho Recruit (templates por stage, no en nuestro código)
+- Env vars renombradas `CATALYST_*_FOLDER_ID` → `FILESTORE_*_FOLDER_ID` (Catalyst reserva el prefijo `CATALYST_`)
+- Settings → tab "⚙️ Operacional" con botón manual para procesar outbox

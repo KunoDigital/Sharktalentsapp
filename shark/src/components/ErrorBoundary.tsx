@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { reportError } from '../lib/errorTracker';
 
 type Props = {
   children: ReactNode;
@@ -23,7 +24,12 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error(`[ErrorBoundary${this.props.context ? `:${this.props.context}` : ''}]`, error, info);
-    // En producción acá mandamos a Sentry / Datadog / catalyst logger
+    reportError(error, {
+      route: typeof location !== 'undefined' ? location.hash : undefined,
+      source: 'react_error_boundary',
+      component_context: this.props.context,
+      component_stack: info.componentStack ?? undefined,
+    });
   }
 
   reset = () => {

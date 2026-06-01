@@ -1,19 +1,73 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getJobById } from '../data/mockJobs';
 import {
   getApplicationsByJobId,
   type Application,
 } from '../data/mockApplications';
+import { useApi, ApiError } from '../lib/api';
+import { adaptToMockApplication } from '../lib/applicationAdapter';
+import { config } from '../config';
+import { logger } from '../lib/logger';
 import './pages.css';
 import './comparativo.css';
 
+const log = logger('COMPARATIVO');
 const MAX_SELECTED = 4;
 
 export default function Comparativo() {
   const { id } = useParams<{ id: string }>();
+  const api = useApi();
+  const [backendApps, setBackendApps] = useState<Application[] | null>(null);
+  const [loading, setLoading] = useState(config.useApi);
+  const [_error, setError] = useState<string | null>(null);
+  void _error;
+
+  // Si useApi=true, cargar applications reales del backend
+  useEffect(() => {
+    if (!config.useApi || !id) return;
+    let cancelled = false;
+    setLoading(true);
+    Promise.all([
+      api.applications.list({ jobId: id, limit: 100 }),
+      api.candidates.list({ limit: 500 }),
+    ])
+      .then(async ([appsRes, candsRes]) => {
+        if (cancelled) return;
+        const candById = new Map(candsRes.candidates.map((c) => [c.ROWID, c]));
+        // Para cada application, traer scores
+        const apps: Application[] = await Promise.all(
+          appsRes.applications.map(async (a) => {
+            try {
+              const s = await api.applications.readScores(a.ROWID);
+              return adaptToMockApplication(a, candById.get(a.candidate_id), s.scores, s.integrity_dimensions);
+            } catch {
+              return adaptToMockApplication(a, candById.get(a.candidate_id), null, []);
+            }
+          }),
+        );
+        if (cancelled) return;
+        setBackendApps(apps);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        log.warn('comparativo load failed', { error: (err as Error).message });
+        if (err instanceof ApiError) setError(`${err.code}: ${err.message}`);
+        else setError((err as Error).message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [id]);
+
   const job = id ? getJobById(id) : undefined;
-  const allApps = useMemo(() => (job ? getApplicationsByJobId(job.id) : []), [job]);
+  const allApps = useMemo(() => {
+    if (config.useApi && backendApps) return backendApps;
+    return job ? getApplicationsByJobId(job.id) : [];
+  }, [job, backendApps]);
+
+  if (loading) return <p className="muted">Cargando candidatos…</p>;
 
   // pre-seleccionar finalistas
   const initial = useMemo(
@@ -475,3 +529,4 @@ function classifySim(pct: number): 'high' | 'mid' | 'low' {
   if (pct >= 50) return 'mid';
   return 'low';
 }
+

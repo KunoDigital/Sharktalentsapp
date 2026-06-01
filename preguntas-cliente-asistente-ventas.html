@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reunión cliente — Asistente de Ventas</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 0 24px 60px;
+    color: #1a1a1a;
+    line-height: 1.6;
+    background: #fafafa;
+  }
+  h1 {
+    font-size: 28px;
+    margin: 0 0 4px;
+    color: #0e1218;
+  }
+  .subtitle {
+    color: #6b7280;
+    font-size: 15px;
+    margin-bottom: 32px;
+  }
+  h2 {
+    font-size: 20px;
+    color: #0e1218;
+    margin-top: 32px;
+    margin-bottom: 12px;
+    padding-left: 12px;
+    border-left: 4px solid #dafd6f;
+  }
+  h2 .time {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: normal;
+    margin-left: 8px;
+  }
+  .box {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 12px 0;
+  }
+  .confirm {
+    background: #f0fdf4;
+    border-left: 4px solid #22c55e;
+  }
+  .key-question {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 10px 0;
+    font-weight: 500;
+  }
+  .key-question strong { color: #92400e; }
+  .red-flag {
+    background: #fef2f2;
+    border-left: 4px solid #ef4444;
+  }
+  ul { margin: 8px 0 12px 0; padding-left: 24px; }
+  li { margin-bottom: 6px; }
+  .quote {
+    font-style: italic;
+    color: #4b5563;
+    display: block;
+    padding: 8px 0 8px 16px;
+    border-left: 2px solid #d1d5db;
+    margin: 6px 0;
+  }
+  .option-list {
+    list-style: none;
+    padding-left: 0;
+  }
+  .option-list li {
+    padding: 8px 14px;
+    background: #f9fafb;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    border: 1px solid #e5e7eb;
+  }
+  .option-list strong { color: #0e1218; }
+  .footer-tip {
+    background: #0e1218;
+    color: #fff;
+    padding: 18px 22px;
+    border-radius: 8px;
+    margin-top: 32px;
+  }
+  .footer-tip strong { color: #dafd6f; }
+  .ultra-corto {
+    background: #0e1218;
+    color: #fff;
+    padding: 24px;
+    border-radius: 10px;
+    margin-top: 40px;
+  }
+  .ultra-corto h2 {
+    color: #dafd6f;
+    border-left-color: #dafd6f;
+    margin-top: 0;
+  }
+  .ultra-corto ol {
+    color: #e6e8eb;
+    padding-left: 24px;
+  }
+  .ultra-corto li {
+    margin-bottom: 8px;
+  }
+  .ultra-corto li strong { color: #dafd6f; }
+  .note {
+    font-size: 13px;
+    color: #6b7280;
+    font-style: italic;
+  }
+  @media print {
+    body { background: #fff; }
+    .box { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Reunión cliente — Asistente de Ventas</h1>
+<p class="subtitle">El PDF del cliente ya tiene la parte técnica. Solo preguntá lo que NO está o necesita aclararse.</p>
+
+<!-- LO QUE YA ESTÁ -->
+<h2>✓ Ya está en el PDF — solo confirmar</h2>
+<div class="box confirm">
+  <ul>
+    <li><strong>Cargo:</strong> Asistente de Ventas</li>
+    <li><strong>Reporta a:</strong> Jefe de Área / Gerencia General</li>
+    <li><strong>A su cargo:</strong> N/A (no supervisa)</li>
+    <li><strong>Finalidad:</strong> apoyo al equipo comercial, gestión de clientes, SERCOP, redes</li>
+    <li><strong>Responsabilidades:</strong> 8 puntos ya definidos</li>
+    <li><strong>Tareas diarias:</strong> 17 funciones específicas</li>
+    <li><strong>Formación:</strong> 3er nivel — Ing. Comercial / Adm. Empresas / afines</li>
+    <li><strong>Experiencia:</strong> 2 años con SERCOP</li>
+  </ul>
+  <p class="quote">"Antes de avanzar, en el perfil que mandaste vi que reporta a la Gerencia, son 8 responsabilidades principales y la persona viene del área comercial. ¿Hay algo que cambió o que querés agregar?"</p>
+</div>
+
+<!-- EMPRESA Y CONTEXTO -->
+<h2>1. Empresa y contexto <span class="time">(2 min)</span></h2>
+<div class="box">
+  <ul>
+    <li>¿Cómo se llama la empresa y a qué se dedican exactamente?</li>
+    <li>¿Cuántos empleados tienen? ¿Hace cuánto operan?</li>
+    <li>¿Sector específico? (retail, B2B, servicios, etc.)</li>
+    <li>¿Cuántos asesores comerciales hay? ¿Con cuántos va a trabajar?</li>
+  </ul>
+</div>
+
+<!-- EQUIPO Y JEFE - NUEVO -->
+<h2>2. Cómo es el equipo y el jefe <span class="time">(4 min)</span> — clave para que encaje</h2>
+<div class="box">
+  <p><strong>Sobre el jefe directo (Gerente/Jefe de Área):</strong></p>
+  <ul>
+    <li>¿Cómo describirías el estilo del jefe directo? ¿Es <strong>autoritario y directo</strong>, <strong>cercano y participativo</strong>, o <strong>distante y lo deja hacer</strong>?</li>
+    <li>¿Le gusta que la gente le consulte mucho o prefiere que resuelvan solos?</li>
+    <li>¿Es muy detallista revisando el trabajo de otros o delega y confía?</li>
+    <li>¿Es paciente o tiene mecha corta?</li>
+  </ul>
+
+  <div class="key-question">
+    <strong>⭐ Pregunta clave:</strong><br>
+    "¿Con qué tipo de personalidad <strong>NO</strong> encajaría tu jefe? Por ejemplo, alguien muy callado, alguien que pregunta mucho, alguien que improvisa…"
+  </div>
+
+  <p style="margin-top: 16px;"><strong>Sobre el equipo donde va a entrar:</strong></p>
+  <ul>
+    <li>¿Cuántas personas son y de qué edades promedio?</li>
+    <li>¿El equipo es <strong>cercano y conversador</strong> o <strong>cada uno en lo suyo</strong>?</li>
+    <li>¿Tono <strong>formal</strong> o <strong>informal</strong>? ¿Se tratan de usted o de tú?</li>
+    <li>¿Hay alguien en el equipo con personalidad fuerte o conflictiva con quien esta persona va a tener que convivir?</li>
+    <li>"Si te imaginás a esta persona almorzando con el equipo en el primer día, ¿cómo pinta la escena?"</li>
+    <li>¿Es un equipo con <strong>mucha rotación</strong> o estable?</li>
+  </ul>
+</div>
+
+<!-- CONDICIONES -->
+<h2>3. Condiciones del puesto <span class="time">(3 min)</span></h2>
+<div class="box">
+  <ul>
+    <li><strong>Salario:</strong> ¿Cuál es la remuneración mensual? <span class="note">(el PDF lo deja vacío)</span></li>
+    <li>¿Hay comisión o bono variable? ¿En base a qué se calcula?</li>
+    <li>Modalidad: ¿presencial, híbrido, remoto? ¿En qué ciudad?</li>
+    <li>¿Requiere viajes? ¿Cuántos por mes?</li>
+    <li>¿Cuándo necesitan que arranque? ¿Hay urgencia?</li>
+  </ul>
+</div>
+
+<!-- IDIOMAS - NUEVO -->
+<h2>4. Idiomas <span class="time">(2 min)</span></h2>
+<div class="box">
+  <ul>
+    <li>¿Necesita <strong>inglés</strong>? <span class="note">(el PDF no lo menciona, pero SERCOP y clientes internacionales suelen requerirlo)</span></li>
+    <li>Si sí: <strong>¿para qué exactamente?</strong> Emails, llamadas, reuniones, lectura de catálogos, traducir contratos…</li>
+    <li>Nivel: <strong>A2 básico, B1 intermedio, B2 avanzado, C1 fluido</strong>. <em>"¿Tiene que poder mantener una llamada con un proveedor extranjero o solo entender emails sencillos?"</em></li>
+    <li>¿Es importante también <strong>escrito</strong>? (redactar emails formales en inglés es muy distinto a "entiendo lo que me dicen")</li>
+    <li>¿Algún otro idioma necesario? (portugués si exportan a Brasil, etc.)</li>
+  </ul>
+</div>
+
+<!-- POR QUÉ BUSCAN -->
+<h2>5. Por qué buscan ahora <span class="time">(3 min)</span> — IMPORTANTE</h2>
+<div class="box">
+  <ul>
+    <li>¿Es un puesto <strong>nuevo</strong> o <strong>reemplazo</strong>?</li>
+    <li>Si es reemplazo: <em>"¿Qué pasó con la persona anterior? ¿Por qué se fue o por qué la sacaron?"</em> → te dice qué NO quieren</li>
+    <li>Si es nuevo: <em>"¿Qué cambió en la empresa que hace que ahora lo necesiten?"</em></li>
+  </ul>
+  <div class="key-question">
+    <strong>⭐ La pregunta clave:</strong><br>
+    "Si a 6 meses miramos hacia atrás, ¿qué tiene que haber pasado para que digas 'esta contratación fue un éxito'?"
+  </div>
+</div>
+
+<!-- TIPO DE PERSONA -->
+<h2>6. Tipo de persona — para DISC <span class="time">(5 min)</span></h2>
+<div class="box">
+  <p>El PDF marca <strong>20+ aptitudes como Esencial</strong>, eso es demasiado. Forzá al cliente a priorizar.</p>
+
+  <p><strong>Si tuvieras que elegir entre estos 3 perfiles, ¿cuál preferís?</strong></p>
+  <ul class="option-list">
+    <li><strong>A:</strong> persona muy organizada y detallista que sigue procesos al pie de la letra</li>
+    <li><strong>B:</strong> persona muy sociable y cálida que conecta fácil con clientes</li>
+    <li><strong>C:</strong> persona muy decidida y rápida que resuelve sin consultar</li>
+  </ul>
+
+  <p><strong>Para esta persona, ¿es más importante…?</strong></p>
+  <ul>
+    <li>Velocidad para resolver pedidos <strong>vs</strong> Precisión en cada pedido</li>
+    <li>Iniciativa propia <strong>vs</strong> Seguir instrucciones</li>
+    <li>Liderar el equipo <strong>vs</strong> Apoyar al equipo</li>
+    <li>Cerrar ventas grandes <strong>vs</strong> Mantener clientes existentes</li>
+  </ul>
+
+  <p><strong>¿Cómo querés que maneje un cliente molesto que llama?</strong></p>
+  <ul>
+    <li>Le explica con datos y procesos</li>
+    <li>Lo escucha con empatía y suaviza</li>
+    <li>Lo resuelve rápido y pasa al siguiente</li>
+    <li>Lo deriva al supervisor</li>
+  </ul>
+
+  <p><strong>Ambiente de trabajo:</strong> ¿acelerado (alto volumen, presión por metas, mucho movimiento) o estable (rutinas claras, ritmo predecible)?</p>
+</div>
+
+<!-- MENTALIDAD / INNOVACIÓN - NUEVO -->
+<h2>7. Mentalidad e innovación <span class="time">(3 min)</span></h2>
+<div class="box">
+  <p>¿Querés alguien que <strong>cuestione lo establecido</strong> o que <strong>siga lo que ya funciona</strong>?</p>
+
+  <p><strong>Preguntá específicamente:</strong></p>
+  <ul>
+    <li>"¿Buscás alguien que <strong>proponga ideas nuevas</strong> o que <strong>ejecute las que ya hay</strong>?"</li>
+    <li>"Si esta persona, después de 3 meses, te dice 'creo que este proceso se hace mejor de esta otra forma', ¿cómo reaccionás? ¿Te gusta o te molesta?"</li>
+    <li>"¿Hay procesos del negocio que son <strong>intocables</strong> y la persona no puede cambiar?"</li>
+    <li>"¿Necesitás alguien que <strong>aprenda cosas nuevas</strong> rápido (nuevas herramientas, nuevos clientes, etc.) o que sea experto en lo que ya hace?"</li>
+  </ul>
+
+  <div class="key-question">
+    <strong>⭐ Pregunta filtro:</strong><br>
+    "¿Te imaginás a esta persona aportando cambios al equipo o más bien adaptándose a la dinámica actual?"
+  </div>
+
+  <p class="note">Si dice "que innove" → buscamos perfil con apertura, creatividad, autoconfianza. Si dice "que se adapte" → buscamos perfil más estable, ejecutor, paciente.</p>
+</div>
+
+<!-- COGNICIÓN / RAZONAMIENTO - NUEVO -->
+<h2>8. Cognición y razonamiento — para VELNA <span class="time">(4 min)</span></h2>
+<div class="box">
+  <p>El sistema evalúa 5 tipos de razonamiento. Estas preguntas te dicen cuáles son importantes en este puesto:</p>
+
+  <p><strong>🔤 Razonamiento verbal</strong> — lectura y comprensión:</p>
+  <ul>
+    <li>¿Tiene que leer textos largos (contratos, bases de licitación SERCOP, documentación)?</li>
+    <li>¿Redacta emails formales o propuestas comerciales?</li>
+  </ul>
+
+  <p><strong>🔢 Razonamiento numérico / lógico</strong> — análisis y cuentas:</p>
+  <ul>
+    <li>¿Maneja números, márgenes, precios, descuentos?</li>
+    <li>¿Tiene que armar reportes con datos o detectar inconsistencias?</li>
+    <li>¿Calcula manualmente o todo está automatizado?</li>
+  </ul>
+
+  <p><strong>🧩 Razonamiento abstracto</strong> — aprender cosas nuevas y resolver problemas no familiares:</p>
+  <ul>
+    <li>"¿Las situaciones que enfrenta son <strong>repetitivas</strong> (mismo proceso siempre) o <strong>cambian constantemente</strong> y tiene que resolver cosas nuevas cada semana?"</li>
+    <li>"¿Va a tener que aprender herramientas, sistemas o procesos sin que nadie le enseñe formalmente?"</li>
+  </ul>
+
+  <p><strong>🗺 Razonamiento espacial</strong> — visualización:</p>
+  <ul>
+    <li>¿Tiene que entender catálogos visuales, ubicar productos en bodega, organizar showroom?</li>
+    <li>¿Trabaja con imágenes, layouts, planos, o más bien con texto/números?</li>
+  </ul>
+
+  <div class="key-question">
+    <strong>⭐ La pregunta que resume todo:</strong><br>
+    "Pensá en una persona muy buena que tuviste en un puesto parecido. ¿Qué <strong>tipo de inteligencia</strong> destacaba más? ¿Era muy buena con números, muy buena con palabras, muy rápida aprendiendo cosas nuevas, muy buena viendo el panorama general…?"
+  </div>
+</div>
+
+<!-- HABILIDADES BLANDAS -->
+<h2>9. Habilidades blandas críticas <span class="time">(2 min)</span></h2>
+<div class="box">
+  <ul>
+    <li>"Si tuvieras que elegir solo <strong>3 habilidades blandas</strong> de toda la lista del PDF, ¿cuáles son las más críticas?" <span class="note">(el PDF marca todas como Esencial, pedile que priorice)</span></li>
+    <li>"¿Hay alguna habilidad blanda que el anterior <strong>NO</strong> tenía y por eso no funcionó?"</li>
+  </ul>
+</div>
+
+<!-- RED FLAGS -->
+<h2>10. Lo que NO quieren ver <span class="time">(1 min)</span></h2>
+<div class="box red-flag">
+  <ul>
+    <li>¿Hay algún tipo de personalidad que ya probaron y no funcionó?</li>
+    <li>¿Algo que viste en CVs o entrevistas pasadas que te hizo decir "definitivamente no"?</li>
+  </ul>
+</div>
+
+<!-- DELICADO -->
+<h2>11. Aclarar lo delicado — con tacto</h2>
+<div class="box red-flag">
+  <p>El PDF dice <strong>"Sexo: Femenino"</strong> y <strong>"Edad: 25-40"</strong>.</p>
+  <p class="quote">"Veo que pusieron sexo femenino y edad 25-40 — ¿hay alguna razón específica del puesto? ¿O es preferencia general?"</p>
+  <p class="note">Si es genérico/discriminatorio → sugerí no incluirlo en la búsqueda (problemas legales). Si hay razón real (ej. atiende clientes mujeres en cosmética), está OK.</p>
+</div>
+
+<!-- TIPS -->
+<div class="footer-tip">
+  <p><strong>📝 Mientras hablan, tomá notas de…</strong></p>
+  <ul>
+    <li><strong>Frases textuales</strong> que muestren la cultura ("acá somos...", "los clientes son...")</li>
+    <li><strong>Anécdotas</strong> de problemas con personas previas</li>
+    <li><strong>Tono</strong> de la conversación (formal / cercano / urgente / relajado) — refleja la cultura</li>
+    <li><strong>Lo que el cliente NO dice pero se nota</strong>: ¿está estresado? ¿confiado? ¿desesperado?</li>
+  </ul>
+  <p style="margin-top: 18px;"><strong>🧾 Después de la reunión:</strong></p>
+  <ol>
+    <li>Combinás el PDF del cliente + tus notas en un solo transcript</li>
+    <li>Lo pegás en SharkTalents → /drafts → "Pegar transcript"</li>
+    <li>La IA arma el draft → revisás → "Aprobar y mandar al cliente"</li>
+  </ol>
+</div>
+
+<!-- VERSIÓN CORTITA -->
+<div class="ultra-corto">
+  <h2>⏱ Versión ultra-corta — si solo tenés 20 min</h2>
+  <p>Estas 10 preguntas alcanzan para que la IA arme un draft completo:</p>
+  <ol>
+    <li><strong>Salario</strong> + comisión</li>
+    <li><strong>Modalidad</strong> / ciudad / viajes</li>
+    <li><strong>Inglés</strong>: ¿necesario? ¿para qué? ¿qué nivel?</li>
+    <li>¿Por qué buscan ahora? ¿Qué pasó con el <strong>anterior</strong>?</li>
+    <li><strong>¿Qué tiene que lograr a 6 meses</strong> para ser un éxito?</li>
+    <li>¿Cómo es el <strong>jefe directo</strong>? ¿Con qué tipo de persona NO encajaría?</li>
+    <li>¿Cómo es el <strong>equipo</strong>? (cercano/distante, formal/informal)</li>
+    <li>¿Buscás alguien que <strong>innove</strong> o que <strong>ejecute</strong>?</li>
+    <li>De las 20 aptitudes del PDF, ¿cuáles <strong>3 son las críticas</strong>?</li>
+    <li>¿Qué tipo de persona <strong>NO</strong> querés ver?</li>
+  </ol>
+  <p style="margin-top: 18px; color: #dafd6f; font-weight: bold;">¡Éxitos! 🚀</p>
+</div>
+
+</body>
+</html>

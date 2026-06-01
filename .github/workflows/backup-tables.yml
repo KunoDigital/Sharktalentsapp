@@ -1,0 +1,152 @@
+name: Backup — Tablas Catalyst (semanal)
+
+# Backup semanal de las tablas Catalyst Datastore.
+# Exporta cada tabla a CSV, las sube como artifact (retención 90 días).
+#
+# Para restaurar: descargar el artifact desde Actions tab → re-importar via Catalyst Console.
+#
+# Setup:
+#   GitHub Settings → Secrets:
+#     CATALYST_TOKEN, CATALYST_PROJECT_ID, CATALYST_ORG_ID
+
+on:
+  schedule:
+    - cron: '0 4 * * 0'  # domingos 04:00 UTC (medianoche Panamá)
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: Export tables to CSV
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Catalyst CLI
+        run: npm install -g zcatalyst-cli
+
+      - name: Validate secrets
+        env:
+          CATALYST_TOKEN: ${{ secrets.CATALYST_TOKEN }}
+          CATALYST_PROJECT_ID: ${{ secrets.CATALYST_PROJECT_ID }}
+        run: |
+          if [ -z "$CATALYST_TOKEN" ] || [ -z "$CATALYST_PROJECT_ID" ]; then
+            echo "::error::Faltan secrets CATALYST_TOKEN o CATALYST_PROJECT_ID"
+            exit 1
+          fi
+
+      - name: Backup tables
+        env:
+          CATALYST_TOKEN: ${{ secrets.CATALYST_TOKEN }}
+          CATALYST_PROJECT_ID: ${{ secrets.CATALYST_PROJECT_ID }}
+          CATALYST_ORG_ID: ${{ secrets.CATALYST_ORG_ID }}
+        run: |
+          set -e
+          TIMESTAMP=$(date -u +%Y-%m-%d_%H-%M-%S)
+          TARGET="./backup-${TIMESTAMP}"
+          mkdir -p "$TARGET"
+
+          # Tablas Block 1 (siempre presentes). Block 2/3 se agregan cuando existan.
+          TABLES=(
+            Tenants
+            ProcessedEvents
+            Jobs
+            Candidates
+            Results
+            PipelineTransitions
+            Scores
+            IntegrityDimensions
+            AuditLog
+            OutboxEvents
+          )
+
+          # Block 2+ tablas opcionales — si no existen, el export falla pero seguimos
+          OPTIONAL_TABLES=(
+            ApiKeys
+            JobProfileDrafts
+            Notifications
+            AntiCheatEvents
+            VideoQuestions
+            VideoResponses
+            VideoConsents
+            BotDecisions
+            ReviewQueue
+            BotTrainingExamples
+            CandidatePool
+            Config
+            ClientReports
+            ReportCandidates
+            OutreachCampaigns
+            OutreachInbox
+            PrefilterQuestions
+            PrefilterAnswers
+            MarketingLeads
+          )
+
+          FAILED=()
+          OPTIONAL_MISSING=()
+
+          for TABLE in "${TABLES[@]}"; do
+            echo "▶ Exportando $TABLE..."
+            if catalyst ds:export "$TABLE" \
+                --target "${TARGET}/${TABLE}.csv" \
+                --token "$CATALYST_TOKEN" \
+                -p "$CATALYST_PROJECT_ID" \
+                --org "$CATALYST_ORG_ID" 2>&1 | tee -a "${TARGET}/_log.txt"; then
+              SIZE=$(stat -c%s "${TARGET}/${TABLE}.csv" 2>/dev/null || echo 0)
+              echo "  ✓ ${SIZE} bytes"
+            else
+              FAILED+=("$TABLE")
+              echo "  ✕ FALLÓ"
+            fi
+          done
+
+          for TABLE in "${OPTIONAL_TABLES[@]}"; do
+            echo "▶ Exportando opcional $TABLE..."
+            if catalyst ds:export "$TABLE" \
+                --target "${TARGET}/${TABLE}.csv" \
+                --token "$CATALYST_TOKEN" \
+                -p "$CATALYST_PROJECT_ID" \
+                --org "$CATALYST_ORG_ID" 2>>"${TARGET}/_log.txt"; then
+              SIZE=$(stat -c%s "${TARGET}/${TABLE}.csv" 2>/dev/null || echo 0)
+              echo "  ✓ ${SIZE} bytes"
+            else
+              OPTIONAL_MISSING+=("$TABLE")
+              echo "  ⏭️  no existe (skip)"
+            fi
+          done
+
+          {
+            echo "Backup timestamp: $TIMESTAMP"
+            echo "Required tables: ${#TABLES[@]}"
+            echo "Failed required: ${#FAILED[@]} (${FAILED[*]:-none})"
+            echo "Optional missing: ${#OPTIONAL_MISSING[@]} (${OPTIONAL_MISSING[*]:-none})"
+            echo ""
+            echo "File sizes:"
+            ls -la "$TARGET"/
+          } > "${TARGET}/SUMMARY.txt"
+
+          echo "BACKUP_DIR=${TARGET}" >> "$GITHUB_ENV"
+          echo "BACKUP_TS=${TIMESTAMP}" >> "$GITHUB_ENV"
+
+          if [ ${#FAILED[@]} -ne 0 ]; then
+            echo "::error::Tablas críticas fallaron: ${FAILED[*]}"
+            exit 1
+          fi
+
+          echo ""
+          echo "✓ Backup completo. Required: $((${#TABLES[@]} - ${#FAILED[@]}))/${#TABLES[@]}. Optional: $((${#OPTIONAL_TABLES[@]} - ${#OPTIONAL_MISSING[@]}))/${#OPTIONAL_TABLES[@]}."
+
+      - name: Upload backup as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: catalyst-backup-${{ env.BACKUP_TS }}
+          path: ${{ env.BACKUP_DIR }}
+          retention-days: 90
+          if-no-files-found: error

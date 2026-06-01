@@ -1,0 +1,324 @@
+[
+  {
+    "id": "b2_v01",
+    "type": "vocab",
+    "text": "After three weeks of negotiation, both companies finally _____ a deal.",
+    "options": ["broke off", "struck", "ran out of", "took up"],
+    "correct": 1
+  },
+  {
+    "id": "b2_v02",
+    "type": "vocab",
+    "text": "His proposal was _____ — clear, detailed, and very well-researched.",
+    "options": ["mediocre", "thorough", "shallow", "redundant"],
+    "correct": 1
+  },
+  {
+    "id": "b2_v03",
+    "type": "vocab",
+    "text": "The marketing campaign was a complete failure — it _____ to attract any new customers.",
+    "options": ["managed", "succeeded", "failed", "tried"],
+    "correct": 2
+  },
+  {
+    "id": "b2_v04",
+    "type": "vocab",
+    "text": "I'd be very _____ if you could send me the report by tomorrow.",
+    "options": ["grateful", "guilty", "graceful", "greedy"],
+    "correct": 0
+  },
+  {
+    "id": "b2_v05",
+    "type": "vocab",
+    "text": "The new software is so expensive — it _____.",
+    "options": ["sells like hotcakes", "costs an arm and a leg", "comes out of the blue", "rings a bell"],
+    "correct": 1
+  },
+  {
+    "id": "b2_v06",
+    "type": "vocab",
+    "text": "I'm _____ to think we should reconsider the entire strategy.",
+    "options": ["inclined", "declined", "reclined", "resigned"],
+    "correct": 0
+  },
+  {
+    "id": "b2_v07",
+    "type": "vocab",
+    "text": "Despite the setback, the team _____ and delivered the project on time.",
+    "options": ["gave up", "carried on", "ran away", "looked back"],
+    "correct": 1
+  },
+  {
+    "id": "b2_v08",
+    "type": "vocab",
+    "text": "Her presentation was very _____ — full of insights I hadn't considered.",
+    "options": ["dull", "compelling", "trivial", "questionable"],
+    "correct": 1
+  },
+  {
+    "id": "b2_v09",
+    "type": "vocab",
+    "text": "After the merger, many employees expressed _____ about the new direction.",
+    "options": ["concerns", "compliments", "celebrations", "comforts"],
+    "correct": 0
+  },
+  {
+    "id": "b2_v10",
+    "type": "vocab",
+    "text": "We need to _____ between short-term gains and long-term strategy.",
+    "options": ["distinguish", "translate", "abandon", "neglect"],
+    "correct": 0
+  },
+  {
+    "id": "b2_v11",
+    "type": "vocab",
+    "text": "The CEO's decision was _____ controversial — half the board opposed it.",
+    "options": ["highly", "barely", "rarely", "scarcely"],
+    "correct": 0
+  },
+  {
+    "id": "b2_v12",
+    "type": "vocab",
+    "text": "Innovation often involves taking calculated _____ rather than playing it safe.",
+    "options": ["routes", "risks", "rooms", "rounds"],
+    "correct": 1
+  },
+  {
+    "id": "b2_v13",
+    "type": "vocab",
+    "text": "The article _____ several myths about productivity in the workplace.",
+    "options": ["debunks", "promotes", "ignores", "celebrates"],
+    "correct": 0
+  },
+  {
+    "id": "b2_v14",
+    "type": "vocab",
+    "text": "I missed the application deadline — I really _____ on this opportunity.",
+    "options": ["broke the ice", "missed the boat", "spilled the beans", "kicked the bucket"],
+    "correct": 1
+  },
+  {
+    "id": "b2_v15",
+    "type": "vocab",
+    "text": "Her arguments were _____ — logical, well-supported, and hard to refute.",
+    "options": ["weak", "compelling", "vague", "irrelevant"],
+    "correct": 1
+  },
+  {
+    "id": "b2_v16",
+    "type": "vocab",
+    "text": "We had to _____ the launch by two months due to supply chain issues.",
+    "options": ["postpone", "celebrate", "overlook", "predict"],
+    "correct": 0
+  },
+
+  {
+    "id": "b2_g01",
+    "type": "grammar",
+    "text": "If I had known about the meeting, I _____ attended.",
+    "options": ["would", "would have", "will have", "had"],
+    "correct": 1
+  },
+  {
+    "id": "b2_g02",
+    "type": "grammar",
+    "text": "The proposal _____ by the committee tomorrow.",
+    "options": ["will review", "will be reviewed", "will reviewing", "is review"],
+    "correct": 1
+  },
+  {
+    "id": "b2_g03",
+    "type": "grammar",
+    "text": "She said she _____ already finished the report.",
+    "options": ["has", "had", "have", "did"],
+    "correct": 1
+  },
+  {
+    "id": "b2_g04",
+    "type": "grammar",
+    "text": "I'm not sure where she is — she _____ left already.",
+    "options": ["must have", "should have", "had to", "needed to"],
+    "correct": 0
+  },
+  {
+    "id": "b2_g05",
+    "type": "grammar",
+    "text": "The man _____ presentation we attended yesterday is a renowned expert.",
+    "options": ["who", "whose", "which", "that"],
+    "correct": 1
+  },
+  {
+    "id": "b2_g06",
+    "type": "grammar",
+    "text": "If I were you, I _____ that offer immediately.",
+    "options": ["accept", "would accept", "have accepted", "will accept"],
+    "correct": 1
+  },
+  {
+    "id": "b2_g07",
+    "type": "grammar",
+    "text": "By the time we arrived, the show _____ for an hour.",
+    "options": ["has been on", "had been on", "was on", "is on"],
+    "correct": 1
+  },
+  {
+    "id": "b2_g08",
+    "type": "grammar",
+    "text": "I look forward _____ from you soon.",
+    "options": ["to hear", "to hearing", "hear", "hearing"],
+    "correct": 1
+  },
+  {
+    "id": "b2_g09",
+    "type": "grammar",
+    "text": "He denied _____ the document.",
+    "options": ["to sign", "signing", "to have signed", "sign"],
+    "correct": 1
+  },
+  {
+    "id": "b2_g10",
+    "type": "grammar",
+    "text": "_____ I had more time, I would learn another language.",
+    "options": ["If only", "Even if", "Wish", "Although"],
+    "correct": 0
+  },
+  {
+    "id": "b2_g11",
+    "type": "grammar",
+    "text": "The report _____ to the team last Friday.",
+    "options": ["delivered", "was delivered", "has delivered", "delivers"],
+    "correct": 1
+  },
+  {
+    "id": "b2_g12",
+    "type": "grammar",
+    "text": "She suggested _____ the deadline by a week.",
+    "options": ["to extend", "extending", "we extend", "we would extend"],
+    "correct": 1
+  },
+  {
+    "id": "b2_g13",
+    "type": "grammar",
+    "text": "_____ the rain, the event continued as planned.",
+    "options": ["Despite", "Although", "Because of", "Even"],
+    "correct": 0
+  },
+  {
+    "id": "b2_g14",
+    "type": "grammar",
+    "text": "I'd rather you _____ on time tomorrow.",
+    "options": ["arrive", "arrived", "to arrive", "arriving"],
+    "correct": 1
+  },
+  {
+    "id": "b2_g15",
+    "type": "grammar",
+    "text": "The system needs _____ before the next quarter.",
+    "options": ["to upgrade", "upgrading", "be upgraded", "upgrade"],
+    "correct": 1
+  },
+  {
+    "id": "b2_g16",
+    "type": "grammar",
+    "text": "Not only _____ the project on time, but he also stayed under budget.",
+    "options": ["he finished", "did he finish", "he did finish", "he had finished"],
+    "correct": 1
+  },
+
+  {
+    "id": "b2_r01",
+    "type": "reading",
+    "text": "Read: \"Remote work has fundamentally changed expectations around productivity. Companies that once required strict office hours now measure performance based on deliverables. While this shift offers flexibility, it has also created an 'always on' culture, where employees feel pressured to respond at all hours. Organizations that succeed in the new model invest heavily in clear communication norms and protect their teams' personal time.\"\n\nAccording to the text, what risk does remote work create?",
+    "options": [
+      "Lower deliverables overall",
+      "An 'always on' work culture",
+      "Office space shortages",
+      "Reduced communication entirely"
+    ],
+    "correct": 1
+  },
+  {
+    "id": "b2_r02",
+    "type": "reading",
+    "text": "Read: \"The startup's growth was impressive — from a team of three to over fifty in just two years. However, this rapid expansion came with growing pains. Onboarding new employees was rushed, the company culture became diluted, and senior leaders found themselves spending more time managing than building. The CEO eventually decided to slow hiring deliberately, even though investors expected aggressive growth.\"\n\nWhy did the CEO decide to slow hiring?",
+    "options": [
+      "Investors demanded slower growth",
+      "Rapid expansion damaged culture and management focus",
+      "The team had reached its target size",
+      "There were budget constraints"
+    ],
+    "correct": 1
+  },
+  {
+    "id": "b2_r03",
+    "type": "reading",
+    "text": "Read: \"Many people assume that learning languages is mainly about memorizing vocabulary. In reality, exposure and active use are far more important. A learner who studies word lists for months without speaking will struggle to hold a basic conversation, while someone who immerses themselves in real interactions — even imperfectly — develops practical fluency much faster.\"\n\nWhat is the main argument of the text?",
+    "options": [
+      "Vocabulary lists are useless",
+      "Practical interaction is more important than memorization",
+      "Language learning is impossible",
+      "Only immersion programs work"
+    ],
+    "correct": 1
+  },
+  {
+    "id": "b2_r04",
+    "type": "reading",
+    "text": "Read: \"The interview process for senior roles often takes weeks. Candidates may go through five or six rounds: an initial screening, technical assessments, panels with potential peers, and final conversations with executives. While companies argue this thoroughness reduces hiring mistakes, critics point out that long processes lose strong candidates who accept faster offers elsewhere.\"\n\nWhat is the main criticism of long interview processes?",
+    "options": [
+      "They are too expensive",
+      "They reveal too much about the company",
+      "Strong candidates accept faster offers from competitors",
+      "They focus only on technical skills"
+    ],
+    "correct": 2
+  },
+  {
+    "id": "b2_r05",
+    "type": "reading",
+    "text": "Read: \"When the team missed its quarterly target, the manager faced a choice. She could focus on what went wrong, or she could analyze what had been learned. She chose the second approach, holding a workshop where everyone shared one mistake and one insight. By the next quarter, the team had not only recovered but exceeded its goals.\"\n\nWhat does the text suggest is most effective after a failure?",
+    "options": [
+      "Replacing team members",
+      "Focusing on blame",
+      "Extracting lessons from the experience",
+      "Keeping the same strategy"
+    ],
+    "correct": 2
+  },
+  {
+    "id": "b2_r06",
+    "type": "reading",
+    "text": "Read: \"Sustainability has become a key concern for consumers, especially younger generations. Companies that ignore this trend may continue to make sales in the short term, but they risk losing relevance over time. The shift is not about marketing claims — it's about real changes in supply chains, materials, and energy use that customers increasingly demand to see.\"\n\nWhat does the author say is essential for companies?",
+    "options": [
+      "Better marketing about sustainability",
+      "Real changes in operations and supply chains",
+      "Targeting only older customers",
+      "Reducing prices significantly"
+    ],
+    "correct": 1
+  },
+  {
+    "id": "b2_r07",
+    "type": "reading",
+    "text": "Read: \"Public speaking is one of the most common professional fears. Yet, those who practice regularly — even in low-stakes situations like team meetings — report dramatic improvements over time. The key is not avoiding nervousness, which is natural, but learning to function despite it. Confidence comes from repetition, not from waiting until you feel ready.\"\n\nWhat does the text imply about confidence in public speaking?",
+    "options": [
+      "It comes naturally to most people",
+      "It develops through repeated practice",
+      "It requires special training programs",
+      "It is impossible to develop"
+    ],
+    "correct": 1
+  },
+  {
+    "id": "b2_r08",
+    "type": "reading",
+    "text": "Read: \"The freelance economy has expanded rapidly. While it offers professionals more autonomy, it also shifts traditional benefits — such as health insurance, retirement contributions, and paid leave — onto the individual. Some governments are beginning to introduce frameworks that protect freelancers, but progress varies widely across countries.\"\n\nWhat is one disadvantage of freelancing mentioned in the text?",
+    "options": [
+      "Lower income overall",
+      "Lack of autonomy",
+      "Loss of traditional employment benefits",
+      "Restrictive contracts with clients"
+    ],
+    "correct": 2
+  }
+]

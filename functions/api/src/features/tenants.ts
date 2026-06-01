@@ -4,8 +4,9 @@ import type { RequestContext } from '../lib/context';
 import { datastore, zcql, now } from '../lib/db';
 import { escapeSql, unwrapRow, unwrapRows } from '../lib/dbHelpers';
 import { env } from '../lib/env';
-import { ForbiddenError, UnauthorizedError } from '../lib/errors';
-import { sendJson, readRawBody } from '../lib/http';
+import { ForbiddenError, UnauthorizedError, NotFoundError, ValidationError } from '../lib/errors';
+import { sendJson, readRawBody, readJsonBody } from '../lib/http';
+import { auditLog } from '../lib/auditLog';
 import { logger } from '../lib/logger';
 import { markProcessed } from '../lib/processedEvents';
 import { slugify } from '../lib/slugify';
@@ -135,22 +136,40 @@ export async function handleClerkWebhook(ctx: RequestContext): Promise<void> {
   }
 
   const eventId = svixId;
-  const { isNew } = await markProcessed(ctx.req, eventId, 'clerk');
-  if (!isNew) {
+
+  // Idempotencia: si ya procesamos este event_id antes, descartamos.
+  // Chequeo ANTES de procesar (no marcamos hasta que termine OK).
+  const alreadyProcessed = await findProcessedEvent(ctx.req, eventId);
+  if (alreadyProcessed) {
     log.info('duplicate event ignored', { eventId, type: event.type });
     sendJson(ctx.res, 200, { received: true, duplicate: true });
     return;
   }
 
-  sendJson(ctx.res, 200, { received: true });
-
-  processEventAsync(ctx, event).catch((err) => {
-    log.error('async processing failed', {
+  // Procesamiento síncrono — si falla, devolvemos 5xx para que Clerk reintente.
+  // Recién al terminar OK marcamos el event_id como procesado.
+  // Tradeoff: la respuesta a Clerk puede demorar 1-2s, pero garantizamos durabilidad.
+  try {
+    await processEventAsync(ctx, event);
+    await markProcessed(ctx.req, eventId, 'clerk_webhook');
+    sendJson(ctx.res, 200, { received: true });
+  } catch (err) {
+    log.error('event processing failed — Clerk will retry', {
       eventId,
       type: event.type,
       error: (err as Error).message,
     });
-  });
+    // 503 → Clerk retry
+    sendJson(ctx.res, 503, {
+      error: { code: 'processing_failed', message: 'Event processing failed, will be retried' },
+    });
+  }
+}
+
+async function findProcessedEvent(req: import('http').IncomingMessage, eventId: string): Promise<boolean> {
+  const query = `SELECT ROWID FROM ProcessedEvents WHERE event_id = '${escapeSql(eventId)}' AND provider = 'clerk_webhook' LIMIT 1`;
+  const result = (await zcql(req).executeZCQLQuery(query)) as unknown[];
+  return unwrapRows<{ ROWID: string }>(result, 'ProcessedEvents').length > 0;
 }
 
 async function processEventAsync(ctx: RequestContext, event: ClerkEvent): Promise<void> {
@@ -196,13 +215,154 @@ async function processEventAsync(ctx: RequestContext, event: ClerkEvent): Promis
       break;
     }
 
-    case 'user.deleted':
-      log.warn('user.deleted received — manual GDPR cleanup may be required', {
+    case 'user.created':
+      log.info('user.created — Clerk maneja la auth, nada que sincronizar a nuestro lado', {
         userId: (event.data as ClerkUserEventData).id,
       });
       break;
 
+    case 'user.updated':
+      log.debug('user.updated — sin acción a nuestro lado', {
+        userId: (event.data as ClerkUserEventData).id,
+      });
+      break;
+
+    case 'user.deleted': {
+      // GDPR / right to erasure: log para que admin pueda hacer cleanup manual
+      // (limpiar Candidates por email, Results, AuditLog del user, etc.).
+      // Auto-delete agresivo desde webhook es riesgoso — preferimos auditoría.
+      const userId = (event.data as ClerkUserEventData).id;
+      log.warn('user.deleted received — manual GDPR cleanup may be required', { userId });
+      try {
+        // Marcar audit log: que existió esa eliminación con un evento sintético.
+        await datastore(ctx.req).table('AuditLog').insertRow({
+          actor_user: 'system',
+          action: 'tenant.delete',
+          resource_type: 'user',
+          resource_id: userId,
+          changes: JSON.stringify({ source: 'clerk_webhook', event: 'user.deleted' }),
+          ip: null,
+          user_agent: 'clerk-webhook',
+          created_at: now(),
+        });
+      } catch {
+        // tolerar fallo de audit (mejor procesar el webhook)
+      }
+      break;
+    }
+
+    case 'organizationMembership.created':
+    case 'organizationMembership.updated': {
+      // Clerk maneja la membership directamente. Solo logueamos para audit.
+      const data = event.data as { id: string; organization?: { id: string }; public_user_data?: { user_id?: string }; role?: string };
+      log.info('organizationMembership change', {
+        type: event.type,
+        membershipId: data.id,
+        orgId: data.organization?.id,
+        userId: data.public_user_data?.user_id,
+        role: data.role,
+      });
+      break;
+    }
+
+    case 'organizationMembership.deleted': {
+      const data = event.data as { id: string; organization?: { id: string }; public_user_data?: { user_id?: string } };
+      log.warn('organizationMembership deleted', {
+        membershipId: data.id,
+        orgId: data.organization?.id,
+        userId: data.public_user_data?.user_id,
+      });
+      break;
+    }
+
+    case 'organizationInvitation.created':
+    case 'organizationInvitation.accepted':
+    case 'organizationInvitation.revoked': {
+      const data = event.data as { id: string; email_address?: string; organization_id?: string };
+      log.info('organizationInvitation event', {
+        type: event.type,
+        invitationId: data.id,
+        orgId: data.organization_id,
+        email: data.email_address,
+      });
+      break;
+    }
+
     default:
       log.debug('unhandled event type', { type: event.type });
   }
+}
+
+// ===== Branding (Tenants.branding_config) =====
+
+/**
+ * GET /api/tenants/me/branding
+ * Devuelve la config actual de branding del tenant del user (parsed + defaults).
+ */
+export async function getMyBranding(ctx: RequestContext): Promise<void> {
+  const tenantId = await requireTenant(ctx);
+  const tenant = await fetchTenantById(ctx.req, tenantId);
+  if (!tenant) throw new NotFoundError(`Tenant ${tenantId} not found`);
+
+  const { parseBranding } = await import('../lib/branding.js');
+  const branding = parseBranding(tenant.branding_config);
+  sendJson(ctx.res, 200, { branding });
+}
+
+/**
+ * PATCH /api/tenants/me/branding
+ * Actualiza la config de branding del tenant. Body acepta cualquier subset de
+ * BrandingConfig — los campos no enviados quedan iguales.
+ */
+export async function updateMyBranding(ctx: RequestContext): Promise<void> {
+  const tenantId = await requireTenant(ctx);
+  const tenant = await fetchTenantById(ctx.req, tenantId);
+  if (!tenant) throw new NotFoundError(`Tenant ${tenantId} not found`);
+
+  const body = (await readJsonBody(ctx.req)) as Record<string, unknown>;
+
+  const { parseBranding, serializeBranding } = await import('../lib/branding.js');
+  const current = parseBranding(tenant.branding_config);
+
+  // Merge body sobre current — solo overrides los keys provistos
+  const merged = { ...current };
+  for (const key of Object.keys(body)) {
+    const k = key as keyof typeof current;
+    const v = body[key];
+    if (v === null) {
+      delete merged[k];
+    } else if (typeof v === 'string') {
+      merged[k] = v as never;
+    }
+  }
+
+  let serialized: string;
+  try {
+    serialized = serializeBranding(merged);
+  } catch (err) {
+    throw new ValidationError(`Invalid branding: ${(err as Error).message}`);
+  }
+
+  await datastore(ctx.req).table(TABLE).updateRow({
+    ROWID: tenantId,
+    branding_config: serialized,
+    updated_at: now(),
+  });
+
+  void auditLog(ctx, {
+    action: 'tenant.update',
+    resource_type: 'tenant',
+    resource_id: tenantId,
+    changes: { branding_keys_updated: Object.keys(body) },
+  });
+
+  log.info('branding updated', { tenantId, keys: Object.keys(body) });
+  sendJson(ctx.res, 200, { branding: parseBranding(serialized) });
+}
+
+async function fetchTenantById(req: IncomingMessage, tenantId: string): Promise<Tenant | null> {
+  const query = `SELECT * FROM ${TABLE} WHERE ROWID = '${escapeSql(tenantId)}' LIMIT 1`;
+  const result = (await zcql(req).executeZCQLQuery(query)) as unknown[];
+  const rows = unwrapRows<Tenant>(result, TABLE);
+  return rows[0] ?? null;
 }

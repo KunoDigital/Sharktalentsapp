@@ -1,8 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MOCK_JOBS } from '../../data/mockJobs';
+import { publicApi } from '../../lib/publicApi';
+import { ApiError } from '../../lib/api';
+import { config } from '../../config';
+import { logger } from '../../lib/logger';
 import './candidate-test.css';
 import './candidate-apply.css';
+
+const log = logger('CANDIDATE_APPLY');
+
+type PublicJobInfo = {
+  id: string;
+  title: string;
+  company: string;
+  cognitive_level: string;
+  context: string | null;
+};
 
 type FormState = {
   full_name: string;
@@ -33,13 +47,77 @@ const INITIAL: FormState = {
 export default function CandidateApply() {
   const { tenantSlug, jobSlug } = useParams<{ tenantSlug: string; jobSlug: string }>();
   const navigate = useNavigate();
-  const job = MOCK_JOBS.find((j) => j.slug === jobSlug);
+
+  const [job, setJob] = useState<PublicJobInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Cargar info pública del job desde el backend (con fallback a mock)
+  useEffect(() => {
+    if (!tenantSlug || !jobSlug) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+
+    async function load() {
+      if (config.useApi) {
+        try {
+          const res = await publicApi.getPublicJobInfo(tenantSlug!, jobSlug!);
+          if (cancelled) return;
+          if (res?.job) {
+            setJob({
+              id: res.job.id,
+              title: res.job.title,
+              company: res.job.company,
+              cognitive_level: res.job.cognitive_level,
+              context: res.job.context,
+            });
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          if (cancelled) return;
+          if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
+            setNotFound(true);
+            setLoading(false);
+            return;
+          }
+          log.warn('public job load failed, falling back to mock', { error: (err as Error).message });
+        }
+      }
+      // Fallback al mock
+      const mockJob = MOCK_JOBS.find((j) => j.slug === jobSlug);
+      if (cancelled) return;
+      if (mockJob) {
+        setJob({
+          id: mockJob.id,
+          title: mockJob.title,
+          company: mockJob.client_company,
+          cognitive_level: 'mid',
+          context: mockJob.context,
+        });
+      } else {
+        setNotFound(true);
+      }
+      setLoading(false);
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [tenantSlug, jobSlug]);
 
   const [form, setForm] = useState<FormState>(INITIAL);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
 
-  if (!job) {
+  if (loading) {
+    return <div className="ct-not-found"><h1>Cargando puesto…</h1></div>;
+  }
+  if (notFound || !job) {
     return (
       <div className="ct-not-found">
         <h1>Puesto no encontrado</h1>
@@ -67,11 +145,40 @@ export default function CandidateApply() {
     return Object.keys(errs).length === 0;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate() || !job) return;
-    // Mock: en backend creás JobApplication, generás token de test, mandás email
-    console.log('[APPLY] submitted', { jobId: job.id, form });
+    setSubmitError(null);
+
+    if (config.useApi && tenantSlug && jobSlug) {
+      setSubmitting(true);
+      try {
+        const res = await publicApi.submitPublicApplication(tenantSlug, jobSlug, {
+          full_name: form.full_name,
+          email: form.email,
+          phone: form.phone,
+          consent_data: form.consent_data,
+          consent_communications: form.consent_communications,
+          salary_aspiration_usd: Number(form.salary_aspiration_usd) || undefined,
+          disponibilidad: form.disponibilidad,
+          linkedin_url: form.linkedin_url || undefined,
+        });
+        if (!res?.created_now) {
+          alert(res?.message ?? 'Ya tenías una aplicación a este puesto.');
+        }
+        setSubmitted(true);
+        setTimeout(() => navigate(`/apply/${tenantSlug}/${jobSlug}/done`), 600);
+      } catch (err) {
+        const msg = err instanceof ApiError ? `${err.code}: ${err.message}` : (err as Error).message;
+        setSubmitError(msg);
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    // Modo demo (sin backend)
+    log.info('apply submitted (demo mode)', { jobId: job.id, name: form.full_name });
     setSubmitted(true);
     setTimeout(() => navigate(`/apply/${tenantSlug}/${jobSlug}/done`), 600);
   }
@@ -114,21 +221,13 @@ export default function CandidateApply() {
           <div className="apply-job-tag">Aplicar al puesto</div>
           <h1>{job.title}</h1>
           <div className="apply-job-meta">
-            <span><strong>{job.client_company}</strong></span>
-            <span>·</span>
-            <span>{job.location}</span>
-            <span>·</span>
-            <span>{job.client_industry}</span>
+            <span><strong>{job.company}</strong></span>
           </div>
-          <p className="apply-job-desc">{job.context}</p>
+          {job.context && <p className="apply-job-desc">{job.context}</p>}
           <div className="apply-job-stats">
             <div>
-              <div className="apply-stat-label">Salario</div>
-              <div className="apply-stat-value">${job.salary_range_usd.min.toLocaleString()}–${job.salary_range_usd.max.toLocaleString()} USD</div>
-            </div>
-            <div>
-              <div className="apply-stat-label">Modalidad</div>
-              <div className="apply-stat-value">{job.location.includes('Remoto') ? 'Remoto' : job.location.includes('híbrido') ? 'Híbrido' : 'Presencial'}</div>
+              <div className="apply-stat-label">Nivel</div>
+              <div className="apply-stat-value">{job.cognitive_level}</div>
             </div>
           </div>
         </section>
@@ -189,7 +288,7 @@ export default function CandidateApply() {
           <label className="ct-consent-check">
             <input type="checkbox" checked={form.consent_data} onChange={(e) => setField('consent_data', e.target.checked)} />
             <span>
-              Acepto que <strong>{job.client_company}</strong> y Kuno Digital procesen mis datos para esta búsqueda. Mis datos se borran 6 meses después del cierre del proceso (Ley de Protección de Datos PA / GDPR).
+              Acepto que <strong>{job.company}</strong> y Kuno Digital procesen mis datos para esta búsqueda. Mis datos se borran 6 meses después del cierre del proceso (Ley de Protección de Datos PA / GDPR).
             </span>
           </label>
           {errors.consent_data && <div className="apply-error-msg">{errors.consent_data}</div>}
@@ -199,10 +298,26 @@ export default function CandidateApply() {
             <span>Quiero que Kuno Digital me considere para otros puestos similares (opcional).</span>
           </label>
 
-          <button type="submit" className="ct-start-btn">
-            Enviar aplicación →
+          {submitError && (
+            <div style={{ padding: '0.6rem 0.8rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '6px', color: '#fca5a5', marginBottom: '0.75rem' }}>
+              ⚠️ {submitError}
+            </div>
+          )}
+
+          <button type="submit" className="ct-start-btn" disabled={submitting}>
+            {submitting ? 'Enviando…' : 'Enviar aplicación →'}
           </button>
         </form>
+
+        <p style={{ marginTop: '2rem', textAlign: 'center', fontSize: 14, color: '#666' }}>
+          ¿Ya aplicaste y perdiste el link de tu prueba?{' '}
+          <a
+            href={`#/apply/${tenantSlug}/${jobSlug}/recover`}
+            style={{ color: '#2563eb', textDecoration: 'underline' }}
+          >
+            Reenviármelo
+          </a>
+        </p>
       </main>
     </div>
   );
