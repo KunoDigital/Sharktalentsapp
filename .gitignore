@@ -23,6 +23,10 @@ shark/build/
 shark/dist/
 shark/*.zip
 shark/*.tsbuildinfo
+
+# Deployment zips generados por scripts/deploy-frontend.sh
+shark-dist-*.zip
+sharktalents-frontend-*.zip
 frontend/build/
 frontend/dist/
 
