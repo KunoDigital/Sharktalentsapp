@@ -34,8 +34,11 @@ test.describe.serial('Proceso E2E REALISTA del cliente', () => {
     if (!SITE_KEY) {
       throw new Error('MARKETING_SITE_KEY no está seteado. Configurá tests/.env.local');
     }
-    const timestamp = Math.floor(Date.now() / 1000);
-    leadEmail = `${TEST_EMAIL_PREFIX}-${timestamp}@kunodigital.com`;
+    // Email único por rep, no por segundo — bajo concurrencia (Playwright workers),
+    // varias reps pueden iniciar en el mismo segundo y colisionarían en captureLead.
+    const ts = Date.now();
+    const rand = Math.floor(Math.random() * 100000);
+    leadEmail = `${TEST_EMAIL_PREFIX}-${ts}-${rand}@kunodigital.com`;
     console.log(`[E2E REAL] Email del test: ${leadEmail}`);
   });
 
