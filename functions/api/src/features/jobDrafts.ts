@@ -474,6 +474,10 @@ async function syncJobToRecruit(
       Perfil_Disc: `${baseUrl}&phase=disc`,
       Perfil_Tecnica: `${baseUrl}&phase=tecnica`,
       Prueba_Integridad: `${baseUrl}&phase=integridad`,
+      // NOTA: Link_entrevista NO se sincroniza por ahora — Cris sigue usando ese field
+      // para Zoho Bookings (entrevista en vivo) mientras la otra recruiter termina su
+      // proceso. Cuando se migre a videos grabados, descomentar:
+      //   Link_entrevista: `${baseUrl}&phase=videos`,
       // Rich text: Requisitos (formación + experiencia + herramientas)
       ...(buildRequisitosHtml(input.payload) ? { Requisitos: buildRequisitosHtml(input.payload) } : {}),
       // Rich text: Ventajas (DISC ventajas + salario + modalidad)

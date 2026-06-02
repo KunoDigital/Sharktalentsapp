@@ -333,6 +333,33 @@ function buildClient(getToken: GetToken) {
         request<{ request_id: string; signing_url?: string; message: string }>(
           getToken, 'POST', `/api/marketing/lead/${encodeURIComponent(leadId)}/send-contract`, body,
         ),
+      // Lista leads en Zoho CRM con tag=SharkTalents, anotados si ya están importados.
+      listCrmLeadsForImport: (tag = 'SharkTalents') =>
+        request<{
+          ok: boolean;
+          error?: string;
+          tag: string;
+          count: number;
+          items: Array<{
+            crm_id: string;
+            email: string;
+            contact_name: string | null;
+            company: string | null;
+            phone: string | null;
+            lead_source: string | null;
+            already_imported: boolean;
+          }>;
+        }>(getToken, 'GET', `/api/marketing/crm-leads?tag=${encodeURIComponent(tag)}`),
+
+      // Importa un lead desde Zoho CRM a MarketingLeads de SharkTalents (por email).
+      importLeadFromCrm: (email: string) =>
+        request<{
+          lead_id: string;
+          message: string;
+          crm_lead_id: string | null;
+          populated: { email: string; contact_name: string | null; company: string | null; whatsapp: string | null; salary_target: number | null };
+        }>(getToken, 'POST', '/api/marketing/import-from-crm', { email }),
+
       // Devuelve puesto + salario inferidos del draft asociado al lead + RUC/dirección desde Zoho CRM, para pre-llenar el modal de contrato.
       getContractContext: (leadId: string) =>
         request<{

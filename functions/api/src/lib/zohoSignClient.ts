@@ -164,19 +164,30 @@ export async function sendContract(
   const feeTotal = Math.round(input.puesto_salario_usd * 1.2 * 100) / 100;
   const feeTracto = Math.round((feeTotal / 2) * 100) / 100;
 
-  return callSign<{ request_id: string; signing_url?: string }>(
-    '/requests',
-    {
-      method: 'POST',
-      body: {
-        template_id: templateId,
-        signers: [
-          { name: input.client_name, email: input.client_email, role: 'cliente' },
-        ],
-        subject: `Contrato de servicios SharkTalents — ${input.client_company}`,
-        message: `Hola ${input.client_name}, este es el contrato para iniciar el proceso de búsqueda del puesto "${input.puesto_nombre}". Revisalo y firmalo desde el link de abajo. Si tenés dudas, respondé a este email.`,
-        // Merge fields para el template (los nombres deben matchear los Field Names en Sign Template Editor)
-        field_data: {
+  // Zoho Sign API: endpoint /templates/{template_id}/createdocument con form-encoded.
+  // El JSON va en field `data` y debe envolverse en `{ templates: { ... } }`.
+  // https://www.zoho.com/sign/api/v1/createdocument.html
+  const requestsBody = {
+    templates: {
+      request_name: `Contrato SharkTalents - ${input.client_company}`,
+      notes: `Hola ${input.client_name}, este es el contrato para iniciar el proceso de búsqueda del puesto "${input.puesto_nombre}". Revisalo y firmalo desde el link de abajo. Si tenés dudas, respondé a este email.`,
+      expiration_days: 15,
+      // is_sequential viene del template, no se override acá.
+      actions: [
+        {
+          // action_id viene del template — identificado vía GET /templates/{id} en setup inicial.
+          // Default: el action_id del rol "cliente" del template `324029000000610003` (SharkTalents contract).
+          // Si se cambia el template, también cambiar esto via env var ZOHO_SIGN_CONTRACT_CLIENTE_ACTION_ID.
+          action_id: process.env.ZOHO_SIGN_CONTRACT_CLIENTE_ACTION_ID || '324029000000610045',
+          recipient_name: input.client_name,
+          recipient_email: input.client_email,
+          action_type: 'SIGN',
+          role: 'cliente',
+        },
+      ],
+      // Merge fields del template — nombres deben matchear los Field Names del Sign Template Editor.
+      field_data: {
+        field_text_data: {
           cliente_nombre_representante: input.client_name,
           cliente_empresa: input.client_company,
           cliente_ruc_nit_ein: input.client_ruc_nit_ein ?? '',
@@ -191,10 +202,71 @@ export async function sendContract(
           plazo_min_dias: String(input.plazo_min_dias ?? 14),
           plazo_max_dias: String(input.plazo_max_dias ?? 30),
         },
+        field_boolean_data: {},
+        field_date_data: {},
       },
     },
+  };
+
+  // Send via form-encoded data field
+  return callSignForm<{ request_id: string; signing_url?: string }>(
+    `/templates/${encodeURIComponent(templateId)}/createdocument`,
+    { method: 'POST', formData: { data: JSON.stringify(requestsBody) } },
     traceId,
   );
+}
+
+/**
+ * Variant de callSign que usa application/x-www-form-urlencoded en vez de JSON.
+ * Algunos endpoints de Zoho Sign (como /templates/{id}/createdocument) requieren
+ * este formato — el JSON va dentro del field `data`.
+ */
+async function callSignForm<T>(
+  path: string,
+  options: { method: 'POST'; formData: Record<string, string> },
+  traceId: string,
+): Promise<SignResult<T>> {
+  if (!process.env.ZOHO_OAUTH_CLIENT_ID || !process.env.ZOHO_OAUTH_CLIENT_SECRET || !process.env.ZOHO_OAUTH_REFRESH_TOKEN) {
+    return { ok: false, error: 'Zoho Sign not configured (necesita ZOHO_OAUTH_CLIENT_ID + ZOHO_OAUTH_CLIENT_SECRET + ZOHO_OAUTH_REFRESH_TOKEN)' };
+  }
+  const apiUrl = env().ZOHO_SIGN_API_URL || 'https://sign.zoho.com/api/v1';
+  const url = `${apiUrl.replace(/\/$/, '')}${path}`;
+
+  const { getZohoAuthHeader } = await import('./zohoOAuth.js');
+  const auth = await getZohoAuthHeader(traceId);
+  if (!auth) {
+    return { ok: false, error: 'Could not get Zoho OAuth access token from refresh token' };
+  }
+
+  const formBody = new URLSearchParams(options.formData).toString();
+
+  try {
+    const result = await withBreaker(BREAKER_OPTS, async () => {
+      const response = await fetchWithTimeout(url, {
+        method: options.method,
+        headers: {
+          Authorization: auth,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+        body: formBody,
+        timeoutMs: TIMEOUT_MS,
+      });
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        const err: Error & { status?: number } = new Error(`Sign ${response.status}: ${text.slice(0, 400)}`);
+        err.status = response.status;
+        throw err;
+      }
+      return (await response.json()) as T;
+    });
+    log.info('zoho sign form call ok', { traceId, path });
+    return { ok: true, data: result };
+  } catch (err) {
+    const e = err as Error & { status?: number };
+    log.warn('zoho sign form call failed', { traceId, path, error: e.message, status: e.status });
+    return { ok: false, error: e.message, status: e.status };
+  }
 }
 
 export const _internal = { isConfigured };

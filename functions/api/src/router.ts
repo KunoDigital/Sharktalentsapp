@@ -82,7 +82,7 @@ import {
   submitPrefilterAnswers,
   listPrefilterAnswersForApplication,
 } from './features/prefilter';
-import { captureLead, requestEval, getLeadStatus, listMarketingLeads, requestLeadDeletion, confirmLeadDeletion, createManualLead, convertLeadToTenant, sendDemoToLead, sendContractToLead, getContractContext, registerDemoTest, diagnoseLead, resetLead, simulateCompletion, forceCrmSync, listCrmModules, linkMarketingTenant, whoami, resendReport, adminWipeLeads, patchLead, getLeadDemoStatus, forceGenerateLeadReport, inspectIntegrityDims, renameCandidate, testIntegrityDimsInsert } from './features/marketing';
+import { captureLead, requestEval, getLeadStatus, listMarketingLeads, requestLeadDeletion, confirmLeadDeletion, createManualLead, convertLeadToTenant, sendDemoToLead, sendContractToLead, getContractContext, registerDemoTest, diagnoseLead, resetLead, simulateCompletion, forceCrmSync, listCrmModules, linkMarketingTenant, whoami, resendReport, adminWipeLeads, patchLead, getLeadDemoStatus, forceGenerateLeadReport, inspectIntegrityDims, renameCandidate, testIntegrityDimsInsert, importLeadFromCrm, listImportableCrmLeads, dumpCrmLead } from './features/marketing';
 import { getVideoConsent, postVideoConsent, withdrawVideoConsent } from './features/videoConsents';
 import { scheduleBriefing, listBriefings } from './features/briefings';
 import { trackPortalEvent, listJobTracking } from './features/jobTracking';
@@ -126,6 +126,9 @@ const routes: Route[] = [
   { method: 'DELETE', pattern: /^\/api\/marketing\/lead\/?$/, handler: confirmLeadDeletion, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/marketing\/leads\/?$/, handler: listMarketingLeads, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/marketing\/lead-manual\/?$/, handler: createManualLead, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/marketing\/import-from-crm\/?$/, handler: importLeadFromCrm, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/marketing\/crm-leads\/?$/, handler: listImportableCrmLeads, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/marketing\/_dump_crm_lead\/?$/, handler: dumpCrmLead, auth: 'tenant' },
   { method: 'PATCH', pattern: /^\/api\/marketing\/lead\/[^/]+\/?$/, handler: patchLead, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/marketing\/lead\/[^/]+\/demo-status\/?$/, handler: getLeadDemoStatus, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/marketing\/lead\/[^/]+\/force-report\/?$/, handler: forceGenerateLeadReport, auth: 'tenant' },

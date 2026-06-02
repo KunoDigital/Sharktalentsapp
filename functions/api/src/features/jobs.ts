@@ -632,6 +632,9 @@ export async function retryRecruitSync(ctx: RequestContext): Promise<void> {
       Perfil_Disc: `${baseUrl}&phase=disc`,
       Perfil_Tecnica: `${baseUrl}&phase=tecnica`,
       Prueba_Integridad: `${baseUrl}&phase=integridad`,
+      // NOTA: Link_entrevista NO se sincroniza por ahora (booking en vivo todavía activo).
+      // Cuando se migre a videos grabados:
+      //   Link_entrevista: `${baseUrl}&phase=videos`,
       Publish: true,
       Keep_on_Career_Site: true,
     };

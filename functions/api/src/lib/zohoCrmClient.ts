@@ -245,6 +245,57 @@ export async function findLeadInCrmByEmail(
   return { ok: true, data: first ?? null };
 }
 
+/**
+ * Lista leads de Zoho CRM que tienen un tag específico — útil para
+ * filtrar leads que pertenecen a SharkTalents (excluyendo otros productos de Kuno).
+ *
+ * El tag se setea automáticamente cuando SharkTalents crea un lead via outbox event
+ * `lead.captured`. Para leads creados manualmente en CRM, Cris/Cristian deberían
+ * agregar el tag a mano para que aparezcan acá.
+ *
+ * Limitación: Zoho CRM v2 search by tag tiene varios formatos. Probamos search by
+ * `Tag` field con criteria; si tu CRM usa otro field name, ajustar.
+ */
+export async function listLeadsByTag(
+  tag: string,
+  traceId: string,
+  limit = 200,
+): Promise<CrmResult<Array<Record<string, unknown>>>> {
+  const e = env();
+  const module = e.ZOHO_CRM_LEADS_MODULE;
+
+  // Zoho CRM v2 búsqueda por tag REAL — usamos criteria con `Tag.name`.
+  // (Antes usábamos `word=` que es full-text search → matcheaba leads con
+  // "SharkTalents" en Lead_Source, no en tags. Esto era inconsistente.)
+  const criteria = `(Tag.name:equals:${tag})`;
+  const params = new URLSearchParams({
+    criteria,
+    per_page: String(Math.min(limit, 200)),
+  });
+  const result = await callCrm<{ data?: Array<Record<string, unknown>> }>(
+    `/${encodeURIComponent(module)}/search?${params.toString()}`,
+    { method: 'GET' },
+    traceId,
+  );
+  if (!result.ok) {
+    if (result.status === 204 || result.error.includes('204')) {
+      return { ok: true, data: [] };
+    }
+    // Fallback: si el `Tag.name` no funciona (algunas instancias Zoho lo nombran
+    // diferente), intentar `Tag:equals` sin .name
+    const fallbackResult = await callCrm<{ data?: Array<Record<string, unknown>> }>(
+      `/${encodeURIComponent(module)}/search?criteria=${encodeURIComponent(`(Tag:equals:${tag})`)}&per_page=${Math.min(limit, 200)}`,
+      { method: 'GET' },
+      traceId,
+    );
+    if (fallbackResult.ok) {
+      return { ok: true, data: fallbackResult.data.data ?? [] };
+    }
+    return result;
+  }
+  return { ok: true, data: result.data.data ?? [] };
+}
+
 export async function updateLeadStatus(leadId: string, newStatus: string, traceId: string): Promise<CrmResult<CrmLead>> {
   const e = env();
   const module = e.ZOHO_CRM_LEADS_MODULE;

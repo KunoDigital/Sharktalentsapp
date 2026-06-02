@@ -130,6 +130,7 @@ export default function MarketingLeads() {
             <option value="80">80+ (muy calientes)</option>
           </select>
         </label>
+        <ImportFromCrmButton onImported={() => window.location.reload()} />
       </div>
 
       {loading ? (
@@ -497,6 +498,178 @@ function SendContractButton({ lead }: { lead: ApiMarketingLead }) {
           <button type="button" className="btn-toolbar" onClick={() => setOpen(false)} disabled={sending}>Cerrar</button>
           <button type="button" className="btn-primary" onClick={handleSend} disabled={sending || result?.ok}>
             {sending ? 'Enviando…' : result?.ok ? 'Enviado ✓' : 'Enviar contrato'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ImportFromCrmButton({ onImported }: { onImported: () => void }) {
+  const api = useApi();
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<Array<{
+    crm_id: string; email: string; contact_name: string | null; company: string | null;
+    phone: string | null; lead_source: string | null; already_imported: boolean;
+  }>>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [importing, setImporting] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+
+  async function loadList() {
+    setLoading(true);
+    setError(null);
+    try {
+      const r = await api.marketing.listCrmLeadsForImport('SharkTalents');
+      if (!r.ok) {
+        setError(r.error ?? 'Error consultando Zoho CRM');
+        setItems([]);
+      } else {
+        setItems(r.items);
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (open) loadList();
+  }, [open]);
+
+  function toggle(email: string) {
+    setSelected((curr) => {
+      const next = new Set(curr);
+      if (next.has(email)) next.delete(email); else next.add(email);
+      return next;
+    });
+  }
+
+  async function handleImport() {
+    if (selected.size === 0) return;
+    setImporting(true);
+    setProgress({ done: 0, total: selected.size });
+    const emails = Array.from(selected);
+    let done = 0;
+    let failed: string[] = [];
+    for (const email of emails) {
+      try {
+        await api.marketing.importLeadFromCrm(email);
+      } catch (err) {
+        failed.push(`${email}: ${(err as Error).message}`);
+      }
+      done++;
+      setProgress({ done, total: emails.length });
+    }
+    setImporting(false);
+    if (failed.length > 0) {
+      setError(`${failed.length} de ${emails.length} fallaron:\n${failed.join('\n')}`);
+    } else {
+      setOpen(false);
+      onImported();
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        className="btn-toolbar"
+        style={{ fontSize: '0.85rem', marginLeft: 'auto' }}
+        onClick={() => setOpen(true)}
+        title="Traer leads de Zoho CRM con etiqueta SharkTalents"
+      >
+        📥 Importar de CRM
+      </button>
+    );
+  }
+
+  const importables = items.filter((i) => !i.already_imported);
+  const alreadyIn = items.filter((i) => i.already_imported).length;
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={() => !importing && setOpen(false)}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--st-bg)', border: '1px solid var(--border)', borderRadius: '10px', padding: '1.5rem', width: '100%', maxWidth: '640px', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
+        <h3 style={{ marginTop: 0, marginBottom: '0.4rem' }}>📥 Importar leads desde Zoho CRM</h3>
+        <p className="muted small" style={{ marginTop: 0, marginBottom: '1rem' }}>
+          Mostrando leads con etiqueta <code>SharkTalents</code> en CRM. Los que ya están en SharkTalents aparecen en gris.
+        </p>
+
+        {loading && <p className="muted small">Consultando Zoho CRM…</p>}
+        {error && (
+          <div style={{ padding: '0.6rem 0.75rem', background: 'rgba(220,53,69,0.12)', border: '1px solid rgba(220,53,69,0.4)', borderRadius: '6px', color: '#ff8888', fontSize: '0.85rem', marginBottom: '0.75rem', whiteSpace: 'pre-wrap' }}>
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && items.length === 0 && (
+          <p className="muted">No se encontraron leads con etiqueta <code>SharkTalents</code> en CRM. Asegurate que el tag esté escrito exactamente <code>SharkTalents</code> y aplicado a algún lead.</p>
+        )}
+
+        {!loading && items.length > 0 && (
+          <>
+            {alreadyIn > 0 && (
+              <p className="muted small" style={{ marginBottom: '0.5rem' }}>
+                {alreadyIn} lead{alreadyIn !== 1 ? 's' : ''} ya están en SharkTalents. {importables.length} disponibles para importar.
+              </p>
+            )}
+
+            <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border)', borderRadius: '6px' }}>
+              {items.map((item) => (
+                <label
+                  key={item.crm_id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.6rem',
+                    padding: '0.6rem 0.75rem',
+                    borderBottom: '1px solid var(--border)',
+                    opacity: item.already_imported ? 0.5 : 1,
+                    cursor: item.already_imported ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    disabled={item.already_imported}
+                    checked={selected.has(item.email)}
+                    onChange={() => toggle(item.email)}
+                    style={{ marginTop: '0.2rem' }}
+                  />
+                  <div style={{ flex: 1, fontSize: '0.88rem' }}>
+                    <div style={{ fontWeight: 600 }}>{item.email}</div>
+                    <div className="muted small">
+                      {item.contact_name ?? '—'} {item.company ? `· ${item.company}` : ''}
+                    </div>
+                    {item.phone && <div className="muted small">📞 {item.phone}</div>}
+                    {item.lead_source && <div className="muted small">Source: {item.lead_source}</div>}
+                    {item.already_imported && <div style={{ fontSize: '0.7rem', color: '#22c55e' }}>✓ Ya en SharkTalents</div>}
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            {progress && (
+              <p className="muted small" style={{ marginTop: '0.5rem' }}>
+                Importando… {progress.done} / {progress.total}
+              </p>
+            )}
+          </>
+        )}
+
+        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+          <button type="button" className="btn-toolbar" onClick={() => setOpen(false)} disabled={importing}>
+            Cerrar
+          </button>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={handleImport}
+            disabled={importing || selected.size === 0 || importables.length === 0}
+          >
+            {importing ? 'Importando…' : `Importar ${selected.size} lead${selected.size !== 1 ? 's' : ''}`}
           </button>
         </div>
       </div>

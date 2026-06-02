@@ -1067,6 +1067,259 @@ export async function patchLead(ctx: RequestContext): Promise<void> {
   sendJson(ctx.res, 200, { ok: true, leadId, updated_fields: Object.keys(patch) });
 }
 
+// ===== GET /api/marketing/_dump_crm_lead?email=... (diagnóstico) =====
+
+/**
+ * Dump RAW del lead en CRM por email — muestra TODOS los fields que tiene.
+ * Útil para identificar el API name real de campos custom (RUC, dirección, etc).
+ */
+export async function dumpCrmLead(ctx: RequestContext): Promise<void> {
+  const { requireAuth } = await import('../lib/auth.js');
+  const { requireTenant } = await import('./tenants.js');
+  await requireAuth(ctx);
+  await requireTenant(ctx);
+
+  const url = new URL(ctx.req.url ?? '/', 'http://x');
+  const email = url.searchParams.get('email')?.trim().toLowerCase();
+  if (!email) throw new ValidationError('email query param requerido');
+
+  const { findLeadInCrmByEmail } = await import('../lib/zohoCrmClient.js');
+  const result = await findLeadInCrmByEmail(email, ctx.traceId);
+  if (!result.ok) {
+    sendJson(ctx.res, 200, { ok: false, error: result.error });
+    return;
+  }
+  if (!result.data) {
+    sendJson(ctx.res, 200, { ok: false, error: 'lead no encontrado en CRM por email' });
+    return;
+  }
+
+  // Devolver todos los fields + indicar cuáles tienen valores no-null/empty
+  const allFields = Object.entries(result.data).map(([key, value]) => ({
+    key,
+    value: typeof value === 'object' && value !== null ? JSON.stringify(value).slice(0, 100) : String(value ?? ''),
+    has_value: value !== null && value !== '' && value !== undefined,
+  }));
+
+  sendJson(ctx.res, 200, {
+    ok: true,
+    field_count: allFields.length,
+    fields_with_values: allFields.filter((f) => f.has_value),
+    all_fields: allFields,
+  });
+}
+
+// ===== GET /api/marketing/crm-leads (auth tenant — listar leads CRM tag=SharkTalents) =====
+
+/**
+ * Lista leads de Zoho CRM con el tag "SharkTalents", anotando si ya están importados
+ * en MarketingLeads de SharkTalents (para evitar duplicar). El frontend usa esto para
+ * mostrar checkboxes de qué importar.
+ */
+export async function listImportableCrmLeads(ctx: RequestContext): Promise<void> {
+  const { requireAuth } = await import('../lib/auth.js');
+  const { requireTenant } = await import('./tenants.js');
+  await requireAuth(ctx);
+  await requireTenant(ctx);
+
+  const url = new URL(ctx.req.url ?? '/', 'http://x');
+  const tag = url.searchParams.get('tag')?.trim() || 'SharkTalents';
+
+  // Buscar leads en CRM con ese tag
+  const { listLeadsByTag } = await import('../lib/zohoCrmClient.js');
+  const crmResult = await listLeadsByTag(tag, ctx.traceId, 200);
+  if (!crmResult.ok) {
+    sendJson(ctx.res, 200, {
+      ok: false,
+      error: crmResult.error,
+      items: [],
+    });
+    return;
+  }
+
+  const crmLeads = crmResult.data;
+
+  // Obtener emails ya existentes en MarketingLeads para anotar `already_imported`
+  const existingEmails = new Set<string>();
+  if (await isTableReady(ctx.req)) {
+    try {
+      const existing = unwrapRows<{ email: string }>(
+        (await zcql(ctx.req).executeZCQLQuery(
+          `SELECT email FROM ${TABLE_LEADS} LIMIT 200`,
+        )) as unknown[],
+        TABLE_LEADS,
+      );
+      for (const e of existing) {
+        if (typeof e.email === 'string') existingEmails.add(e.email.toLowerCase());
+      }
+    } catch { /* table not ready, ignore */ }
+  }
+
+  const items = crmLeads
+    .map((l) => {
+      const email = typeof l.Email === 'string' ? l.Email.trim().toLowerCase() : '';
+      if (!email) return null;
+      const firstName = typeof l.First_Name === 'string' ? l.First_Name.trim() : '';
+      const lastName = typeof l.Last_Name === 'string' ? l.Last_Name.trim() : '';
+      const contactName = [firstName, lastName].filter(Boolean).join(' ').trim();
+      const company = typeof l.Company === 'string' ? l.Company.trim() : '';
+      const phone = typeof l.Mobile === 'string' ? l.Mobile.trim()
+        : typeof l.Phone === 'string' ? l.Phone.trim() : '';
+      const leadSource = typeof l.Lead_Source === 'string' ? l.Lead_Source.trim() : '';
+      const crmLeadId = typeof l.id === 'string' ? l.id : '';
+      return {
+        crm_id: crmLeadId,
+        email,
+        contact_name: contactName || null,
+        company: company || null,
+        phone: phone || null,
+        lead_source: leadSource || null,
+        already_imported: existingEmails.has(email),
+      };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
+
+  sendJson(ctx.res, 200, {
+    ok: true,
+    tag,
+    count: items.length,
+    items,
+  });
+}
+
+// ===== POST /api/marketing/import-from-crm (auth tenant — traer lead desde Zoho CRM) =====
+
+/**
+ * Busca un lead en Zoho CRM por email y lo crea como MarketingLead en SharkTalents.
+ *
+ * Use case principal:
+ *   1. Llega un prospecto por Meta Ads → se captura en CRM (form de pauta)
+ *   2. O Cris/Cristian agregan a un cliente manual en CRM (vino por WhatsApp)
+ *   3. Click "Importar de CRM" en SharkTalents → trae los datos del CRM
+ *   4. Después se puede mandar demo + contrato sin re-escribir nada
+ *
+ * Si el lead YA existe en MarketingLeads con ese email, devuelve 409 con el lead_id existente
+ * (no duplicar — usar el existente). Si no existe en CRM, 404.
+ */
+export async function importLeadFromCrm(ctx: RequestContext): Promise<void> {
+  const { requireAuth } = await import('../lib/auth.js');
+  const { requireTenant } = await import('./tenants.js');
+  await requireAuth(ctx);
+  await requireTenant(ctx);
+
+  if (!(await isTableReady(ctx.req))) {
+    sendJson(ctx.res, 503, { error: { code: 'table_not_ready', message: 'MarketingLeads not ready' } });
+    return;
+  }
+
+  const body = (await readJsonBody(ctx.req)) as { email?: string };
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  if (!email || !EMAIL_REGEX.test(email)) throw new ValidationError('email requerido y debe ser válido');
+
+  // Chequear si ya existe en MarketingLeads
+  const existing = unwrapRows<{ ROWID: string }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT ROWID FROM ${TABLE_LEADS} WHERE email = '${escapeSql(email)}' LIMIT 1`,
+    )) as unknown[],
+    TABLE_LEADS,
+  )[0];
+
+  if (existing) {
+    sendJson(ctx.res, 409, {
+      error: { code: 'already_exists', message: 'Este lead ya existe en SharkTalents' },
+      lead_id: existing.ROWID,
+    });
+    return;
+  }
+
+  // Buscar en Zoho CRM
+  const { findLeadInCrmByEmail } = await import('../lib/zohoCrmClient.js');
+  const crmResult = await findLeadInCrmByEmail(email, ctx.traceId);
+  if (!crmResult.ok) {
+    sendJson(ctx.res, 502, {
+      error: { code: 'crm_error', message: `No se pudo consultar Zoho CRM: ${crmResult.error}` },
+    });
+    return;
+  }
+  if (!crmResult.data) {
+    sendJson(ctx.res, 404, {
+      error: { code: 'not_in_crm', message: `No se encontró un lead con email ${email} en Zoho CRM` },
+    });
+    return;
+  }
+
+  const crmLead = crmResult.data;
+
+  // Mapear campos CRM → MarketingLeads
+  const firstName = typeof crmLead.First_Name === 'string' ? crmLead.First_Name.trim() : '';
+  const lastName = typeof crmLead.Last_Name === 'string' ? crmLead.Last_Name.trim() : '';
+  const contactName = [firstName, lastName].filter(Boolean).join(' ').trim() || null;
+  const company = typeof crmLead.Company === 'string' ? crmLead.Company.trim() : null;
+  const phone = typeof crmLead.Mobile === 'string' ? crmLead.Mobile.trim()
+    : typeof crmLead.Phone === 'string' ? crmLead.Phone.trim() : null;
+  const leadSource = typeof crmLead.Lead_Source === 'string' ? crmLead.Lead_Source.trim() : null;
+
+  // Salary target: intentar campos custom comunes
+  let salaryTarget: number | null = null;
+  const salaryCandidates = ['Salary_Target', 'Salary', 'Salario', 'Salario_Target'];
+  for (const key of salaryCandidates) {
+    const val = crmLead[key];
+    if (typeof val === 'number' && val > 0) {
+      salaryTarget = Math.round(val);
+      break;
+    }
+    if (typeof val === 'string') {
+      const num = Number(val.replace(/[^0-9.]/g, ''));
+      if (num > 0) {
+        salaryTarget = Math.round(num);
+        break;
+      }
+    }
+  }
+
+  // Crear el lead
+  const crmLeadId = typeof crmLead.id === 'string' ? crmLead.id : null;
+  const insertPayload: Record<string, unknown> = {
+    email,
+    contact_name: contactName,
+    company,
+    whatsapp: phone,
+    score_quality: 50, // baseline; recalcular cuando complete quiz
+    urgency: 'less_30d', // default — Cris puede editar después
+    salary_target: salaryTarget,
+    source: leadSource ? `crm_import:${leadSource}` : 'crm_import',
+    status: 'new',
+    eval_result_id: null,
+    zoho_crm_lead_id: crmLeadId,
+    created_at: now(),
+    updated_at: now(),
+  };
+
+  const inserted = await datastore(ctx.req).table(TABLE_LEADS).insertRow(insertPayload);
+  const row = unwrapRow<{ ROWID: string }>(inserted, TABLE_LEADS);
+  const leadId = row?.ROWID ?? '';
+
+  log.info('lead imported from CRM', {
+    traceId: ctx.traceId,
+    leadId,
+    email_masked: email.slice(0, 2) + '***',
+    crmLeadId,
+  });
+
+  sendJson(ctx.res, 201, {
+    lead_id: leadId,
+    message: `Lead importado desde Zoho CRM (id ${crmLeadId})`,
+    crm_lead_id: crmLeadId,
+    populated: {
+      email,
+      contact_name: contactName,
+      company,
+      whatsapp: phone,
+      salary_target: salaryTarget,
+    },
+  });
+}
+
 // ===== POST /api/marketing/_admin_wipe_leads (auth tenant — borra TODOS los leads) =====
 
 /**
@@ -1414,7 +1667,8 @@ async function resolveContractContext(
 
       // Campos comunes de Zoho CRM Leads. Custom fields varían por tenant — el frontend
       // los ve igual aunque sean null.
-      const rucCandidates = ['RUC', 'NIT', 'EIN', 'Tax_ID', 'Tax_Id', 'TAX_ID', 'RUC_NIT_EIN', 'CIF', 'CUIT'];
+      // Confirmado: el CRM de Kuno usa `RUC_NIT` (descubierto vía /api/marketing/_dump_crm_lead).
+      const rucCandidates = ['RUC_NIT', 'RUC', 'NIT', 'EIN', 'Tax_ID', 'Tax_Id', 'TAX_ID', 'RUC_NIT_EIN', 'CIF', 'CUIT'];
       for (const key of rucCandidates) {
         if (typeof crmLead[key] === 'string' && (crmLead[key] as string).trim()) {
           client_ruc_nit_ein = (crmLead[key] as string).trim();
