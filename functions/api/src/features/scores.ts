@@ -25,6 +25,8 @@ import {
   normalizeDiscRaw,
   discDominantAxis,
   velnaAggregate,
+  calculateDiscSimilarity,
+  velnaSimilarity,
   calculateTechnicalScore,
   type DiscRawScores,
   type VelnaSubtestPct,
@@ -34,6 +36,22 @@ const log = logger('SCORES');
 const T_SCORES = 'Scores';
 const T_INT_DIM = 'IntegrityDimensions';
 const T_JOBS = 'Jobs';
+const T_RESULTS = 'Results';
+
+/**
+ * Catalyst Datastore devuelve columnas `int` como string (ej "83" en vez de 83).
+ * Este helper tolera ambos formatos y retorna number finito o null.
+ * Mismo patrón que applicationAdapter.ts en el frontend.
+ */
+function toFiniteNum(v: unknown): number | null {
+  if (v == null) return null;
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+  if (typeof v === 'string' && v.trim() !== '') {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
 
 // ---- Types ----
 
@@ -96,16 +114,24 @@ type IntegrityDimensionRow = {
 // ---- Tenant guards ----
 
 async function getResultTenantId(req: IncomingMessage, resultId: string): Promise<string | null> {
-  const query = `
-    SELECT J.tenant_id AS tenant_id
-    FROM Results R
-    JOIN Jobs J ON J.ROWID = R.assessment_id
-    WHERE R.ROWID = '${escapeSql(resultId)}'
-    LIMIT 1
-  `.replace(/\s+/g, ' ');
-  const result = (await zcql(req).executeZCQLQuery(query)) as unknown[];
-  type Pick = { tenant_id: string };
-  return unwrapRows<Pick>(result, T_JOBS)[0]?.tenant_id ?? null;
+  // 2026-06-04: refactor sin JOIN (Catalyst rompió JOINs). 2 queries:
+  //   1) Result → assessment_id (job ID).
+  //   2) Job → tenant_id.
+  // BIGINTs sin quotes — solo dígitos puros para evitar inyección.
+  if (!/^\d+$/.test(resultId)) return null;
+  const resultRows = (await zcql(req).executeZCQLQuery(
+    `SELECT assessment_id FROM Results WHERE ROWID = ${resultId} LIMIT 1`,
+  )) as unknown[];
+  type ResultPick = { assessment_id: string };
+  const r = unwrapRows<ResultPick>(resultRows, T_RESULTS)[0];
+  if (!r?.assessment_id) return null;
+  const jobId = String(r.assessment_id);
+  if (!/^\d+$/.test(jobId)) return null;
+  const jobRows = (await zcql(req).executeZCQLQuery(
+    `SELECT tenant_id FROM Jobs WHERE ROWID = ${jobId} LIMIT 1`,
+  )) as unknown[];
+  type JobPick = { tenant_id: string };
+  return unwrapRows<JobPick>(jobRows, T_JOBS)[0]?.tenant_id ?? null;
 }
 
 // ---- Validation ----
@@ -329,11 +355,100 @@ export async function readScores(ctx: RequestContext): Promise<void> {
     listIntegrityDims(ctx.req, resultId),
   ]);
 
+  // Computar DISC/VELNA similarity on-the-fly contra ideal_profile del Job (modelo V1).
+  // No persistimos — se recalcula cada read (igual que v1, sin columnas nuevas).
+  // calculateDiscSimilarity usa min/max ratio: funciona con cualquier escala per-axis.
+  const enriched = row ? { ...row } as ScoresRow & {
+    disc_similarity_pct?: number | null;
+    velna_similarity_pct?: number | null;
+  } : null;
+
+  if (enriched) {
+    try {
+      const ideal = await fetchJobIdealProfile(ctx.req, resultId);
+      // Catalyst devuelve int como string ("83" no 83) — toFiniteNum tolera ambos.
+      const dn = toFiniteNum(row?.disc_norm_d), di = toFiniteNum(row?.disc_norm_i);
+      const ds = toFiniteNum(row?.disc_norm_s), dc = toFiniteNum(row?.disc_norm_c);
+      if (dn !== null && di !== null && ds !== null && dc !== null && ideal?.disc) {
+        enriched.disc_similarity_pct = calculateDiscSimilarity(
+          { d: dn, i: di, s: ds, c: dc },
+          ideal.disc,
+        );
+      }
+      const vv = toFiniteNum(row?.velna_verbal), ve = toFiniteNum(row?.velna_espacial);
+      const vl = toFiniteNum(row?.velna_logica), vn = toFiniteNum(row?.velna_numerica);
+      const va = toFiniteNum(row?.velna_abstracta);
+      if (vv !== null && ve !== null && vl !== null && vn !== null && va !== null && ideal?.velna) {
+        enriched.velna_similarity_pct = velnaSimilarity(
+          { verbal: vv, espacial: ve, logica: vl, numerica: vn, abstracta: va },
+          ideal.velna,
+        );
+      }
+    } catch (err) {
+      log.warn('similarity calc failed (non-fatal)', { resultId, error: (err as Error).message });
+    }
+  }
+
   sendJson(ctx.res, 200, {
     result_id: resultId,
-    scores: row,
+    scores: enriched,
     integrity_dimensions: dims,
   });
+}
+
+/** Helper: trae ideal_profile del Job asociado al Result, parseado. */
+async function fetchJobIdealProfile(
+  req: IncomingMessage,
+  resultId: string,
+): Promise<{
+  disc?: { d: number; i: number; s: number; c: number };
+  velna?: { verbal: number; espacial: number; logica: number; numerica: number; abstracta: number };
+} | null> {
+  const q = `SELECT j.ideal_profile FROM ${T_JOBS} j, Results r
+             WHERE r.ROWID = '${escapeSql(resultId)}' AND r.assessment_id = j.ROWID LIMIT 1`;
+  try {
+    const rows = unwrapRows<{ ideal_profile?: string | null }>(
+      (await zcql(req).executeZCQLQuery(q)) as unknown[],
+      'Jobs',
+    );
+    const raw = rows[0]?.ideal_profile;
+    if (!raw) return null;
+    return JSON.parse(raw) as { disc?: { d: number; i: number; s: number; c: number };
+      velna?: { verbal: number; espacial: number; logica: number; numerica: number; abstracta: number } };
+  } catch {
+    // Catalyst rechaza JOINs entre tablas (memoria: project_catalyst_zcql_constraints).
+    // Fallback: 2 queries — primero el Result para sacar el job_id, después el Job.
+    return fetchJobIdealProfileFallback(req, resultId);
+  }
+}
+
+async function fetchJobIdealProfileFallback(
+  req: IncomingMessage,
+  resultId: string,
+): Promise<{
+  disc?: { d: number; i: number; s: number; c: number };
+  velna?: { verbal: number; espacial: number; logica: number; numerica: number; abstracta: number };
+} | null> {
+  const resQ = `SELECT assessment_id FROM ${T_RESULTS} WHERE ROWID = '${escapeSql(resultId)}' LIMIT 1`;
+  const resRows = unwrapRows<{ assessment_id?: string }>(
+    (await zcql(req).executeZCQLQuery(resQ)) as unknown[],
+    T_RESULTS,
+  );
+  const jobId = resRows[0]?.assessment_id;
+  if (!jobId) return null;
+
+  const jobQ = `SELECT ideal_profile FROM ${T_JOBS} WHERE ROWID = '${escapeSql(jobId)}' LIMIT 1`;
+  const jobRows = unwrapRows<{ ideal_profile?: string | null }>(
+    (await zcql(req).executeZCQLQuery(jobQ)) as unknown[],
+    'Jobs',
+  );
+  const raw = jobRows[0]?.ideal_profile;
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
 function extractResultIdFromScoresPath(url: string): string | null {

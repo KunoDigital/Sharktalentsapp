@@ -5,24 +5,42 @@ import { logger } from './lib/logger';
 import { requireAuth } from './lib/auth';
 import { reportError } from './lib/errorTracker';
 import { metrics } from './lib/metrics';
-import { getHealth, getAdminHealthCheck, getIntegrationsStatus } from './features/health';
+import { getHealth, getAdminHealthCheck, getTenantHealthCheck, getIntegrationsStatus } from './features/health';
 import { handleClerkWebhook, requireTenant, getMyBranding, updateMyBranding } from './features/tenants';
 import { handleHeyReachWebhook } from './features/heyreachWebhook';
 import { handleZiaWebhook } from './features/ziaWebhook';
 import { handleZohoSignWebhook } from './features/zohoSignWebhook';
 import { handleZohoRecruitWebhook } from './features/zohoRecruitWebhook';
+import { handleZohoCrmLeadCreated } from './features/zohoCrmWebhook';
+import { listPublicJobs, getPublicJob, applyToPublicJob } from './features/publicCareerSite';
+import { getDevLogByTraceId, listDevLogs } from './features/devLogs';
 import { handleWhatsAppWebhook } from './features/whatsappWebhook';
-import { verifyTables, listAllTenants, getAdminStats, anthropicPing, listAuditLog, issuePortalToken, listAntiCheatEvents, listEmailTemplates, getMetricsSnapshot } from './features/admin';
-import { processOutbox, listOutbox, processOutboxFromTenant, listOutboxFromTenant, searchOutboxByRecipient } from './features/outbox';
+import { verifyTables, listAllTenants, getAdminStats, anthropicPing, listAuditLog, issuePortalToken, listAntiCheatEvents, listEmailTemplates, getMetricsSnapshot, forceRecruitSync, diagInsertCandidate, adoptOrphanDrafts, diagLastDraft, diagCrmLayouts, diagCrmLead, diagCrmPush, diagTriggerTestFlow, diagGenerateDraft, diagPublishTestJobs, diagListDrafts, diagBackfillRecruitSlugs, diagRecentAlerts, diagGenerateQuestionsForJob, diagGetQuestionsForJob, diagListJobs, diagCreateTestCandidate, diagCleanupTestJobs, diagGetTestToken, diagGetScores } from './features/admin';
+import { processOutbox, listOutbox, processOutboxFromTenant, listOutboxFromTenant, searchOutboxByRecipient, resetStuckOutboxEvents } from './features/outbox';
+import { sendCandidateReminders } from './features/candidateReminders';
+import { listAlerts, acknowledgeAlert, resolveAlert } from './features/alerts';
+import { listEmailTemplatesWithOverrides, getEmailTemplateOverride, putEmailTemplateOverride, deleteEmailTemplateOverride } from './features/emailTemplateOverrides';
+import { getDashboardQueue } from './features/dashboard';
+import { getOperationsExpenses } from './features/operations';
+import { listCandidateNotes, createCandidateNote, updateCandidateNote, deleteCandidateNote } from './features/candidateNotes';
+import { listCandidateTags, addCandidateTag, deleteCandidateTag, listTenantTags, listCandidatesByTag, bulkTagCandidates } from './features/candidateTags';
+import { getClientsHealth } from './features/clientHealth';
+import { getTenantStats } from './features/tenantStats';
+import { getSourceAnalytics } from './features/sourceAnalytics';
+import { findDuplicateCandidates } from './features/duplicateDetection';
+import { listFavorites, addFavorite, removeFavorite } from './features/favorites';
+import { listSavedSearches, createSavedSearch, deleteSavedSearch } from './features/savedSearches';
 import { exportCandidateData, deleteCandidateData, purgeOldVideos } from './features/gdpr';
-import { listJobs, getJob, createJob, patchJob, archiveJob, generateJobTechQuestions, notifyClientReportReady, retryRecruitSync, inspectRecruitJobOpeningFields, dumpRecruitJobOpening, forcePublishRecruitJob } from './features/jobs';
-import { listCandidates, getCandidate, createCandidate, patchCandidate } from './features/candidates';
+import { listJobs, getJob, createJob, patchJob, archiveJob, generateJobTechQuestions, getJobTechQuestionsStatus, listJobTechQuestions, updateJobTechQuestions, generateJobPrescreeningQuestions, getJobPrescreeningQuestionsStatus, listJobPrescreeningQuestions, updateJobPrescreeningQuestions, getJobPrescreeningStats, getAllJobsStageCounts, getJobSalaryDistribution, getJobStageTiming, getJobFunnelTimeline, getJobCosts, getJobBudget, addJobAdsSpend, searchJobs, notifyClientReportReady, retryRecruitSync, inspectRecruitJobOpeningFields, dumpRecruitJobOpening, forcePublishRecruitJob, backfillRecruitJobSlugs } from './features/jobs';
+import { listCandidates, getCandidate, createCandidate, patchCandidate, searchCandidates } from './features/candidates';
 import {
   listApplications,
   getApplication,
   createApplication,
   transitionApplication,
+  bulkTransitionApplications,
   getApplicationTransitions,
+  getApplicationBotDecision,
 } from './features/applications';
 import { writeScores, readScores } from './features/scores';
 import { writeIntegrity, readIntegrity } from './features/integrity';
@@ -33,6 +51,7 @@ import {
   getJobDraft,
   patchJobDraft,
   convertDraftToJob,
+  searchJobDrafts,
 } from './features/jobDrafts';
 import { botReview } from './features/bot';
 import { listReviewQueueHandler, decideReviewQueueItem, getBotStats } from './features/reviewQueue';
@@ -46,22 +65,23 @@ import {
 } from './features/videos';
 import { submitMindsetTest, getMindsetForApplication } from './features/mindsetTest';
 import { submitEnglishTest, getEnglishForApplication } from './features/englishTest';
-import { approveDraftPublic, requestChangesDraftPublic, sendDraftToClient, getDraftPublic, listRecentDraftComments } from './features/jobDrafts';
+import { approveDraftPublic, requestChangesDraftPublic, sendDraftToClient, getDraftPublic, listRecentDraftComments, iterateJobDraft, regenerateDiscNarrative, previewDraftUrl, diagnoseZiaOrphanDrafts } from './features/jobDrafts';
 import {
   listPool,
   addToPool,
   patchPoolEntry,
   removeFromPool,
   matchPool,
+  invitePoolToJob,
 } from './features/candidatePool';
-import { getTestStatus, submitTest, getTestTechQuestions } from './features/publicTest';
+import { getTestStatus, submitTest, getTestTechQuestions, registerCandidateInfo, getTestPrescreening, submitTestPrescreening, getCandidateProgress } from './features/publicTest';
 import { getPublicReport } from './features/publicReport';
-import { getPublicReportBundle } from './features/publicReportBundle';
+import { getPublicReportBundle, submitReportFeedback } from './features/publicReportBundle';
 import { getClientPortal, getClientPortalJob, issuePortalForTenant } from './features/clientPortal';
 import { createApiKey, listApiKeys, patchApiKey, revokeApiKey } from './features/apiKeys';
 import { getOpenApiSpec, getApiDocs } from './features/openApiSpec';
 import { getPublicJobInfo, submitApplication } from './features/publicApply';
-import { resendCandidateLink } from './features/publicRecovery';
+import { resendCandidateLink, genericRecoveryByEmail } from './features/publicRecovery';
 import { handleRecruitTestLink } from './features/recruitTestLink';
 import { listReports } from './features/reports';
 import { getTenantConfig, patchTenantConfig } from './features/tenantConfig';
@@ -82,9 +102,9 @@ import {
   submitPrefilterAnswers,
   listPrefilterAnswersForApplication,
 } from './features/prefilter';
-import { captureLead, requestEval, getLeadStatus, listMarketingLeads, requestLeadDeletion, confirmLeadDeletion, createManualLead, convertLeadToTenant, sendDemoToLead, sendContractToLead, getContractContext, registerDemoTest, diagnoseLead, resetLead, simulateCompletion, forceCrmSync, listCrmModules, linkMarketingTenant, whoami, resendReport, adminWipeLeads, patchLead, getLeadDemoStatus, forceGenerateLeadReport, inspectIntegrityDims, renameCandidate, testIntegrityDimsInsert, importLeadFromCrm, listImportableCrmLeads, dumpCrmLead } from './features/marketing';
+import { captureLead, requestEval, getLeadStatus, listMarketingLeads, requestLeadDeletion, confirmLeadDeletion, createManualLead, convertLeadToTenant, sendDemoToLead, sendContractToLead, getContractContext, registerDemoTest, diagnoseLead, resetLead, simulateCompletion, forceCrmSync, listCrmModules, linkMarketingTenant, whoami, resendReport, adminWipeLeads, patchLead, getLeadDemoStatus, forceGenerateLeadReport, inspectIntegrityDims, renameCandidate, testIntegrityDimsInsert, importLeadFromCrm, listImportableCrmLeads, dumpCrmLead, wipeTestLeads } from './features/marketing';
 import { getVideoConsent, postVideoConsent, withdrawVideoConsent } from './features/videoConsents';
-import { scheduleBriefing, listBriefings } from './features/briefings';
+import { scheduleBriefing, listBriefings, uploadBriefingTranscript } from './features/briefings';
 import { trackPortalEvent, listJobTracking } from './features/jobTracking';
 import { sendOfferForSignature } from './features/contracts';
 import { checkRateLimit } from './lib/rateLimiter';
@@ -114,13 +134,45 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/api\/marketing\/eval-request\/?$/, handler: requestEval, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/marketing\/demo-test\/register\/?$/, handler: registerDemoTest, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/marketing\/_diagnose\/?$/, handler: diagnoseLead, auth: 'public' },
-  { method: 'POST', pattern: /^\/api\/marketing\/_reset\/?$/, handler: resetLead, auth: 'public' },
-  { method: 'POST', pattern: /^\/api\/marketing\/_simulate_completion\/?$/, handler: simulateCompletion, auth: 'public' },
-  { method: 'POST', pattern: /^\/api\/marketing\/_force_crm_sync\/?$/, handler: forceCrmSync, auth: 'public' },
+  // 2026-06-04 (audit fix #12): cambiados de 'public' → 'admin'. Eran endpoints de
+  // diagnóstico/debug pero estaban marcados público con solo verifySiteKey (site key
+  // pública por diseño). Cualquiera podía borrar leads, simular completion del demo o
+  // forzar sync a CRM. Como ningún botón del admin los usa, mover a admin no rompe nada
+  // y los sigue accesible para Cris/Cristian con X-Internal-Key.
+  { method: 'POST', pattern: /^\/api\/marketing\/_reset\/?$/, handler: resetLead, auth: 'admin' },
+  { method: 'POST', pattern: /^\/api\/marketing\/_simulate_completion\/?$/, handler: simulateCompletion, auth: 'admin' },
+  { method: 'POST', pattern: /^\/api\/marketing\/_force_crm_sync\/?$/, handler: forceCrmSync, auth: 'admin' },
   { method: 'GET', pattern: /^\/api\/marketing\/_list_crm_modules\/?$/, handler: listCrmModules, auth: 'public' },
-  { method: 'POST', pattern: /^\/api\/marketing\/_link_marketing_tenant\/?$/, handler: linkMarketingTenant, auth: 'public' },
+  // 2026-06-04 (audit fix #2): cambiado de 'public' → 'admin'. Endpoint de setup que
+  // reescribe clerk_org_id del tenant — bajo auth public era vector de takeover.
+  { method: 'POST', pattern: /^\/api\/marketing\/_link_marketing_tenant\/?$/, handler: linkMarketingTenant, auth: 'admin' },
   { method: 'GET', pattern: /^\/api\/marketing\/_whoami\/?$/, handler: whoami, auth: 'public' },
-  { method: 'POST', pattern: /^\/api\/marketing\/_resend_report\/?$/, handler: resendReport, auth: 'public' },
+  // audit fix #12: idem — endpoint de debug, no usado desde el admin.
+  { method: 'POST', pattern: /^\/api\/marketing\/_resend_report\/?$/, handler: resendReport, auth: 'admin' },
+  { method: 'POST', pattern: /^\/api\/admin\/backfill-recruit-job-slugs\/?$/, handler: backfillRecruitJobSlugs, auth: 'admin' },
+  // Stratus log loop: lectura de logs estructurados por traceId. Auth via X-Internal-Key
+  // (handler valida internamente — `public` en router para evitar doble-auth).
+  { method: 'GET', pattern: /^\/api\/_dev\/logs\/[^/]+\/?$/, handler: getDevLogByTraceId, auth: 'public' },
+  { method: 'GET', pattern: /^\/api\/_dev\/logs\/?$/, handler: listDevLogs, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-insert-candidate\/?$/, handler: diagInsertCandidate, auth: 'public' },
+  { method: 'GET', pattern: /^\/api\/admin\/_diag-last-draft\/?$/, handler: diagLastDraft, auth: 'public' },
+  { method: 'GET', pattern: /^\/api\/admin\/_diag-crm-layouts\/?$/, handler: diagCrmLayouts, auth: 'public' },
+  { method: 'GET', pattern: /^\/api\/admin\/_diag-crm-lead\/?$/, handler: diagCrmLead, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-crm-push\/?$/, handler: diagCrmPush, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-trigger-test-flow\/?$/, handler: diagTriggerTestFlow, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-generate-draft\/?$/, handler: diagGenerateDraft, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-publish-test-jobs\/?$/, handler: diagPublishTestJobs, auth: 'public' },
+  { method: 'GET', pattern: /^\/api\/admin\/_diag-list-drafts\/?$/, handler: diagListDrafts, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-backfill-recruit-slugs\/?$/, handler: diagBackfillRecruitSlugs, auth: 'public' },
+  { method: 'GET', pattern: /^\/api\/admin\/_diag-recent-alerts\/?$/, handler: diagRecentAlerts, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-generate-questions-for-job\/?$/, handler: diagGenerateQuestionsForJob, auth: 'public' },
+  { method: 'GET', pattern: /^\/api\/admin\/_diag-get-questions-for-job\/?$/, handler: diagGetQuestionsForJob, auth: 'public' },
+  { method: 'GET', pattern: /^\/api\/admin\/_diag-get-scores\/?$/, handler: diagGetScores, auth: 'public' },
+  { method: 'GET', pattern: /^\/api\/admin\/_diag-list-jobs\/?$/, handler: diagListJobs, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-create-test-candidate\/?$/, handler: diagCreateTestCandidate, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-cleanup-test-jobs\/?$/, handler: diagCleanupTestJobs, auth: 'public' },
+  { method: 'GET', pattern: /^\/api\/admin\/_diag-get-test-token\/?$/, handler: diagGetTestToken, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_adopt-orphan-drafts\/?$/, handler: adoptOrphanDrafts, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/marketing\/lead-status\/?$/, handler: getLeadStatus, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/marketing\/lead\/request-deletion\/?$/, handler: requestLeadDeletion, auth: 'public' },
   { method: 'DELETE', pattern: /^\/api\/marketing\/lead\/?$/, handler: confirmLeadDeletion, auth: 'public' },
@@ -136,6 +188,7 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/api\/_test_integrity_dims_insert\/[^/]+\/?$/, handler: testIntegrityDimsInsert, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/candidates\/[^/]+\/rename\/?$/, handler: renameCandidate, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/marketing\/_admin_wipe_leads\/?$/, handler: adminWipeLeads, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/marketing\/_wipe_test_leads\/?$/, handler: wipeTestLeads, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/marketing\/lead\/[^/]+\/send-demo\/?$/, handler: sendDemoToLead, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/marketing\/lead\/[^/]+\/send-contract\/?$/, handler: sendContractToLead, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/marketing\/lead\/[^/]+\/contract-context\/?$/, handler: getContractContext, auth: 'tenant' },
@@ -151,6 +204,11 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/api\/webhooks\/zia\/?$/, handler: handleZiaWebhook, auth: 'webhook' },
   { method: 'POST', pattern: /^\/api\/webhooks\/zoho-sign\/?$/, handler: handleZohoSignWebhook, auth: 'webhook' },
   { method: 'POST', pattern: /^\/api\/webhooks\/zoho-recruit\/?$/, handler: handleZohoRecruitWebhook, auth: 'webhook' },
+  { method: 'POST', pattern: /^\/api\/webhooks\/zoho-crm\/lead-created\/?$/, handler: handleZohoCrmLeadCreated, auth: 'webhook' },
+  // Career site público (sin Clerk, consumido por sharktalents.ai web marketing)
+  { method: 'GET', pattern: /^\/api\/public\/jobs\/?$/, handler: listPublicJobs, auth: 'public' },
+  { method: 'GET', pattern: /^\/api\/public\/jobs\/[^/]+\/?$/, handler: getPublicJob, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/public\/jobs\/[^/]+\/apply\/?$/, handler: applyToPublicJob, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/webhooks\/whatsapp\/?$/, handler: handleWhatsAppWebhook, auth: 'webhook' },
   { method: 'POST', pattern: /^\/api\/webhooks\/whatsapp\/?$/, handler: handleWhatsAppWebhook, auth: 'webhook' },
 
@@ -159,10 +217,22 @@ const routes: Route[] = [
   { method: 'GET', pattern: /^\/admin\/tenants\/?$/, handler: listAllTenants, auth: 'admin' },
   { method: 'GET', pattern: /^\/admin\/stats\/?$/, handler: getAdminStats, auth: 'admin' },
   { method: 'POST', pattern: /^\/admin\/outbox\/process\/?$/, handler: processOutbox, auth: 'admin' },
+  { method: 'POST', pattern: /^\/admin\/outbox\/reset-stuck\/?$/, handler: resetStuckOutboxEvents, auth: 'admin' },
+  { method: 'GET', pattern: /^\/admin\/diagnose\/zia-orphan-drafts\/?$/, handler: diagnoseZiaOrphanDrafts, auth: 'admin' },
+  { method: 'POST', pattern: /^\/admin\/candidate-reminders\/send\/?$/, handler: sendCandidateReminders, auth: 'admin' },
   { method: 'POST', pattern: /^\/api\/outbox\/process-now\/?$/, handler: processOutboxFromTenant, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/outbox\/recent\/?$/, handler: listOutboxFromTenant, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/outbox\/by-recipient\/?$/, handler: searchOutboxByRecipient, auth: 'tenant' },
   { method: 'GET', pattern: /^\/admin\/outbox\/?$/, handler: listOutbox, auth: 'admin' },
+  { method: 'GET', pattern: /^\/api\/admin\/alerts\/?$/, handler: listAlerts, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/admin\/alerts\/[^/]+\/acknowledge\/?$/, handler: acknowledgeAlert, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/admin\/alerts\/[^/]+\/resolve\/?$/, handler: resolveAlert, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/admin\/email-templates\/?$/, handler: listEmailTemplatesWithOverrides, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/admin\/email-templates\/[^/]+\/[^/]+\/?$/, handler: getEmailTemplateOverride, auth: 'tenant' },
+  { method: 'PUT', pattern: /^\/api\/admin\/email-templates\/[^/]+\/[^/]+\/?$/, handler: putEmailTemplateOverride, auth: 'tenant' },
+  { method: 'DELETE', pattern: /^\/api\/admin\/email-templates\/[^/]+\/[^/]+\/?$/, handler: deleteEmailTemplateOverride, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/dashboard\/queue\/?$/, handler: getDashboardQueue, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/operations\/expenses\/?$/, handler: getOperationsExpenses, auth: 'tenant' },
   { method: 'GET', pattern: /^\/admin\/anthropic-ping\/?$/, handler: anthropicPing, auth: 'admin' },
   { method: 'GET', pattern: /^\/admin\/gdpr\/candidate-export\/?$/, handler: exportCandidateData, auth: 'admin' },
   { method: 'POST', pattern: /^\/admin\/gdpr\/candidate-delete\/?$/, handler: deleteCandidateData, auth: 'admin' },
@@ -171,7 +241,9 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/admin\/portals\/issue\/?$/, handler: issuePortalToken, auth: 'admin' },
   { method: 'GET', pattern: /^\/admin\/anti-cheat\/?$/, handler: listAntiCheatEvents, auth: 'admin' },
   { method: 'GET', pattern: /^\/admin\/health-check\/?$/, handler: getAdminHealthCheck, auth: 'admin' },
+  { method: 'GET', pattern: /^\/api\/admin\/health\/?$/, handler: getTenantHealthCheck, auth: 'tenant' },
   { method: 'GET', pattern: /^\/admin\/metrics\/?$/, handler: getMetricsSnapshot, auth: 'admin' },
+  { method: 'POST', pattern: /^\/api\/admin\/_force_recruit_sync\/[^/]+\/?$/, handler: forceRecruitSync, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/email-templates\/?$/, handler: listEmailTemplates, auth: 'tenant' },
 
   // Jobs
@@ -180,6 +252,22 @@ const routes: Route[] = [
   { method: 'GET', pattern: /^\/api\/jobs\/[^/]+\/?$/, handler: getJob, auth: 'tenant' },
   { method: 'PATCH', pattern: /^\/api\/jobs\/[^/]+\/?$/, handler: patchJob, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/jobs\/[^/]+\/tech-questions\/generate\/?$/, handler: generateJobTechQuestions, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/jobs\/[^/]+\/tech-questions\/status\/?$/, handler: getJobTechQuestionsStatus, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/jobs\/[^/]+\/prescreening-questions\/generate\/?$/, handler: generateJobPrescreeningQuestions, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/jobs\/[^/]+\/prescreening-questions\/status\/?$/, handler: getJobPrescreeningQuestionsStatus, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/jobs\/[^/]+\/prescreening-questions\/?$/, handler: listJobPrescreeningQuestions, auth: 'tenant' },
+  { method: 'PUT', pattern: /^\/api\/jobs\/[^/]+\/prescreening-questions\/?$/, handler: updateJobPrescreeningQuestions, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/jobs\/[^/]+\/prescreening-stats\/?$/, handler: getJobPrescreeningStats, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/jobs\/[^/]+\/tech-questions\/?$/, handler: listJobTechQuestions, auth: 'tenant' },
+  { method: 'PUT', pattern: /^\/api\/jobs\/[^/]+\/tech-questions\/?$/, handler: updateJobTechQuestions, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/jobs\/[^/]+\/costs\/?$/, handler: getJobCosts, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/jobs\/[^/]+\/budget\/?$/, handler: getJobBudget, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/jobs\/[^/]+\/ads-spend\/?$/, handler: addJobAdsSpend, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/jobs\/_stage-counts\/?$/, handler: getAllJobsStageCounts, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/jobs\/_search\/?$/, handler: searchJobs, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/jobs\/[^/]+\/salary-distribution\/?$/, handler: getJobSalaryDistribution, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/jobs\/[^/]+\/stage-timing\/?$/, handler: getJobStageTiming, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/jobs\/[^/]+\/funnel-timeline\/?$/, handler: getJobFunnelTimeline, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/jobs\/[^/]+\/retry-recruit-sync\/?$/, handler: retryRecruitSync, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/_inspect_recruit_fields\/?$/, handler: inspectRecruitJobOpeningFields, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/_dump_recruit_job\/[^/]+\/?$/, handler: dumpRecruitJobOpening, auth: 'tenant' },
@@ -197,6 +285,23 @@ const routes: Route[] = [
   { method: 'PATCH', pattern: /^\/api\/tenants\/me\/branding\/?$/, handler: updateMyBranding, auth: 'tenant' },
 
   // Candidates
+  { method: 'GET', pattern: /^\/api\/candidates\/_search\/?$/, handler: searchCandidates, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/candidates\/_duplicates\/?$/, handler: findDuplicateCandidates, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/candidates\/_bulk-tag\/?$/, handler: bulkTagCandidates, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/favorites\/?$/, handler: listFavorites, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/favorites\/?$/, handler: addFavorite, auth: 'tenant' },
+  { method: 'DELETE', pattern: /^\/api\/favorites\/[^/]+\/[^/]+\/?$/, handler: removeFavorite, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/saved-searches\/?$/, handler: listSavedSearches, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/saved-searches\/?$/, handler: createSavedSearch, auth: 'tenant' },
+  { method: 'DELETE', pattern: /^\/api\/saved-searches\/[^/]+\/?$/, handler: deleteSavedSearch, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/candidates\/_by-tag\/?$/, handler: listCandidatesByTag, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/candidates\/[^/]+\/tags\/?$/, handler: listCandidateTags, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/candidates\/[^/]+\/tags\/?$/, handler: addCandidateTag, auth: 'tenant' },
+  { method: 'DELETE', pattern: /^\/api\/candidates\/[^/]+\/tags\/[^/]+\/?$/, handler: deleteCandidateTag, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/tenant\/tags\/?$/, handler: listTenantTags, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/clients\/health\/?$/, handler: getClientsHealth, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/tenant\/stats\/?$/, handler: getTenantStats, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/tenant\/sources\/?$/, handler: getSourceAnalytics, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/candidates\/?$/, handler: listCandidates, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/candidates\/?$/, handler: createCandidate, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/candidates\/[^/]+\/?$/, handler: getCandidate, auth: 'tenant' },
@@ -207,6 +312,12 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/api\/applications\/?$/, handler: createApplication, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/transitions\/?$/, handler: getApplicationTransitions, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/applications\/[^/]+\/transition\/?$/, handler: transitionApplication, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/applications\/_bulk-transition\/?$/, handler: bulkTransitionApplications, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/bot-decision\/?$/, handler: getApplicationBotDecision, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/notes\/?$/, handler: listCandidateNotes, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/applications\/[^/]+\/notes\/?$/, handler: createCandidateNote, auth: 'tenant' },
+  { method: 'PATCH', pattern: /^\/api\/applications\/[^/]+\/notes\/[^/]+\/?$/, handler: updateCandidateNote, auth: 'tenant' },
+  { method: 'DELETE', pattern: /^\/api\/applications\/[^/]+\/notes\/[^/]+\/?$/, handler: deleteCandidateNote, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/scores\/?$/, handler: readScores, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/prefilter-answers\/?$/, handler: listPrefilterAnswersForApplication, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/applications\/[^/]+\/scores\/?$/, handler: writeScores, auth: 'tenant' },
@@ -227,6 +338,7 @@ const routes: Route[] = [
 
   // Pool interno de candidatos (sourcing capa 1, doc 22)
   { method: 'POST', pattern: /^\/api\/pool\/match\/?$/, handler: matchPool, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/pool\/[^/]+\/invite-to-job\/?$/, handler: invitePoolToJob, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/pool\/?$/, handler: listPool, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/pool\/?$/, handler: addToPool, auth: 'tenant' },
   { method: 'PATCH', pattern: /^\/api\/pool\/[^/]+\/?$/, handler: patchPoolEntry, auth: 'tenant' },
@@ -237,13 +349,18 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/api\/drafts\/generate\/?$/, handler: generateDraft, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/briefings\/schedule\/?$/, handler: scheduleBriefing, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/briefings\/?$/, handler: listBriefings, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/briefings\/upload-transcript\/?$/, handler: uploadBriefingTranscript, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/drafts\/refine\/?$/, handler: refineDraft, auth: 'tenant' },
 
   // Job profile drafts persistence
   { method: 'POST', pattern: /^\/api\/drafts\/jobs\/save\/?$/, handler: saveJobDraft, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/drafts\/jobs\/[^/]+\/convert\/?$/, handler: convertDraftToJob, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/drafts\/jobs\/[^/]+\/send-to-client\/?$/, handler: sendDraftToClient, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/drafts\/jobs\/[^/]+\/iterate\/?$/, handler: iterateJobDraft, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/drafts\/jobs\/[^/]+\/regenerate-disc-narrative\/?$/, handler: regenerateDiscNarrative, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/drafts\/jobs\/[^/]+\/preview-url\/?$/, handler: previewDraftUrl, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/drafts\/jobs\/_recent_client_comments\/?$/, handler: listRecentDraftComments, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/drafts\/jobs\/_search\/?$/, handler: searchJobDrafts, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/drafts\/jobs\/?$/, handler: listJobDrafts, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/drafts\/jobs\/[^/]+\/?$/, handler: getJobDraft, auth: 'tenant' },
   { method: 'PATCH', pattern: /^\/api\/drafts\/jobs\/[^/]+\/?$/, handler: patchJobDraft, auth: 'tenant' },
@@ -287,6 +404,9 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/test\/[^/]+\/consent\/?$/, handler: postVideoConsent, auth: 'public' },
   { method: 'POST', pattern: /^\/test\/[^/]+\/consent\/withdraw\/?$/, handler: withdrawVideoConsent, auth: 'public' },
   { method: 'GET', pattern: /^\/test\/[^/]+\/tech-questions\/?$/, handler: getTestTechQuestions, auth: 'public' },
+  { method: 'GET', pattern: /^\/test\/[^/]+\/prescreening\/?$/, handler: getTestPrescreening, auth: 'public' },
+  { method: 'POST', pattern: /^\/test\/[^/]+\/prescreening\/submit\/?$/, handler: submitTestPrescreening, auth: 'public' },
+  { method: 'GET', pattern: /^\/test\/[^/]+\/my-progress\/?$/, handler: getCandidateProgress, auth: 'public' },
   { method: 'GET', pattern: /^\/test\/[^/]+\/videos\/?$/, handler: listTestVideos, auth: 'public' },
   { method: 'POST', pattern: /^\/test\/[^/]+\/videos\/[^/]+\/upload\/?$/, handler: uploadTestVideo, auth: 'public' },
   { method: 'POST', pattern: /^\/test\/[^/]+\/videos\/[^/]+\/submit\/?$/, handler: submitTestVideo, auth: 'public' },
@@ -295,7 +415,9 @@ const routes: Route[] = [
   { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/mindset\/?$/, handler: getMindsetForApplication, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/english\/?$/, handler: getEnglishForApplication, auth: 'tenant' },
   { method: 'POST', pattern: /^\/test\/[^/]+\/submit\/?$/, handler: submitTest, auth: 'public' },
+  { method: 'POST', pattern: /^\/test\/[^/]+\/register\/?$/, handler: registerCandidateInfo, auth: 'public' },
   { method: 'GET', pattern: /^\/report\/bundle\/[^/]+\/?$/, handler: getPublicReportBundle, auth: 'public' },
+  { method: 'POST', pattern: /^\/report\/bundle\/[^/]+\/feedback\/?$/, handler: submitReportFeedback, auth: 'public' },
   { method: 'GET', pattern: /^\/report\/[^/]+\/?$/, handler: getPublicReport, auth: 'public' },
 
   // Client portal — token signed, sin Clerk (la empresa cliente ve sus puestos)
@@ -308,6 +430,7 @@ const routes: Route[] = [
 
   // Apply público (un candidato aplicando a un puesto via link compartido)
   { method: 'POST', pattern: /^\/apply\/[^/]+\/[^/]+\/resend\/?$/, handler: resendCandidateLink, auth: 'public' },
+  { method: 'POST', pattern: /^\/candidate-recovery\/?$/, handler: genericRecoveryByEmail, auth: 'public' },
   { method: 'GET', pattern: /^\/apply\/[^/]+\/[^/]+\/?$/, handler: getPublicJobInfo, auth: 'public' },
   { method: 'POST', pattern: /^\/apply\/[^/]+\/[^/]+\/?$/, handler: submitApplication, auth: 'public' },
 
@@ -336,6 +459,23 @@ function normalizeApiVersion(path: string): string {
 }
 
 export async function route(ctx: RequestContext): Promise<void> {
+  // 2026-06-05: envolver todo el request en AsyncLocalStorage para que los logs
+  // se capturen en buffer y al final se suban a Stratus. Permite que un script local
+  // lea logs via /api/_dev/logs/:traceId sin abrir Catalyst Console.
+  const { runWithContext } = await import('./lib/requestContext.js');
+  const url0 = ctx.req.url ?? '/';
+  const method0 = (ctx.req.method ?? 'GET').toUpperCase();
+  const rawPath0 = url0.split('?')[0];
+  return runWithContext({
+    traceId: ctx.traceId,
+    startedAt: Date.now(),
+    entries: [],
+    method: method0,
+    path: rawPath0,
+  }, () => routeInner(ctx));
+}
+
+async function routeInner(ctx: RequestContext): Promise<void> {
   const url = ctx.req.url ?? '/';
   const method = (ctx.req.method ?? 'GET').toUpperCase();
   const rawPath = url.split('?')[0];
@@ -343,6 +483,9 @@ export async function route(ctx: RequestContext): Promise<void> {
 
   // Header de versión en TODA respuesta de API
   ctx.res.setHeader('X-API-Version', API_VERSION);
+  // Exponer el trace_id en el response header para que el cliente lo capture y pueda
+  // pedírnoslo de vuelta para leer el log estructurado.
+  ctx.res.setHeader('X-Trace-Id', ctx.traceId);
 
   // Si la URL llegó con /v1/ prefix, normalizar también ctx.req.url para que
   // handlers que leen ctx.req.url (extractIdFromPath, etc.) vean el path canónico.
@@ -403,10 +546,14 @@ export async function route(ctx: RequestContext): Promise<void> {
       return;
     }
     metrics.incrementCounter('http_requests_total', { method, status: '500' });
-    log.error('unhandled error', {
+    // 2026-06-04: incluir mensaje del error en el texto del log para que Catalyst Console
+    // lo muestre sin necesidad de expandir la meta (que a veces trunca o no se ve).
+    const errMsg = (err as Error)?.message ?? String(err);
+    log.error(`unhandled error: ${errMsg}`, {
       traceId: ctx.traceId,
-      message: (err as Error).message,
-      stack: (err as Error).stack,
+      message: errMsg,
+      stack: ((err as Error)?.stack ?? '').slice(0, 1500),
+      raw: typeof err === 'object' ? JSON.stringify(err)?.slice(0, 500) : undefined,
     });
     reportError(err, {
       traceId: ctx.traceId,
@@ -414,9 +561,58 @@ export async function route(ctx: RequestContext): Promise<void> {
       tenant_id: ctx.tenantId ?? undefined,
       user_id: ctx.user?.clerk_user_id,
     });
+    // 2026-06-04: auto-alerta a SystemAlerts. Antes de este fix, los unhandled 500
+    // solo se logueaban — Health/Alerts mostraban OK aunque endpoints estuvieran rotos.
+    // Ahora cada 500 crea una alerta crítica con dedup por (code + resource_id) — el
+    // resource_id incluye el path normalizado para agrupar errores recurrentes en el
+    // mismo endpoint sin duplicar alertas (alertCris dedupea en ventana 30 min).
+    void (async () => {
+      try {
+        const { alertCris } = await import('./lib/alerting.js');
+        // Normalizar el path para agrupar: /api/jobs/abc123/budget → /api/jobs/:id/budget
+        const rawPath = (ctx.req.url ?? '').split('?')[0];
+        const normalizedPath = rawPath
+          .replace(/\/[0-9a-f]{16,}/gi, '/:id')
+          .replace(/\/\d+/g, '/:n');
+        await alertCris(ctx.req, {
+          severity: 'critical',
+          code: 'router.unhandled_5xx',
+          message: `${method} ${normalizedPath} tiró 500: ${errMsg.slice(0, 200)}`,
+          context: {
+            method,
+            path: rawPath,
+            normalized_path: normalizedPath,
+            trace_id: ctx.traceId,
+            error_message: errMsg.slice(0, 500),
+            error_stack: ((err as Error)?.stack ?? '').slice(0, 1000),
+          },
+          tenantId: ctx.tenantId ?? undefined,
+          resourceType: 'endpoint',
+          resourceId: normalizedPath.slice(0, 50),
+        });
+      } catch {
+        /* tolerar — si SystemAlerts no existe o falla, no romper el response 500 */
+      }
+    })();
     sendJson(ctx.res, 500, {
       error: { code: 'internal_error', message: 'Internal server error' },
       trace_id: ctx.traceId,
     });
+  } finally {
+    // 2026-06-05: subir buffer de logs del request a Stratus para que el agente lo
+    // pueda leer luego con scripts/read-log.ts <traceId>. Fire-and-forget; nunca rompe response.
+    try {
+      const { getContext } = await import('./lib/requestContext.js');
+      const store = getContext();
+      if (store) {
+        store.status = ctx.res.statusCode;
+        if (ctx.tenantId) store.tenantId = ctx.tenantId;
+        if (ctx.user?.clerk_user_id) store.userId = ctx.user.clerk_user_id;
+      }
+      const { uploadCurrentRequestLog } = await import('./lib/stratusLogger.js');
+      await uploadCurrentRequestLog(ctx.req);
+    } catch {
+      /* nunca bloquear el response — Stratus puede no estar disponible y eso no debe romper */
+    }
   }
 }

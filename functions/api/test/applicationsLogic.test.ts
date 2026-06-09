@@ -173,10 +173,13 @@ describe('Pipeline transition rules — invariantes críticos', () => {
     expect(transitionAllowed('offered', 'hired')).toBe(true);
   });
 
-  it('auto_rejected_low_score solo se alcanza desde tecnica_completed (gate técnico)', () => {
+  it('auto_rejected_low_score se alcanza desde stages técnicos (prefilter_passed o tecnica_completed)', () => {
+    // 2026-06-03: prefilter_passed → auto_rejected_low_score permitido. Antes el rechazo
+    // técnico se ignoraba si venía directo de prefilter_passed sin pasar por tecnica_completed.
     expect(transitionAllowed('tecnica_completed', 'auto_rejected_low_score')).toBe(true);
+    expect(transitionAllowed('prefilter_passed', 'auto_rejected_low_score')).toBe(true);
+    // Pero NO desde stages posteriores a técnica (gate técnico)
     expect(transitionAllowed('integridad_completed', 'auto_rejected_low_score')).toBe(false);
-    expect(transitionAllowed('prefilter_passed', 'auto_rejected_low_score')).toBe(false);
   });
 
   it('offer_declined solo se alcanza desde offered', () => {

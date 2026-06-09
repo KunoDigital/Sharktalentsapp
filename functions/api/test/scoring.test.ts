@@ -176,14 +176,37 @@ describe('scoreTechnical', () => {
 });
 
 describe('helpers existentes', () => {
-  it('normalizeDiscRaw mapea conteos a pct', () => {
+  it('normalizeDiscRaw re-escala counts a per-axis 0-100 (modelo V1)', () => {
+    // 40 preguntas → maxPerAxis = 10. raw 20 → cap 100 (era 100% en ese eje).
+    // raw 10 → 100%. raw 5 → 50%.
     const r = normalizeDiscRaw({ d: 20, i: 10, s: 5, c: 5 }, 40);
-    expect(r.d).toBe(50);
-    expect(r.i).toBe(25);
+    expect(r.d).toBe(100); // cap
+    expect(r.i).toBe(100);
+    expect(r.s).toBe(50);
+    expect(r.c).toBe(50);
+  });
+
+  it('normalizeDiscRaw: si suma > 100 lo deja (ya viene normalizado per-axis)', () => {
+    // Modelo V1: ideal puede venir per-axis 0-100 sumando hasta 400. No re-escalar.
+    const r = normalizeDiscRaw({ d: 80, i: 20, s: 20, c: 80 }, 24);
+    expect(r.d).toBe(80);
+    expect(r.i).toBe(20);
+    expect(r.s).toBe(20);
+    expect(r.c).toBe(80);
   });
 
   it('calculateDiscSimilarity perfiles iguales = 100', () => {
+    // Min/max ratio: 50/50=1.0 por eje, promedio = 100.
     expect(calculateDiscSimilarity({ d: 50, i: 30, s: 10, c: 10 }, { d: 50, i: 30, s: 10, c: 10 })).toBe(100);
+  });
+
+  it('calculateDiscSimilarity per-axis V1 (escalas distintas)', () => {
+    // Candidato D=40, ideal D=80 → min/max = 40/80 = 0.5 = 50%.
+    // I=50/20 → 20/50 = 0.4 = 40%.
+    // S=50/20 → 20/50 = 0.4 = 40%.
+    // C=40/80 → 40/80 = 0.5 = 50%.
+    // Promedio: (50+40+40+50)/4 = 45.
+    expect(calculateDiscSimilarity({ d: 40, i: 50, s: 50, c: 40 }, { d: 80, i: 20, s: 20, c: 80 })).toBe(45);
   });
 
   it('discDominantAxis detecta máximo', () => {

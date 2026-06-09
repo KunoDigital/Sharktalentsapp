@@ -65,30 +65,61 @@ export function scoreDisc(questions: DiscQuestion[], answers: Record<string, num
 }
 
 /**
- * Normaliza raw counts a 0-100 (porcentaje del total).
- * Útil para comparar perfiles y calcular similitud con perfil ideal.
+ * Normaliza DISC raw counts a per-axis 0-100 (modelo V1 — sin constraint de suma).
+ *
+ * Detecta la escala de entrada:
+ * - Si la suma raw <= 100: son counts brutos del test → re-escalar per-axis.
+ *   Fórmula: raw / (totalQuestions/4) × 100, cap 100.
+ *   Esto preserva la propiedad "alto en un eje no obliga a bajar otro" (modelo psicométrico real).
+ * - Si suma > 100: ya viene normalizado per-axis → no se toca.
+ *
+ * Mantenido alineado con candidateScoring.ts de v1 (raw × 5 cap 100 para banco 20 preguntas/eje).
  */
 export function normalizeDiscRaw(raw: DiscRawScores, totalQuestions: number): DiscRawScores {
-  if (totalQuestions === 0) return { d: 0, i: 0, s: 0, c: 0 };
+  const sum = raw.d + raw.i + raw.s + raw.c;
+  // Ya viene normalizado per-axis 0-100 (suma puede ir hasta 400)
+  if (sum > 100) {
+    return {
+      d: clamp0_100(raw.d), i: clamp0_100(raw.i),
+      s: clamp0_100(raw.s), c: clamp0_100(raw.c),
+    };
+  }
+  // Counts brutos → re-escalar per-axis
+  const maxPerAxis = totalQuestions > 0 ? totalQuestions / 4 : 20;
   return {
-    d: clamp0_100((raw.d / totalQuestions) * 100),
-    i: clamp0_100((raw.i / totalQuestions) * 100),
-    s: clamp0_100((raw.s / totalQuestions) * 100),
-    c: clamp0_100((raw.c / totalQuestions) * 100),
+    d: clamp0_100((raw.d / maxPerAxis) * 100),
+    i: clamp0_100((raw.i / maxPerAxis) * 100),
+    s: clamp0_100((raw.s / maxPerAxis) * 100),
+    c: clamp0_100((raw.c / maxPerAxis) * 100),
   };
 }
 
 /**
- * Distancia euclidiana invertida → similitud 0-100 entre 2 perfiles DISC normalizados.
+ * Similitud DISC vs ideal — modelo V1 (min/max ratio promediado por eje).
+ *
+ * Para cada eje: ratio = min(candidato, ideal) / max(candidato, ideal) × 100.
+ * Resultado final = promedio de los 4 ratios.
+ *
+ * Si ambos son 0 → 100% (no hay diferencia). Si uno es 0 y el otro >0 → 0% en ese eje.
+ *
+ * Ventajas vs euclidiana:
+ * - No requiere maxDist hardcoded
+ * - Penaliza diferencias relativas (más interpretable para usuario final)
+ * - Funciona con cualquier escala per-axis (el ideal y candidato pueden estar en escalas distintas siempre que ambos sean per-axis)
  */
 export function calculateDiscSimilarity(candidate: DiscRawScores, ideal: DiscRawScores): number {
-  const dd = candidate.d - ideal.d;
-  const di = candidate.i - ideal.i;
-  const ds = candidate.s - ideal.s;
-  const dc = candidate.c - ideal.c;
-  const dist = Math.sqrt(dd * dd + di * di + ds * ds + dc * dc);
-  const maxDist = 200;
-  return Math.max(0, Math.round(((maxDist - dist) / maxDist) * 100));
+  const dims: Array<keyof DiscRawScores> = ['d', 'i', 's', 'c'];
+  let totalRatio = 0;
+  for (const dim of dims) {
+    const c = candidate[dim] || 0;
+    const i = ideal[dim] || 0;
+    if (i === 0 && c === 0) {
+      totalRatio += 100;
+      continue;
+    }
+    totalRatio += Math.round((Math.min(i, c) / Math.max(i, c, 1)) * 100);
+  }
+  return Math.round(totalRatio / 4);
 }
 
 export function discDominantAxis(scores: DiscRawScores): 'D' | 'I' | 'S' | 'C' {
@@ -178,16 +209,25 @@ export function velnaAggregate(pcts: VelnaSubtestPct): number {
   return Math.round(values.reduce((s, v) => s + v, 0) / values.length);
 }
 
+/**
+ * Similitud VELNA vs ideal — modelo V1 (min/max ratio promediado por sub-test).
+ *
+ * Misma fórmula que calculateDiscSimilarity: ratio min/max promedio de los 5 sub-tests.
+ * Más interpretable que distancia euclidiana.
+ */
 export function velnaSimilarity(candidate: VelnaSubtestPct, ideal: VelnaSubtestPct): number {
-  const dist = Math.sqrt(
-    Math.pow(candidate.verbal - ideal.verbal, 2) +
-      Math.pow(candidate.espacial - ideal.espacial, 2) +
-      Math.pow(candidate.logica - ideal.logica, 2) +
-      Math.pow(candidate.numerica - ideal.numerica, 2) +
-      Math.pow(candidate.abstracta - ideal.abstracta, 2),
-  );
-  const maxDist = Math.sqrt(5 * 100 * 100);
-  return Math.max(0, Math.round(((maxDist - dist) / maxDist) * 100));
+  const dims: Array<keyof VelnaSubtestPct> = ['verbal', 'espacial', 'logica', 'numerica', 'abstracta'];
+  let totalRatio = 0;
+  for (const dim of dims) {
+    const c = candidate[dim] || 0;
+    const i = ideal[dim] || 0;
+    if (i === 0 && c === 0) {
+      totalRatio += 100;
+      continue;
+    }
+    totalRatio += Math.round((Math.min(i, c) / Math.max(i, c, 1)) * 100);
+  }
+  return Math.round(totalRatio / 5);
 }
 
 // ---- Emotional ----
