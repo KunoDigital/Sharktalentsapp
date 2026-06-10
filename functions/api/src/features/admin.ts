@@ -1734,6 +1734,41 @@ export async function diagGetScores(ctx: RequestContext): Promise<void> {
 }
 
 /**
+ * Diag: dispara un WhatsApp de prueba usando el dispatcher (Twilio o Meta según env).
+ *
+ *   curl -X POST -H "X-Internal-Key: $K" -H "Content-Type: application/json" \
+ *     -d '{"to":"+50763333870","body":"Hola desde el backend"}' \
+ *     "https://.../api/admin/_diag-send-whatsapp"
+ *
+ * Útil para validar end-to-end de la integración Twilio Sandbox sin tener que crear
+ * un outbox event. NO usa el outbox — llama directo a sendText.
+ */
+export async function diagSendWhatsApp(ctx: RequestContext): Promise<void> {
+  requireInternalKey(ctx);
+  try {
+    const body = await readJsonBody<{ to?: string; body?: string }>(ctx.req);
+    if (!body.to || !body.body) {
+      sendJson(ctx.res, 400, { error: 'to and body required' });
+      return;
+    }
+    const { sendText } = await import('../lib/whatsappDispatcher.js');
+    const result = await sendText({ to_phone: body.to, body: body.body }, ctx.traceId);
+    if (!result.ok) {
+      sendJson(ctx.res, 500, { ok: false, error: result.error });
+      return;
+    }
+    sendJson(ctx.res, 200, {
+      ok: true,
+      message_id: result.data.message_id,
+      status: result.data.status,
+      provider: (process.env.WHATSAPP_PROVIDER ?? 'twilio').toLowerCase(),
+    });
+  } catch (err) {
+    sendJson(ctx.res, 500, { error: (err as Error).message });
+  }
+}
+
+/**
  * Backfill del campo `recruit_job_slug` (ZR_XX_JOB) para Jobs que ya tienen
  * `recruit_job_id` poblado pero el slug NULL. Sin esto, el webhook de Recruit
  * (que envía el slug, no el bigint) no encuentra el Job y dispara alerta
