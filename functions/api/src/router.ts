@@ -15,7 +15,7 @@ import { handleZohoCrmLeadCreated } from './features/zohoCrmWebhook';
 import { listPublicJobs, getPublicJob, applyToPublicJob } from './features/publicCareerSite';
 import { getDevLogByTraceId, listDevLogs } from './features/devLogs';
 import { handleWhatsAppWebhook } from './features/whatsappWebhook';
-import { verifyTables, listAllTenants, getAdminStats, anthropicPing, listAuditLog, issuePortalToken, listAntiCheatEvents, listEmailTemplates, getMetricsSnapshot, forceRecruitSync, diagInsertCandidate, adoptOrphanDrafts, diagLastDraft, diagCrmLayouts, diagCrmLead, diagCrmPush, diagTriggerTestFlow, diagGenerateDraft, diagPublishTestJobs, diagListDrafts, diagBackfillRecruitSlugs, diagRecentAlerts, diagGenerateQuestionsForJob, diagGetQuestionsForJob, diagListJobs, diagCreateTestCandidate, diagCleanupTestJobs, diagGetTestToken, diagGetScores, diagSendWhatsApp } from './features/admin';
+import { verifyTables, listAllTenants, getAdminStats, anthropicPing, listAuditLog, issuePortalToken, listAntiCheatEvents, listEmailTemplates, getMetricsSnapshot, forceRecruitSync, diagInsertCandidate, adoptOrphanDrafts, diagLastDraft, diagCrmLayouts, diagCrmLead, diagCrmPush, diagTriggerTestFlow, diagGenerateDraft, diagPublishTestJobs, diagListDrafts, diagBackfillRecruitSlugs, diagRecentAlerts, diagGenerateQuestionsForJob, diagGetQuestionsForJob, diagListJobs, diagCreateTestCandidate, diagCleanupTestJobs, diagGetTestToken, diagGetScores, diagSendWhatsApp, diagWipeTestLeads, diagWipeAllTestData, redirectFromWhatsAppButton, diagListRecentLeads, diagBackfillLeadStatus } from './features/admin';
 import { processOutbox, listOutbox, processOutboxFromTenant, listOutboxFromTenant, searchOutboxByRecipient, resetStuckOutboxEvents } from './features/outbox';
 import { sendCandidateReminders } from './features/candidateReminders';
 import { listAlerts, acknowledgeAlert, resolveAlert } from './features/alerts';
@@ -169,6 +169,11 @@ const routes: Route[] = [
   { method: 'GET', pattern: /^\/api\/admin\/_diag-get-questions-for-job\/?$/, handler: diagGetQuestionsForJob, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/admin\/_diag-get-scores\/?$/, handler: diagGetScores, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/admin\/_diag-send-whatsapp\/?$/, handler: diagSendWhatsApp, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-wipe-test-leads\/?$/, handler: diagWipeTestLeads, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-wipe-all-test-data\/?$/, handler: diagWipeAllTestData, auth: 'public' },
+  { method: 'GET', pattern: /^\/api\/admin\/_diag-list-recent-leads\/?$/, handler: diagListRecentLeads, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-backfill-lead-status\/?$/, handler: diagBackfillLeadStatus, auth: 'public' },
+  { method: 'GET', pattern: /^\/r\/(?:[a-z]\/)?[^/?#]+\/?$/, handler: redirectFromWhatsAppButton, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/admin\/_diag-list-jobs\/?$/, handler: diagListJobs, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/admin\/_diag-create-test-candidate\/?$/, handler: diagCreateTestCandidate, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/admin\/_diag-cleanup-test-jobs\/?$/, handler: diagCleanupTestJobs, auth: 'public' },

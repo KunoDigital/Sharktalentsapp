@@ -1,116 +1,158 @@
 /**
- * Templates aprobados de WhatsApp Business para SharkTalents.
+ * Templates de WhatsApp Business para SharkTalents V2 (parte comercial).
  *
- * IMPORTANTE: estos NO son los templates en sí — son los nombres + estructura para
- * referencia del código. Los templates REALES tienen que ser creados y aprobados
- * en Meta Business Manager (template approval tarda 1-3 días).
+ * Pivot 2026-06-10:
+ *   - V2 cubre lado COMERCIAL (lead → agenda → draft → contrato)
+ *   - V1 sigue siendo el productivo para CANDIDATOS
+ *   - Bot Ari = asistente virtual de SharkTalents, identificación clara en todos los mensajes
+ *   - Chat automático, primeros 2 mensajes aclaran "no responder aquí"
  *
- * Una vez aprobados, este archivo describe el "contrato" — qué params requiere cada uno
- * y dónde se usa en el flow de SharkTalents.
+ * IMPORTANTE: estos NO son los templates en sí — son los nombres + texto + params para
+ * referencia del código. Los templates REALES tienen que ser creados y aprobados en
+ * Twilio Content Builder, Twilio los manda a Meta para aprobación (1-24h cada uno).
  *
- * Setup:
- *   1. Meta Business Manager → WhatsApp → Manage Templates
- *   2. Crear cada template con el nombre exacto de abajo
- *   3. Submit for approval
- *   4. Una vez aprobado, este código los puede usar
+ * Una vez aprobados:
+ *   1. Twilio genera un Content SID (HXxxxxx) por cada uno
+ *   2. Lo mapeas acá en el campo `twilio_content_sid` para que el outbox pueda usarlo
+ *   3. El dispatcher (whatsappDispatcher) usa Content SID en producción
  *
- * Idiomas: 'es' (español) y 'en' (inglés). Crear ambas variantes en Meta.
+ * Reglas Meta cumplidas en TODOS:
+ *   - lowercase + underscores en nombres
+ *   - variables secuenciales {{1}}, {{2}}, {{3}}
+ *   - no empiezan ni terminan con variable
+ *   - body < 1024 chars (todos < 400)
+ *   - footer < 60 chars, sin emojis
+ *   - identificación de empresa (SharkTalents)
+ *   - UTILITY = transaccional puro, MARKETING = promocional
+ *   - URLs en variables (HTTPS, verificables — regla nueva 2026)
  */
 
 export type WhatsAppTemplateDef = {
-  /** Nombre exacto que tiene el template aprobado en Meta. */
+  /** Nombre exacto del template en Twilio Content Builder + Meta. lowercase + underscores. */
   name: string;
-  /** Categoría según Meta: utility, marketing, authentication. */
+  /** Categoría según Meta: UTILITY (transaccional ~$0.04), MARKETING (promo ~$0.10), AUTHENTICATION (OTP). */
   category: 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
-  /** Cuándo se usa este template en el flow. */
+  /** Cuándo se usa este template en el flujo comercial V2. */
   use_case: string;
-  /** Idiomas aprobados (códigos ISO). */
+  /** Idiomas aprobados. */
   languages: ('es' | 'en')[];
-  /** Parámetros que espera el body del template (en orden). */
+  /** Parámetros que espera el body (en orden de aparición). */
   params: Array<{ name: string; example: string }>;
-  /** Texto del template (referencia — el real está en Meta). */
+  /** Texto del body en español (copy/paste a Twilio Content Builder). */
   template_text_es: string;
+  /** Footer del template (max 60 chars, sin emojis). */
+  footer_es?: string;
+  /** Twilio Content SID (HXxxxxx) — se llena DESPUÉS de aprobar el template en Twilio.
+   *  Hasta entonces el outbox falla en producción con "content_sid not set". */
+  twilio_content_sid?: string;
 };
 
 /**
- * Templates definidos para SharkTalents.
+ * Templates V2 (parte comercial). 7 totales: 3 MARKETING + 4 UTILITY.
+ *
+ * NO incluye templates de candidatos (V1 los maneja).
  */
 export const WHATSAPP_TEMPLATES: Record<string, WhatsAppTemplateDef> = {
-  candidate_invitation_to_test: {
-    name: 'candidate_invitation_to_test',
-    category: 'UTILITY',
-    use_case: 'Invitar a un candidato a hacer el test después de aplicar',
-    languages: ['es', 'en'],
-    params: [
-      { name: 'candidate_name', example: 'María' },
-      { name: 'job_title', example: 'Senior Developer' },
-      { name: 'test_link', example: 'https://app.sharktalents.ai/test/abc123' },
-    ],
-  template_text_es: `Hola {{1}}, gracias por aplicar a {{2}}. Para avanzar en el proceso, necesitamos que completes una evaluación corta. Acceso: {{3}}`,
-  },
+  // ==================== MARKETING (~$0.10/msg) ====================
 
-  candidate_test_reminder: {
-    name: 'candidate_test_reminder',
-    category: 'UTILITY',
-    use_case: 'Recordatorio cuando el candidato empezó el test pero no terminó (24h)',
-    languages: ['es', 'en'],
-    params: [
-      { name: 'candidate_name', example: 'María' },
-      { name: 'continue_link', example: 'https://app.sharktalents.ai/continue/xyz789' },
-    ],
-  template_text_es: `Hola {{1}}, vimos que empezaste tu evaluación pero no la terminaste. Podés retomar acá: {{2}}. Te toma ~10 min y tu progreso está guardado.`,
-  },
-
-  candidate_offer_ready: {
-    name: 'candidate_offer_ready',
-    category: 'UTILITY',
-    use_case: 'Notificar al candidato que su oferta está lista para firmar',
-    languages: ['es', 'en'],
-    params: [
-      { name: 'candidate_name', example: 'María' },
-      { name: 'company_name', example: 'Acme Corp' },
-      { name: 'sign_link', example: 'https://sign.zoho.com/abc123' },
-    ],
-  template_text_es: `Hola {{1}}, ¡felicitaciones! {{2}} te quiere ofrecer la posición. Firmá tu oferta aquí: {{3}}`,
-  },
-
-  candidate_rejected: {
-    name: 'candidate_rejected',
-    category: 'UTILITY',
-    use_case: 'Notificar rechazo de manera respetuosa',
-    languages: ['es', 'en'],
-    params: [
-      { name: 'candidate_name', example: 'María' },
-      { name: 'job_title', example: 'Senior Developer' },
-    ],
-  template_text_es: `Hola {{1}}, gracias por tu interés en {{2}}. En esta oportunidad seguimos con otros perfiles que se ajustan más al puesto. Te mantenemos en nuestra base para futuras búsquedas.`,
-  },
-
-  client_finalist_ready: {
-    name: 'client_finalist_ready',
-    category: 'UTILITY',
-    use_case: 'Notificar al cliente cuando hay finalistas listos para revisar',
-    languages: ['es', 'en'],
+  meta_lead_welcome: {
+    name: 'meta_lead_welcome',
+    category: 'MARKETING',
+    use_case: 'Cliente entra desde Meta Ad → primer contacto. Asistente Ari se presenta. Botón CTA agenda Zoho Bookings.',
+    languages: ['es'],
     params: [
       { name: 'client_name', example: 'Carlos' },
-      { name: 'job_title', example: 'Senior Developer' },
-      { name: 'count', example: '4' },
-      { name: 'portal_link', example: 'https://app.sharktalents.ai/portal/abc123' },
     ],
-  template_text_es: `Hola {{1}}, tenemos {{3}} finalistas para {{2}} listos para tu revisión. Accedé al portal: {{4}}`,
+    template_text_es: `Hola {{1}}, soy Ari, tu asistente virtual de SharkTalents. Vi que te interesa evaluar candidatos con IA. Por este chat te enviaré las novedades de tu cuenta. Para conocer en detalle nuestro servicio, precios y ver una demo, agenda 30 min con un asesor. Este chat es automático, por favor no respondas aquí. Saludos.`,
+    footer_es: 'Canal automatico. Agenda para hablar con asesor.',
+    // Twilio Content SID (submitted 2026-06-10, esperando aprobación Meta business-initiated).
+    twilio_content_sid: 'HX848f3b9630dff9aa49bb98da70c8de3a',
+    // Botón CTA URL FIJO (no variable). El link de Zoho Bookings es el mismo para todos los leads.
+    // Button text: "Agenda una llamada"
+    // Button URL: https://kunodigital.zohobookings.com/#/4313826000006...
   },
+
+  marketing_lead_thanks: {
+    name: 'marketing_lead_thanks',
+    category: 'MARKETING',
+    use_case: 'Cliente llenó formulario/quiz en la landing → gracias + link de demo + link agenda.',
+    languages: ['es'],
+    params: [
+      { name: 'client_name', example: 'Carlos' },
+      { name: 'demo_link', example: 'https://app.sharktalents.ai/demo/abc123' },
+      { name: 'booking_link', example: 'https://bookings.zoho.com/sharktalents' },
+    ],
+    template_text_es: `Hola {{1}}, soy Ari, tu asistente virtual de SharkTalents. Gracias por completar el cuestionario. Aquí está el link de tu demo: {{2}}. Para conversar con un asesor y conocer nuestros precios, agenda 30 min aquí: {{3}}. Este chat es automático, por favor no respondas aquí. Saludos.`,
+    footer_es: 'Canal automatico. Agenda para hablar con asesor.',
+  },
+
+  // ==================== UTILITY (~$0.04/msg) ====================
 
   client_briefing_scheduled: {
     name: 'client_briefing_scheduled',
     category: 'UTILITY',
-    use_case: 'Confirmar al cliente la reunión de briefing agendada',
-    languages: ['es', 'en'],
+    use_case: 'Cliente agendó briefing → confirma fecha y manda link de videollamada (Zoho Meeting).',
+    languages: ['es'],
     params: [
       { name: 'client_name', example: 'Carlos' },
-      { name: 'date_time', example: 'martes 12 de mayo a las 10:00' },
-      { name: 'meeting_link', example: 'https://meet.zoho.com/abc' },
+      { name: 'date_time', example: 'martes 12 de junio a las 10:00 AM' },
+      { name: 'meeting_link', example: 'https://meet.zoho.com/abc123' },
     ],
-  template_text_es: `Hola {{1}}, agendamos tu reunión de briefing para {{2}}. Link: {{3}}`,
+    template_text_es: `Hola {{1}}, soy Ari. Confirmo tu reunión de briefing para el {{2}}. El link de la videollamada es: {{3}}. Te esperamos puntual. Si necesitas cambiarla, agenda nuevamente desde el portal. Saludos.`,
+    footer_es: 'Canal automatico. Para soporte, agenda con asesor.',
+  },
+
+  client_draft_review: {
+    name: 'client_draft_review',
+    category: 'UTILITY',
+    use_case: 'Draft del puesto generado por IA → cliente debe revisar y comentar/aprobar en portal.',
+    languages: ['es'],
+    params: [
+      { name: 'client_name', example: 'Carlos' },
+      { name: 'job_title', example: 'Gerente de Ventas' },
+      { name: 'portal_link', example: 'https://app.sharktalents.ai/portal/abc/draft/xyz' },
+    ],
+    template_text_es: `Hola {{1}}, soy Ari. Ya está listo el perfil de cargo para {{2}}. Por favor revísalo y déjanos saber tus comentarios en este link: {{3}}. Cuando lo apruebes te enviaremos el contrato para iniciar. Saludos.`,
+    footer_es: 'Canal automatico. Para soporte, agenda con asesor.',
+  },
+
+  client_comments_received: {
+    name: 'client_comments_received',
+    category: 'UTILITY',
+    use_case: 'Cliente dejó comentarios en el draft → confirmación de recepción.',
+    languages: ['es'],
+    params: [
+      { name: 'client_name', example: 'Carlos' },
+      { name: 'job_title', example: 'Gerente de Ventas' },
+    ],
+    template_text_es: `Hola {{1}}, soy Ari. Recibimos tus comentarios sobre el perfil de {{2}}. Nuestro equipo los está revisando para ajustar el draft. Te aviso cuando esté listo para que lo revises de nuevo. Saludos.`,
+    footer_es: 'Canal automatico. Para soporte, agenda con asesor.',
+  },
+
+  client_changes_applied: {
+    name: 'client_changes_applied',
+    category: 'UTILITY',
+    use_case: 'Cambios al draft aplicados según comentarios del cliente → cliente debe re-revisar.',
+    languages: ['es'],
+    params: [
+      { name: 'client_name', example: 'Carlos' },
+      { name: 'job_title', example: 'Gerente de Ventas' },
+      { name: 'portal_link', example: 'https://app.sharktalents.ai/portal/abc/draft/xyz' },
+    ],
+    template_text_es: `Hola {{1}}, soy Ari. Ya aplicamos los cambios al perfil de {{2}} según tus comentarios. Por favor revísalo aquí: {{3}}. Si todo está OK, lo apruebas y te enviamos el contrato para iniciar. Saludos.`,
+    footer_es: 'Canal automatico. Para soporte, agenda con asesor.',
+  },
+
+  client_contract_ready: {
+    name: 'client_contract_ready',
+    category: 'UTILITY',
+    use_case: 'Contrato enviado a Zoho Sign → notifica al cliente que revise su email (link de firma).',
+    languages: ['es'],
+    params: [
+      { name: 'client_name', example: 'Carlos' },
+    ],
+    template_text_es: `Hola {{1}}, soy Ari. Te enviamos el contrato a tu correo. Por favor revísalo y fírmalo desde el link de Zoho Sign. Si no lo ves en la bandeja principal, busca en spam o promociones. Cualquier duda, escribe a Chris Palma al +50763333870.`,
+    footer_es: 'Canal automatico. Chris Palma: +50763333870.',
   },
 };
 
@@ -132,4 +174,18 @@ export function validateTemplate(
     };
   }
   return { valid: true };
+}
+
+/**
+ * Helper: render del body con valores reales (para sandbox testing donde mandamos texto plano).
+ * NO usar en producción — producción usa Content SID + ContentVariables (Twilio API).
+ */
+export function renderTemplateText(templateName: string, params: string[]): string {
+  const tpl = WHATSAPP_TEMPLATES[templateName];
+  if (!tpl) return '';
+  let text = tpl.template_text_es;
+  params.forEach((value, idx) => {
+    text = text.replaceAll(`{{${idx + 1}}}`, value);
+  });
+  return text;
 }

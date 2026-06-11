@@ -1734,6 +1734,445 @@ export async function diagGetScores(ctx: RequestContext): Promise<void> {
 }
 
 /**
+ * Diag: listar últimos N MarketingLeads (todos, sin filtros). Útil para confirmar
+ * que un lead específico llegó a la base aunque la UI no lo muestre.
+ *
+ *   curl -H "X-Internal-Key: $K" "https://.../api/admin/_diag-list-recent-leads"
+ */
+/**
+ * Diag: backfill status='new' a leads que están sin status (bug del webhook CRM
+ * pre-2026-06-11). Sin esto, los leads de Meta Ads no aparecen en el kanban.
+ */
+export async function diagBackfillLeadStatus(ctx: RequestContext): Promise<void> {
+  const debug: string[] = ['start'];
+  try {
+    requireInternalKey(ctx);
+    debug.push('auth-ok');
+
+    type LeadRow = { ROWID: string; email: string; status: string | null };
+    const rows = unwrapRows<LeadRow>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT ROWID, email, status FROM MarketingLeads LIMIT 300`,
+      )) as unknown[],
+      'MarketingLeads',
+    );
+    debug.push(`total=${rows.length}`);
+
+    const toFix = rows.filter((r) => !r.status || r.status === '');
+    debug.push(`toFix=${toFix.length}`);
+
+    const { datastore } = await import('../lib/db.js');
+    let updated = 0;
+    const failures: Array<{ email: string; error: string }> = [];
+    for (const lead of toFix) {
+      try {
+        await datastore(ctx.req).table('MarketingLeads').updateRow({
+          ROWID: lead.ROWID,
+          status: 'new',
+        });
+        updated++;
+      } catch (err) {
+        failures.push({ email: lead.email, error: (err as Error).message });
+      }
+    }
+    sendJson(ctx.res, 200, {
+      total_scanned: rows.length,
+      missing_status: toFix.length,
+      updated,
+      failures,
+      debug,
+    });
+  } catch (err) {
+    const e = err as Error;
+    const errAny = err as Record<string, unknown>;
+    sendJson(ctx.res, 500, {
+      error: e?.message ?? 'unknown',
+      raw_err: JSON.stringify(errAny, Object.getOwnPropertyNames(errAny ?? {})).slice(0, 800),
+      debug,
+    });
+  }
+}
+
+export async function diagListRecentLeads(ctx: RequestContext): Promise<void> {
+  const debug: string[] = ['start'];
+  try {
+    requireInternalKey(ctx);
+    debug.push('auth-ok');
+    type Lead = {
+      ROWID: string; email: string; contact_name: string | null;
+      company: string | null; source: string | null;
+    };
+    const rows = unwrapRows<Lead>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT ROWID, email, contact_name, company, source FROM MarketingLeads ORDER BY CREATEDTIME DESC LIMIT 50`,
+      )) as unknown[],
+      'MarketingLeads',
+    );
+    debug.push(`rows=${rows.length}`);
+    sendJson(ctx.res, 200, {
+      total: rows.length,
+      leads: rows.map((r) => ({
+        id: r.ROWID,
+        email: r.email,
+        contact_name: r.contact_name,
+        company: r.company,
+        source: r.source,
+      })),
+      debug,
+    });
+  } catch (err) {
+    const e = err as Error;
+    const errAny = err as Record<string, unknown>;
+    sendJson(ctx.res, 500, {
+      error: e?.message ?? 'unknown',
+      raw_err: JSON.stringify(errAny, Object.getOwnPropertyNames(errAny ?? {})).slice(0, 800),
+      debug,
+    });
+  }
+}
+
+/**
+ * Diag: limpieza ANTES de la pauta de Meta. Borra TODO lo de testing en una corrida.
+ *
+ *   curl -X POST -H "X-Internal-Key: $K" \
+ *     "https://.../api/admin/_diag-wipe-all-test-data"           ← dry-run
+ *     "https://.../api/admin/_diag-wipe-all-test-data?confirm=true" ← borrar
+ *
+ * Patterns de email que se consideran "test":
+ *   - e2e-real-*, e2e-test-*, test-debug-*
+ *   - test+*, qa+*
+ *   - chrismarpalma+specB|metalead|minispec|full|comercial|crmreal|pauta-test|e2e-*
+ *   - cuentas+*, cpalma+*
+ *   - direcciones con typo (cgrismarpalma)
+ *
+ * Tablas afectadas: MarketingLeads, JobProfileDrafts, Candidates, Results, Scores,
+ * IntegrityDimensions. Jobs de testing requieren _diag-cleanup-test-jobs aparte.
+ */
+export async function diagWipeAllTestData(ctx: RequestContext): Promise<void> {
+  const debug: string[] = ['start'];
+  try {
+    requireInternalKey(ctx);
+    debug.push('auth-ok');
+    const url = new URL(ctx.req.url ?? '/', 'http://x');
+    const confirm = url.searchParams.get('confirm') === 'true';
+    debug.push(`confirm=${confirm}`);
+
+    // Patterns de email considerados test. Conservadores para no borrar productivo.
+    const testEmailPatterns = [
+      /^e2e-real-/i,
+      /^e2e-test-/i,
+      /^test-debug-/i,
+      /^test\+/i,
+      /^qa\+/i,
+      /^chrismarpalma\+(specb|metalead|minispec|full|comercial|crmreal|pauta-test|e2e-|test|playwright|draft-spec)/i,
+      /^cuentas\+/i,
+      /^cpalma\+/i,
+      /^cgrismarpalma@/i, // typo
+    ];
+    const isTestEmail = (email: string): boolean =>
+      !!email && testEmailPatterns.some((p) => p.test(email));
+
+    // Helper para paginar (Catalyst LIMIT > 300 rechaza)
+    async function fetchAll<T extends Record<string, unknown>>(table: string, columns: string): Promise<T[]> {
+      const all: T[] = [];
+      for (let offset = 0; offset < 1500; offset += 300) {
+        try {
+          const batch = unwrapRows<T>(
+            (await zcql(ctx.req).executeZCQLQuery(
+              `SELECT ${columns} FROM ${table} ORDER BY CREATEDTIME DESC LIMIT ${offset}, 300`,
+            )) as unknown[],
+            table,
+          );
+          all.push(...batch);
+          if (batch.length < 300) break;
+        } catch (err) {
+          debug.push(`${table}-offset${offset}-FAIL=${(err as Error)?.message ?? '?'}`);
+          break;
+        }
+      }
+      return all;
+    }
+
+    // 1. MarketingLeads
+    type Lead = { ROWID: string; email: string };
+    const leads = await fetchAll<Lead>('MarketingLeads', 'ROWID, email');
+    const leadsToDelete = leads.filter((l) => isTestEmail(l.email));
+    debug.push(`leads-total=${leads.length}-toDelete=${leadsToDelete.length}`);
+
+    // 2. Candidates
+    type Cand = { ROWID: string; email: string; name: string };
+    const cands = await fetchAll<Cand>('Candidates', 'ROWID, email, name');
+    const candsToDelete = cands.filter((c) => isTestEmail(c.email));
+    debug.push(`cands-total=${cands.length}-toDelete=${candsToDelete.length}`);
+
+    // 3. JobProfileDrafts (por client_email)
+    type Draft = { ROWID: string; client_email: string | null; client_company: string | null };
+    const drafts = await fetchAll<Draft>('JobProfileDrafts', 'ROWID, client_email, client_company');
+    const draftsToDelete = drafts.filter((d) =>
+      (d.client_email && isTestEmail(d.client_email))
+      || (d.client_company && /^(empresa real run|test|qa internal|e2e|cliente real|cliente sin nombre)/i.test(d.client_company)),
+    );
+    debug.push(`drafts-total=${drafts.length}-toDelete=${draftsToDelete.length}`);
+
+    // 4. Results — borramos los asociados a Candidates de test
+    const candIds = new Set(candsToDelete.map((c) => c.ROWID));
+    type Result = { ROWID: string; candidate_id: string };
+    const results = await fetchAll<Result>('Results', 'ROWID, candidate_id');
+    const resultsToDelete = results.filter((r) => candIds.has(r.candidate_id));
+    debug.push(`results-total=${results.length}-toDelete=${resultsToDelete.length}`);
+
+    // 5. Scores — asociados a Results de test
+    const resultIds = new Set(resultsToDelete.map((r) => r.ROWID));
+    type Score = { ROWID: string; result_id: string };
+    const scores = await fetchAll<Score>('Scores', 'ROWID, result_id');
+    const scoresToDelete = scores.filter((s) => resultIds.has(s.result_id));
+    debug.push(`scores-total=${scores.length}-toDelete=${scoresToDelete.length}`);
+
+    // 6. IntegrityDimensions — asociados a Results
+    type IntDim = { ROWID: string; result_id: string };
+    let intDims: IntDim[] = [];
+    try {
+      intDims = await fetchAll<IntDim>('IntegrityDimensions', 'ROWID, result_id');
+    } catch (err) {
+      debug.push(`intdims-FAIL=${(err as Error).message}`);
+    }
+    const intDimsToDelete = intDims.filter((d) => resultIds.has(d.result_id));
+    debug.push(`intDims-total=${intDims.length}-toDelete=${intDimsToDelete.length}`);
+
+    // 7. Jobs de testing (por company / title patterns)
+    type Job = { ROWID: string; title: string; company: string };
+    const jobs = await fetchAll<Job>('Jobs', 'ROWID, title, company');
+    const testJobCompanyPatterns = [
+      /empresa real run/i,
+      /distribuidora xyz/i,
+      /empresa e2e/i,
+      /^cliente sin nombre$/i,
+      /^test\b/i,
+      /^qa internal$/i,
+    ];
+    const testJobTitlePatterns = [
+      /\be2e\b/i,
+      /qa test/i,
+    ];
+    const jobsToDelete = jobs.filter((j) =>
+      (j.company && testJobCompanyPatterns.some((p) => p.test(j.company)))
+      || (j.title && testJobTitlePatterns.some((p) => p.test(j.title))),
+    );
+    debug.push(`jobs-total=${jobs.length}-toDelete=${jobsToDelete.length}`);
+
+    if (!confirm) {
+      sendJson(ctx.res, 200, {
+        dry_run: true,
+        summary: {
+          marketing_leads: leadsToDelete.length,
+          candidates: candsToDelete.length,
+          drafts: draftsToDelete.length,
+          results: resultsToDelete.length,
+          scores: scoresToDelete.length,
+          integrity_dimensions: intDimsToDelete.length,
+          jobs: jobsToDelete.length,
+        },
+        sample_leads: leadsToDelete.slice(0, 10).map((l) => l.email),
+        sample_candidates: candsToDelete.slice(0, 10).map((c) => `${c.name} <${c.email}>`),
+        sample_drafts: draftsToDelete.slice(0, 10).map((d) => `${d.client_company} <${d.client_email}>`),
+        sample_jobs: jobsToDelete.slice(0, 15).map((j) => `${j.title} <${j.company}>`),
+        instructions: 'Add ?confirm=true to delete',
+        debug,
+      });
+      return;
+    }
+
+    const { datastore } = await import('../lib/db.js');
+    const deleted = { leads: 0, cands: 0, drafts: 0, results: 0, scores: 0, intDims: 0, jobs: 0 };
+    const failures: Array<{ kind: string; id: string; error: string }> = [];
+
+    // Orden importante: borrar primero los dependientes (scores, dims, results)
+    for (const s of scoresToDelete) {
+      try { await datastore(ctx.req).table('Scores').deleteRow(s.ROWID); deleted.scores++; }
+      catch (err) { failures.push({ kind: 'score', id: s.ROWID, error: (err as Error).message }); }
+    }
+    for (const d of intDimsToDelete) {
+      try { await datastore(ctx.req).table('IntegrityDimensions').deleteRow(d.ROWID); deleted.intDims++; }
+      catch (err) { failures.push({ kind: 'intdim', id: d.ROWID, error: (err as Error).message }); }
+    }
+    for (const r of resultsToDelete) {
+      try { await datastore(ctx.req).table('Results').deleteRow(r.ROWID); deleted.results++; }
+      catch (err) { failures.push({ kind: 'result', id: r.ROWID, error: (err as Error).message }); }
+    }
+    for (const c of candsToDelete) {
+      try { await datastore(ctx.req).table('Candidates').deleteRow(c.ROWID); deleted.cands++; }
+      catch (err) { failures.push({ kind: 'cand', id: c.ROWID, error: (err as Error).message }); }
+    }
+    for (const d of draftsToDelete) {
+      try { await datastore(ctx.req).table('JobProfileDrafts').deleteRow(d.ROWID); deleted.drafts++; }
+      catch (err) { failures.push({ kind: 'draft', id: d.ROWID, error: (err as Error).message }); }
+    }
+    for (const l of leadsToDelete) {
+      try { await datastore(ctx.req).table('MarketingLeads').deleteRow(l.ROWID); deleted.leads++; }
+      catch (err) { failures.push({ kind: 'lead', id: l.ROWID, error: (err as Error).message }); }
+    }
+    for (const j of jobsToDelete) {
+      try { await datastore(ctx.req).table('Jobs').deleteRow(j.ROWID); deleted.jobs++; }
+      catch (err) { failures.push({ kind: 'job', id: j.ROWID, error: (err as Error).message }); }
+    }
+
+    sendJson(ctx.res, 200, {
+      deleted,
+      failures_count: failures.length,
+      failures_first10: failures.slice(0, 10),
+      debug,
+    });
+  } catch (err) {
+    const e = err as Error;
+    const errAny = err as Record<string, unknown>;
+    sendJson(ctx.res, 500, {
+      error: e?.message ?? 'unknown',
+      raw_err: JSON.stringify(errAny, Object.getOwnPropertyNames(errAny ?? {})).slice(0, 800),
+      debug,
+    });
+  }
+}
+
+/**
+ * GET /r/<token> — Redirect público de URL "limpia" (sin hash) al hash route real.
+ *
+ * Razón: WhatsApp Business / Meta NO acepta variables después del `#` (fragment) en
+ * URLs de botones de templates. Por seguridad, Meta no permite que la parte variable
+ * apunte a un fragment porque podría manipular el routing del lado del cliente.
+ *
+ * Solución: usamos `https://app.sharktalents.ai/r/<token>` (URL plana sin #) en los
+ * botones de WhatsApp. Este endpoint hace 302 redirect al hash route real
+ * `https://app.sharktalents.ai/app/index.html#/test/<token>`.
+ *
+ * Sin auth, sin INTERNAL_KEY — es un redirect público.
+ *
+ * Path patterns soportados:
+ *   /r/<token>     → /app/index.html#/test/<token>     (default: test)
+ *   /r/t/<token>   → /app/index.html#/test/<token>     (explicit: test)
+ *   /r/d/<token>   → /app/index.html#/draft/<token>    (draft review)
+ *   /r/p/<token>   → /app/index.html#/portal/<token>   (portal cliente)
+ *   /r/m/<token>   → /app/index.html#/recovery/<token> (recovery / recovery)
+ *
+ * Las URLs específicas dependen del frontend (verificar config). Si el routing
+ * cambia, actualizar solo este handler — los templates WhatsApp NO cambian.
+ */
+export async function redirectFromWhatsAppButton(ctx: RequestContext): Promise<void> {
+  const url = ctx.req.url ?? '/';
+  const match = url.match(/^\/r\/(?:([a-z])\/)?([^/?#]+)/);
+  if (!match) {
+    sendJson(ctx.res, 400, { error: 'invalid /r/ path' });
+    return;
+  }
+  const kind = match[1] ?? 't'; // default test
+  const token = match[2];
+  const { env: envFn } = await import('../lib/env.js');
+  const appBase = envFn().APP_BASE_URL.replace(/\/$/, '');
+  const kindMap: Record<string, string> = {
+    t: 'test',
+    d: 'draft',
+    p: 'portal',
+    m: 'recovery',
+  };
+  const path = kindMap[kind] ?? 'test';
+  const target = `${appBase}/app/index.html#/${path}/${encodeURIComponent(token)}`;
+  ctx.res.writeHead(302, { Location: target, 'Cache-Control': 'no-store' });
+  ctx.res.end();
+}
+
+/**
+ * Diag: borrar MarketingLeads de testing que están causando hard bounces en ZeptoMail.
+ * Match por patterns de email: e2e-real-*, e2e-test-*, test-debug-*, etc.
+ *
+ *   curl -X POST -H "X-Internal-Key: $K" \
+ *     "https://.../api/admin/_diag-wipe-test-leads?confirm=true"
+ *
+ * Sin confirm=true devuelve dry-run (lista qué borraría sin borrar).
+ */
+export async function diagWipeTestLeads(ctx: RequestContext): Promise<void> {
+  const debug: string[] = ['start'];
+  try {
+    requireInternalKey(ctx);
+    debug.push('auth-ok');
+
+    const url = new URL(ctx.req.url ?? '/', 'http://x');
+    const confirm = url.searchParams.get('confirm') === 'true';
+    debug.push(`confirm=${confirm}`);
+
+    type LeadRow = { ROWID: string; email: string };
+    // Catalyst ZCQL rechaza LIMIT > 300 (memoria del proyecto). Paginamos en 3 lotes de 300.
+    const allRows: LeadRow[] = [];
+    for (let offset = 0; offset < 900; offset += 300) {
+      try {
+        const batch = unwrapRows<LeadRow>(
+          (await zcql(ctx.req).executeZCQLQuery(
+            `SELECT ROWID, email FROM MarketingLeads ORDER BY CREATEDTIME DESC LIMIT ${offset}, 300`,
+          )) as unknown[],
+          'MarketingLeads',
+        );
+        allRows.push(...batch);
+        debug.push(`batch-offset${offset}=${batch.length}`);
+        if (batch.length < 300) break; // no hay más
+      } catch (batchErr) {
+        debug.push(`batch-offset${offset}-FAIL=${(batchErr as Error)?.message ?? 'unknown'}`);
+        break;
+      }
+    }
+    const rows = allRows;
+    debug.push(`total-rows=${rows.length}`);
+
+    const testPatterns = [
+      /^e2e-real-/i,
+      /^e2e-test-/i,
+      /^test-debug-/i,
+      /^cgrismarpalma@gmail\.com$/i,
+    ];
+    const targets = rows.filter((r) => r.email && testPatterns.some((p) => p.test(r.email)));
+    debug.push(`targets=${targets.length}`);
+
+    if (!confirm) {
+      sendJson(ctx.res, 200, {
+        dry_run: true,
+        total_rows_scanned: rows.length,
+        total_found: targets.length,
+        sample_emails: targets.slice(0, 20).map((r) => r.email),
+        instructions: 'Add ?confirm=true to actually delete',
+        debug,
+      });
+      return;
+    }
+
+    const { datastore } = await import('../lib/db.js');
+    let deleted = 0;
+    const failures: Array<{ email: string; error: string }> = [];
+    for (const lead of targets) {
+      try {
+        await datastore(ctx.req).table('MarketingLeads').deleteRow(lead.ROWID);
+        deleted++;
+      } catch (err) {
+        failures.push({ email: lead.email, error: (err as Error).message });
+      }
+    }
+
+    sendJson(ctx.res, 200, {
+      total_found: targets.length,
+      deleted,
+      failures,
+      debug,
+    });
+  } catch (err) {
+    const e = err as Error;
+    const errAny = err as Record<string, unknown>;
+    sendJson(ctx.res, 500, {
+      error: e?.message ?? 'unknown',
+      stack: e?.stack?.slice(0, 500),
+      raw_err: JSON.stringify(errAny, Object.getOwnPropertyNames(errAny ?? {})).slice(0, 800),
+      typeof_err: typeof err,
+      debug,
+    });
+  }
+}
+
+/**
  * Diag: dispara un WhatsApp de prueba usando el dispatcher (Twilio o Meta según env).
  *
  *   curl -X POST -H "X-Internal-Key: $K" -H "Content-Type: application/json" \

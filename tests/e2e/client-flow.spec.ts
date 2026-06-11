@@ -18,7 +18,12 @@ import { test, expect, Page } from '@playwright/test';
  */
 
 const SITE_KEY = process.env.MARKETING_SITE_KEY ?? '';
-const TEST_EMAIL_PREFIX = 'e2e-real';
+// 2026-06-10: cambiado de '@kunodigital.com' (que no acepta direcciones aleatorias y causa
+// hard bounce en ZeptoMail) a 'chrismarpalma+xxx@gmail.com' (Gmail acepta cualquier alias
+// con + y los entrega al inbox principal de Chris). 46 leads anteriores fueron borrados
+// manualmente tras llegar a 46% hard bounce rate (límite de ZeptoMail: 5%).
+const TEST_EMAIL_PREFIX = 'chrismarpalma+e2e-real';
+const TEST_EMAIL_DOMAIN = '@gmail.com';
 
 test.describe.serial('Proceso E2E REALISTA del cliente', () => {
   let leadEmail: string;
@@ -38,7 +43,7 @@ test.describe.serial('Proceso E2E REALISTA del cliente', () => {
     // varias reps pueden iniciar en el mismo segundo y colisionarían en captureLead.
     const ts = Date.now();
     const rand = Math.floor(Math.random() * 100000);
-    leadEmail = `${TEST_EMAIL_PREFIX}-${ts}-${rand}@kunodigital.com`;
+    leadEmail = `${TEST_EMAIL_PREFIX}-${ts}-${rand}${TEST_EMAIL_DOMAIN}`;
     console.log(`[E2E REAL] Email del test: ${leadEmail}`);
   });
 
