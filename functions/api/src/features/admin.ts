@@ -1864,13 +1864,35 @@ export async function diagWipeAllTestData(ctx: RequestContext): Promise<void> {
       /^test-debug-/i,
       /^test\+/i,
       /^qa\+/i,
-      /^chrismarpalma\+(specb|metalead|minispec|full|comercial|crmreal|pauta-test|e2e-|test|playwright|draft-spec)/i,
+      /^chrismarpalma\+(specb|metalead|minispec|full|comercial|crmreal|pauta-test|e2e-|test|playwright|draft-spec|e2ereal|crmtest)/i,
       /^cuentas\+/i,
       /^cpalma\+/i,
       /^cgrismarpalma@/i, // typo
+      /^mail-tester@/i,    // deliverability test
+      /^mailtester@/i,
+      /^test@test\./i,     // test@test.com literal
     ];
     const isTestEmail = (email: string): boolean =>
       !!email && testEmailPatterns.some((p) => p.test(email));
+
+    // Patterns de company y contact_name para capturar leads/drafts test
+    const testCompanyPatterns = [
+      /empresa real run/i,
+      /empresa e2e/i,
+      /^test$/i,
+      /^test deliverability/i,
+    ];
+    const testNamePatterns = [
+      /^chris test$/i,
+      /^test e2e/i,
+      /^cliente real/i,
+      /^mail tester/i,
+      /^test$/i,
+    ];
+    const isTestLead = (l: { email: string; contact_name?: string | null; company?: string | null }): boolean =>
+      isTestEmail(l.email)
+      || (!!l.contact_name && testNamePatterns.some((p) => p.test(l.contact_name!)))
+      || (!!l.company && testCompanyPatterns.some((p) => p.test(l.company!)));
 
     // Helper para paginar (Catalyst LIMIT > 300 rechaza)
     async function fetchAll<T extends Record<string, unknown>>(table: string, columns: string): Promise<T[]> {
@@ -1893,10 +1915,10 @@ export async function diagWipeAllTestData(ctx: RequestContext): Promise<void> {
       return all;
     }
 
-    // 1. MarketingLeads
-    type Lead = { ROWID: string; email: string };
-    const leads = await fetchAll<Lead>('MarketingLeads', 'ROWID, email');
-    const leadsToDelete = leads.filter((l) => isTestEmail(l.email));
+    // 1. MarketingLeads (email + contact_name + company match)
+    type Lead = { ROWID: string; email: string; contact_name: string | null; company: string | null };
+    const leads = await fetchAll<Lead>('MarketingLeads', 'ROWID, email, contact_name, company');
+    const leadsToDelete = leads.filter((l) => isTestLead(l));
     debug.push(`leads-total=${leads.length}-toDelete=${leadsToDelete.length}`);
 
     // 2. Candidates
