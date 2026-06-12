@@ -66,3 +66,16 @@ english-listening/*.mp3
 test-results/
 playwright-report/
 playwright/.cache/
+tests/e2e/output/
+
+# TypeScript build cache
+functions/api/tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Claude Code local config (per-user)
+.claude/
+
+# Outputs temporales de scripts de prueba
+test-loop-*.txt
+drafts-review.json
+preguntas-revision.json
