@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Blueprint 4 sistemas — SharkTalents + CRM + Sign + Recruit</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 24px; background: #fafafa; color: #1f2937; line-height: 1.5; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    h1 { color: #0e1218; margin: 0 0 8px 0; font-size: 28px; }
+    h2 { color: #0e1218; margin-top: 40px; border-bottom: 3px solid #dafd6f; padding-bottom: 8px; font-size: 22px; }
+    h3 { color: #0e1218; margin-top: 28px; font-size: 17px; }
+    .subtitle { color: #6b7280; font-size: 15px; margin-bottom: 24px; }
+    .card { background: #fff; border-radius: 10px; padding: 20px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px; border-left: 4px solid transparent; }
+    .card.flow-cliente { border-left-color: #3b82f6; }
+    .card.flow-meta { border-left-color: #ef4444; }
+    .card.flow-aprobacion { border-left-color: #16a34a; }
+    .card.flow-candidato { border-left-color: #a855f7; }
+    .card.flow-recruit { border-left-color: #f59e0b; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 12px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+    th { background: #f9fafb; font-weight: 600; color: #374151; }
+    tr.ok td:first-child::before { content: '✅ '; }
+    tr.warn td:first-child::before { content: '⚠️ '; }
+    tr.bug td:first-child::before { content: '❌ '; }
+    tr.todo td:first-child::before { content: '📝 '; }
+    code { background: #e5e7eb; padding: 2px 6px; border-radius: 3px; font-size: 12px; font-family: 'SF Mono', Monaco, monospace; }
+    .pill { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; vertical-align: middle; letter-spacing: 0.5px; }
+    .pill-shark { background: #0e1218; color: #dafd6f; }
+    .pill-crm { background: #dbeafe; color: #1e40af; }
+    .pill-sign { background: #fce7f3; color: #9d174d; }
+    .pill-recruit { background: #fed7aa; color: #9a3412; }
+    .pill-meta { background: #fee2e2; color: #991b1b; }
+    .mermaid-container { background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin: 16px 0; overflow-x: auto; }
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 20px 0; }
+    .stat { background: #fff; padding: 16px 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .stat-num { font-size: 28px; font-weight: 800; color: #0e1218; }
+    .stat-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+    .nav { background: #0e1218; color: #fff; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; display: flex; gap: 16px; flex-wrap: wrap; }
+    .nav a { color: #dafd6f; text-decoration: none; font-size: 13px; font-weight: 600; }
+    .nav a:hover { text-decoration: underline; }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #fff; border-radius: 99px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .step-list { counter-reset: step; padding-left: 0; list-style: none; }
+    .step-list li { counter-increment: step; position: relative; padding: 8px 12px 8px 40px; margin-bottom: 6px; background: #f9fafb; border-radius: 6px; font-size: 14px; line-height: 1.6; }
+    .step-list li::before { content: counter(step); position: absolute; left: 12px; top: 8px; width: 22px; height: 22px; background: #0e1218; color: #dafd6f; border-radius: 50%; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Blueprint 4 sistemas SharkTalents</h1>
+    <p class="subtitle">Cómo se conectan SharkTalents + Zoho CRM + Zoho Sign + Zoho Recruit en cada flujo. Última actualización: 2026-06-07.</p>
+
+    <div class="nav">
+      <a href="#vista-global">Vista global</a>
+      <a href="#flow-landing">Flow 1: Landing → demo</a>
+      <a href="#flow-meta">Flow 2: Meta Ads → CRM</a>
+      <a href="#flow-aprobacion">Flow 3: Aprobación draft</a>
+      <a href="#flow-candidato">Flow 4: Candidato aplica</a>
+      <a href="#flow-recruit">Flow 5: Job → Recruit</a>
+      <a href="#integraciones">Estado integraciones</a>
+      <a href="#pendientes">Pendientes</a>
+    </div>
+
+    <div class="legend">
+      <span class="legend-item"><span class="pill pill-shark">SHARK</span> SharkTalents (app + backend)</span>
+      <span class="legend-item"><span class="pill pill-crm">CRM</span> Zoho CRM</span>
+      <span class="legend-item"><span class="pill pill-sign">SIGN</span> Zoho Sign</span>
+      <span class="legend-item"><span class="pill pill-recruit">RECRUIT</span> Zoho Recruit</span>
+      <span class="legend-item"><span class="pill pill-meta">META</span> Meta Lead Ads</span>
+    </div>
+
+    <h2 id="vista-global">Vista global del sistema</h2>
+    <div class="mermaid-container">
+      <div class="mermaid">
+graph LR
+  meta[Meta Lead Ads]:::meta
+  landing[sharktalents.ai<br/>landing/career site]:::shark
+  shark[SharkTalents app<br/>app.sharktalents.ai]:::shark
+  crm[Zoho CRM]:::crm
+  sign[Zoho Sign]:::sign
+  recruit[Zoho Recruit]:::recruit
+
+  meta -->|leadchain| crm
+  landing -->|capture lead| shark
+  landing -->|career apply| shark
+  crm -->|workflow webhook| shark
+  shark -->|push lead| crm
+  shark -->|sendContract| sign
+  shark -->|syncJob| recruit
+  sign -->|webhook firma| shark
+  recruit -.candidate.created webhook NO impl.-> shark
+
+  classDef shark fill:#0e1218,color:#dafd6f,stroke:#dafd6f;
+  classDef crm fill:#dbeafe,color:#1e40af,stroke:#1e40af;
+  classDef sign fill:#fce7f3,color:#9d174d,stroke:#9d174d;
+  classDef recruit fill:#fed7aa,color:#9a3412,stroke:#9a3412;
+  classDef meta fill:#fee2e2,color:#991b1b,stroke:#991b1b;
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-num">4</div><div class="stat-label">Sistemas integrados</div></div>
+      <div class="stat"><div class="stat-num">5</div><div class="stat-label">Flujos críticos</div></div>
+      <div class="stat"><div class="stat-num">6</div><div class="stat-label">Webhooks activos</div></div>
+      <div class="stat"><div class="stat-num">2</div><div class="stat-label">Conectores externos<br/>(leadchain, Deluge)</div></div>
+    </div>
+
+    <h2 id="flow-landing">Flow 1 — Lead entra por la landing (sharktalents.ai)</h2>
+    <div class="card flow-cliente">
+      <p><strong>Trigger:</strong> Cliente entra a sharktalents.ai y completa el quiz de la demo.</p>
+      <ol class="step-list">
+        <li><span class="pill pill-shark">SHARK</span> Frontend POST → <code>/api/marketing/lead</code> (header: <code>X-Marketing-Site-Key</code>)</li>
+        <li><span class="pill pill-shark">SHARK</span> Backend crea MarketingLead con source=<code>landing_demo</code> + URLs del demo (conductual + integridad)</li>
+        <li><span class="pill pill-shark">SHARK</span> Cliente hace el demo (VELNA + DISC + integridad) — clicks reales</li>
+        <li><span class="pill pill-shark">SHARK</span> Backend genera demo report → email automático con link al reporte</li>
+        <li><span class="pill pill-shark">SHARK</span> Demo report tiene CTA "Agendar reunión" → Zoho Bookings de Chris</li>
+        <li><span class="pill pill-shark">SHARK</span> Después de reunión: Chris sube transcript → IA genera draft (Anthropic) → email al cliente</li>
+        <li><span class="pill pill-shark">SHARK</span> Cliente aprueba draft con formulario embebido → continúa Flow 3</li>
+      </ol>
+    </div>
+
+    <h2 id="flow-meta">Flow 2 — Lead entra por Meta Ads (camino desde CRM)</h2>
+    <div class="card flow-meta">
+      <p><strong>Trigger:</strong> Usuario hace click en Meta Ad de SharkTalents y completa lead form.</p>
+      <ol class="step-list">
+        <li><span class="pill pill-meta">META</span> Lead Form de Facebook/Instagram → leadchain (conector)</li>
+        <li><span class="pill pill-crm">CRM</span> leadchain crea Lead en CRM con Layout=Sharktalents + Fuente=Meta leads ad</li>
+        <li><span class="pill pill-crm">CRM</span> Workflow Rule "sharktalents posibles clientes envio a shark" detecta nueva creación y dispara webhook</li>
+        <li><span class="pill pill-shark">SHARK</span> POST <code>/api/webhooks/zoho-crm/lead-created</code> con first_name + last_name + email + phone + lead_source</li>
+        <li><span class="pill pill-shark">SHARK</span> Filtro por <code>CRM_META_LEAD_SOURCE</code> (= "Meta leads ad"). Si pasa → crea MarketingLead</li>
+        <li><span class="pill pill-shark">SHARK</span> Dispara email "Gracias por tu interés en SharkTalents" con botón "Agendar llamada" (link Zoho Bookings)</li>
+        <li><span class="pill pill-shark">SHARK</span> <em>(Futuro)</em> Dispara WhatsApp con mismo mensaje cuando Twilio esté configurado</li>
+        <li>👤 Lead agenda llamada → primera reunión con Chris (calificación + presentación)</li>
+        <li>👤 Si interesado → flujo continúa como Flow 1 a partir del paso 6 (briefing + draft)</li>
+      </ol>
+    </div>
+
+    <h2 id="flow-aprobacion">Flow 3 — Cliente aprueba el draft del puesto</h2>
+    <div class="card flow-aprobacion">
+      <p><strong>Trigger:</strong> Cliente abre portal y toca "Aprobar el perfil" desde email recibido.</p>
+      <ol class="step-list">
+        <li><span class="pill pill-shark">SHARK</span> Aparece formulario embebido: nombre, RUC, dirección, teléfono</li>
+        <li><span class="pill pill-shark">SHARK</span> Cliente completa los 9 campos y submit → POST <code>/portal/:token/drafts/:id/approve</code></li>
+        <li><span class="pill pill-shark">SHARK</span> Marca draft como <code>client_approved</code> + convierte a Job real</li>
+        <li><span class="pill pill-shark">SHARK</span> → <span class="pill pill-crm">CRM</span> Push Lead a CRM (createLead con custom fields: RUC_NIT, Street, City, State, Country) usando Layout Sharktalents</li>
+        <li><span class="pill pill-shark">SHARK</span> → <span class="pill pill-sign">SIGN</span> Dispara <code>sendContract</code> via Deluge function en CRM (créditos complimentary)</li>
+        <li><span class="pill pill-sign">SIGN</span> Email al cliente con contrato listo para firmar electrónicamente</li>
+        <li><span class="pill pill-shark">SHARK</span> → <span class="pill pill-recruit">RECRUIT</span> Sync Job (paralelo) con title + company + custom fields (Date_Opened, Zip_Code, Remote_Job=false)</li>
+        <li><span class="pill pill-shark">SHARK</span> Email "Iniciaremos la búsqueda" al cliente</li>
+        <li><span class="pill pill-sign">SIGN</span> → <span class="pill pill-shark">SHARK</span> Cuando cliente firma: webhook <code>/api/webhooks/zoho-sign</code> → marca lead como <code>won</code> + crea Tenant + alerta dashboard</li>
+      </ol>
+    </div>
+
+    <h3>Sub-flow: Cliente pide cambios en el draft (no aprueba)</h3>
+    <div class="card flow-aprobacion">
+      <ol class="step-list">
+        <li><span class="pill pill-shark">SHARK</span> Cliente escribe comentario en portal → POST <code>/portal/:token/drafts/:id/request-changes</code></li>
+        <li><span class="pill pill-shark">SHARK</span> Email al cliente: <strong>"Recibimos tus comentarios"</strong> (nuevo 2026-06-07)</li>
+        <li><span class="pill pill-shark">SHARK</span> Email a Chris: "Cliente pidió cambios" con copia del comentario</li>
+        <li>👤 Chris ajusta el draft y reenvía → <code>/api/drafts/:id/send-to-client</code></li>
+        <li><span class="pill pill-shark">SHARK</span> Email al cliente: <strong>"Aplicamos tus cambios — listo para revisar"</strong> (template detecta highlights con client_comments → cambia template auto)</li>
+      </ol>
+    </div>
+
+    <h2 id="flow-candidato">Flow 4 — Candidato aplica al career site (alternativa a Recruit)</h2>
+    <div class="card flow-candidato">
+      <p><strong>Trigger:</strong> Candidato entra a sharktalents.ai/jobs, ve un puesto y aplica.</p>
+      <ol class="step-list">
+        <li><span class="pill pill-shark">SHARK</span> Frontend GET <code>/api/public/jobs</code> → lista jobs activos (sin auth)</li>
+        <li><span class="pill pill-shark">SHARK</span> Click en un puesto → GET <code>/api/public/jobs/:slug</code> (slug derivado del title kebab-case)</li>
+        <li><span class="pill pill-shark">SHARK</span> Click "Aplicar" → formulario con 9 campos + CV obligatorio</li>
+        <li><span class="pill pill-shark">SHARK</span> POST multipart <code>/api/public/jobs/:slug/apply</code></li>
+        <li><span class="pill pill-shark">SHARK</span> Backend valida + sube CV a Catalyst File Store</li>
+        <li><span class="pill pill-shark">SHARK</span> Crea/actualiza Candidate + crea Application en stage <code>prefilter_pending</code></li>
+        <li><span class="pill pill-shark">SHARK</span> Dispara evento <code>application.created</code> → email "Recibimos tu solicitud, próximos pasos"</li>
+        <li>👤 Candidato hace prefilter → técnica → conductual → integridad → videos según pipeline configurado</li>
+      </ol>
+    </div>
+
+    <h2 id="flow-recruit">Flow 5 — Job se sincroniza a Zoho Recruit</h2>
+    <div class="card flow-recruit">
+      <p><strong>Trigger:</strong> Después de Flow 3 (aprobación draft), o reintento manual desde UI admin.</p>
+      <ol class="step-list">
+        <li><span class="pill pill-shark">SHARK</span> <code>syncJobToRecruit</code> arma payload (Job_Opening_Name, Posting_Title, Industry, custom fields)</li>
+        <li><span class="pill pill-shark">SHARK</span> → <span class="pill pill-recruit">RECRUIT</span> POST <code>/recruit/v2/Job_Openings</code> con OAuth</li>
+        <li><span class="pill pill-recruit">RECRUIT</span> Devuelve <code>id</code> (bigint) → Shark guarda en <code>recruit_job_id</code></li>
+        <li><span class="pill pill-shark">SHARK</span> Hace GET para traer <code>Job_Opening_Id</code> (slug ZR_XX_JOB) → guarda en <code>recruit_job_slug</code> ⚠️ <em>el slug NO se expone en v2 API → workaround pendiente</em></li>
+        <li><span class="pill pill-shark">SHARK</span> Llena custom fields del Job en Recruit con URLs de pruebas (Perfil_Disc, Perfil_Tecnica, Prueba_Integridad)</li>
+        <li><span class="pill pill-recruit">RECRUIT</span> Job queda publicado en career site (talento.kunodigital.com) con Publish=true, Keep_on_Career_Site=true</li>
+      </ol>
+    </div>
+
+    <h2 id="integraciones">Estado de las integraciones</h2>
+    <table>
+      <thead>
+        <tr><th>Integración</th><th>Estado</th><th>Detalle</th></tr>
+      </thead>
+      <tbody>
+        <tr class="ok"><td><code>SharkTalents → CRM</code> (push lead post-aprobación)</td><td>OK</td><td>Layout Sharktalents, custom fields completos (RUC, dirección). Lead_Source respetado del MarketingLead.source con mapping.</td></tr>
+        <tr class="ok"><td><code>CRM → SharkTalents</code> (webhook nuevo lead)</td><td>OK</td><td>Workflow Rule filtra por Layout=Sharktalents o Lead_Source="Meta leads ad". Endpoint <code>/api/webhooks/zoho-crm/lead-created</code> con secret en query string.</td></tr>
+        <tr class="ok"><td><code>SharkTalents → Sign</code> (envío contrato)</td><td>OK</td><td>Via Deluge function en CRM <code>enviarContratoSharkTalents</code>. Usa créditos complimentary, no add-on.</td></tr>
+        <tr class="ok"><td><code>Sign → SharkTalents</code> (firma webhook)</td><td>OK</td><td><code>/api/webhooks/zoho-sign</code>. Cuando event_type=completed crea Tenant + marca lead won + alerta dashboard.</td></tr>
+        <tr class="ok"><td><code>SharkTalents → Recruit</code> (sync Job)</td><td>OK</td><td>Auto al aprobar draft. Remote_Job boolean (fix 2026-06-07). Date_Opened + Zip_Code defaults para validación career site.</td></tr>
+        <tr class="warn"><td><code>Recruit → SharkTalents</code> (webhook candidato)</td><td>Apagado</td><td>El webhook del career site está apagado en Recruit. El de registro manual está prendido pero matching por slug ZR_XX_JOB no funciona (slug no se puede traer via API). Alternativa: career site público en sharktalents.ai (Flow 4).</td></tr>
+        <tr class="ok"><td><code>Meta → CRM</code> (leadchain)</td><td>OK</td><td>Form "Sharktalents ST-Formulario-ClienteIdeal" mapeado a layout Sharktalents. Fuente=Meta leads ad.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="pendientes">Pendientes y TODOs</h2>
+    <table>
+      <thead>
+        <tr><th>Tarea</th><th>Prioridad</th><th>Detalle</th></tr>
+      </thead>
+      <tbody>
+        <tr class="todo"><td>Conectar WhatsApp de SharkTalents</td><td>Alta</td><td>Twilio. Solo notificaciones automáticas, no respuesta humana.</td></tr>
+        <tr class="todo"><td>Career site público en sharktalents.ai</td><td>Alta</td><td>Backend ya listo (Flow 4). Frontend lo hace otro Claude Code en la web marketing.</td></tr>
+        <tr class="todo"><td>Limpieza puestos de prueba en SharkTalents</td><td>Media</td><td>Borrar 10 jobs E2E. Conservar solo el de Cristian y el de Aryan.</td></tr>
+        <tr class="todo"><td>LinkedIn SharkTalents</td><td>Baja</td><td>Cuenta + publicaciones + agente IA. Roadmap futuro.</td></tr>
+        <tr class="warn"><td>Webhook Recruit candidato</td><td>Baja</td><td>Slug ZR_XX_JOB no se puede obtener via API v2. Career site propio resuelve.</td></tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default', flowchart: { useMaxWidth: true, htmlLabels: true } });
+  </script>
+</body>
+</html>

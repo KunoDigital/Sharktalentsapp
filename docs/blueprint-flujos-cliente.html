@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Blueprint flujos cliente — SharkTalents</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #fafafa;
+      color: #1f2937;
+      line-height: 1.5;
+    }
+    h1, h2, h3 { color: #111827; }
+    h2 { margin-top: 32px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; }
+    h3 { margin-top: 20px; }
+    .legend {
+      display: inline-flex;
+      gap: 16px;
+      padding: 8px 16px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 16px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+    th { background: #f9fafb; font-weight: 600; }
+    tr.gap { background: #fef3c7; }
+    tr.bug { background: #fee2e2; }
+    tr.ok { background: #f0fdf4; }
+    code { background: #e5e7eb; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+    .markmap-container {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+      margin-bottom: 16px;
+      min-height: 600px;
+    }
+    .markmap { width: 100%; height: 600px; }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+    .pill-A { background: #dbeafe; color: #1e40af; }
+    .pill-B { background: #fce7f3; color: #9d174d; }
+    .pill-C { background: #d1fae5; color: #065f46; }
+    .help {
+      max-width: 100%;
+      padding: 10px 14px;
+      background: #fef9c3;
+      border-radius: 6px;
+      color: #713f12;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .testplan {
+      background: #ecfdf5;
+      border-left: 4px solid #10b981;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+    .testplan strong { color: #065f46; }
+    .nowrap { white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <h1>Blueprint flujos cliente — SharkTalents</h1>
+  <p style="color:#6b7280;">Última actualización: 2026-06-05 · Los 3 caminos por los que un cliente entra al sistema, con qué dispara cada paso, qué ve el cliente, qué hace el backend, estado, y cómo probarlo.</p>
+
+  <div class="legend">
+    <span>🟢 Vivo y probado</span>
+    <span>🟡 Vivo pero no probado / parcial</span>
+    <span>🔴 Roto o falta implementar</span>
+    <span><span class="pill pill-A">A</span> Web</span>
+    <span><span class="pill pill-B">B</span> Meta → CRM</span>
+    <span><span class="pill pill-C">C</span> Manual CRM</span>
+  </div>
+
+  <div class="help">
+    💡 Los 3 flujos <strong>convergen en el punto "Briefing con cliente"</strong>. De ahí hacia adelante (transcript → draft → cliente aprueba → Job → Recruit → candidatos aplican) es el mismo flow. La diferencia está SOLO en cómo el lead llega a ese punto.
+  </div>
+
+  <h2>Resumen ejecutivo</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th>Flujo</th><th>🟢 Vivo</th><th>🟡 Parcial</th><th>🔴 Roto / falta</th><th>Total pasos</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="pill pill-A">A</span> Web → demo → cliente</td><td>9</td><td>2</td><td>1</td><td>12</td></tr>
+        <tr><td><span class="pill pill-B">B</span> Meta Ads → CRM → cliente</td><td>4</td><td>3</td><td>2</td><td>9</td></tr>
+        <tr><td><span class="pill pill-C">C</span> Manual CRM → cliente</td><td>4</td><td>1</td><td>1</td><td>6</td></tr>
+        <tr style="font-weight:bold;"><td>Convergencia (briefing → Job)</td><td>6</td><td>2</td><td>0</td><td>8</td></tr>
+        <tr style="font-weight:bold;"><td>Candidato aplica (Recruit)</td><td>5</td><td>1</td><td>1</td><td>7</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Mapa visual</h2>
+  <div class="markmap-container">
+    <div class="markmap">
+# Cliente entra a SharkTalents
+
+## A) Web (Marketing site)
+### 1. Lead clickea ad / orgánico
+- 🟢 Llega a kunodigital.com
+### 2. Llena quiz / calculadora
+- 🟢 POST /api/marketing/lead → captureLead
+- 🟢 Lead creado en MarketingLeads (status: new)
+- 🟢 Lead push a Zoho CRM (sync)
+- 🟢 Email "Gracias por contactarnos" (marketing_lead_thanks)
+### 3. Lead pide demo
+- 🟢 POST /api/marketing/eval-request → requestEval
+- 🟢 Status → eval_requested
+- 🟢 Email con link al demo test (marketing_demo_test_link)
+### 4. Lead toma el demo test
+- 🟢 Registro candidato + tests
+- 🟡 Anti-cheat detectado y guardado
+### 5. Demo completa
+- 🟢 Email "Reporte listo" + botón AGENDAR
+- 🟢 Status → eval_completed
+### 6. Lead clickea AGENDAR
+- 🟢 Va a MARKETING_BOOKING_URL
+- 🟡 Bookings crea meeting (no es nuestro código)
+- 🔴 Status → call_booked NO se actualiza automático
+
+## B) Meta Ads → CRM
+### 1. Lead clickea ad Meta
+- 🟢 Va a form de Meta o Landing externa
+### 2. Lead da datos en Meta
+- 🟢 Meta crea Lead en Zoho CRM (Lead Ads integration de Meta-Zoho)
+### 3. SharkTalents importa
+- 🟡 Cris abre Marketing Leads → Import CRM
+- 🟢 GET /api/marketing/crm-leads lista importables
+- 🟢 POST /api/marketing/import-from-crm crea Lead local
+### 4. Lead aparece en Marketing Leads
+- 🟢 Status: new (igual que A2)
+### 5. Cris contacta manual
+- 🟡 No hay tracking automático del touch (depende WhatsApp / email externo)
+### 6. Cris manda link Bookings
+- 🟢 Copy link desde /drafts → mandar por WhatsApp
+- 🔴 No registra "link enviado"
+
+## C) Manual CRM
+### 1. Cris recibe contacto directo
+- 🟢 WhatsApp / llamada / referido
+### 2. Cris crea Lead en CRM
+- 🟢 Manual en Zoho CRM (fuera de SharkTalents)
+### 3. Importar a SharkTalents
+- 🟡 Mismo Import CRM que flujo B
+### 4. Cris manda link Bookings
+- 🟢 Igual que B6
+- 🔴 Sin tracking del envío
+
+## ⭐ CONVERGENCIA → Briefing
+### 7-X. Cliente agenda en Bookings
+- 🟢 Bookings crea meeting Zoho Meeting
+- 🟢 Cliente recibe invite por email
+### 8-X. Reunión virtual
+- 🟢 Cliente y Cris en Zoho Meeting
+- 🟢 Zia transcribe (en background)
+### 9-X. Transcript recovered
+- 🟡 Manual: Cris copia transcript del dashboard Zoho Meeting
+- 🟢 Botón "🎬 Mis grabaciones" en /drafts
+- 🔴 Auto: API Zoho Meeting tiene 403 al descargar
+### 10-X. Cris sube transcript
+- 🟢 POST /api/briefings/upload-transcript
+- 🟢 Outbox publica briefing.transcript_received
+### 11-X. IA genera draft
+- 🟢 Anthropic procesa transcript → JSON estructurado
+- 🟢 Insert en JobProfileDrafts
+### 12-X. Cris revisa draft
+- 🟢 Página /drafts → click draft → DraftReview
+- 🟡 Modalidad y Salario antes duplicados (arreglado hoy)
+### 13-X. Cris manda link al cliente
+- 🟡 Endpoint POST /api/drafts/jobs/:id/send-to-client
+- 🟡 Email al cliente con token signed → ClientDraftReview
+
+## ⭐ CONVERGENCIA → Aprobación
+### 14. Cliente abre link draft
+- 🟢 ClientDraftReview muestra perfil ideal
+### 15. Cliente aprueba
+- 🟢 POST /portal/:token/drafts/:id/approve
+- 🟢 Job creado en SharkTalents
+- 🟢 Publicado en Recruit (con slug ZR_XX_JOB)
+- 🟢 Cris recibe email confirmación
+
+## ⭐ CONVERGENCIA → Candidatos aplican
+### 16. Candidato ve Job en Recruit
+- 🟢 Career Site público (Zoho Recruit)
+### 17. Candidato aplica
+- 🟢 Recruit dispara webhook (POST /api/webhooks/zoho-recruit)
+- 🟢 Backend crea Candidate + Application (Result)
+### 18. Email al candidato
+- 🟢 Outbox dispara email "Recibimos tu aplicación" con link a tests
+### 19. Candidato toma tests
+- 🟢 Link → /test/:token → CandidateTestEntry (cableado al backend hoy)
+- 🟢 DISC + Técnica + Integridad + Inglés (si aplica)
+- 🟡 Videos dinámicos (existe, no probado E2E)
+### 20. Sistema calcula score
+- 🟢 Scoring DISC + VELNA + integridad + emocional + técnica
+- 🟢 Pipeline_stage actualiza
+### 21. Cris ve candidato en pipeline
+- 🟢 JobDetail → tab Prefiltro (los nuevos aparecen ahí desde hoy)
+- 🟢 Avanzar / Rechazar / Duda con botones reales (arreglado hoy)
+### 22. Cliente recibe finalistas
+- 🟡 Reporte multi-candidato (PublicReport)
+- 🟢 Botones "Entrevistar / Tal vez / Descartar" cableados (arreglado hoy)
+- 🔴 Botón "Notificar cliente reporte listo" no probado E2E
+    </div>
+  </div>
+
+  <div class="help">
+    💡 Click en cualquier nodo para colapsar/expandir. Drag para mover. Scroll para zoom.
+  </div>
+
+  <h2>Tabla detallada por flujo</h2>
+
+  <h3><span class="pill pill-A">A</span> Flujo Web → Demo → Cliente</h3>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Paso</th>
+          <th>Trigger</th>
+          <th>Backend</th>
+          <th>Touchpoint cliente</th>
+          <th>Estado</th>
+          <th>Cómo probarlo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="ok">
+          <td>1</td>
+          <td>Lead llega a la landing</td>
+          <td>Click en ad o tráfico orgánico</td>
+          <td>—</td>
+          <td>Ve marketing site (kunodigital.com)</td>
+          <td>🟢</td>
+          <td>Abrir landing en incógnito</td>
+        </tr>
+        <tr class="ok">
+          <td>2</td>
+          <td>Lead llena quiz/calculadora</td>
+          <td>Submit del form</td>
+          <td><code>POST /api/marketing/lead</code> → captureLead → crea Lead + sync CRM + email</td>
+          <td>"Gracias, te llegó email" (marketing_lead_thanks)</td>
+          <td>🟢</td>
+          <td>Llenar quiz con email tuyo, revisar inbox</td>
+        </tr>
+        <tr class="ok">
+          <td>3</td>
+          <td>Lead pide demo gratis</td>
+          <td>Click CTA "Probar demo"</td>
+          <td><code>POST /api/marketing/eval-request</code> → requestEval</td>
+          <td>Email "Tu test listo" (marketing_demo_test_link)</td>
+          <td>🟢</td>
+          <td>Status del lead pasa a <code>eval_requested</code></td>
+        </tr>
+        <tr class="ok">
+          <td>4</td>
+          <td>Lead toma demo (DISC + cogn + integ)</td>
+          <td>Lead click link del email</td>
+          <td>Tests reales (mismos que candidato real)</td>
+          <td>UI de tests</td>
+          <td>🟢</td>
+          <td>Hacer los 3 tests con email tuyo</td>
+        </tr>
+        <tr class="ok">
+          <td>5</td>
+          <td>Demo completado → reporte</td>
+          <td>Submit del último test</td>
+          <td>Genera scores reales + status='eval_completed' + email</td>
+          <td>Email "Tu reporte ya está" + botón AGENDAR</td>
+          <td>🟢</td>
+          <td>Revisar inbox después de terminar</td>
+        </tr>
+        <tr class="gap">
+          <td>6</td>
+          <td>Lead clickea AGENDAR</td>
+          <td>Click botón en email</td>
+          <td>Va a <code>MARKETING_BOOKING_URL</code> (fuera de SharkTalents)</td>
+          <td>UI de Bookings → elige slot</td>
+          <td>🟡</td>
+          <td>Click en email → ver si abre Bookings OK</td>
+        </tr>
+        <tr class="bug">
+          <td>7</td>
+          <td>Status pasa a "Llamada agendada"</td>
+          <td>—</td>
+          <td>NO hay webhook de Bookings hacia SharkTalents</td>
+          <td>—</td>
+          <td>🔴</td>
+          <td>Verificar manualmente que NO se actualiza</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Gap conocido:</strong> después del paso 5, el siguiente touch (briefing real) es la convergencia. Si no usás Bookings y agendás manual, salteás a la convergencia paso 10.</p>
+  </div>
+
+  <h3><span class="pill pill-B">B</span> Flujo Meta Ads → CRM → SharkTalents</h3>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Paso</th>
+          <th>Trigger</th>
+          <th>Backend</th>
+          <th>Touchpoint cliente</th>
+          <th>Estado</th>
+          <th>Cómo probarlo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="ok">
+          <td>1</td>
+          <td>Lead clickea ad Meta</td>
+          <td>Ad activo en Meta</td>
+          <td>—</td>
+          <td>Lead Ad form de Meta</td>
+          <td>🟢</td>
+          <td>Lanzar ad de prueba</td>
+        </tr>
+        <tr class="ok">
+          <td>2</td>
+          <td>Lead da datos en Meta</td>
+          <td>Submit form</td>
+          <td>Meta Lead Ads → integración nativa Meta-Zoho → Lead creado en Zoho CRM</td>
+          <td>Pantalla "Gracias" de Meta</td>
+          <td>🟢</td>
+          <td>Verificar lead aparece en Zoho CRM Leads module</td>
+        </tr>
+        <tr class="gap">
+          <td>3</td>
+          <td>SharkTalents NO lo sabe todavía</td>
+          <td>—</td>
+          <td>No hay webhook auto Meta-Zoho-Sharktalents</td>
+          <td>—</td>
+          <td>🟡</td>
+          <td>—</td>
+        </tr>
+        <tr class="gap">
+          <td>4</td>
+          <td>Cris importa lead a SharkTalents</td>
+          <td>Cris abre /marketing-leads → "Import from CRM"</td>
+          <td><code>GET /api/marketing/crm-leads</code> + <code>POST /api/marketing/import-from-crm</code></td>
+          <td>—</td>
+          <td>🟡</td>
+          <td>Crear lead manual en CRM → ir a Marketing Leads → Import → verificar aparece</td>
+        </tr>
+        <tr class="ok">
+          <td>5</td>
+          <td>Lead aparece en kanban con status="new"</td>
+          <td>Import exitoso</td>
+          <td>Insert MarketingLeads</td>
+          <td>—</td>
+          <td>🟢</td>
+          <td>Refrescar Marketing Leads</td>
+        </tr>
+        <tr class="gap">
+          <td>6</td>
+          <td>Cris contacta manual (WhatsApp/email)</td>
+          <td>Cris decide</td>
+          <td>SharkTalents NO sabe del touch</td>
+          <td>El cliente recibe mensaje</td>
+          <td>🟡</td>
+          <td>Sin tracking automático</td>
+        </tr>
+        <tr class="ok">
+          <td>7</td>
+          <td>Cris manda link de Bookings</td>
+          <td>Click "🔗 Copiar link" en /drafts</td>
+          <td>—</td>
+          <td>WhatsApp/email con link</td>
+          <td>🟢</td>
+          <td>Click "Copiar" + pegar en WhatsApp</td>
+        </tr>
+        <tr class="bug">
+          <td>8</td>
+          <td>Convergencia con A</td>
+          <td>Cliente agenda en Bookings</td>
+          <td>Sigue desde paso 7 de Convergencia abajo</td>
+          <td>—</td>
+          <td>🟡</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Gap principal:</strong> ningún touchpoint entre "lead importado" y "Cris agenda" queda registrado. Si Cris contacta 5 veces antes de que el lead responda, eso no se ve.</p>
+  </div>
+
+  <h3><span class="pill pill-C">C</span> Flujo Manual CRM</h3>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Paso</th>
+          <th>Trigger</th>
+          <th>Backend</th>
+          <th>Touchpoint cliente</th>
+          <th>Estado</th>
+          <th>Cómo probarlo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="ok">
+          <td>1</td>
+          <td>Cris recibe referido / contacto directo</td>
+          <td>WhatsApp / llamada</td>
+          <td>—</td>
+          <td>El cliente le escribe a Cris</td>
+          <td>🟢</td>
+          <td>—</td>
+        </tr>
+        <tr class="ok">
+          <td>2</td>
+          <td>Cris crea Lead en Zoho CRM manual</td>
+          <td>Cris en CRM</td>
+          <td>Zoho CRM (fuera de SharkTalents)</td>
+          <td>—</td>
+          <td>🟢</td>
+          <td>Crear lead manual en Zoho CRM</td>
+        </tr>
+        <tr class="gap">
+          <td>3</td>
+          <td>Import a SharkTalents</td>
+          <td>Mismo Import CRM que B</td>
+          <td>Mismo que B paso 4</td>
+          <td>—</td>
+          <td>🟡</td>
+          <td>Igual que B</td>
+        </tr>
+        <tr class="ok">
+          <td>4</td>
+          <td>Lead en kanban status="new"</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>🟢</td>
+          <td>—</td>
+        </tr>
+        <tr class="ok">
+          <td>5</td>
+          <td>Cris manda link de Bookings</td>
+          <td>Igual que B7</td>
+          <td>—</td>
+          <td>WhatsApp/email</td>
+          <td>🟢</td>
+          <td>—</td>
+        </tr>
+        <tr class="bug">
+          <td>6</td>
+          <td>Convergencia con A y B</td>
+          <td>Cliente agenda</td>
+          <td>Sigue desde Convergencia paso 7</td>
+          <td>—</td>
+          <td>🟡</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>⭐ Convergencia: del briefing al cliente que aprueba</h3>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Paso</th>
+          <th>Trigger</th>
+          <th>Backend</th>
+          <th>Touchpoint cliente</th>
+          <th>Estado</th>
+          <th>Cómo probarlo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="ok">
+          <td>7</td>
+          <td>Cliente agenda en Bookings</td>
+          <td>Cliente elige slot</td>
+          <td>Bookings crea meeting (Zoho Meeting si aplica)</td>
+          <td>Cliente recibe invite de Zoho Bookings</td>
+          <td>🟢</td>
+          <td>Agendar slot de prueba en el link público de Bookings</td>
+        </tr>
+        <tr class="ok">
+          <td>8</td>
+          <td>Reunión virtual con Zia</td>
+          <td>Día del briefing</td>
+          <td>Zoho Meeting graba + Zia transcribe</td>
+          <td>Cliente entra al meeting</td>
+          <td>🟢</td>
+          <td>Hacer reunión de prueba (1-2 min mínimo)</td>
+        </tr>
+        <tr class="gap">
+          <td>9</td>
+          <td>Recuperar transcript</td>
+          <td>Termina la reunión</td>
+          <td>NO automático (API Zoho Meeting 403 al descargar)</td>
+          <td>—</td>
+          <td>🟡</td>
+          <td>Esperar 5-10 min, click "🎬 Mis grabaciones" en /drafts</td>
+        </tr>
+        <tr class="ok">
+          <td>10</td>
+          <td>Cris sube transcript</td>
+          <td>Cris pega manual</td>
+          <td><code>POST /api/briefings/upload-transcript</code> + publica outbox</td>
+          <td>—</td>
+          <td>🟢</td>
+          <td>Form en /drafts → pegar transcript real</td>
+        </tr>
+        <tr class="ok">
+          <td>11</td>
+          <td>IA genera draft</td>
+          <td>Outbox dispara</td>
+          <td>Anthropic procesa transcript → JSON estructurado → insert JobProfileDrafts</td>
+          <td>—</td>
+          <td>🟢</td>
+          <td>Esperar ~30s, refrescar /drafts</td>
+        </tr>
+        <tr class="ok">
+          <td>12</td>
+          <td>Cris revisa y edita draft</td>
+          <td>Cris abre el draft</td>
+          <td>DraftReview con campos editables</td>
+          <td>—</td>
+          <td>🟢</td>
+          <td>Editar el draft → guardar</td>
+        </tr>
+        <tr class="gap">
+          <td>13</td>
+          <td>Cris envía link al cliente</td>
+          <td>Click "Enviar al cliente"</td>
+          <td>Genera token signed + email al cliente</td>
+          <td>Cliente recibe email con link</td>
+          <td>🟡</td>
+          <td>Click "Enviar al cliente" + revisar inbox</td>
+        </tr>
+        <tr class="ok">
+          <td>14</td>
+          <td>Cliente abre link y ve draft</td>
+          <td>Click en email</td>
+          <td>GET draft con token público</td>
+          <td>ClientDraftReview con perfil ideal del puesto</td>
+          <td>🟢</td>
+          <td>Abrir link en incógnito</td>
+        </tr>
+        <tr class="ok">
+          <td>15</td>
+          <td>Cliente aprueba</td>
+          <td>Click "Aprobar"</td>
+          <td><code>POST /portal/:token/drafts/:id/approve</code> → convierte a Job + publica en Recruit</td>
+          <td>"Listo, arrancamos la búsqueda"</td>
+          <td>🟢</td>
+          <td>Aprobar → verificar Job aparece en /jobs + en Recruit</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>⭐ Candidatos aplican (post Recruit)</h3>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Paso</th>
+          <th>Trigger</th>
+          <th>Backend</th>
+          <th>Touchpoint cliente / candidato</th>
+          <th>Estado</th>
+          <th>Cómo probarlo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="ok">
+          <td>16</td>
+          <td>Candidato ve el Job en Recruit Career Site</td>
+          <td>Job publicado</td>
+          <td>—</td>
+          <td>Career Site público de Zoho Recruit</td>
+          <td>🟢</td>
+          <td>Abrir Career Site, ver el Job recién aprobado</td>
+        </tr>
+        <tr class="ok">
+          <td>17</td>
+          <td>Candidato aplica</td>
+          <td>Submit en Recruit</td>
+          <td>Recruit webhook → SharkTalents crea Candidate + Application</td>
+          <td>"Recibimos tu aplicación"</td>
+          <td>🟢</td>
+          <td>Aplicar como candidato con email de prueba</td>
+        </tr>
+        <tr class="ok">
+          <td>18</td>
+          <td>Email con link a los tests</td>
+          <td>Outbox dispara application.created</td>
+          <td>Genera token + email candidate_application_received</td>
+          <td>Candidato recibe email con link</td>
+          <td>🟢</td>
+          <td>Revisar inbox del candidato de prueba</td>
+        </tr>
+        <tr class="ok">
+          <td>19</td>
+          <td>Candidato hace tests</td>
+          <td>Click link en email</td>
+          <td>/test/:token → backend valida token + devuelve estado</td>
+          <td>UI tests (DISC, técnica, integridad, inglés si aplica)</td>
+          <td>🟢</td>
+          <td>Hacer al menos el DISC con el candidato de prueba</td>
+        </tr>
+        <tr class="gap">
+          <td>20</td>
+          <td>Videos dinámicos (si están activos en el Job)</td>
+          <td>Después de tests</td>
+          <td>IA genera preguntas + candidato graba</td>
+          <td>UI de grabación video</td>
+          <td>🟡</td>
+          <td>NO probado end-to-end con candidato real todavía</td>
+        </tr>
+        <tr class="ok">
+          <td>21</td>
+          <td>Cris ve candidato en pipeline</td>
+          <td>—</td>
+          <td>JobDetail filtra Applications por stage</td>
+          <td>Cris en SharkTalents</td>
+          <td>🟢</td>
+          <td>Abrir JobDetail → tab Prefiltro → debe aparecer</td>
+        </tr>
+        <tr class="ok">
+          <td>22</td>
+          <td>Cris avanza / rechaza / duda</td>
+          <td>Click botones en CandidateDetail</td>
+          <td><code>POST /api/applications/:id/transition</code></td>
+          <td>—</td>
+          <td>🟢</td>
+          <td>Click "Avanzar etapa" → cambia stage + audit log</td>
+        </tr>
+        <tr class="gap">
+          <td>23</td>
+          <td>Cris arma reporte final para cliente</td>
+          <td>Tiene N finalistas</td>
+          <td>Genera signed link al reporte multi-candidato</td>
+          <td>—</td>
+          <td>🟡</td>
+          <td>Click "Notificar cliente reporte listo" — NO probado E2E</td>
+        </tr>
+        <tr class="ok">
+          <td>24</td>
+          <td>Cliente recibe finalistas</td>
+          <td>Click en email</td>
+          <td>PublicReport con todos los candidatos + scores + IA narratives</td>
+          <td>Reporte interactivo</td>
+          <td>🟡</td>
+          <td>Abrir link → verificar narrativas IA y botones</td>
+        </tr>
+        <tr class="ok">
+          <td>25</td>
+          <td>Cliente da feedback (entrevistar / pass / maybe)</td>
+          <td>Click en cada candidato</td>
+          <td><code>POST /report/bundle/:token/feedback</code> → persiste + notifica Cris</td>
+          <td>—</td>
+          <td>🟢</td>
+          <td>Marcar 1 candidato como "Entrevistar" → verificar email a Cris</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Test plan ordenado (paso por paso)</h2>
+
+  <div class="testplan">
+    <strong>1. Probá el flujo de Recruit primero (más completo, ya casi todo verificado):</strong>
+    <ol>
+      <li>Registrá un candidato manual en Recruit asociado a ZR_84_JOB (o el Job que prefieras)</li>
+      <li>Esperá 1-2 min → revisá inbox del candidato (email con link a tests) — paso 18</li>
+      <li>Click en link → debe abrir CandidateTestEntry con el nombre del candidato — paso 19</li>
+      <li>Hacé DISC al menos</li>
+      <li>En SharkTalents → JobDetail → tab Prefiltro → el candidato debe aparecer — paso 21</li>
+      <li>CandidateDetail → click "Avanzar etapa" → debe cambiar el stage — paso 22</li>
+    </ol>
+    Si todo esto anda, el flow del candidato está vivo.
+  </div>
+
+  <div class="testplan">
+    <strong>2. Probá el flujo del cliente (briefing → draft → aprobar):</strong>
+    <ol>
+      <li>En /drafts → click "📝 Subir transcript"</li>
+      <li>Pegá un transcript de prueba (mínimo 100 chars) + email/nombre tuyo — paso 10</li>
+      <li>Esperá ~30s → refrescá → draft debe aparecer arriba — paso 11</li>
+      <li>Abrí el draft → editá algo → guardá — paso 12</li>
+      <li>Click "Enviar al cliente" — paso 13. Verificá que llegue el email</li>
+      <li>Abrí el link del email en incógnito → ClientDraftReview — paso 14</li>
+      <li>Click "Aprobar" — paso 15</li>
+      <li>Verificá: aparece el Job en /jobs + se publica en Recruit Career Site</li>
+    </ol>
+  </div>
+
+  <div class="testplan">
+    <strong>3. Probá Marketing → Demo → Botón Agendar:</strong>
+    <ol>
+      <li>Abrí la landing pública (kunodigital.com) en incógnito — paso 1</li>
+      <li>Llená quiz/calculator → recibí email "thanks" — paso 2</li>
+      <li>Click "Probar demo" → recibí email con link al test — paso 3</li>
+      <li>Hacé los 3 tests del demo — paso 4</li>
+      <li>Esperá email "Reporte listo" + botón AGENDAR — paso 5</li>
+      <li>Click AGENDAR → debe abrir Bookings con tu link — paso 6</li>
+    </ol>
+    Nota: el status del lead NO se mueve solo a "call_booked" cuando agenda, hoy es manual (paso 7).
+  </div>
+
+  <div class="testplan">
+    <strong>4. Probá Import desde CRM:</strong>
+    <ol>
+      <li>Creá un Lead manual en Zoho CRM (cualquier lead de prueba)</li>
+      <li>En SharkTalents → Marketing Leads → click "Import from CRM"</li>
+      <li>Debe listar tu lead nuevo</li>
+      <li>Importar → debe aparecer en el kanban con status="new"</li>
+    </ol>
+  </div>
+
+  <h2>Gaps identificados (lo que falta o está roto)</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Gap</th>
+          <th>Flujo</th>
+          <th>Impacto</th>
+          <th>Workaround actual</th>
+          <th>Fix definitivo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="bug">
+          <td>Bookings no avisa a SharkTalents cuando el lead agenda</td>
+          <td>A, B, C</td>
+          <td>Status del lead se queda en eval_completed aunque haya agendado</td>
+          <td>Cris mueve manual a "Llamada agendada" desde el kanban</td>
+          <td>Webhook saliente de Zoho Bookings (configuración Zoho)</td>
+        </tr>
+        <tr class="bug">
+          <td>API Zoho Meeting tira 403 al descargar transcript</td>
+          <td>Convergencia</td>
+          <td>No podemos automatizar la captura del transcript</td>
+          <td>Cris copia manual del dashboard Zoho Meeting</td>
+          <td>Soporte Zoho / Plan B con Puppeteer / esperar feature</td>
+        </tr>
+        <tr class="gap">
+          <td>Sin tracking de touchpoints (WhatsApp/email manual)</td>
+          <td>B, C</td>
+          <td>Cris no ve cuántas veces contactó al lead</td>
+          <td>Notas manuales en CandidateNotes / kanban</td>
+          <td>Integración WhatsApp Business API + email tracking</td>
+        </tr>
+        <tr class="gap">
+          <td>Email "reporte listo para cliente" no probado E2E</td>
+          <td>Convergencia</td>
+          <td>El cliente quizás no se entera de que los finalistas están listos</td>
+          <td>Cris le avisa manual</td>
+          <td>Probar el flow + arreglar lo que falle</td>
+        </tr>
+        <tr class="gap">
+          <td>Videos dinámicos no validados E2E con candidato real</td>
+          <td>Recruit</td>
+          <td>Si el Job tiene videos activos, podría romper</td>
+          <td>Desactivar videos hasta validar</td>
+          <td>Hacer un test E2E con video activado</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@latest"></script>
+</body>
+</html>

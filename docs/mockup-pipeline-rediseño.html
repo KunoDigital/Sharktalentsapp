@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SharkTalents · Pipeline de Candidatos · Rediseño</title>
+<style>
+  :root {
+    --bg: #0e1218;
+    --bg-soft: #161a23;
+    --bg-row: #131822;
+    --bg-row-alt: #161c27;
+    --bg-hover: #1b2230;
+    --fg: #f3f4f6;
+    --fg-dim: #94a3b8;
+    --fg-faint: #6b7280;
+    --accent: #dafd6f;
+    --accent-soft: rgba(218, 253, 111, 0.12);
+    --accent-strong: rgba(218, 253, 111, 0.25);
+    --border: #1f2937;
+    --border-soft: #161c25;
+    --green: #4ade80;
+    --green-soft: rgba(74, 222, 128, 0.14);
+    --yellow: #fbbf24;
+    --yellow-soft: rgba(251, 191, 36, 0.14);
+    --red: #f87171;
+    --red-soft: rgba(248, 113, 113, 0.14);
+    --blue: #60a5fa;
+    --blue-soft: rgba(96, 165, 250, 0.14);
+    --purple: #a78bfa;
+    --purple-soft: rgba(167, 139, 250, 0.14);
+    --cyan: #22d3ee;
+    --cyan-soft: rgba(34, 211, 238, 0.14);
+    --cyan-strong: rgba(34, 211, 238, 0.3);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  button { font-family: inherit; }
+
+  /* ===================== Top bar ===================== */
+  .topbar {
+    height: 52px;
+    background: rgba(14, 18, 24, 0.95);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar .brand {
+    color: var(--accent);
+    font-weight: 800;
+    letter-spacing: 2px;
+    font-size: 15px;
+  }
+  .topbar .crumbs {
+    color: var(--fg-dim);
+    font-size: 13px;
+  }
+  .topbar .crumbs .sep { margin: 0 8px; color: var(--fg-faint); }
+  .topbar .crumbs .here { color: var(--fg); font-weight: 600; }
+
+  .topbar .user {
+    display: flex; gap: 12px; align-items: center;
+    color: var(--fg-dim); font-size: 13px;
+  }
+  .topbar .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent); color: #0e1218;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 12px;
+  }
+
+  /* ===================== Layout ===================== */
+  .wrap {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 24px 28px 80px;
+  }
+
+  /* ---------- Job header ---------- */
+  .job-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 22px;
+  }
+  .job-header .left { flex: 1; min-width: 0; }
+  .job-title-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 6px;
+  }
+  .job-selector {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    padding: 8px 36px 8px 14px;
+    border-radius: 8px;
+    font-size: 19px;
+    font-weight: 700;
+    cursor: pointer;
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--fg-dim) 50%),
+                      linear-gradient(135deg, var(--fg-dim) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 50%, calc(100% - 12px) 50%;
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
+    min-width: 320px;
+  }
+  .job-selector:hover { border-color: var(--accent); }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--fg-dim);
+  }
+  .pill.live { color: var(--green); border-color: rgba(74,222,128,0.3); }
+  .pill .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 8px var(--green);
+  }
+
+  .job-meta {
+    display: flex; gap: 24px;
+    color: var(--fg-dim); font-size: 13px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .job-meta .item { display: flex; flex-direction: column; gap: 2px; }
+  .job-meta .item .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--fg-faint);
+  }
+  .job-meta .item .value { color: var(--fg); font-weight: 600; font-size: 14px; }
+  .job-meta .item .value.accent { color: var(--accent); }
+  .job-meta .item .value.warn { color: var(--yellow); }
+  .job-meta .item .value.dim { color: var(--fg-dim); font-weight: 500; }
+
+  .job-header .right {
+    display: flex; gap: 10px; align-items: center;
+  }
+  .view-toggle {
+    display: inline-flex;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+  }
+  .view-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--fg-dim);
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .view-toggle button.active {
+    background: var(--accent);
+    color: #0e1218;
+  }
+  .btn {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary {
+    background: var(--accent);
+    color: #0e1218;
+    border-color: var(--accent);
+  }
+  .btn.primary:hover { background: #c4e84d; color: #0e1218; }
+
+  /* ---------- Bandas de conteo ---------- */
+  .count-bands {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .band {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .band::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--fg-faint);
+  }
+  .band[data-phase="prefiltro"]::before { background: var(--blue); }
+  .band[data-phase="tecnica"]::before { background: var(--accent); }
+  .band[data-phase="conductual"]::before { background: #c084fc; }
+  .band[data-phase="integridad"]::before { background: var(--yellow); }
+  .band[data-phase="video"]::before { background: var(--cyan); }
+  .band[data-phase="finalistas"]::before { background: var(--green); }
+  .band[data-phase="rechazados"]::before { background: var(--red); }
+
+  .band:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .band.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  .band .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--fg-dim);
+    margin-bottom: 6px;
+  }
+  .band .count {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--fg);
+  }
+  .band .sub {
+    font-size: 11px;
+    color: var(--fg-faint);
+    margin-top: 4px;
+  }
+  .band.active .label { color: var(--accent); }
+
+  /* ---------- Filtros ---------- */
+  .filters {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--fg-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-chip:hover { border-color: var(--accent); color: var(--fg); }
+  .filter-chip .label-faint { color: var(--fg-faint); }
+  .filter-chip .clear {
+    color: var(--fg-faint);
+    margin-left: 4px;
+  }
+  .filter-chip.applied {
+    background: var(--accent-soft);
+    border-color: var(--accent-strong);
+    color: var(--accent);
+  }
+  .search-input {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    padding: 7px 12px 7px 32px;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 260px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'><circle cx='11' cy='11' r='8'/><path d='m21 21-4.3-4.3'/></svg>");
+    background-repeat: no-repeat;
+    background-position: 10px center;
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); }
+
+  .filters-right {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    color: var(--fg-dim);
+    font-size: 12px;
+    align-items: center;
+  }
+  .result-count {
+    color: var(--fg-dim);
+    font-size: 12px;
+  }
+  .result-count b { color: var(--fg); }
+
+  /* ---------- Tabla ---------- */
+  .table-wrap {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  table.candidates {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.candidates thead th {
+    background: #11151d;
+    color: var(--fg-dim);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+  table.candidates thead th:hover { color: var(--fg); }
+  table.candidates thead th.sorted {
+    color: var(--accent);
+  }
+  table.candidates thead th.sorted::after {
+    content: ' ↓';
+    color: var(--accent);
+  }
+  table.candidates thead th.num { text-align: right; }
+  table.candidates tbody tr {
+    border-bottom: 1px solid var(--border-soft);
+    transition: background 0.1s;
+  }
+  table.candidates tbody tr:hover { background: var(--bg-hover); }
+  table.candidates tbody tr:last-child { border-bottom: none; }
+  table.candidates td {
+    padding: 12px 14px;
+    vertical-align: middle;
+  }
+  table.candidates td.name {
+    font-weight: 600;
+    color: var(--fg);
+    min-width: 200px;
+  }
+  table.candidates td.name .email {
+    display: block;
+    font-size: 11px;
+    color: var(--fg-faint);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  table.candidates td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  .score-high { color: var(--green); }
+  .score-mid { color: var(--yellow); }
+  .score-low { color: var(--red); }
+  .score-na { color: var(--fg-faint); font-weight: 400; }
+
+  /* ---------- Badge multinivel ---------- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .badge .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .badge .phase {
+    color: var(--fg);
+  }
+  .badge .sep { color: var(--fg-faint); }
+  .badge .sub { color: inherit; opacity: 0.85; }
+  .badge .metric {
+    margin-left: 4px;
+    padding-left: 8px;
+    border-left: 1px solid currentColor;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+  }
+  .badge.ok {
+    background: var(--green-soft);
+    border-color: rgba(74,222,128,0.3);
+    color: var(--green);
+  }
+  .badge.ok .dot { background: var(--green); }
+  .badge.warn {
+    background: var(--yellow-soft);
+    border-color: rgba(251,191,36,0.3);
+    color: var(--yellow);
+  }
+  .badge.warn .dot { background: var(--yellow); }
+  .badge.danger {
+    background: var(--red-soft);
+    border-color: rgba(248,113,113,0.3);
+    color: var(--red);
+  }
+  .badge.danger .dot { background: var(--red); }
+  .badge.finalist {
+    background: var(--accent-soft);
+    border-color: var(--accent-strong);
+    color: var(--accent);
+  }
+  .badge.finalist .dot { background: var(--accent); }
+  .badge.video {
+    background: var(--cyan-soft);
+    border-color: var(--cyan-strong);
+    color: var(--cyan);
+  }
+  .badge.video .dot { background: var(--cyan); }
+
+  /* ---------- Mini-bloque de validaciones técnicas (Tec / Inglés / Mindset) ---------- */
+  .tim-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 8px;
+    padding-left: 8px;
+    border-left: 1px solid var(--border);
+  }
+  .tim-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1;
+    border: 1px solid transparent;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .tim-chip.ok    { background: var(--green-soft);  color: var(--green);  border-color: rgba(74,222,128,0.25); }
+  .tim-chip.wait  { background: var(--yellow-soft); color: var(--yellow); border-color: rgba(251,191,36,0.25); }
+  .tim-chip.bad   { background: var(--red-soft);    color: var(--red);    border-color: rgba(248,113,113,0.25); }
+  .tim-chip.none  { background: transparent; color: var(--fg-faint); border-color: var(--border); }
+  .tim-chip[title] { cursor: help; }
+
+  /* Card del tablero: contenedor de mini-checkboard */
+  .card .tim-mini {
+    margin-top: 6px;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .col[data-status="video-pendiente"] .col-header { color: var(--cyan); }
+  .col[data-status="video-pendiente"] .col-header .num { background: var(--cyan-soft); color: var(--cyan); }
+  .col[data-status="video-grabado"] .col-header { color: var(--green); }
+  .col[data-status="video-grabado"] .col-header .num { background: var(--green-soft); color: var(--green); }
+
+  /* match $ */
+  .match-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .match-ok { background: var(--green-soft); color: var(--green); }
+  .match-warn { background: var(--yellow-soft); color: var(--yellow); }
+  .match-no { background: var(--red-soft); color: var(--red); }
+
+  .days {
+    color: var(--fg-dim);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .days.stale { color: var(--yellow); }
+  .days.dead { color: var(--red); }
+
+  .action-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--fg-dim);
+    width: 30px; height: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.15s;
+  }
+  .action-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ---------- Tablero ---------- */
+  .board { display: none; }
+  .board.visible { display: block; }
+  .table-wrap.hidden { display: none; }
+
+  .phase-band {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.1s;
+  }
+  .phase-header:hover { background: var(--bg-hover); }
+  .phase-header .left {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .phase-chevron {
+    color: var(--fg-dim);
+    font-size: 11px;
+    transition: transform 0.2s;
+    width: 14px; display: inline-block;
+  }
+  .phase-band.expanded .phase-chevron { transform: rotate(90deg); color: var(--accent); }
+
+  .phase-color {
+    width: 4px; height: 24px; border-radius: 2px;
+  }
+  .phase-band[data-phase="prefiltro"] .phase-color { background: var(--blue); }
+  .phase-band[data-phase="tecnica"] .phase-color { background: var(--accent); }
+  .phase-band[data-phase="conductual"] .phase-color { background: #c084fc; }
+  .phase-band[data-phase="integridad"] .phase-color { background: var(--yellow); }
+  .phase-band[data-phase="video"] .phase-color { background: var(--cyan); }
+  .phase-band[data-phase="finalistas"] .phase-color { background: var(--green); }
+
+  .phase-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--fg);
+  }
+  .phase-subtitle {
+    font-size: 12px;
+    color: var(--fg-dim);
+    margin-left: 8px;
+  }
+  .phase-counts {
+    display: flex; gap: 14px;
+    font-size: 12px;
+    color: var(--fg-dim);
+    flex-wrap: wrap;
+  }
+  .phase-counts .pc {
+    display: flex; align-items: center; gap: 4px;
+  }
+  .phase-counts .pc .num {
+    color: var(--fg); font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .phase-counts .pc.ok .num { color: var(--green); }
+  .phase-counts .pc.warn .num { color: var(--yellow); }
+  .phase-counts .pc.danger .num { color: var(--red); }
+  .phase-counts .pc.next .num { color: var(--accent); }
+  .phase-counts .pc.video .num { color: var(--cyan); }
+
+  .phase-content {
+    display: none;
+    border-top: 1px solid var(--border);
+    padding: 18px;
+    background: #11151d;
+  }
+  .phase-band.expanded .phase-content { display: block; }
+
+  .kanban {
+    display: grid;
+    gap: 14px;
+  }
+  .kanban.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .kanban.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .kanban.cols-5 { grid-template-columns: repeat(5, 1fr); }
+
+  .col {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    min-height: 240px;
+  }
+  .col-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .col-header .num {
+    background: var(--bg);
+    color: var(--fg-dim);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+  .col[data-status="completado"] .col-header { color: var(--green); }
+  .col[data-status="siguiente"] .col-header { color: var(--accent); }
+  .col[data-status="rechazado"] .col-header { color: var(--red); }
+  .col[data-status="duda"] .col-header { color: var(--yellow); }
+  .col[data-status="entrevista"] .col-header { color: var(--accent); background: var(--accent-soft); }
+  .col[data-status="entrevista"] .col-header .num { background: var(--accent); color: #0e1218; }
+
+  .col-body {
+    padding: 10px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+
+  .card {
+    background: var(--bg-row);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: grab;
+    transition: all 0.15s;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    background: var(--bg-hover);
+    transform: translateY(-1px);
+  }
+  .card .name {
+    font-weight: 600;
+    color: var(--fg);
+    font-size: 13px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .card .meta {
+    display: flex; justify-content: space-between;
+    font-size: 11px;
+    color: var(--fg-dim);
+  }
+  .card .meta .score {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .card .meta .score.high { color: var(--green); }
+  .card .meta .score.mid { color: var(--yellow); }
+  .card .meta .score.low { color: var(--red); }
+  .card-empty {
+    padding: 20px 12px;
+    color: var(--fg-faint);
+    font-size: 12px;
+    text-align: center;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+  }
+
+  /* ---------- Footer note ---------- */
+  .footnote {
+    margin-top: 24px;
+    text-align: center;
+    color: var(--fg-faint);
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex; align-items:center; gap:24px;">
+    <div class="brand">SHARKTALENTS</div>
+    <div class="crumbs">
+      Puestos <span class="sep">/</span>
+      <span class="here">Asistente Comercial — Cliente Logística PA</span>
+    </div>
+  </div>
+  <div class="user">
+    <span>Chris Palma</span>
+    <div class="avatar">CP</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ======== Job header ======== -->
+  <div class="job-header">
+    <div class="left">
+      <div class="job-title-row">
+        <select class="job-selector">
+          <option>Asistente Comercial — Logística PA</option>
+          <option>Vendedor Showroom — Multimuebles</option>
+          <option>Contador Senior — Grupo Atlántico</option>
+          <option>Supervisor de Bodega — Bodyrock</option>
+        </select>
+        <span class="pill live"><span class="dot"></span>Activo</span>
+        <span class="pill">Publicado en Recruit + LinkedIn</span>
+      </div>
+      <div class="job-meta">
+        <div class="item">
+          <span class="label">Cliente</span>
+          <span class="value">Logística Panamá S.A.</span>
+        </div>
+        <div class="item">
+          <span class="label">Días abiertos</span>
+          <span class="value">14 días</span>
+        </div>
+        <div class="item">
+          <span class="label">Salario ofrecido</span>
+          <span class="value">$1.200 – $1.500</span>
+        </div>
+        <div class="item">
+          <span class="label">Modalidad</span>
+          <span class="value">Híbrido · Panamá</span>
+        </div>
+        <div class="item">
+          <span class="label">Evaluaciones activas</span>
+          <span class="value dim">Técnico · Inglés · Mindset · DISC · Video</span>
+        </div>
+        <div class="item">
+          <span class="label">Presupuesto consumido</span>
+          <span class="value accent">$78 / $300</span>
+        </div>
+        <div class="item">
+          <span class="label">Candidatos totales</span>
+          <span class="value">51</span>
+        </div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="view-toggle">
+        <button id="tab-tabla" class="active" onclick="switchView('tabla')">Tabla</button>
+        <button id="tab-tablero" onclick="switchView('tablero')">Tablero</button>
+      </div>
+      <button class="btn">Compartir embudo</button>
+      <button class="btn primary">+ Agregar candidato</button>
+    </div>
+  </div>
+
+  <!-- ======== Bandas de conteo ======== -->
+  <div class="count-bands">
+    <div class="band" data-phase="prefiltro" data-filter="Prefiltro" onclick="filterByPhase(this, 'Prefiltro')">
+      <div class="label">Prefiltro</div>
+      <div class="count">12</div>
+      <div class="sub">3 nuevos hoy</div>
+    </div>
+    <div class="band" data-phase="tecnica" data-filter="Técnica" onclick="filterByPhase(this, 'Técnica')">
+      <div class="label">Técnica</div>
+      <div class="count">8</div>
+      <div class="sub">Tec · Inglés · Mindset</div>
+    </div>
+    <div class="band" data-phase="conductual" data-filter="Conductual" onclick="filterByPhase(this, 'Conductual')">
+      <div class="label">Conductual</div>
+      <div class="count">5</div>
+      <div class="sub">DISC + VELNA + Emo</div>
+    </div>
+    <div class="band" data-phase="integridad" data-filter="Integridad" onclick="filterByPhase(this, 'Integridad')">
+      <div class="label">Integridad</div>
+      <div class="count">2</div>
+      <div class="sub">Honestidad + riesgos</div>
+    </div>
+    <div class="band" data-phase="video" data-filter="Video" onclick="filterByPhase(this, 'Video')">
+      <div class="label">Video</div>
+      <div class="count">2</div>
+      <div class="sub">Entrevista con análisis IA</div>
+    </div>
+    <div class="band" data-phase="finalistas" data-filter="Finalistas" onclick="filterByPhase(this, 'Finalistas')">
+      <div class="label">Finalistas</div>
+      <div class="count">2</div>
+      <div class="sub">Llamar a entrevista</div>
+    </div>
+    <div class="band" data-phase="rechazados" data-filter="Rechazados" onclick="filterByPhase(this, 'Rechazados')">
+      <div class="label">Rechazados</div>
+      <div class="count">23</div>
+      <div class="sub">Histórico</div>
+    </div>
+  </div>
+
+  <!-- ======== Filtros ======== -->
+  <div class="filters">
+    <input type="text" class="search-input" placeholder="Buscar por nombre, email o cédula…">
+    <button class="filter-chip"><span class="label-faint">Fase:</span> Todas</button>
+    <button class="filter-chip"><span class="label-faint">Sub-estado:</span> Todos</button>
+    <button class="filter-chip applied"><span class="label-faint">Score:</span> ≥ 60% <span class="clear">×</span></button>
+    <button class="filter-chip"><span class="label-faint">Salario:</span> Cualquiera</button>
+    <button class="filter-chip"><span class="label-faint">Modalidad:</span> Cualquiera</button>
+    <button class="filter-chip">+ Más filtros</button>
+    <div class="filters-right">
+      <span class="result-count">Mostrando <b id="visible-count">10</b> de <b>51</b></span>
+      <button class="btn">Exportar CSV</button>
+    </div>
+  </div>
+
+  <!-- ======== Tabla ======== -->
+  <div class="table-wrap" id="view-tabla">
+    <table class="candidates" id="cand-table">
+      <thead>
+        <tr>
+          <th data-col="name" onclick="sortBy('name')">Candidato</th>
+          <th data-col="phase">Estado actual</th>
+          <th class="num sorted" data-col="tech" onclick="sortBy('tech')">Técnico %</th>
+          <th class="num" data-col="disc" onclick="sortBy('disc')">DISC sim %</th>
+          <th class="num" data-col="velna" onclick="sortBy('velna')">VELNA %</th>
+          <th>$ Match</th>
+          <th class="num" data-col="days" onclick="sortBy('days')">Días en fase</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="cand-tbody">
+        <!-- filas inyectadas vía JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ======== Tablero ======== -->
+  <div class="board" id="view-tablero">
+
+    <div class="phase-band" data-phase="prefiltro">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="left">
+          <span class="phase-chevron">▶</span>
+          <span class="phase-color"></span>
+          <div>
+            <span class="phase-title">Prefiltro</span>
+            <span class="phase-subtitle">Validación CV + cuestionario inicial</span>
+          </div>
+        </div>
+        <div class="phase-counts">
+          <span class="pc ok">Completado <span class="num">4</span></span>
+          <span class="pc next">Siguiente etapa <span class="num">5</span></span>
+          <span class="pc warn">Duda CV <span class="num">2</span></span>
+          <span class="pc danger">Rechazado <span class="num">1</span></span>
+        </div>
+      </div>
+      <div class="phase-content">
+        <div class="kanban cols-4">
+          <div class="col" data-status="completado">
+            <div class="col-header">Completado <span class="num">4</span></div>
+            <div class="col-body">
+              <div class="card"><div class="name">Sofía Rodríguez <span class="days">3d</span></div><div class="meta"><span>Prefiltro</span><span class="score high">92%</span></div></div>
+              <div class="card"><div class="name">Pedro Quintero <span class="days">2d</span></div><div class="meta"><span>Prefiltro</span><span class="score high">87%</span></div></div>
+              <div class="card"><div class="name">Andrea Mendoza <span class="days">1d</span></div><div class="meta"><span>Prefiltro</span><span class="score mid">74%</span></div></div>
+              <div class="card"><div class="name">Andrés Mora <span class="days">5d</span></div><div class="meta"><span>Prefiltro</span><span class="score mid">68%</span></div></div>
+            </div>
+          </div>
+          <div class="col" data-status="siguiente">
+            <div class="col-header">Siguiente Etapa <span class="num">5</span></div>
+            <div class="col-body">
+              <div class="card"><div class="name">Ana Castillo <span class="days">1d</span></div><div class="meta"><span>→ Técnica</span><span class="score high">90%</span></div></div>
+              <div class="card"><div class="name">Diego Pinzón <span class="days">2d</span></div><div class="meta"><span>→ Técnica</span><span class="score high">85%</span></div></div>
+              <div class="card"><div class="name">Marcela Ríos <span class="days">3d</span></div><div class="meta"><span>→ Técnica</span><span class="score mid">79%</span></div></div>
+              <div class="card"><div class="name">Felipe Núñez <span class="days">4d</span></div><div class="meta"><span>→ Técnica</span><span class="score mid">76%</span></div></div>
+              <div class="card"><div class="name">Karla Vega <span class="days">2d</span></div><div class="meta"><span>→ Técnica</span><span class="score mid">72%</span></div></div>
+            </div>
+          </div>
+          <div class="col" data-status="rechazado">
+            <div class="col-header">Rechazado <span class="num">1</span></div>
+            <div class="col-body">
+              <div class="card"><div class="name">Roberto Salinas <span class="days">6d</span></div><div class="meta"><span>Fuera de perfil</span><span class="score low">38%</span></div></div>
+            </div>
+          </div>
+          <div class="col" data-status="duda">
+            <div class="col-header">Duda CV <span class="num">2</span></div>
+            <div class="col-body">
+              <div class="card"><div class="name">Tomás Beltrán <span class="days stale">8d</span></div><div class="meta"><span>Falta validar</span><span class="score na">—</span></div></div>
+              <div class="card"><div class="name">Yésica Pardo <span class="days">4d</span></div><div class="meta"><span>Sin experiencia clara</span><span class="score na">—</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-band expanded" data-phase="tecnica">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="left">
+          <span class="phase-chevron">▶</span>
+          <span class="phase-color"></span>
+          <div>
+            <span class="phase-title">Técnica</span>
+            <span class="phase-subtitle">Técnico (25 preguntas) + Inglés + Mindset — bloque continuo</span>
+          </div>
+        </div>
+        <div class="phase-counts">
+          <span class="pc ok">Completado <span class="num">3</span></span>
+          <span class="pc next">Siguiente etapa <span class="num">2</span></span>
+          <span class="pc warn">Duda CV <span class="num">1</span></span>
+          <span class="pc danger">Rechazado <span class="num">2</span></span>
+        </div>
+      </div>
+      <div class="phase-content">
+        <div class="kanban cols-4">
+          <div class="col" data-status="completado">
+            <div class="col-header">Completado <span class="num">3</span></div>
+            <div class="col-body">
+              <div class="card">
+                <div class="name">Juan Pérez <span class="days">2d</span></div>
+                <div class="meta"><span>Técnica</span><span class="score high">88%</span></div>
+                <div class="tim-mini">
+                  <span class="tim-chip ok" title="Técnico: 88%">🔧 ✅</span>
+                  <span class="tim-chip ok" title="Inglés: B2 OK">🇬🇧 ✅</span>
+                  <span class="tim-chip ok" title="Mindset: adaptable">🧠 ✅</span>
+                </div>
+              </div>
+              <div class="card">
+                <div class="name">Verónica Lara <span class="days">1d</span></div>
+                <div class="meta"><span>Técnica</span><span class="score high">84%</span></div>
+                <div class="tim-mini">
+                  <span class="tim-chip ok" title="Técnico: 84%">🔧 ✅</span>
+                  <span class="tim-chip ok" title="Inglés: B2 OK">🇬🇧 ✅</span>
+                  <span class="tim-chip ok" title="Mindset: adaptable">🧠 ✅</span>
+                </div>
+              </div>
+              <div class="card">
+                <div class="name">Rafael Soto <span class="days">2d</span></div>
+                <div class="meta"><span>Técnica</span><span class="score high">82%</span></div>
+                <div class="tim-mini">
+                  <span class="tim-chip ok" title="Técnico: 82%">🔧 ✅</span>
+                  <span class="tim-chip ok" title="Inglés: B2 OK">🇬🇧 ✅</span>
+                  <span class="tim-chip ok" title="Mindset: adaptable">🧠 ✅</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col" data-status="siguiente">
+            <div class="col-header">Siguiente Etapa <span class="num">2</span></div>
+            <div class="col-body">
+              <div class="card">
+                <div class="name">Camila Ortega <span class="days">1d</span></div>
+                <div class="meta"><span>En progreso · falta Inglés</span><span class="score high">91%</span></div>
+                <div class="tim-mini">
+                  <span class="tim-chip ok" title="Técnico: 91%">🔧 ✅</span>
+                  <span class="tim-chip wait" title="Inglés: en proceso">🇬🇧 ⏳</span>
+                  <span class="tim-chip ok" title="Mindset: adaptable">🧠 ✅</span>
+                </div>
+              </div>
+              <div class="card">
+                <div class="name">Ricardo Méndez <span class="days">3d</span></div>
+                <div class="meta"><span>→ Conductual</span><span class="score mid">78%</span></div>
+                <div class="tim-mini">
+                  <span class="tim-chip ok" title="Técnico: 78%">🔧 ✅</span>
+                  <span class="tim-chip ok" title="Inglés: B2 OK">🇬🇧 ✅</span>
+                  <span class="tim-chip ok" title="Mindset: adaptable">🧠 ✅</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col" data-status="rechazado">
+            <div class="col-header">Rechazado <span class="num">2</span></div>
+            <div class="col-body">
+              <div class="card">
+                <div class="name">Carlos Vargas <span class="days">4d</span></div>
+                <div class="meta"><span>Score técnico bajo</span><span class="score low">42%</span></div>
+                <div class="tim-mini">
+                  <span class="tim-chip bad" title="Técnico: 42% (bajo)">🔧 ❌</span>
+                  <span class="tim-chip ok" title="Inglés: B2 OK">🇬🇧 ✅</span>
+                  <span class="tim-chip ok" title="Mindset: adaptable">🧠 ✅</span>
+                </div>
+              </div>
+              <div class="card">
+                <div class="name">Mónica Salgado <span class="days">5d</span></div>
+                <div class="meta"><span>Score técnico bajo</span><span class="score low">39%</span></div>
+                <div class="tim-mini">
+                  <span class="tim-chip bad" title="Técnico: 39% (bajo)">🔧 ❌</span>
+                  <span class="tim-chip ok" title="Inglés: B2 OK">🇬🇧 ✅</span>
+                  <span class="tim-chip ok" title="Mindset: adaptable">🧠 ✅</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col" data-status="duda">
+            <div class="col-header">Duda CV <span class="num">1</span></div>
+            <div class="col-body">
+              <div class="card">
+                <div class="name">Esteban Quiroz <span class="days stale">7d</span></div>
+                <div class="meta"><span>Inglés bajo el mínimo</span><span class="score high">83%</span></div>
+                <div class="tim-mini">
+                  <span class="tim-chip ok" title="Técnico: 83%">🔧 ✅</span>
+                  <span class="tim-chip bad" title="Inglés: por debajo del mínimo — revisar manualmente">🇬🇧 ❌</span>
+                  <span class="tim-chip ok" title="Mindset: adaptable">🧠 ✅</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-band" data-phase="conductual">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="left">
+          <span class="phase-chevron">▶</span>
+          <span class="phase-color"></span>
+          <div>
+            <span class="phase-title">Conductual</span>
+            <span class="phase-subtitle">DISC · VELNA · Inteligencia emocional</span>
+          </div>
+        </div>
+        <div class="phase-counts">
+          <span class="pc ok">Completado <span class="num">2</span></span>
+          <span class="pc next">Siguiente etapa <span class="num">2</span></span>
+          <span class="pc warn">Duda CV <span class="num">0</span></span>
+          <span class="pc danger">Rechazado <span class="num">1</span></span>
+        </div>
+      </div>
+      <div class="phase-content">
+        <div class="kanban cols-4">
+          <div class="col" data-status="completado">
+            <div class="col-header">Completado <span class="num">2</span></div>
+            <div class="col-body">
+              <div class="card"><div class="name">María González <span class="days">2d</span></div><div class="meta"><span>Conductual</span><span class="score high">88%</span></div></div>
+              <div class="card"><div class="name">Sebastián Ruiz <span class="days">1d</span></div><div class="meta"><span>Conductual</span><span class="score high">81%</span></div></div>
+            </div>
+          </div>
+          <div class="col" data-status="siguiente">
+            <div class="col-header">Siguiente Etapa <span class="num">2</span></div>
+            <div class="col-body">
+              <div class="card"><div class="name">Daniela Cortés <span class="days">1d</span></div><div class="meta"><span>→ Integridad</span><span class="score high">86%</span></div></div>
+              <div class="card"><div class="name">Iván Bermúdez <span class="days">2d</span></div><div class="meta"><span>→ Integridad</span><span class="score mid">77%</span></div></div>
+            </div>
+          </div>
+          <div class="col" data-status="rechazado">
+            <div class="col-header">Rechazado <span class="num">1</span></div>
+            <div class="col-body">
+              <div class="card"><div class="name">Hugo Caicedo <span class="days">3d</span></div><div class="meta"><span>Perfil DISC no encaja</span><span class="score low">44%</span></div></div>
+            </div>
+          </div>
+          <div class="col" data-status="duda">
+            <div class="col-header">Duda CV <span class="num">0</span></div>
+            <div class="col-body">
+              <div class="card-empty">Sin candidatos en este sub-estado</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-band" data-phase="integridad">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="left">
+          <span class="phase-chevron">▶</span>
+          <span class="phase-color"></span>
+          <div>
+            <span class="phase-title">Integridad</span>
+            <span class="phase-subtitle">Honestidad + indicadores de riesgo</span>
+          </div>
+        </div>
+        <div class="phase-counts">
+          <span class="pc ok">Completado <span class="num">1</span></span>
+          <span class="pc next">Siguiente etapa <span class="num">1</span></span>
+          <span class="pc warn">Duda CV <span class="num">0</span></span>
+          <span class="pc danger">Rechazado <span class="num">0</span></span>
+        </div>
+      </div>
+      <div class="phase-content">
+        <div class="kanban cols-4">
+          <div class="col" data-status="completado">
+            <div class="col-header">Completado <span class="num">1</span></div>
+            <div class="col-body">
+              <div class="card"><div class="name">Natalia Solano <span class="days">1d</span></div><div class="meta"><span>Integridad</span><span class="score high">89%</span></div></div>
+            </div>
+          </div>
+          <div class="col" data-status="siguiente">
+            <div class="col-header">Siguiente Etapa <span class="num">1</span></div>
+            <div class="col-body">
+              <div class="card"><div class="name">Lucía Castaño <span class="days">1d</span></div><div class="meta"><span>→ Video</span><span class="score high">81%</span></div></div>
+            </div>
+          </div>
+          <div class="col" data-status="rechazado">
+            <div class="col-header">Rechazado <span class="num">0</span></div>
+            <div class="col-body">
+              <div class="card-empty">Aún sin candidatos</div>
+            </div>
+          </div>
+          <div class="col" data-status="duda">
+            <div class="col-header">Duda CV <span class="num">0</span></div>
+            <div class="col-body">
+              <div class="card-empty">Aún sin candidatos</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-band expanded" data-phase="video">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="left">
+          <span class="phase-chevron">▶</span>
+          <span class="phase-color"></span>
+          <div>
+            <span class="phase-title">Video</span>
+            <span class="phase-subtitle">Entrevista en video con análisis de IA</span>
+          </div>
+        </div>
+        <div class="phase-counts">
+          <span class="pc video">Pendiente de grabar <span class="num">1</span></span>
+          <span class="pc ok">Grabado <span class="num">1</span></span>
+        </div>
+      </div>
+      <div class="phase-content">
+        <div class="kanban cols-2">
+          <div class="col" data-status="video-pendiente">
+            <div class="col-header">🎥 Pendiente de grabar <span class="num">1</span></div>
+            <div class="col-body">
+              <div class="card">
+                <div class="name">Lucía Castaño <span class="days">1d</span></div>
+                <div class="meta"><span>Link enviado · sin grabación</span><span class="score mid">79%</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="col" data-status="video-grabado">
+            <div class="col-header">🎥 Grabado <span class="num">1</span></div>
+            <div class="col-body">
+              <div class="card">
+                <div class="name">Sebastián Ruiz <span class="days">0d</span></div>
+                <div class="meta"><span>Análisis IA listo</span><span class="score high">85%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-band" data-phase="finalistas">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="left">
+          <span class="phase-chevron">▶</span>
+          <span class="phase-color"></span>
+          <div>
+            <span class="phase-title">Finalistas</span>
+            <span class="phase-subtitle">Listos para presentar al cliente — llamar a entrevista</span>
+          </div>
+        </div>
+        <div class="phase-counts">
+          <span class="pc ok">Listos <span class="num">2</span></span>
+        </div>
+      </div>
+      <div class="phase-content">
+        <div class="kanban cols-4">
+          <div class="col" data-status="entrevista">
+            <div class="col-header">Llamar a entrevista <span class="num">2</span></div>
+            <div class="col-body">
+              <div class="card">
+                <div class="name">Laura Jiménez <span class="days">0d</span></div>
+                <div class="meta"><span>Finalista</span><span class="score high">94%</span></div>
+              </div>
+              <div class="card">
+                <div class="name">Mauricio Sandoval <span class="days">0d</span></div>
+                <div class="meta"><span>Finalista</span><span class="score high">91%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footnote">Mockup interactivo — el comparativo de finalistas vive en pantalla aparte. Drag-and-drop visual está bocetado, lógica real se cablea en frontend.</div>
+</div>
+
+<script>
+  // ============ Configuración del puesto: qué evaluaciones activó el cliente ============
+  const jobConfig = {
+    requiresEnglish: true,
+    requiresMindset: true
+  };
+
+  // ============ Datos ============
+  // Estados tec/eng/mind: ok | wait | bad | none
+  // - none = el puesto no requiere esta evaluación
+  // Estado video: pendiente | grabado
+  const candidates = [
+    { name: 'María González',    email: 'maria.gonzalez@gmail.com',  phase: 'Conductual', sub: 'Completado',            tone: 'ok',       tech: 88, disc: 92, velna: 85, match: 'ok',   matchLabel: '$1.300 ✓', days: 2, daysClass: '' },
+    { name: 'Laura Jiménez',     email: 'laura.j@outlook.com',       phase: 'Finalistas', sub: 'Llamar a entrevista',   tone: 'finalist', tech: 91, disc: 94, velna: 90, match: 'ok',   matchLabel: '$1.400 ✓', days: 0, daysClass: '' },
+    { name: 'Mauricio Sandoval', email: 'mauricio.s@gmail.com',      phase: 'Finalistas', sub: 'Llamar a entrevista',   tone: 'finalist', tech: 91, disc: 88, velna: 90, match: 'ok',   matchLabel: '$1.350 ✓', days: 0, daysClass: '' },
+    { name: 'Natalia Solano',    email: 'natalia.s@hotmail.com',     phase: 'Integridad', sub: 'Completado',            tone: 'ok',       tech: 86, disc: 89, velna: 87, match: 'ok',   matchLabel: '$1.250 ✓', days: 1, daysClass: '' },
+    { name: 'Daniela Cortés',    email: 'daniela.cortes@gmail.com',  phase: 'Conductual', sub: 'Siguiente etapa',       tone: 'ok',       tech: 84, disc: 86, velna: 82, match: 'ok',   matchLabel: '$1.350 ✓', days: 1, daysClass: '' },
+    { name: 'Juan Pérez',        email: 'juan.perez@gmail.com',      phase: 'Técnica',    sub: 'Completado',            tone: 'ok',       tech: 88, disc: null, velna: null, match: 'warn', matchLabel: '$1.600 ⚠', days: 2, daysClass: '',
+      tec: 'ok', english: 'ok', mindset: 'ok' },
+    { name: 'Camila Ortega',     email: 'camila.o@gmail.com',        phase: 'Técnica',    sub: 'En progreso',           tone: 'warn',     tech: 91, disc: null, velna: null, match: 'ok',   matchLabel: '$1.200 ✓', days: 1, daysClass: '',
+      tec: 'ok', english: 'wait', mindset: 'ok' },
+    { name: 'Esteban Quiroz',    email: 'esteban.quiroz@gmail.com',  phase: 'Técnica',    sub: 'Duda CV',               tone: 'warn',     tech: 83, disc: null, velna: null, match: 'ok',   matchLabel: '$1.320 ✓', days: 7, daysClass: 'stale',
+      tec: 'ok', english: 'bad', mindset: 'ok' },
+    { name: 'Rafael Soto',       email: 'rafael.soto@gmail.com',     phase: 'Técnica',    sub: 'Completado',            tone: 'ok',       tech: 82, disc: null, velna: null, match: 'ok',   matchLabel: '$1.280 ✓', days: 2, daysClass: '',
+      tec: 'ok', english: 'none', mindset: 'none' },
+    { name: 'Sofía Rodríguez',   email: 'sofia.r@gmail.com',         phase: 'Prefiltro',  sub: 'Completado',            tone: 'ok',       tech: null, disc: null, velna: null, match: 'ok',   matchLabel: '$1.200 ✓', days: 3, daysClass: '' },
+    { name: 'Carlos Vargas',     email: 'carlos.vargas@gmail.com',   phase: 'Técnica',    sub: 'Rechazado',             tone: 'danger',   tech: 42, disc: null, velna: null, match: 'no',   matchLabel: '$2.000 ✗', days: 4, daysClass: '',
+      tec: 'bad', english: 'ok', mindset: 'ok' },
+    { name: 'Roberto Salinas',   email: 'roberto.s@gmail.com',       phase: 'Prefiltro',  sub: 'Rechazado',             tone: 'danger',   tech: null, disc: null, velna: null, match: 'no',   matchLabel: '$2.500 ✗', days: 6, daysClass: '' },
+    { name: 'Tomás Beltrán',     email: 'tomas.beltran@gmail.com',   phase: 'Prefiltro',  sub: 'Duda CV',               tone: 'warn',     tech: null, disc: null, velna: null, match: 'warn', matchLabel: '$1.500 ⚠', days: 8, daysClass: 'stale' },
+    { name: 'Lucía Castaño',     email: 'lucia.castano@gmail.com',   phase: 'Video',      sub: 'Pendiente de grabar',   tone: 'video',    tech: 79, disc: 84, velna: 81, match: 'ok',   matchLabel: '$1.280 ✓', days: 1, daysClass: '' },
+    { name: 'Sebastián Ruiz',    email: 'sebastian.ruiz@gmail.com',  phase: 'Video',      sub: 'Grabado',               tone: 'video',    tech: 85, disc: 80, velna: 83, match: 'ok',   matchLabel: '$1.300 ✓', days: 0, daysClass: '' }
+  ];
+
+  let activePhaseFilter = null;
+  let sortCol = 'tech';
+  let sortDir = 'desc';
+
+  function scoreClass(n) {
+    if (n == null) return 'score-na';
+    if (n >= 80) return 'score-high';
+    if (n >= 60) return 'score-mid';
+    return 'score-low';
+  }
+  function fmtScore(n) {
+    if (n == null) return '—';
+    return n + '%';
+  }
+  const TIM_LABELS = {
+    tec:     { ok: 'Aprobado',  wait: 'En proceso', bad: 'No alcanzó el mínimo', none: 'No aplica' },
+    english: { ok: 'B2 OK',     wait: 'En proceso', bad: 'Por debajo del mínimo — revisar manualmente', none: 'El puesto no requiere esta evaluación' },
+    mindset: { ok: 'Adaptable', wait: 'En proceso', bad: 'Por debajo del mínimo — revisar manualmente', none: 'El puesto no requiere esta evaluación' }
+  };
+  const TIM_ICONS = { tec: '🔧', english: '🇬🇧', mindset: '🧠' };
+  const TIM_GLYPH = { ok: '✅', wait: '⏳', bad: '❌', none: '—' };
+  const TIM_TITLE = { tec: 'Técnico', english: 'Inglés', mindset: 'Mindset' };
+
+  function timChip(kind, state) {
+    const cls = state || 'none';
+    const label = TIM_LABELS[kind][cls];
+    const title = `${TIM_TITLE[kind]}: ${label}`;
+    return `<span class="tim-chip ${cls}" title="${title}">${TIM_ICONS[kind]} ${TIM_GLYPH[cls]}</span>`;
+  }
+  function timRow(c) {
+    if (c.phase !== 'Técnica') return '';
+    const tec = c.tec || 'none';
+    const eng = jobConfig.requiresEnglish ? (c.english || 'none') : 'none';
+    const mind = jobConfig.requiresMindset ? (c.mindset || 'none') : 'none';
+    return `<span class="tim-row">
+      ${timChip('tec', tec)}
+      ${timChip('english', eng)}
+      ${timChip('mindset', mind)}
+    </span>`;
+  }
+  function badgeHtml(c) {
+    return `<span class="badge ${c.tone}">
+      <span class="dot"></span>
+      <span class="phase">${c.phase}</span>
+      <span class="sep">·</span>
+      <span class="sub">${c.sub}</span>
+      ${c.tech != null && c.phase !== 'Video' && c.phase !== 'Finalistas' ? `<span class="metric">${c.tech}%</span>` : ''}
+    </span>${timRow(c)}`;
+  }
+  function matchHtml(c) {
+    const cls = c.match === 'ok' ? 'match-ok' : (c.match === 'warn' ? 'match-warn' : 'match-no');
+    return `<span class="match-chip ${cls}">${c.matchLabel}</span>`;
+  }
+  function rowHtml(c) {
+    return `<tr>
+      <td class="name">${c.name}<span class="email">${c.email}</span></td>
+      <td>${badgeHtml(c)}</td>
+      <td class="num ${scoreClass(c.tech)}">${fmtScore(c.tech)}</td>
+      <td class="num ${scoreClass(c.disc)}">${fmtScore(c.disc)}</td>
+      <td class="num ${scoreClass(c.velna)}">${fmtScore(c.velna)}</td>
+      <td>${matchHtml(c)}</td>
+      <td class="num"><span class="days ${c.daysClass}">${c.days}d</span></td>
+      <td><button class="action-btn" title="Más acciones">⋯</button></td>
+    </tr>`;
+  }
+  function render() {
+    let list = candidates.slice();
+    if (activePhaseFilter && activePhaseFilter !== 'Rechazados' && activePhaseFilter !== 'Finalistas') {
+      list = list.filter(c => c.phase === activePhaseFilter);
+    } else if (activePhaseFilter === 'Rechazados') {
+      list = list.filter(c => c.sub === 'Rechazado');
+    } else if (activePhaseFilter === 'Finalistas') {
+      list = list.filter(c => c.phase === 'Finalistas');
+    }
+    list.sort((a, b) => {
+      const va = a[sortCol] == null ? -1 : a[sortCol];
+      const vb = b[sortCol] == null ? -1 : b[sortCol];
+      if (sortCol === 'name') return sortDir === 'desc' ? b.name.localeCompare(a.name) : a.name.localeCompare(b.name);
+      return sortDir === 'desc' ? vb - va : va - vb;
+    });
+    document.getElementById('cand-tbody').innerHTML = list.map(rowHtml).join('');
+    document.getElementById('visible-count').textContent = list.length;
+
+    document.querySelectorAll('th[data-col]').forEach(th => {
+      th.classList.toggle('sorted', th.getAttribute('data-col') === sortCol);
+    });
+  }
+  function sortBy(col) {
+    if (sortCol === col) sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+    else { sortCol = col; sortDir = 'desc'; }
+    render();
+  }
+  function filterByPhase(el, phase) {
+    document.querySelectorAll('.band').forEach(b => b.classList.remove('active'));
+    if (activePhaseFilter === phase) {
+      activePhaseFilter = null;
+    } else {
+      activePhaseFilter = phase;
+      el.classList.add('active');
+    }
+    render();
+  }
+  function switchView(view) {
+    document.getElementById('tab-tabla').classList.toggle('active', view === 'tabla');
+    document.getElementById('tab-tablero').classList.toggle('active', view === 'tablero');
+    document.getElementById('view-tabla').classList.toggle('hidden', view !== 'tabla');
+    document.getElementById('view-tablero').classList.toggle('visible', view === 'tablero');
+  }
+  function togglePhase(header) {
+    header.parentElement.classList.toggle('expanded');
+  }
+
+  render();
+</script>
+
+</body>
+</html>
