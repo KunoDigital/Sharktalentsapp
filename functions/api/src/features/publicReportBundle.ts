@@ -69,6 +69,10 @@ type ScoresRow = {
   velna_numerica?: number; velna_abstracta?: number; velna_indice?: number;
   emo_score?: number; emo_perfil?: string;
   tec_score_pct?: number; tec_passed?: boolean;
+  // Doble eje (doc 19): técnico = puntaje filtro; situacional = estilo + flag validez
+  tec_situational_validity_pct?: number;  // % de opciones objetivamente válidas elegidas (flag, no score principal)
+  tec_style_autonomy_consult?: number;     // 0-100 (100 = full autonomy, 0 = full consult). Perfil, NO califica.
+  tec_style_match_with_boss_pct?: number;  // % match con estilo del jefe configurado en Job.boss_profile
   int_overall?: string; int_overall_pct?: number;
   int_recomendacion?: string; int_buena_impresion?: string;
 };
@@ -304,8 +308,10 @@ export async function getPublicReportBundle(ctx: RequestContext): Promise<void> 
     narratives_status: narratives.status,
   });
 
-  // Server-side tracking de la apertura del reporte (best-effort)
-  void (async () => {
+  // Server-side tracking de la apertura del reporte (best-effort).
+  // 2026-06-04 (audit fix #16): wrapped with fireAndForget para evitar UnhandledRejection.
+  const { fireAndForget } = await import('../lib/fireAndForget.js');
+  fireAndForget('recordPortalSnapshot.report_viewed', async () => {
     const { recordPortalSnapshot } = await import('./jobTracking.js');
     await recordPortalSnapshot(ctx, {
       tenantId: job.tenant_id,
@@ -314,7 +320,7 @@ export async function getPublicReportBundle(ctx: RequestContext): Promise<void> 
       portalToken: token,
       eventData: { finalists_count: enriched.length, source: 'report_bundle' },
     });
-  })();
+  });
 
   // Cargar branding del tenant para personalizar el reporte
   let branding: Record<string, unknown> = {};
@@ -452,4 +458,113 @@ async function fetchAllSafe<T>(
   } catch {
     return [];
   }
+}
+
+/**
+ * POST /report/bundle/:token/feedback
+ * Body: { application_id, choice: 'interview'|'maybe'|'pass', comment? }
+ *
+ * Sin auth Clerk — usa el mismo token signed del bundle (kind=report_bundle, ref=jobId).
+ * El cliente externo (la empresa contratante) usa este endpoint para marcar su decisión
+ * sobre cada candidato finalista. Persistimos como nota en CandidateNotes (tabla que ya
+ * existe) y publicamos un outbox event para que Cris reciba un email con la decisión.
+ */
+export async function submitReportFeedback(ctx: RequestContext): Promise<void> {
+  const tokenMatch = (ctx.req.url ?? '/').match(/^\/report\/bundle\/([^/?]+)\/feedback\/?$/);
+  const token = tokenMatch?.[1];
+  if (!token) throw new ValidationError('token missing in path');
+
+  let claims;
+  try {
+    claims = verifyToken(token, 'report_bundle');
+  } catch (err) {
+    if (err instanceof TokenError) throw new UnauthorizedError(`Token: ${err.reason}`);
+    throw err;
+  }
+  const jobId = claims.ref;
+
+  const { readJsonBody } = await import('../lib/http.js');
+  const body = await readJsonBody<{
+    application_id?: string;
+    choice?: 'interview' | 'maybe' | 'pass';
+    comment?: string;
+  }>(ctx.req);
+
+  const applicationId = (body.application_id || '').trim();
+  const choice = body.choice;
+  const comment = (body.comment || '').trim().slice(0, 2000);
+  if (!applicationId) throw new ValidationError('application_id requerido');
+  if (!choice || !['interview', 'maybe', 'pass'].includes(choice)) {
+    throw new ValidationError('choice debe ser interview|maybe|pass');
+  }
+
+  // Verificar que el application_id pertenece a este job (anti-tampering del token).
+  const appRows = unwrapRows<{ ROWID: string; assessment_id: string }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT ROWID, assessment_id FROM Results WHERE ROWID = '${escapeSql(applicationId)}' AND assessment_id = '${escapeSql(jobId)}' LIMIT 1`,
+    )) as unknown[],
+    'Results',
+  );
+  if (!appRows[0]) {
+    throw new NotFoundError('Application no corresponde a este reporte');
+  }
+
+  // Tenant del job — necesario para guardar la nota.
+  const jobRows = unwrapRows<{ ROWID: string; tenant_id: string; title: string; company: string }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT ROWID, tenant_id, title, company FROM Jobs WHERE ROWID = '${escapeSql(jobId)}' LIMIT 1`,
+    )) as unknown[],
+    'Jobs',
+  );
+  const job = jobRows[0];
+  if (!job) throw new NotFoundError('Job no encontrado');
+
+  const choiceLabel: Record<typeof choice, string> = {
+    interview: '📞 ENTREVISTAR',
+    maybe: '⭐ TAL VEZ',
+    pass: '✕ DESCARTAR',
+  };
+  const noteBody = `🎯 Decisión cliente: ${choiceLabel[choice]}${comment ? `\n\n${comment}` : ''}`;
+
+  // Persistir como nota en CandidateNotes. Si la tabla no existe (tolerance), seguimos
+  // igual — el outbox event sí dispara el email a Cris con la decisión.
+  try {
+    const { datastore, now } = await import('../lib/db.js');
+    await datastore(ctx.req).table('CandidateNotes').insertRow({
+      tenant_id: job.tenant_id,
+      application_id: applicationId,
+      author_id: 'public:client',
+      author_name: 'Cliente',
+      body: noteBody,
+      is_pinned: true,
+      created_at: now(),
+      updated_at: now(),
+    });
+  } catch (err) {
+    log.warn('feedback note insert failed (tolerated)', { error: (err as Error)?.message ?? String(err) });
+  }
+
+  // Notificar a Cris via outbox.
+  try {
+    const { publishOutboxEvent } = await import('./outbox.js');
+    await publishOutboxEvent(ctx.req, 'client.report_feedback', {
+      tenant_id: job.tenant_id,
+      job_id: jobId,
+      job_title: job.title,
+      application_id: applicationId,
+      choice,
+      comment,
+    });
+  } catch (err) {
+    log.warn('feedback outbox publish failed (tolerated)', { error: (err as Error)?.message ?? String(err) });
+  }
+
+  log.info('client report feedback received', {
+    traceId: ctx.traceId,
+    jobId,
+    applicationId,
+    choice,
+    has_comment: Boolean(comment),
+  });
+  sendJson(ctx.res, 201, { ok: true, choice, application_id: applicationId });
 }

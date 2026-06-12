@@ -1481,7 +1481,7 @@
   {
     "id": "hu5",
     "dimension": "hurto",
-    "text": "Tenés acceso a información confidencial de clientes (datos personales, financieros). Un amigo te pide info específica de un cliente por motivos personales. ¿Qué haces?",
+    "text": "Tienes acceso a información confidencial de clientes (datos personales, financieros). Un amigo te pide info específica de un cliente por motivos personales. ¿Qué haces?",
     "options": [
       "Me niego rotundamente, sin importar la relación",
       "Le explico que está prohibido legalmente y por política",

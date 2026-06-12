@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { MOCK_JOBS, getJobById, type Job, type JobStatus, type DiscIdealProfile, type VelnaIdealProfile } from '../data/mockJobs';
 import { useUndoableState } from '../hooks/useUndoableState';
 import { useApi, ApiError } from '../lib/api';
+import { apiJobToFormJob } from '../lib/jobAdapter';
 import { config } from '../config';
 import PrefilterQuestionsPanel from '../components/PrefilterQuestionsPanel';
+import { logger } from '../lib/logger';
 import './pages.css';
 import './job-form.css';
+
+const log = logger('JOB_FORM');
 
 type Mode = 'create' | 'edit';
 
@@ -21,13 +25,10 @@ const DEFAULT_VELNA: VelnaIdealProfile = {
   verbal: 70, espacial: 65, logica: 75, numerica: 70, abstracta: 70,
 };
 
-const DEFAULT_COMPETENCIAS = [
-  { name: 'Resolución de problemas complejos', required_pct: 60 },
-  { name: 'Adaptabilidad', required_pct: 60 },
-  { name: 'Comunicación digital', required_pct: 60 },
-  { name: 'Resiliencia, tolerancia al estrés y flexibilidad', required_pct: 60 },
-  { name: 'Planificación', required_pct: 60 },
-];
+// 2026-06-05: empezamos con array vacío para que Cris elija las competencias del
+// catálogo cerrado (memoria project_competencias_catalogo_cerrado.md). Los defaults
+// anteriores eran free-text que el backend rechazaba con 400 si Cris no editaba.
+const DEFAULT_COMPETENCIAS: Array<{ name: string; required_pct: number }> = [];
 
 /**
  * Convierte el state local de DISC/VELNA/competencias al shape que espera el backend.
@@ -90,64 +91,28 @@ function buildIdealProfilePayload(
   if (jobState.report_lang === 'es' || jobState.report_lang === 'en') {
     ideal.report_lang = jobState.report_lang;
   }
+  // Campos públicos (sitio web del candidato). El backend también los hereda del draft IA
+  // si vienen vacíos acá. Mandar solo si admin los escribió.
+  if (jobState.que_busco && jobState.que_busco.trim()) {
+    ideal.que_busco = jobState.que_busco.trim();
+  }
+  if (Array.isArray(jobState.que_debe_hacer) && jobState.que_debe_hacer.length > 0) {
+    ideal.que_debe_hacer = jobState.que_debe_hacer.filter((s) => s.trim()).map((s) => s.trim());
+  }
+  if (Array.isArray(jobState.que_debe_saber) && jobState.que_debe_saber.length > 0) {
+    ideal.que_debe_saber = jobState.que_debe_saber.filter((s) => s.trim()).map((s) => s.trim());
+  }
+  if (jobState.salary_range_usd && jobState.salary_range_usd.max > 0) {
+    ideal.salary_range_usd = jobState.salary_range_usd;
+  }
   return Object.keys(ideal).length > 0 ? ideal : null;
 }
 
-/**
- * Slider para una regla de auto-rechazo. Empieza inactivo (undefined). Click "Activar"
- * para setearlo a un default; "Desactivar" para volver a undefined.
- */
-function RejectionRule({
-  label,
-  value,
-  onChange,
-  unit,
-  hint,
-}: {
-  label: string;
-  value: number | undefined;
-  onChange: (v: number | undefined) => void;
-  unit: string;
-  hint: string;
-}) {
-  const isActive = typeof value === 'number';
-  return (
-    <div className="settings-item" style={{ flexDirection: 'column', alignItems: 'stretch', marginBottom: '0.75rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
-        <strong>{label}</strong>
-        <button
-          type="button"
-          className={isActive ? 'cd-btn-danger' : 'btn-toolbar'}
-          style={{ padding: '0.2rem 0.6rem', fontSize: '0.78rem' }}
-          onClick={() => onChange(isActive ? undefined : 50)}
-        >
-          {isActive ? 'Desactivar' : 'Activar'}
-        </button>
-      </div>
-      {isActive ? (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={1}
-              value={value}
-              onChange={(e) => onChange(Number(e.target.value))}
-              style={{ flex: 1 }}
-            />
-            <span style={{ minWidth: '60px', textAlign: 'right', fontWeight: 600 }}>
-              {value}{unit}
-            </span>
-          </div>
-          <p className="muted small" style={{ marginTop: '0.3rem' }}>{hint}</p>
-        </>
-      ) : (
-        <p className="muted small">— No aplicado. {hint}</p>
-      )}
-    </div>
-  );
-}
+/** Multiplicador para calcular fee = salary_max * FEE_MULTIPLIER. Igual al backend (env FEE_MULTIPLIER). */
+const FEE_MULTIPLIER = 1.2;
+
+// 2026-06-05: función RejectionRule eliminada — la sección que la usaba estaba
+// duplicada con la versión inputs-number y se eliminó. Recuperable de git si re-hace.
 
 function formatStyle(v: number): string {
   if (v >= 0.75) return 'da autonomía';
@@ -182,12 +147,53 @@ function emptyJob(): Omit<Job, 'id' | 'applications_count' | 'applications_in_pr
 
 export default function JobForm({ mode }: { mode: Mode }) {
   const { id } = useParams<{ id: string }>();
-  const existing = mode === 'edit' && id ? getJobById(id) : undefined;
   const navigate = useNavigate();
   const api = useApi();
+
+  // Bug K fix (2026-06-09): cargar el puesto async desde el backend en edit mode.
+  // Antes usaba `getJobById(id)` que era mock-only (data/mockJobs.ts) y por eso
+  // todos los puestos reales daban "Puesto no encontrado". Ahora hace fetch real
+  // y mapea ApiJob → Job vía jobAdapter.apiJobToFormJob().
+  //
+  // En modo mock (config.useApi false) o create, mantenemos el comportamiento legacy.
+  const [existing, setExisting] = useState<Job | undefined>(() => {
+    if (mode === 'edit' && id && !config.useApi) return getJobById(id);
+    return undefined;
+  });
+  const [loadState, setLoadState] = useState<'idle' | 'loading' | 'loaded' | 'not_found' | 'error'>(
+    mode === 'edit' && id && config.useApi ? 'loading' : 'idle',
+  );
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (mode !== 'edit' || !id || !config.useApi) return;
+    let cancelled = false;
+    setLoadState('loading');
+    api.jobs.get(id).then((res) => {
+      if (cancelled) return;
+      setExisting(apiJobToFormJob(res.job));
+      setLoadState('loaded');
+    }).catch((err: unknown) => {
+      if (cancelled) return;
+      log.warn('failed to load job for edit', { id, error: (err as Error).message });
+      if (err instanceof ApiError && err.code === 'not_found') {
+        setLoadState('not_found');
+      } else {
+        setLoadState('error');
+        setLoadError((err as Error).message);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [id, mode, api.jobs]);
+
   const [hasIdealB, setHasIdealB] = useState(!!existing?.disc_ideal_b);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Sincronizar hasIdealB cuando llega existing del async load.
+  useEffect(() => {
+    if (existing?.disc_ideal_b) setHasIdealB(true);
+  }, [existing?.disc_ideal_b]);
 
   const initialJob = existing
     ? {
@@ -217,7 +223,24 @@ export default function JobForm({ mode }: { mode: Mode }) {
 
   const { state: job, set: setJob, undo, redo, canUndo, canRedo } = useUndoableState(initialJob, { debounceMs: 500, maxHistory: 60 });
 
+  // Estados de carga async (Bug K). Loading → error → not_found → loaded.
+  if (mode === 'edit' && loadState === 'loading') {
+    return <p className="page" style={{ padding: 24 }}>Cargando puesto...</p>;
+  }
+  if (mode === 'edit' && loadState === 'error') {
+    return (
+      <div className="page" style={{ padding: 24 }}>
+        <p>Error al cargar el puesto.</p>
+        <p style={{ color: '#9ca3af', fontSize: 14 }}>{loadError}</p>
+        <Link to="/jobs">← Volver</Link>
+      </div>
+    );
+  }
+  if (mode === 'edit' && loadState === 'not_found') {
+    return <p>Puesto no encontrado. <Link to="/jobs">Volver</Link></p>;
+  }
   if (mode === 'edit' && !existing) {
+    // Fallback defensivo: no debería pasar pero por las dudas
     return <p>Puesto no encontrado. <Link to="/jobs">Volver</Link></p>;
   }
 
@@ -272,6 +295,7 @@ export default function JobForm({ mode }: { mode: Mode }) {
             company_context: job.context ?? null,
             is_active: job.status === 'active',
             ideal_profile: idealProfile,
+            fee_usd: Number.isFinite(job.fee_usd) && job.fee_usd > 0 ? job.fee_usd : null,
           });
           navigate(`/jobs/${result.job.ROWID}`);
         } else if (mode === 'edit' && existing) {
@@ -281,6 +305,7 @@ export default function JobForm({ mode }: { mode: Mode }) {
             company_context: job.context ?? null,
             is_active: job.status === 'active',
             ideal_profile: idealProfile,
+            fee_usd: Number.isFinite(job.fee_usd) && job.fee_usd > 0 ? job.fee_usd : null,
           });
           navigate(`/jobs/${existing.id}`);
         }
@@ -417,13 +442,51 @@ export default function JobForm({ mode }: { mode: Mode }) {
         </section>
 
         <section className="job-form-section">
+          <h2>Lo que verá el candidato en la oferta</h2>
+          <p style={{ color: '#4b5563', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+            Si dejás vacío, se hereda automático del draft generado por IA (objetivo, responsabilidades, herramientas).
+            Editá acá si querés cambiar lo que se publica en sharktalents.ai.
+          </p>
+          <Field label="Qué busco (1-2 frases del rol)">
+            <textarea
+              rows={2}
+              maxLength={500}
+              value={job.que_busco ?? ''}
+              onChange={(e) => patch('que_busco', e.target.value)}
+              placeholder="Líder de Desarrollo Backend para fintech panameña, lidera squad de 8 ingenieros y migración ISO 20022."
+            />
+          </Field>
+          <Field label="Qué tiene que hacer (uno por línea, máx 6)">
+            <textarea
+              rows={5}
+              value={(job.que_debe_hacer ?? []).join('\n')}
+              onChange={(e) => patch('que_debe_hacer', e.target.value.split('\n').slice(0, 6))}
+              placeholder={'Lidera squad de 8 ingenieros\nEjecuta migración ISO 20022 Q4\nReporta directamente al CTO'}
+            />
+          </Field>
+          <Field label="Qué tiene que saber (uno por línea, máx 6)">
+            <textarea
+              rows={5}
+              value={(job.que_debe_saber ?? []).join('\n')}
+              onChange={(e) => patch('que_debe_saber', e.target.value.split('\n').slice(0, 6))}
+              placeholder={'5+ años Node.js + PostgreSQL\nLiderazgo técnico de squads\nExperiencia en sistemas transaccionales'}
+            />
+          </Field>
+        </section>
+
+        <section className="job-form-section">
           <h2>Salario, fee y estado</h2>
           <div className="job-form-grid-3">
             <Field label="Salario min (USD/mes)">
               <input
                 type="number"
                 value={job.salary_range_usd.min}
-                onChange={(e) => patch('salary_range_usd', { ...job.salary_range_usd, min: Number(e.target.value) })}
+                onChange={(e) => {
+                  const min = Number(e.target.value);
+                  // Si max < min, sincronizamos max = min (caso típico: monto único)
+                  const max = job.salary_range_usd.max < min ? min : job.salary_range_usd.max;
+                  patch('salary_range_usd', { min, max });
+                }}
               />
             </Field>
             <Field label="Salario max (USD/mes)">
@@ -432,13 +495,21 @@ export default function JobForm({ mode }: { mode: Mode }) {
                 value={job.salary_range_usd.max}
                 onChange={(e) => patch('salary_range_usd', { ...job.salary_range_usd, max: Number(e.target.value) })}
               />
+              <small style={{ color: '#4b5563', fontSize: '0.75rem' }}>
+                Si el cliente da un solo número, poné el mismo valor en min y max.
+              </small>
             </Field>
-            <Field label="Fee (USD)">
+            <Field label="Fee (calculado automático)">
               <input
                 type="number"
-                value={job.fee_usd}
-                onChange={(e) => patch('fee_usd', Number(e.target.value))}
+                value={Math.round(job.salary_range_usd.max * FEE_MULTIPLIER)}
+                readOnly
+                disabled
+                style={{ background: '#f3f4f6', color: '#1f2937' }}
               />
+              <small style={{ color: '#4b5563', fontSize: '0.75rem' }}>
+                Salario max × {FEE_MULTIPLIER} — se calcula al guardar el puesto.
+              </small>
             </Field>
           </div>
           <div className="job-form-grid-2">
@@ -690,46 +761,9 @@ export default function JobForm({ mode }: { mode: Mode }) {
           </Field>
         </section>
 
-        <section className="job-form-section">
-          <h2>Reglas de auto-rechazo (opcional)</h2>
-          <p className="muted small" style={{ marginBottom: '0.75rem' }}>
-            El sistema rechaza automáticamente al candidato que no cumpla CUALQUIER umbral activado.
-            Cada slider que muevas se activa; los que dejes en "—" se ignoran. Sin reglas, todo
-            candidato pasa al siguiente stage hasta que vos lo decidas a mano.
-          </p>
-
-          <RejectionRule
-            label="Mínimo similitud DISC vs perfil ideal"
-            value={job.auto_rejection_rules?.disc_min_similarity}
-            onChange={(v) => patch('auto_rejection_rules', { ...(job.auto_rejection_rules ?? {}), disc_min_similarity: v })}
-            unit="%"
-            hint="Si la similitud es menor → auto-rechazo. Recomendado 50-65."
-          />
-
-          <RejectionRule
-            label="Mínimo VELNA índice (cognitivo)"
-            value={job.auto_rejection_rules?.velna_min_indice}
-            onChange={(v) => patch('auto_rejection_rules', { ...(job.auto_rejection_rules ?? {}), velna_min_indice: v })}
-            unit="/100"
-            hint="Cognitiva debajo de este número → auto-rechazo. Recomendado 60 para puestos mid+, 50 para basic."
-          />
-
-          <RejectionRule
-            label="Máximo % de riesgo integridad"
-            value={job.auto_rejection_rules?.integridad_max_riesgo}
-            onChange={(v) => patch('auto_rejection_rules', { ...(job.auto_rejection_rules ?? {}), integridad_max_riesgo: v })}
-            unit="%"
-            hint="0% solo bajo permitido (estricto). 100% acepta todo. Recomendado 30-40."
-          />
-
-          <RejectionRule
-            label="Mínimo score emocional"
-            value={job.auto_rejection_rules?.emo_min_score}
-            onChange={(v) => patch('auto_rejection_rules', { ...(job.auto_rejection_rules ?? {}), emo_min_score: v })}
-            unit="/100"
-            hint="Emocional debajo → auto-rechazo. Recomendado 40-50 si querés filtrar perfiles inestables."
-          />
-        </section>
+        {/* 2026-06-05: eliminada la segunda sección duplicada "Reglas de auto-rechazo"
+            que usaba RejectionRule sliders. La sección de arriba (line 521) es la
+            canónica — tiene 5 reglas + englés_required, la segunda solo 4 sin english. */}
 
         <section className="job-form-section">
           <h2>Perfil DISC ideal A</h2>

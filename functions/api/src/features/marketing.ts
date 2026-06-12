@@ -28,7 +28,7 @@
 import type { IncomingMessage } from 'http';
 import type { RequestContext } from '../lib/context';
 import { datastore, zcql, now } from '../lib/db';
-import { escapeSql, unwrapRow, unwrapRows } from '../lib/dbHelpers';
+import { escapeSql, unwrapRow, unwrapRows, formatCatalystDateTime } from '../lib/dbHelpers';
 import { stringifyAndTruncate, FIELD_LIMITS } from '../lib/dbLimits';
 import { ValidationError, AppError, NotFoundError } from '../lib/errors';
 import { sendJson, readJsonBody } from '../lib/http';
@@ -302,16 +302,21 @@ export async function captureLead(ctx: RequestContext): Promise<void> {
   const conductualUrl = `${baseUrl}/app/index.html#/demo-test/conductual/${conductualToken}`;
   const integridadUrl = `${baseUrl}/app/index.html#/demo-test/integridad/${integridadToken}`;
 
-  // Outbox: enquear lead.captured event para sync con Zoho CRM (solo nuevo lead)
+  // Outbox: enquear lead.captured event para sync con Zoho CRM (solo nuevo lead).
+  // 2026-06-04 (audit fix #24): fireAndForget wrap → si publishOutboxEvent rechaza
+  // (table throttle, etc.), no perdemos el rejection en background.
   if (isNewLead) {
-    void publishOutboxEvent(ctx.req, 'lead.captured', {
-      lead_id: leadId,
-      email,
-      contact_name: payload.contact_name,
-      company: payload.company,
-      score_quality: score,
-      urgency: quizData.urgencia,
-    });
+    const { fireAndForget } = await import('../lib/fireAndForget.js');
+    fireAndForget('publishOutbox.lead_captured', () =>
+      publishOutboxEvent(ctx.req, 'lead.captured', {
+        lead_id: leadId,
+        email,
+        contact_name: payload.contact_name,
+        company: payload.company,
+        score_quality: score,
+        urgency: quizData.urgencia,
+      }),
+    );
   }
 
   // Email thank-you al lead con los 2 links de prueba — sincrónico, siempre se manda
@@ -672,16 +677,22 @@ export async function requestLeadDeletion(ctx: RequestContext): Promise<void> {
         updated_at: now(),
       });
 
-      // Enquear email via outbox (template `marketing_deletion_request`)
-      void publishOutboxEvent(ctx.req, 'email.send_pending', {
-        to: lead.email,
-        template: 'marketing_deletion_request',
-        locale: 'es',
-        vars: {
-          deletion_url: `https://www.sharktalents.ai/unsubscribe?email=${encodeURIComponent(lead.email)}&token=${token}`,
-          expires_in_hours: '24',
-        },
-      });
+      // Enquear email via outbox (template `marketing_deletion_request`).
+      // audit fix #24: fireAndForget wrap.
+      {
+        const { fireAndForget } = await import('../lib/fireAndForget.js');
+        fireAndForget('publishOutbox.deletion_request', () =>
+          publishOutboxEvent(ctx.req, 'email.send_pending', {
+            to: lead.email,
+            template: 'marketing_deletion_request',
+            locale: 'es',
+            vars: {
+              deletion_url: `https://www.sharktalents.ai/unsubscribe?email=${encodeURIComponent(lead.email)}&token=${token}`,
+              expires_in_hours: '24',
+            },
+          }),
+        );
+      }
 
       log.info('deletion link requested', { traceId: ctx.traceId, email_masked: email.slice(0, 2) + '***' });
     } catch (err) {
@@ -776,12 +787,18 @@ export async function listMarketingLeads(ctx: RequestContext): Promise<void> {
   const status = url.searchParams.get('status');
   const urgency = url.searchParams.get('urgency');
   const minScore = Number(url.searchParams.get('min_score') ?? 0);
-  const limit = Math.max(1, Math.min(500, Number(url.searchParams.get('limit') ?? 100)));
+  // ZCQL tiene cap duro de 300 filas por query — sobrepasar tira 400 ZCQL QUERY ERROR.
+  const limit = Math.max(1, Math.min(300, Number(url.searchParams.get('limit') ?? 100)));
+  // Default 90 días para escalar — pasar ?last_n_days=0 para ver todo el histórico.
+  const lastNDays = Number.parseInt(url.searchParams.get('last_n_days') ?? '90', 10);
 
   const filters: string[] = [];
   if (status) filters.push(`status = '${escapeSql(status)}'`);
   if (urgency) filters.push(`urgency = '${escapeSql(urgency)}'`);
   if (minScore > 0) filters.push(`score_quality >= ${Math.round(minScore)}`);
+  if (lastNDays > 0) {
+    filters.push(`CREATEDTIME >= '${formatCatalystDateTime(new Date(Date.now() - lastNDays * 86400_000))}'`);
+  }
 
   const whereClause = filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : '';
   const q = `SELECT ROWID, email, contact_name, company, whatsapp, score_quality, urgency,
@@ -790,17 +807,28 @@ export async function listMarketingLeads(ctx: RequestContext): Promise<void> {
               FROM ${TABLE_LEADS} ${whereClause}
               ORDER BY CREATEDTIME DESC LIMIT ${limit}`;
 
-  const rows = unwrapRows<Record<string, unknown>>(
-    (await zcql(ctx.req).executeZCQLQuery(q)) as unknown[],
-    TABLE_LEADS,
-  );
+  let rows: Array<Record<string, unknown>> = [];
+  try {
+    rows = unwrapRows<Record<string, unknown>>(
+      (await zcql(ctx.req).executeZCQLQuery(q)) as unknown[],
+      TABLE_LEADS,
+    );
+  } catch (err) {
+    const errAny = err as Record<string, unknown> | null;
+    const errMsg = (err as Error)?.message
+      || (errAny?.error_message as string)
+      || (errAny?.message as string)
+      || JSON.stringify(err).slice(0, 300);
+    log.error('listMarketingLeads: main query failed', { traceId: ctx.traceId, error: errMsg, query: q.slice(0, 200) });
+    throw new AppError(500, 'list_leads_query_failed', `MarketingLeads query failed: ${errMsg}`);
+  }
 
-  // Stats agregados
+  // Stats agregados (best-effort, no rompemos si falla)
   let stats = { total: 0, new: 0, eval_requested: 0, eval_completed: 0, call_booked: 0, won: 0, lost: 0 };
   try {
     const allRows = unwrapRows<{ status: string }>(
       (await zcql(ctx.req).executeZCQLQuery(
-        `SELECT status FROM ${TABLE_LEADS} LIMIT 5000`,
+        `SELECT status FROM ${TABLE_LEADS} LIMIT 300`,
       )) as unknown[],
       TABLE_LEADS,
     );
@@ -810,8 +838,8 @@ export async function listMarketingLeads(ctx: RequestContext): Promise<void> {
         (stats as Record<string, number>)[r.status]++;
       }
     }
-  } catch {
-    // si stats falla, devolvemos solo lo principal
+  } catch (err) {
+    log.warn('listMarketingLeads: stats query failed (returning leads anyway)', { traceId: ctx.traceId, error: (err as Error).message });
   }
 
   sendJson(ctx.res, 200, {
@@ -890,16 +918,24 @@ export async function inspectIntegrityDims(ctx: RequestContext): Promise<void> {
   const { requireAuth } = await import('../lib/auth.js');
   const { requireTenant } = await import('./tenants.js');
   await requireAuth(ctx);
-  await requireTenant(ctx);
+  const callerTenantId = await requireTenant(ctx);
 
   const m = ctx.req.url?.match(/^\/api\/_inspect_integrity_dims\/([^/]+)\/?$/);
   const resultId = m?.[1];
   if (!resultId) throw new ValidationError('result_id missing');
 
+  // 2026-06-04 (audit fix #10): JOIN con Results→Jobs para validar tenant. Sin esto
+  // un usuario logueado podía leer las dimensiones de integridad de cualquier candidato
+  // pasándole un result_id arbitrario.
   try {
     const rows = unwrapRows<Record<string, unknown>>(
       (await zcql(ctx.req).executeZCQLQuery(
-        `SELECT ROWID, dimension, pct, nivel FROM IntegrityDimensions WHERE result_id = '${escapeSql(resultId)}' LIMIT 50`,
+        `SELECT id.ROWID, id.dimension, id.pct, id.nivel
+         FROM IntegrityDimensions id
+         JOIN Results r ON id.result_id = r.ROWID
+         JOIN Jobs j ON r.assessment_id = j.ROWID
+         WHERE id.result_id = '${escapeSql(resultId)}' AND j.tenant_id = '${escapeSql(callerTenantId)}'
+         LIMIT 50`,
       )) as unknown[],
       'IntegrityDimensions',
     );
@@ -913,7 +949,7 @@ export async function renameCandidate(ctx: RequestContext): Promise<void> {
   const { requireAuth } = await import('../lib/auth.js');
   const { requireTenant } = await import('./tenants.js');
   await requireAuth(ctx);
-  await requireTenant(ctx);
+  const callerTenantId = await requireTenant(ctx);
 
   const m = ctx.req.url?.match(/^\/api\/candidates\/([^/]+)\/rename\/?$/);
   const candidateId = m?.[1];
@@ -921,6 +957,26 @@ export async function renameCandidate(ctx: RequestContext): Promise<void> {
 
   const body = (await readJsonBody(ctx.req)) as { name?: string };
   if (!body.name || body.name.length < 2) throw new ValidationError('name required (min 2 chars)');
+
+  // 2026-06-04 (audit fix #9): verificar que el candidato tenga al menos un Result en
+  // un Job del tenant del usuario. Sin esto, un usuario podía renombrar candidatos de
+  // OTRO tenant pasándole un candidate_id arbitrario (vector: enumeración o link filtrado).
+  const tenantMatch = unwrapRows<{ count: number }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT COUNT(r.ROWID) AS count
+       FROM Results r JOIN Jobs j ON r.assessment_id = j.ROWID
+       WHERE r.candidate_id = '${escapeSql(candidateId)}' AND j.tenant_id = '${escapeSql(callerTenantId)}'`,
+    )) as unknown[],
+    'Results',
+  );
+  if (!tenantMatch[0] || tenantMatch[0].count === 0) {
+    // No leak — mismo 404 que "no encontrado".
+    log.warn('renameCandidate: cross-tenant attempt blocked', {
+      traceId: ctx.traceId, candidateId, callerTenantId,
+    });
+    sendJson(ctx.res, 404, { error: 'Candidate not found' });
+    return;
+  }
 
   await datastore(ctx.req).table('Candidates').updateRow({
     ROWID: candidateId,
@@ -1057,6 +1113,13 @@ export async function patchLead(ctx: RequestContext): Promise<void> {
   if (typeof body.contact_name === 'string') patch.contact_name = body.contact_name.trim().slice(0, 255);
   if (typeof body.company === 'string') patch.company = body.company.trim().slice(0, 255);
   if (typeof body.whatsapp === 'string') patch.whatsapp = body.whatsapp.trim().slice(0, 50);
+  if (typeof body.status === 'string') {
+    const validStatuses = ['new', 'eval_requested', 'eval_completed', 'call_booked', 'won', 'lost'] as const;
+    if (!validStatuses.includes(body.status as typeof validStatuses[number])) {
+      throw new ValidationError(`status inválido — debe ser uno de: ${validStatuses.join(', ')}`);
+    }
+    patch.status = body.status;
+  }
 
   if (Object.keys(patch).length <= 2) {
     throw new ValidationError('no fields to update');
@@ -1320,6 +1383,100 @@ export async function importLeadFromCrm(ctx: RequestContext): Promise<void> {
   });
 }
 
+// ===== POST /api/marketing/_wipe_test_leads (auth tenant — limpia leads de testing) =====
+
+/**
+ * Limpia leads de test/debug acumulados (e2e-*, test+*, qa+*, mail-tester, test-debug-*).
+ *
+ * Filtros:
+ * - Email matches patrones de test
+ * - Creados hace más de `min_hours_ago` (default 2hs) — protege leads activos del test loop
+ *
+ * Confirmación: si `confirm=false` (default), devuelve preview sin borrar.
+ * Solo borra cuando se llama con `confirm=true`.
+ */
+export async function wipeTestLeads(ctx: RequestContext): Promise<void> {
+  const { requireAuth } = await import('../lib/auth.js');
+  const { requireTenant } = await import('./tenants.js');
+  await requireAuth(ctx);
+  await requireTenant(ctx);
+
+  if (!(await isTableReady(ctx.req))) {
+    sendJson(ctx.res, 200, { items: [], total: 0, table_ready: false });
+    return;
+  }
+
+  const url = new URL(ctx.req.url ?? '/', 'http://x');
+  const confirm = url.searchParams.get('confirm') === 'true';
+  const minHoursAgo = Number(url.searchParams.get('min_hours_ago') ?? 2);
+
+  // Pattern matching para emails de test
+  const testPatterns = [
+    /^e2e-/i,           // e2e-test-XXX, e2e-real-XXX
+    /^test\+/i,         // test+playwright, test+manual, test+anything
+    /^test-/i,          // test-debug-XXX
+    /^qa\+/i,           // qa+crmtest
+    /@srv\d+\.mail-tester\.com$/i, // mail-tester addresses
+  ];
+
+  const leads = unwrapRows<{ ROWID: string; email: string; eval_result_id: string | null; created_at: string }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT ROWID, email, eval_result_id, created_at FROM ${TABLE_LEADS} LIMIT 300`,
+    )) as unknown[],
+    TABLE_LEADS,
+  );
+
+  const cutoffMs = Date.now() - minHoursAgo * 60 * 60 * 1000;
+  const matching = leads.filter((l) => {
+    if (!testPatterns.some((p) => p.test(l.email))) return false;
+    const createdMs = Date.parse(l.created_at);
+    if (Number.isNaN(createdMs)) return false;
+    return createdMs < cutoffMs;
+  });
+
+  if (!confirm) {
+    sendJson(ctx.res, 200, {
+      preview: true,
+      total_matching: matching.length,
+      cutoff_iso: new Date(cutoffMs).toISOString(),
+      sample_emails: matching.slice(0, 10).map((l) => ({ email: l.email, created_at: l.created_at })),
+      note: 'Add ?confirm=true to actually delete',
+    });
+    return;
+  }
+
+  let leadsDeleted = 0;
+  let resultsDeleted = 0;
+  const errors: string[] = [];
+
+  for (const lead of matching) {
+    if (lead.eval_result_id) {
+      try {
+        await datastore(ctx.req).table('Results').deleteRow(lead.eval_result_id);
+        resultsDeleted++;
+      } catch (err) {
+        errors.push(`result ${lead.eval_result_id}: ${(err as Error).message}`);
+      }
+    }
+    try {
+      await datastore(ctx.req).table(TABLE_LEADS).deleteRow(lead.ROWID);
+      leadsDeleted++;
+    } catch (err) {
+      errors.push(`lead ${lead.ROWID}: ${(err as Error).message}`);
+    }
+  }
+
+  log.info('test leads wiped', { traceId: ctx.traceId, leadsDeleted, resultsDeleted, errorsCount: errors.length });
+
+  sendJson(ctx.res, 200, {
+    preview: false,
+    leads_found: matching.length,
+    leads_deleted: leadsDeleted,
+    results_deleted: resultsDeleted,
+    errors,
+  });
+}
+
 // ===== POST /api/marketing/_admin_wipe_leads (auth tenant — borra TODOS los leads) =====
 
 /**
@@ -1473,11 +1630,16 @@ export async function createManualLead(ctx: RequestContext): Promise<void> {
     leadId = unwrapRow<{ ROWID: string }>(inserted, TABLE_LEADS)?.ROWID ?? '';
     log.info('manual lead created', { traceId: ctx.traceId, leadId, email_masked: email.slice(0, 2) + '***' });
 
-    // Sync a CRM (mismo flow que captureLead)
-    void publishOutboxEvent(ctx.req, 'lead.captured', {
-      lead_id: leadId, email, contact_name: contactName, company,
-      score_quality: score, urgency,
-    });
+    // Sync a CRM (mismo flow que captureLead). audit fix #24: fireAndForget wrap.
+    {
+      const { fireAndForget } = await import('../lib/fireAndForget.js');
+      fireAndForget('publishOutbox.manual_lead_captured', () =>
+        publishOutboxEvent(ctx.req, 'lead.captured', {
+          lead_id: leadId, email, contact_name: contactName, company,
+          score_quality: score, urgency,
+        }),
+      );
+    }
   }
 
   sendJson(ctx.res, existing ? 200 : 201, { lead_id: leadId, action: existing ? 'updated' : 'created' });
@@ -2176,13 +2338,18 @@ export async function tryCompleteMarketingDemo(ctx: RequestContext, resultId: st
       member_email_masked: candidateRow?.email ? candidateRow.email.slice(0, 2) + '***' : 'unknown',
     });
 
-    // Outbox: sync a CRM con tag Demo Completed
-    void publishOutboxEvent(ctx.req, 'lead.eval_completed', {
-      lead_id: lead.ROWID,
-      email: lead.email,
-      contact_name: lead.contact_name,
-      company: lead.company,
-    });
+    // Outbox: sync a CRM con tag Demo Completed. audit fix #24: fireAndForget wrap.
+    {
+      const { fireAndForget } = await import('../lib/fireAndForget.js');
+      fireAndForget('publishOutbox.lead_eval_completed', () =>
+        publishOutboxEvent(ctx.req, 'lead.eval_completed', {
+          lead_id: lead.ROWID,
+          email: lead.email,
+          contact_name: lead.contact_name,
+          company: lead.company,
+        }),
+      );
+    }
 
     // URL para agendar reunión comercial post-demo. Env var MARKETING_BOOKING_URL
     // apunta a Zoho Bookings, Calendly, o equivalente. Si no está seteada, el
@@ -2316,7 +2483,11 @@ export async function diagnoseLead(ctx: RequestContext): Promise<void> {
  * Eliminar este endpoint una vez resueltos los bugs del demo MVP.
  */
 export async function resetLead(ctx: RequestContext): Promise<void> {
-  verifySiteKey(ctx);
+  // 2026-06-04 (audit fix #12): cambiado de verifySiteKey → requireInternalKey.
+  // Era un endpoint público que permitía borrar el progreso de cualquier lead conociendo
+  // su email + la site key (visible en el bundle JS).
+  const { requireInternalKey } = await import('../lib/internalAuth.js');
+  requireInternalKey(ctx);
   const url = new URL(ctx.req.url ?? '/', 'http://x');
   const email = url.searchParams.get('email')?.trim().toLowerCase() ?? '';
   if (!email) {
@@ -2388,7 +2559,9 @@ export async function resetLead(ctx: RequestContext): Promise<void> {
  * Eliminar este endpoint una vez resuelto el bug de upload de ZIP.
  */
 export async function simulateCompletion(ctx: RequestContext): Promise<void> {
-  verifySiteKey(ctx);
+  // audit fix #12: requireInternalKey en vez de verifySiteKey.
+  const { requireInternalKey } = await import('../lib/internalAuth.js');
+  requireInternalKey(ctx);
   const url = new URL(ctx.req.url ?? '/', 'http://x');
   const email = url.searchParams.get('email')?.trim().toLowerCase() ?? '';
   if (!email) {
@@ -2479,7 +2652,9 @@ export async function simulateCompletion(ctx: RequestContext): Promise<void> {
  * Eliminar este endpoint una vez validado el wiring CRM en producción.
  */
 export async function forceCrmSync(ctx: RequestContext): Promise<void> {
-  verifySiteKey(ctx);
+  // audit fix #12: requireInternalKey.
+  const { requireInternalKey } = await import('../lib/internalAuth.js');
+  requireInternalKey(ctx);
   const url = new URL(ctx.req.url ?? '/', 'http://x');
   const email = url.searchParams.get('email')?.trim().toLowerCase() ?? '';
   if (!email) {
@@ -2602,7 +2777,14 @@ export async function listCrmModules(ctx: RequestContext): Promise<void> {
  * Eliminar este endpoint cuando esté armado el flow de super-admin.
  */
 export async function linkMarketingTenant(ctx: RequestContext): Promise<void> {
-  verifySiteKey(ctx);
+  // 2026-06-04 (audit fix #2 — CRÍTICO): este endpoint reescribe `clerk_org_id` del
+  // tenant "sharktalents-marketing", efectivamente cambiando quién lo controla.
+  // Antes estaba protegido solo por verifySiteKey (site key pública del bundle JS),
+  // así que cualquier atacante con DevTools podía secuestrar el tenant SharkTalents.
+  // Como es un endpoint de setup-of-one-use que Cris/Cristian disparan manualmente,
+  // cambiarlo a requireInternalKey lo protege sin romper ningún flujo de usuario.
+  const { requireInternalKey } = await import('../lib/internalAuth.js');
+  requireInternalKey(ctx);
   const url = new URL(ctx.req.url ?? '/', 'http://x');
   const orgId = url.searchParams.get('org_id')?.trim() ?? '';
   if (!orgId || !orgId.startsWith('org_')) {
@@ -2708,7 +2890,9 @@ export async function whoami(ctx: RequestContext): Promise<void> {
  * pero el email original tenía un URL viejo/roto.
  */
 export async function resendReport(ctx: RequestContext): Promise<void> {
-  verifySiteKey(ctx);
+  // audit fix #12: requireInternalKey.
+  const { requireInternalKey } = await import('../lib/internalAuth.js');
+  requireInternalKey(ctx);
   const url = new URL(ctx.req.url ?? '/', 'http://x');
   const email = url.searchParams.get('email')?.trim().toLowerCase() ?? '';
   if (!email) {

@@ -24,6 +24,12 @@ export type ApiJob = {
   cognitive_level: CognitiveLevel;
   is_active: boolean;
   company_context: string | null;
+  /** Precio cobrado al cliente en USD. Usado para calcular el presupuesto (20% del fee). */
+  fee_usd?: number | null;
+  /** JSON serializado del ideal_profile (disc, velna, competencias, boss, auto_rejection_rules,
+   *  report_lang, english_*, mindset_test_enabled, salary_range_usd, que_busco/hacer/saber).
+   *  Catalyst lo devuelve como string; el frontend lo parsea con jobAdapter.apiJobToFormJob. */
+  ideal_profile?: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -46,6 +52,17 @@ export type ApiJobInput = {
   company_context?: string | null;
   is_active?: boolean;
   ideal_profile?: ApiIdealProfile | Record<string, unknown> | null;
+  fee_usd?: number | null;
+};
+
+export type ApiJobBudget = {
+  job_id: string;
+  fee_usd: number | null;
+  budget_usd: number | null;
+  spent_usd: number;
+  pct_consumed: number | null;
+  level: 'ok' | 'warn' | 'crit' | 'no_fee';
+  by_type: Record<string, number>;
 };
 
 export type ApiCandidate = {
@@ -86,6 +103,7 @@ export type ApiApplication = {
   completed_at: string | null;
   report_downloaded_at: string | null;
   idempotency_key: string | null;
+  cv_file_id: string | null;
 };
 
 export type ApiTransition = {
@@ -186,15 +204,18 @@ export class ApiError extends Error {
 
 // ---- Low-level fetch wrapper ----
 
-type GetToken = () => Promise<string | null>;
+type GetToken = (opts?: { skipCache?: boolean }) => Promise<string | null>;
 
 async function request<T>(
   getToken: GetToken,
   method: string,
   path: string,
   body?: unknown,
+  attempt: number = 0,
 ): Promise<T> {
-  const token = await getToken();
+  // En el retry forzamos skipCache para que Clerk devuelva un token fresco
+  // (sin esto la 2da llamada devuelve el mismo expirado del cache).
+  const token = await getToken(attempt > 0 ? { skipCache: true } : undefined);
   const url = path.startsWith('http') ? path : `${config.apiBase.replace(/\/$/, '')}${path}`;
 
   const headers: Record<string, string> = {
@@ -207,8 +228,14 @@ async function request<T>(
   // al backend.
   if (token) headers['X-Clerk-Token'] = token;
 
+  // 2026-06-05: endpoints que invocan Anthropic (drafts.generate, drafts.iterate,
+  // tech-questions, narratives) pueden tardar 30-90s con prompts largos. El timeout
+  // por defecto era 60s — el frontend cortaba con "signal aborted" antes que
+  // Anthropic respondiera. Para esos endpoints subimos a 150s.
+  const isAiEndpoint = /\/api\/drafts\/(generate|refine|iterate|.*regenerate)|\/tech-questions\/generate|\/narratives|\/_diag-insert/i.test(path);
+  const timeoutMs = isAiEndpoint ? 150_000 : 60_000;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60_000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   let response: Response;
   try {
@@ -233,6 +260,20 @@ async function request<T>(
       error?: { code?: string; message?: string; details?: unknown };
       trace_id?: string;
     };
+    // 2026-06-05: si el backend rechazó por JWT expirado (Clerk tokens duran 60s y
+    // se vencen durante endpoints lentos tipo drafts.generate que tardan 30-90s),
+    // forzar refresh del token y reintentar UNA vez. Sin esto, Cris veía
+    // "Invalid token: JWT is expired" después de transcripts largos.
+    const errMessage = errBody.error?.message ?? '';
+    const isJwtExpired = response.status === 401 && /jwt is expired|jwt expired|token.*expired/i.test(errMessage);
+    if (isJwtExpired && attempt === 0) {
+      // El SDK de Clerk cachea el token. getToken() respeta el cache. Para forzar
+      // un refresh hacemos sleep 50ms (deja que Clerk reaccione al evento de
+      // expiry interno) y reintentamos. La segunda llamada a getToken() devuelve
+      // un token nuevo porque el cacheado ya vencio.
+      await new Promise((r) => setTimeout(r, 50));
+      return request<T>(getToken, method, path, body, attempt + 1);
+    }
     throw new ApiError(
       response.status,
       errBody.error?.code ?? 'http_error',
@@ -262,7 +303,7 @@ function buildClient(getToken: GetToken) {
         request<{ job: ApiJob }>(getToken, 'DELETE', `/api/jobs/${encodeURIComponent(id)}`),
       notifyClientReportReady: (
         id: string,
-        body: { client_email: string; client_name: string; finalist_count?: number; report_url?: string },
+        body: { client_email?: string; client_name?: string; finalist_count?: number; report_url?: string } = {},
       ) =>
         request<{ ok: boolean; enqueued: boolean }>(
           getToken,
@@ -270,6 +311,347 @@ function buildClient(getToken: GetToken) {
           `/api/jobs/${encodeURIComponent(id)}/notify-client-report-ready`,
           body,
         ),
+      getCosts: (id: string) =>
+        request<{
+          job_id: string;
+          summary: {
+            by_type: Record<'anthropic' | 'email' | 'whatsapp' | 'storage' | 'ads', { total_usd: number; count: number }>;
+            total_usd: number;
+            total_events: number;
+            first_event_at: string | null;
+            last_event_at: string | null;
+          };
+        }>(getToken, 'GET', `/api/jobs/${encodeURIComponent(id)}/costs`),
+      getBudget: (id: string) =>
+        request<ApiJobBudget>(getToken, 'GET', `/api/jobs/${encodeURIComponent(id)}/budget`),
+      addAdsSpend: (id: string, body: { amount_usd: number; note?: string }) =>
+        request<{ ok: boolean; job_id: string; amount_usd: number }>(
+          getToken, 'POST', `/api/jobs/${encodeURIComponent(id)}/ads-spend`, body,
+        ),
+      generatePrescreening: (id: string) =>
+        request<{ job_id: string; status: 'queued'; poll_url: string }>(
+          getToken, 'POST', `/api/jobs/${encodeURIComponent(id)}/prescreening-questions/generate`,
+        ),
+      getPrescreeningStatus: (id: string) =>
+        request<{ status: 'none' | 'pending' | 'ready' | 'failed'; count?: number; queued_at?: string; failed_at?: string; error?: string }>(
+          getToken, 'GET', `/api/jobs/${encodeURIComponent(id)}/prescreening-questions/status`,
+        ),
+      generateTechQuestions: (id: string, body: { count?: number } = {}) =>
+        request<{ job_id: string; status: 'queued'; poll_url: string }>(
+          getToken, 'POST', `/api/jobs/${encodeURIComponent(id)}/tech-questions/generate`, body,
+        ),
+      getTechQuestionsStatus: (id: string) =>
+        request<{ status: 'none' | 'pending' | 'ready' | 'failed'; count?: number; queued_at?: string; failed_at?: string; error?: string }>(
+          getToken, 'GET', `/api/jobs/${encodeURIComponent(id)}/tech-questions/status`,
+        ),
+      listPrescreeningQuestions: (id: string) =>
+        request<{
+          questions: Array<{
+            id: string; text: string;
+            type: 'yes_no' | 'multiple_choice' | 'range_match';
+            options: string[];
+            accepted_indices: number[];
+            rejection_reason: string;
+            criterion: string;
+          }>;
+          status: string;
+          error?: string;
+        }>(getToken, 'GET', `/api/jobs/${encodeURIComponent(id)}/prescreening-questions`),
+      updatePrescreeningQuestions: (id: string, questions: Array<{
+        id: string; text: string;
+        type: 'yes_no' | 'multiple_choice' | 'range_match';
+        options: string[];
+        accepted_indices: number[];
+        rejection_reason: string;
+        criterion: string;
+      }>) =>
+        request<{ ok: true; count: number }>(
+          getToken, 'PUT', `/api/jobs/${encodeURIComponent(id)}/prescreening-questions`, { questions },
+        ),
+      listTechQuestions: (id: string) =>
+        request<{
+          questions: Array<{ id: string; text: string; options: string[]; correct: number; rationale?: string }>;
+          status: string;
+          error?: string;
+        }>(getToken, 'GET', `/api/jobs/${encodeURIComponent(id)}/tech-questions`),
+      updateTechQuestions: (id: string, questions: Array<{ id: string; text: string; options: string[]; correct: number; rationale?: string }>) =>
+        request<{ ok: true; count: number }>(
+          getToken, 'PUT', `/api/jobs/${encodeURIComponent(id)}/tech-questions`, { questions },
+        ),
+      search: (q: string) => {
+        const qs = new URLSearchParams({ q });
+        return request<{ jobs: Array<{ ROWID: string; title: string; company: string; is_active: boolean }>; error?: string }>(
+          getToken, 'GET', `/api/jobs/_search?${qs.toString()}`,
+        );
+      },
+      getFunnelTimeline: (id: string, weeksBack = 12) =>
+        request<{
+          job_id: string;
+          weeks: Array<{ week_start: string; applied: number; passed_prescreening: number; rejected: number; finalists: number }>;
+          total_applied: number;
+          weeks_back: number;
+          error?: string;
+        }>(getToken, 'GET', `/api/jobs/${encodeURIComponent(id)}/funnel-timeline?weeks_back=${weeksBack}`),
+      getStageTiming: (id: string) =>
+        request<{
+          job_id: string;
+          stages: Array<{
+            stage: string;
+            sample_size: number;
+            avg_hours: number;
+            avg_days: number;
+            min_hours: number;
+            max_hours: number;
+          }>;
+          bottlenecks: Array<{ stage: string; avg_days: number; sample_size: number }>;
+          total_transitions: number;
+          error?: string;
+        }>(getToken, 'GET', `/api/jobs/${encodeURIComponent(id)}/stage-timing`),
+      getSalaryDistribution: (id: string) =>
+        request<{
+          count: number;
+          min?: number;
+          max?: number;
+          avg?: number;
+          median?: number;
+          message?: string;
+          vs_job_range: {
+            job_min?: number;
+            job_max?: number;
+            pct_within_range: number;
+            pct_above_max: number;
+            warning: string | null;
+          } | null;
+          error?: string;
+        }>(getToken, 'GET', `/api/jobs/${encodeURIComponent(id)}/salary-distribution`),
+      getAllStageCounts: () =>
+        request<{
+          counts: Record<string, { applied: number; in_tests: number; finalists: number; closed: number }>;
+        }>(getToken, 'GET', `/api/jobs/_stage-counts`),
+      getPrescreeningStats: (id: string) =>
+        request<{
+          job_id: string;
+          total: number;
+          passed: number;
+          failed: number;
+          pass_rate_pct: number | null;
+          by_question: Array<{
+            question_id: string;
+            question_text: string;
+            criterion: string;
+            fails: number;
+            pct_of_total: number;
+          }>;
+          error?: string;
+        }>(getToken, 'GET', `/api/jobs/${encodeURIComponent(id)}/prescreening-stats`),
+    },
+    emailTemplates: {
+      list: () => request<{
+        items: Array<{
+          key: string;
+          locale: string;
+          default_subject: string;
+          has_tenant_override: boolean;
+          has_global_override: boolean;
+          tenant_override_updated_at: string | null;
+          tenant_override_updated_by: string | null;
+        }>;
+      }>(getToken, 'GET', '/api/admin/email-templates'),
+      get: (key: string, locale: string) => request<{
+        key: string;
+        locale: string;
+        default: { subject: string; body_html: string; body_text: string };
+        effective: { subject: string; body_html: string; body_text: string };
+        is_overridden: boolean;
+      }>(getToken, 'GET', `/api/admin/email-templates/${encodeURIComponent(key)}/${encodeURIComponent(locale)}`),
+      save: (key: string, locale: string, body: { subject?: string; body_html?: string; body_text?: string }) =>
+        request<{ ok: true }>(getToken, 'PUT', `/api/admin/email-templates/${encodeURIComponent(key)}/${encodeURIComponent(locale)}`, body),
+      reset: (key: string, locale: string) =>
+        request<{ ok: true }>(getToken, 'DELETE', `/api/admin/email-templates/${encodeURIComponent(key)}/${encodeURIComponent(locale)}`),
+    },
+    savedSearches: {
+      list: (scope?: 'pool' | 'candidates' | 'jobs') => {
+        const qs = scope ? `?scope=${scope}` : '';
+        return request<{
+          searches: Array<{
+            ROWID: string;
+            scope: string;
+            name: string;
+            filters: Record<string, unknown>;
+            created_at: string;
+            updated_at: string;
+          }>;
+          table_not_ready?: boolean;
+        }>(getToken, 'GET', `/api/saved-searches${qs}`);
+      },
+      create: (name: string, scope: 'pool' | 'candidates' | 'jobs', filters: Record<string, unknown>) =>
+        request<{ ok: boolean }>(getToken, 'POST', '/api/saved-searches', { name, scope, filters }),
+      remove: (id: string) =>
+        request<{ ok: boolean }>(getToken, 'DELETE', `/api/saved-searches/${encodeURIComponent(id)}`),
+    },
+    favorites: {
+      list: () => request<{
+        favorites: Array<{
+          ROWID: string;
+          resource_type: 'job' | 'candidate' | 'draft' | 'client';
+          resource_id: string;
+          label: string | null;
+          created_at: string;
+        }>;
+        table_not_ready?: boolean;
+      }>(getToken, 'GET', '/api/favorites'),
+      add: (resourceType: 'job' | 'candidate' | 'draft' | 'client', resourceId: string, label?: string) =>
+        request<{ ok: boolean; already_existed?: boolean }>(
+          getToken, 'POST', '/api/favorites',
+          { resource_type: resourceType, resource_id: resourceId, label },
+        ),
+      remove: (resourceType: 'job' | 'candidate' | 'draft' | 'client', resourceId: string) =>
+        request<{ ok: boolean }>(
+          getToken, 'DELETE', `/api/favorites/${encodeURIComponent(resourceType)}/${encodeURIComponent(resourceId)}`,
+        ),
+    },
+    tenant: {
+      sources: (monthsBack = 6) => request<{
+        sources: Array<{
+          source: 'recruit_linkedin' | 'pool_internal' | 'outbound_heyreach' | 'direct';
+          label: string;
+          applied: number;
+          passed_prescreening: number;
+          completed_tests: number;
+          finalists: number;
+          hired: number;
+          rejected: number;
+          finalist_rate_pct: number | null;
+          conversion_rate_pct: number | null;
+        }>;
+        total: number;
+        period: { months_back: number; since: string };
+      }>(getToken, 'GET', `/api/tenant/sources?months_back=${monthsBack}`),
+      stats: (monthsBack = 6) => request<{
+        period: { months_back: number; since: string };
+        summary: {
+          jobs_created: number;
+          jobs_active: number;
+          total_applied: number;
+          hired: number;
+          finalists: number;
+          auto_rejected: number;
+          admin_rejected: number;
+          conversion_rate_pct: number | null;
+          finalist_rate_pct: number | null;
+          avg_fill_days: number | null;
+          pool_size: number | null;
+        };
+        monthly: Array<{ month: string; jobs_created: number; applied: number; hired: number; finalists: number }>;
+      }>(getToken, 'GET', `/api/tenant/stats?months_back=${monthsBack}`),
+    },
+    clients: {
+      health: () => request<{
+        clients: Array<{
+          client_email: string;
+          client_company: string;
+          client_name: string;
+          jobs_active: number;
+          jobs_total: number;
+          candidates_total: number;
+          finalists_awaiting_decision: number;
+          days_since_last_activity: number | null;
+          drafts_pending_approval: number;
+          status: 'healthy' | 'needs_attention' | 'stale';
+        }>;
+        total_clients: number;
+        counts: { healthy: number; needs_attention: number; stale: number };
+      }>(getToken, 'GET', '/api/clients/health'),
+    },
+    dashboard: {
+      queue: () => request<{
+        total: number;
+        queue: Array<{
+          type: 'draft_pending' | 'bot_review' | 'finalists_ready_to_send' | 'candidate_stuck' | 'critical_alert' | 'good_news';
+          count: number;
+          items?: Array<{ id: string; label: string; hint?: string; link: string }>;
+        }>;
+        checked_at: string;
+      }>(getToken, 'GET', '/api/dashboard/queue'),
+    },
+    health: {
+      check: () => request<{
+        status: 'ok' | 'degraded' | 'critical';
+        checked_at: string;
+        breakers: Array<{
+          name: string;
+          state: 'closed' | 'open' | 'half_open';
+          consecutive_failures: number;
+          opened_at: number | null;
+          total_calls: number;
+          total_failures: number;
+        }>;
+        outbox: { pending: number; failed: number; oldest_pending_min: number | null };
+        alerts: { open_critical: number };
+        recent_5xx?: { count_last_hour: number; endpoints: string[] };
+        env_configured: Record<string, boolean>;
+      }>(getToken, 'GET', '/api/admin/health'),
+    },
+    alerts: {
+      list: (status?: 'open' | 'acknowledged' | 'resolved', limit = 50) => {
+        const params = new URLSearchParams();
+        if (status) params.set('status', status);
+        params.set('limit', String(limit));
+        return request<{
+          alerts: Array<{
+            ROWID: string;
+            severity: 'critical' | 'warning' | 'info';
+            code: string;
+            message: string;
+            context: string | null;
+            tenant_id: string | null;
+            resource_type: string | null;
+            resource_id: string | null;
+            status: 'open' | 'acknowledged' | 'resolved';
+            occurrence_count: number;
+            created_at: string;
+            last_occurred_at: string;
+          }>;
+          counts_by_status: Record<string, number>;
+          open_critical: number;
+          error?: string;
+        }>(getToken, 'GET', `/api/admin/alerts?${params.toString()}`);
+      },
+      acknowledge: (id: string) =>
+        request<{ ok: true }>(getToken, 'POST', `/api/admin/alerts/${encodeURIComponent(id)}/acknowledge`),
+      resolve: (id: string) =>
+        request<{ ok: true }>(getToken, 'POST', `/api/admin/alerts/${encodeURIComponent(id)}/resolve`),
+    },
+    operations: {
+      expenses: (month?: string) => {
+        const params = new URLSearchParams();
+        if (month) params.set('month', month);
+        const qs = params.toString();
+        return request<{
+          month: string;
+          range: { from_iso: string; to_iso: string };
+          total_usd: number;
+          total_fee_usd: number;
+          ratio_overall_pct: number | null;
+          by_service: Array<{ service: string; total_usd: number; events_count: number }>;
+          by_job: Array<{
+            job_id: string;
+            title: string;
+            company: string;
+            fee_usd: number | null;
+            total_usd: number;
+            ratio_pct: number | null;
+            by_service: Record<string, number>;
+          }>;
+          by_client: Array<{
+            company: string;
+            total_usd: number;
+            jobs_count: number;
+            by_service: Record<string, number>;
+          }>;
+          warnings: string[];
+        }>(getToken, 'GET', qs ? `/api/operations/expenses?${qs}` : '/api/operations/expenses');
+      },
     },
     outbox: {
       processNow: () =>
@@ -372,6 +754,15 @@ function buildClient(getToken: GetToken) {
           draft_id: string | null;
           crm_lead_id: string | null;
         }>(getToken, 'GET', `/api/marketing/lead/${encodeURIComponent(leadId)}/contract-context`),
+      patchLead: (leadId: string, patch: Partial<{
+        email: string;
+        contact_name: string;
+        company: string;
+        whatsapp: string;
+        status: 'new' | 'eval_requested' | 'eval_completed' | 'call_booked' | 'won' | 'lost';
+      }>) => request<{ ok: boolean; leadId: string; updated_fields: string[] }>(
+        getToken, 'PATCH', `/api/marketing/lead/${encodeURIComponent(leadId)}`, patch,
+      ),
       listLeads: (opts: { status?: string; urgency?: string; minScore?: number; limit?: number } = {}) => {
         const q = new URLSearchParams();
         if (opts.status) q.set('status', opts.status);
@@ -388,8 +779,51 @@ function buildClient(getToken: GetToken) {
       },
     },
     candidates: {
-      list: (opts: { limit?: number } = {}) => {
-        const qs = opts.limit ? `?limit=${opts.limit}` : '';
+      search: (q: string) => {
+        const qs = new URLSearchParams({ q });
+        return request<{ candidates: ApiCandidate[]; error?: string }>(getToken, 'GET', `/api/candidates/_search?${qs.toString()}`);
+      },
+      findDuplicates: () => request<{
+        duplicates: Array<{
+          type: 'phone' | 'name' | 'email';
+          match: string;
+          severity: 'high' | 'medium';
+          candidates: Array<{ ROWID: string; name: string; email: string; phone: string | null; created_at: string }>;
+        }>;
+        total_candidates: number;
+        duplicate_groups: number;
+        affected_candidates: number;
+      }>(getToken, 'GET', `/api/candidates/_duplicates`),
+      listTags: (candidateId: string) =>
+        request<{
+          tags: Array<{ ROWID: string; tag: string; created_by: string; created_at: string }>;
+          table_not_ready?: boolean;
+        }>(getToken, 'GET', `/api/candidates/${encodeURIComponent(candidateId)}/tags`),
+      addTag: (candidateId: string, tag: string) =>
+        request<{ ok: boolean; tag: string; already_existed?: boolean }>(
+          getToken, 'POST', `/api/candidates/${encodeURIComponent(candidateId)}/tags`, { tag },
+        ),
+      removeTag: (candidateId: string, tagId: string) =>
+        request<{ ok: true }>(
+          getToken, 'DELETE', `/api/candidates/${encodeURIComponent(candidateId)}/tags/${encodeURIComponent(tagId)}`,
+        ),
+      listAllTenantTags: () =>
+        request<{ tags: Array<{ tag: string; count: number }>; table_not_ready?: boolean }>(
+          getToken, 'GET', `/api/tenant/tags`,
+        ),
+      byTag: (tag: string) =>
+        request<{ tag: string; candidates: Array<{ candidate_id: string; name: string; email: string }>; table_not_ready?: boolean }>(
+          getToken, 'GET', `/api/candidates/_by-tag?tag=${encodeURIComponent(tag)}`,
+        ),
+      bulkTag: (applicationIds: string[], tag: string) =>
+        request<{ tag: string; total: number; tagged: number; already_had: number; failed: number }>(
+          getToken, 'POST', `/api/candidates/_bulk-tag`, { application_ids: applicationIds, tag },
+        ),
+      list: (opts: { limit?: number; lastNDays?: number } = {}) => {
+        const params = new URLSearchParams();
+        if (opts.limit) params.set('limit', String(opts.limit));
+        if (opts.lastNDays != null) params.set('last_n_days', String(opts.lastNDays));
+        const qs = params.toString() ? `?${params}` : '';
         return request<{ candidates: ApiCandidate[] }>(getToken, 'GET', `/api/candidates${qs}`);
       },
       get: (id: string) => request<{ candidate: ApiCandidate }>(getToken, 'GET', `/api/candidates/${encodeURIComponent(id)}`),
@@ -399,9 +833,10 @@ function buildClient(getToken: GetToken) {
         request<{ candidate: ApiCandidate }>(getToken, 'PATCH', `/api/candidates/${encodeURIComponent(id)}`, patch),
     },
     applications: {
-      list: (opts: { jobId?: string; limit?: number } = {}) => {
+      list: (opts: { jobId?: string; candidateId?: string; limit?: number } = {}) => {
         const params = new URLSearchParams();
         if (opts.jobId) params.set('job_id', opts.jobId);
+        if (opts.candidateId) params.set('candidate_id', opts.candidateId);
         if (opts.limit) params.set('limit', String(opts.limit));
         const qs = params.toString();
         return request<{ applications: ApiApplication[] }>(getToken, 'GET', `/api/applications${qs ? `?${qs}` : ''}`);
@@ -410,8 +845,71 @@ function buildClient(getToken: GetToken) {
         request<{ application: ApiApplication; transitions: ApiTransition[] }>(
           getToken, 'GET', `/api/applications/${encodeURIComponent(id)}`,
         ),
+      downloadCv: async (id: string): Promise<Blob> => {
+        const token = await getToken();
+        const url = `${config.apiBase.replace(/\/$/, '')}/api/applications/${encodeURIComponent(id)}/cv-download`;
+        const headers: Record<string, string> = { 'Accept': 'application/pdf' };
+        if (token) headers['X-Clerk-Token'] = token;
+        const res = await fetch(url, { method: 'GET', headers });
+        if (!res.ok) {
+          const traceId = res.headers.get('x-trace-id') ?? '';
+          throw new ApiError(res.status, 'cv_download_failed', `CV download failed (${res.status})`, traceId);
+        }
+        return res.blob();
+      },
       create: (input: { assessment_id: string; candidate_id: string; idempotency_key?: string }) =>
         request<{ application: ApiApplication }>(getToken, 'POST', '/api/applications', input),
+      listNotes: (id: string) =>
+        request<{
+          notes: Array<{
+            ROWID: string;
+            author_id: string;
+            author_name: string | null;
+            body: string;
+            is_pinned: boolean;
+            created_at: string;
+            updated_at: string;
+          }>;
+          table_not_ready?: boolean;
+        }>(getToken, 'GET', `/api/applications/${encodeURIComponent(id)}/notes`),
+      createNote: (id: string, body: string, isPinned = false) =>
+        request<{ note: { ROWID: string } }>(
+          getToken, 'POST', `/api/applications/${encodeURIComponent(id)}/notes`, { body, is_pinned: isPinned },
+        ),
+      updateNote: (id: string, noteId: string, patch: { body?: string; is_pinned?: boolean }) =>
+        request<{ ok: true }>(
+          getToken, 'PATCH', `/api/applications/${encodeURIComponent(id)}/notes/${encodeURIComponent(noteId)}`, patch,
+        ),
+      deleteNote: (id: string, noteId: string) =>
+        request<{ ok: true }>(
+          getToken, 'DELETE', `/api/applications/${encodeURIComponent(id)}/notes/${encodeURIComponent(noteId)}`,
+        ),
+      getBotDecision: (id: string) =>
+        request<{
+          decision: {
+            id: string;
+            decision: string;
+            from_stage: string;
+            to_stage_proposed: string;
+            confidence_pct: number;
+            rationale: string;
+            auto_executed: boolean;
+            overridden: boolean;
+            overridden_by: string | null;
+            overridden_reason: string | null;
+            decided_at: string;
+          } | null;
+          table_not_ready?: boolean;
+        }>(getToken, 'GET', `/api/applications/${encodeURIComponent(id)}/bot-decision`),
+      bulkTransition: (applicationIds: string[], toStage: PipelineStage, reason?: string) =>
+        request<{
+          results: Array<{ application_id: string; success: boolean; error?: string; from_stage?: string }>;
+          summary: { total: number; succeeded: number; failed: number };
+        }>(getToken, 'POST', `/api/applications/_bulk-transition`, {
+          application_ids: applicationIds,
+          to_stage: toStage,
+          reason,
+        }),
       transition: (id: string, toStage: PipelineStage, reason?: string) =>
         request<{ application: ApiApplication; transition: ApiTransition }>(
           getToken, 'POST', `/api/applications/${encodeURIComponent(id)}/transition`, { to_stage: toStage, reason },
@@ -491,17 +989,38 @@ function buildClient(getToken: GetToken) {
         const qs = status ? `?status=${encodeURIComponent(status)}` : '';
         return request<{ drafts: JobDraft[]; count: number }>(getToken, 'GET', `/api/drafts/jobs${qs}`);
       },
+      search: (q: string) => {
+        const qs = new URLSearchParams({ q });
+        return request<{
+          drafts: Array<{ ROWID: string; client_company: string; client_name: string; client_email: string; status: string; created_at: string }>;
+          error?: string;
+        }>(getToken, 'GET', `/api/drafts/jobs/_search?${qs.toString()}`);
+      },
       get: (id: string) =>
         request<{ draft: JobDraft }>(getToken, 'GET', `/api/drafts/jobs/${encodeURIComponent(id)}`),
-      save: (input: { draft_payload: Record<string, unknown>; transcript?: string; transcript_source?: string; status?: string; version?: number; client_email?: string; meeting_url?: string; highlights?: unknown }) =>
+      save: (input: { draft_payload: Record<string, unknown>; transcript?: string; transcript_source?: string; status?: string; version?: number; client_email?: string; meeting_url?: string; marketing_lead_id?: string; highlights?: unknown }) =>
         request<{ draft: JobDraft }>(getToken, 'POST', '/api/drafts/jobs/save', input),
-      patch: (id: string, patch: { status?: string; draft_payload?: Record<string, unknown>; version?: number; highlights?: unknown }) =>
+      patch: (id: string, patch: { status?: string; draft_payload?: Record<string, unknown>; draft_payload_patch?: Record<string, unknown>; version?: number; highlights?: unknown }) =>
         request<{ draft: JobDraft }>(getToken, 'PATCH', `/api/drafts/jobs/${encodeURIComponent(id)}`, patch),
       convert: (id: string) =>
         request<{ job_id: string; draft_id: string }>(getToken, 'POST', `/api/drafts/jobs/${encodeURIComponent(id)}/convert`),
       sendToClient: (id: string, input?: { client_email?: string }) =>
         request<{ ok: true; status: string; portal_url: string }>(
           getToken, 'POST', `/api/drafts/jobs/${encodeURIComponent(id)}/send-to-client`, input ?? {},
+        ),
+      iterate: (id: string, input?: { extra_feedback?: string }) =>
+        request<{ ok: true; draft: JobDraft; usage: { input_tokens: number; output_tokens: number } }>(
+          getToken, 'POST', `/api/drafts/jobs/${encodeURIComponent(id)}/iterate`, input ?? {},
+        ),
+      regenerateDiscNarrative: (id: string, input: { disc_ideal: { d: number; i: number; s: number; c: number } }) =>
+        request<{
+          ok: true;
+          narrative: { disc_perfil_descripcion: string; disc_ventajas: string[]; disc_desventajas_potenciales: string[] };
+          usage: { input_tokens: number; output_tokens: number };
+        }>(getToken, 'POST', `/api/drafts/jobs/${encodeURIComponent(id)}/regenerate-disc-narrative`, input),
+      previewUrl: (id: string) =>
+        request<{ ok: true; portal_url: string }>(
+          getToken, 'POST', `/api/drafts/jobs/${encodeURIComponent(id)}/preview-url`, {},
         ),
       generate: (input: { transcript: string }) =>
         request<{ draft: Record<string, unknown>; usage: { input_tokens: number; output_tokens: number; cache_read: number } }>(
@@ -533,9 +1052,13 @@ function buildClient(getToken: GetToken) {
         ),
     },
     pool: {
-      list: (opts: { tag?: string; availableOnly?: boolean; limit?: number } = {}) => {
+      list: (opts: { tag?: string; tags?: string[]; matchMode?: 'all' | 'any'; availableOnly?: boolean; limit?: number } = {}) => {
         const params = new URLSearchParams();
         if (opts.tag) params.set('tag', opts.tag);
+        if (opts.tags && opts.tags.length > 0) {
+          params.set('tags', opts.tags.join(','));
+          if (opts.matchMode) params.set('match', opts.matchMode);
+        }
         if (opts.availableOnly) params.set('available_only', 'true');
         if (opts.limit) params.set('limit', String(opts.limit));
         const qs = params.toString();
@@ -567,6 +1090,14 @@ function buildClient(getToken: GetToken) {
         request<{ job_id: string; pool_size: number; available_for_match: number; matches: PoolMatchResult[] }>(
           getToken, 'POST', '/api/pool/match', input,
         ),
+      inviteToJob: (poolId: string, jobId: string, sendEmail = true) =>
+        request<{
+          application_id: string;
+          job_title: string;
+          created_new: boolean;
+          pipeline_stage: string;
+          email_sent: boolean;
+        }>(getToken, 'POST', `/api/pool/${encodeURIComponent(poolId)}/invite-to-job`, { job_id: jobId, send_email: sendEmail }),
     },
     apiKeys: {
       list: () =>
@@ -650,8 +1181,26 @@ function buildClient(getToken: GetToken) {
           meeting_url?: string;
           next_step: string;
         }>(getToken, 'POST', '/api/briefings/schedule', input),
+
+      /**
+       * Sube manualmente el transcript de una reunión que ya ocurrió. El backend
+       * publica outbox event 'briefing.transcript_received' → auto-genera draft via IA.
+       */
+      uploadTranscript: (input: {
+        client_email: string;
+        client_name: string;
+        client_company?: string;
+        transcript: string;
+        meeting_date?: string;
+      }) =>
+        request<{
+          queued: boolean;
+          meeting_id: string;
+          transcript_chars: number;
+          next_step: string;
+        }>(getToken, 'POST', '/api/briefings/upload-transcript', input),
     },
-    emailTemplates: {
+    emailTemplatesPreview: {
       list: (locale: 'es' | 'en' = 'es') =>
         request<{
           locale: string;
@@ -916,7 +1465,9 @@ export type ApiClient = ReturnType<typeof buildClient>;
 
 export function useApi(): ApiClient {
   const { getToken } = useAuth();
-  return useMemo(() => buildClient(() => getToken()), [getToken]);
+  // Propagamos las opciones (incluido skipCache) que vienen del request helper para
+  // que el retry en JWT expirado pueda forzar un token fresco.
+  return useMemo(() => buildClient((opts) => getToken(opts ?? {})), [getToken]);
 }
 
 // ---- Standalone (sin Clerk) — para llamadas server-to-server o tests ----

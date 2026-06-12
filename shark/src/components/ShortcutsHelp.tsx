@@ -8,6 +8,7 @@ const SHORTCUTS = [
   { keys: ['k'], desc: 'Fila anterior de tabla', alt: '↑' },
   { keys: ['Enter'], desc: 'Abrir fila activa' },
   { keys: ['Esc'], desc: 'Cerrar modales / desfocar' },
+  { keys: ['f'], desc: '★ Marcar/desmarcar favorito (en JobDetail / CandidateDetail)' },
   { keys: ['g', 'd'], desc: 'Ir a Dashboard' },
   { keys: ['g', 'D'], desc: 'Ir a Drafts' },
   { keys: ['g', 'j'], desc: 'Ir a Jobs' },

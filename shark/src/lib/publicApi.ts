@@ -9,8 +9,15 @@ import { config } from '../config';
 import { ApiError } from './api';
 
 type SubmitTecnica = {
-  total_questions: number;
-  total_correct: number;
+  /**
+   * Path 1 (preferido, doble eje doc 19): mapa { question_id: index_0_3 } con TODAS las
+   * preguntas respondidas (técnicas + situacionales). El backend calcula técnico %,
+   * validez situacional, estilo autonomy/consult, match con jefe.
+   */
+  answers?: Record<string, number>;
+  /** Path 2 legacy: frontend ya computó total_correct. Sin doble eje. */
+  total_questions?: number;
+  total_correct?: number;
   min_required?: number;
 };
 
@@ -166,6 +173,9 @@ export type PortalApi = {
   client_company: string;
   agency_name: string;
   jobs: PortalJobApi[];
+  // Datos del recruiter responsable — opcional, lo expone el backend si está configurado.
+  recruiter_email?: string;
+  recruiter_whatsapp?: string;
 };
 
 export type BundleIdealProfile = {
@@ -278,9 +288,103 @@ export const publicApi = {
     )),
 
   getTestStatus: (token: string) =>
-    publicFetch<{ application_id: string; pipeline_stage: string; expired: boolean }>(
+    publicFetch<{
+      application_id: string;
+      pipeline_stage: string;
+      expired: boolean;
+      job?: {
+        id?: string;
+        ROWID?: string;
+        title: string;
+        company?: string;
+        cognitive_level?: 'basic' | 'mid' | 'senior';
+        tecnica_minimo_pct?: number;
+        salary_range_usd?: { min: number; max: number };
+      };
+      candidate?: {
+        name?: string;
+        salary_expectation?: number | null;
+        availability?: string | null;
+      };
+    }>(
       'GET',
       `/test/${encodeURIComponent(token)}`,
+    ),
+
+  // Métodos adicionales del flujo de candidato — pasamanos mínimos para que TS compile.
+  // Si alguno necesita lógica especial, se evolucionan acá.
+  getMyProgress: (token: string) =>
+    publicFetch<{
+      job: { title: string; company: string };
+      status: { label: string; description: string; is_positive?: boolean; is_terminal?: boolean };
+      completed_phases: string[];
+      next?: { phase: string; label?: string } | null;
+    }>('GET', `/test/${encodeURIComponent(token)}/my-progress`),
+
+  getPrescreening: (token: string) =>
+    publicFetch<{
+      questions: Array<{
+        id: string;
+        text: string;
+        type: 'yes_no' | 'multiple_choice' | 'range_match';
+        options: string[];
+      }>;
+      already_submitted?: boolean;
+      status?: string;
+      job_title?: string;
+    }>('GET', `/test/${encodeURIComponent(token)}/prescreening`),
+
+  submitPrescreening: (
+    token: string,
+    payload: Array<{ question_id: string; selected_index: number }> | { answers: Array<{ question_id: string; selected_index: number }> },
+  ) => {
+    // Normaliza: si llega array directo, lo envolvemos en {answers: ...}.
+    const body = Array.isArray(payload) ? { answers: payload } : payload;
+    return publicFetch<{ passed: boolean; failedReason?: string; reason?: string }>(
+      'POST',
+      `/test/${encodeURIComponent(token)}/prescreening/submit`,
+      body,
+    );
+  },
+
+  recoverByEmail: (email: string) =>
+    publicFetch<{ ok: boolean; sent?: boolean }>('POST', `/test/recovery/by-email`, { email }),
+
+  getTechQuestions: (token: string) =>
+    publicFetch<{
+      questions: Array<{
+        id: string;
+        text: string;
+        type?: 'open_ended' | 'multiple_choice';
+        kind?: 'technical' | 'situational';
+        options?: string[];
+      }>;
+      status?: string;
+      cognitive_level?: string;
+    }>('GET', `/test/${encodeURIComponent(token)}/tech-questions`),
+
+  registerCandidateInfo: (token: string, info: { full_name?: string; salary_expectation?: number; availability?: string }) =>
+    publicFetch<{ ok: true }>('POST', `/test/${encodeURIComponent(token)}/register`, info),
+
+  approveDraft: (token: string, draftId: string, comment?: string) =>
+    publicFetch<{ ok: boolean; status?: string }>(
+      'POST',
+      `/portal/${encodeURIComponent(token)}/drafts/${encodeURIComponent(draftId)}/approve`,
+      { comment },
+    ),
+
+  requestDraftChanges: (token: string, draftId: string, comment: string) =>
+    publicFetch<{ ok: boolean }>(
+      'POST',
+      `/portal/${encodeURIComponent(token)}/drafts/${encodeURIComponent(draftId)}/request-changes`,
+      { comment },
+    ),
+
+  submitReportFeedback: (token: string, payload: Record<string, unknown>) =>
+    publicFetch<{ ok: boolean }>(
+      'POST',
+      `/report/bundle/${encodeURIComponent(token)}/feedback`,
+      payload,
     ),
 
   getReport: (token: string) =>
@@ -416,7 +520,15 @@ export const publicApi = {
     publicFetch<{ portal: PortalApi }>('GET', `/portal/${encodeURIComponent(token)}`),
 
   getClientPortalJob: (token: string, jobId: string) =>
-    publicFetch<{ portal: Omit<PortalApi, 'jobs'>; job: PortalJobApi }>(
+    publicFetch<{
+      portal: Omit<PortalApi, 'jobs'>;
+      job: PortalJobApi;
+      finalists_preview?: Array<{
+        display_name: string;
+        one_liner: string;
+        match_pct: number | null;
+      }>;
+    }>(
       'GET',
       `/portal/${encodeURIComponent(token)}/jobs/${encodeURIComponent(jobId)}`,
     ),

@@ -306,7 +306,7 @@ export default function DemoReport() {
               const preguntas = preguntasParaEntrevista(data.integrity_dimensions);
               return (
                 <>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 24 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 10, marginBottom: 24 }}>
                     <div style={summaryStat}>
                       <div style={{ fontSize: 32, fontWeight: 800, color: '#1e7e34', lineHeight: 1 }}>{integrityOK.length}</div>
                       <div style={{ fontSize: 12, color: '#1e5631', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>Sin riesgo</div>
@@ -334,7 +334,7 @@ export default function DemoReport() {
                   )}
 
                   <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0e1218', marginTop: 32, marginBottom: 16 }}>Dimensiones por nivel de riesgo</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, alignItems: 'start' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, alignItems: 'start' }}>
                     <RiesgoBox titulo="Riesgo bajo" subtitulo="Sin alertas" color="green" dims={integrityOK} />
                     <RiesgoBox titulo="Riesgo medio" subtitulo="Observar" color="amber" dims={integrityAlerts.filter((d) => d.nivel === 'medio')} />
                     <RiesgoBox titulo="Riesgo alto" subtitulo="Alertas críticas" color="red" dims={integrityAlerts.filter((d) => d.nivel === 'alto')} />
@@ -367,11 +367,32 @@ export default function DemoReport() {
 
           <div style={{ background: 'linear-gradient(135deg, #0e1218 0%, #1f283d 100%)', border: '1px solid #dafd6f', borderRadius: 12, padding: 32, marginTop: 48, textAlign: 'center' }}>
             <h3 style={{ fontSize: 22, marginBottom: 8, color: '#dafd6f', marginTop: 0 }}>¿Te sirvió esta demo?</h3>
-            <p style={{ color: '#e6e8eb', fontSize: 15, marginBottom: 0, lineHeight: 1.7 }}>
-              En el servicio completo recibís este mismo análisis pero con <strong style={{ color: '#dafd6f' }}>prueba técnica a medida del rol</strong>,
+            <p style={{ color: '#e6e8eb', fontSize: 15, marginBottom: 20, lineHeight: 1.7 }}>
+              En el servicio completo recibes este mismo análisis pero con <strong style={{ color: '#dafd6f' }}>prueba técnica a medida del rol</strong>,
               <strong style={{ color: '#dafd6f' }}> evaluación emocional</strong>,
               <strong style={{ color: '#dafd6f' }}> videos con análisis IA</strong> y un
               <strong style={{ color: '#dafd6f' }}> comparativo de finalistas</strong> con recomendación de a quién entrevistar primero.
+            </p>
+            <a
+              href={import.meta.env.VITE_MARKETING_BOOKING_URL || 'https://bookings.zoho.com/portal/kuno'}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-block',
+                background: '#dafd6f',
+                color: '#0e1218',
+                padding: '14px 32px',
+                borderRadius: 8,
+                textDecoration: 'none',
+                fontWeight: 700,
+                fontSize: 16,
+                marginTop: 4,
+              }}
+            >
+              📅 Agendar reunión
+            </a>
+            <p style={{ color: '#8a93a3', fontSize: 13, marginTop: 12, marginBottom: 0 }}>
+              30 minutos. Sin costo. Te mostramos cómo funciona con un caso real tuyo.
             </p>
           </div>
         </div>

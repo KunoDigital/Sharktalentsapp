@@ -3,15 +3,6 @@ import { useApi, type ApiMarketingLead } from '../lib/api';
 import { config } from '../config';
 import './pages.css';
 
-const STATUS_LABELS: Record<ApiMarketingLead['status'], string> = {
-  new: 'Nuevo',
-  eval_requested: 'Eval solicitada',
-  eval_completed: 'Eval completada',
-  call_booked: 'Llamada agendada',
-  won: 'Ganado',
-  lost: 'Perdido',
-};
-
 const URGENCY_LABELS: Record<ApiMarketingLead['urgency'], string> = {
   'less_30d': '<30 días',
   '1-3m': '1-3 meses',
@@ -29,6 +20,16 @@ type Stats = {
   lost: number;
 };
 
+type LeadStatus = ApiMarketingLead['status'];
+
+const KANBAN_STAGES: Array<{ key: LeadStatus; label: string; color: string }> = [
+  { key: 'new', label: 'Nuevo', color: '#dafd6f' },
+  { key: 'eval_requested', label: 'Eval solicitada', color: '#6366f1' },
+  { key: 'eval_completed', label: 'Eval completada', color: '#a855f7' },
+  { key: 'call_booked', label: 'Llamada agendada', color: '#fbbf24' },
+  { key: 'won', label: 'Ganado', color: '#34d399' },
+];
+
 export default function MarketingLeads() {
   const api = useApi();
   const [leads, setLeads] = useState<ApiMarketingLead[]>([]);
@@ -36,8 +37,10 @@ export default function MarketingLeads() {
   const [tableReady, setTableReady] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('');
   const [minScore, setMinScore] = useState<number>(0);
+  const [moveError, setMoveError] = useState<string | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<LeadStatus | null>(null);
+  const [movingIds, setMovingIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!config.useApi) {
@@ -47,7 +50,6 @@ export default function MarketingLeads() {
     let cancelled = false;
     setLoading(true);
     api.marketing.listLeads({
-      status: statusFilter || undefined,
       minScore: minScore || undefined,
       limit: 200,
     })
@@ -67,7 +69,38 @@ export default function MarketingLeads() {
     return () => {
       cancelled = true;
     };
-  }, [api, statusFilter, minScore]);
+  }, [api, minScore]);
+
+  async function moveLead(leadId: string, newStatus: LeadStatus) {
+    const lead = leads.find((l) => l.ROWID === leadId);
+    if (!lead || lead.status === newStatus) return;
+    const prevStatus = lead.status;
+    setLeads((prev) => prev.map((l) => (l.ROWID === leadId ? { ...l, status: newStatus } : l)));
+    setMovingIds((prev) => new Set(prev).add(leadId));
+    setStats((prev) => prev && {
+      ...prev,
+      [prevStatus]: Math.max(0, prev[prevStatus] - 1),
+      [newStatus]: prev[newStatus] + 1,
+    });
+    try {
+      await api.marketing.patchLead(leadId, { status: newStatus });
+    } catch (err) {
+      setLeads((prev) => prev.map((l) => (l.ROWID === leadId ? { ...l, status: prevStatus } : l)));
+      setStats((prev) => prev && {
+        ...prev,
+        [newStatus]: Math.max(0, prev[newStatus] - 1),
+        [prevStatus]: prev[prevStatus] + 1,
+      });
+      setMoveError(`No se pudo mover el lead: ${(err as Error).message}`);
+      setTimeout(() => setMoveError(null), 5000);
+    } finally {
+      setMovingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(leadId);
+        return next;
+      });
+    }
+  }
 
   if (!config.useApi) {
     return (
@@ -113,15 +146,6 @@ export default function MarketingLeads() {
 
       <div className="filters-bar" style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
         <label style={{ fontSize: '0.85rem' }}>
-          Estado:&nbsp;
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="">Todos</option>
-            {Object.entries(STATUS_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            ))}
-          </select>
-        </label>
-        <label style={{ fontSize: '0.85rem' }}>
           Score mínimo:&nbsp;
           <select value={minScore} onChange={(e) => setMinScore(Number(e.target.value))}>
             <option value="0">Cualquiera</option>
@@ -130,8 +154,13 @@ export default function MarketingLeads() {
             <option value="80">80+ (muy calientes)</option>
           </select>
         </label>
+        <CaptureManualLeadButton onCreated={() => window.location.reload()} />
         <ImportFromCrmButton onImported={() => window.location.reload()} />
       </div>
+
+      {moveError && (
+        <div className="kanban-move-error">⚠️ {moveError}</div>
+      )}
 
       {loading ? (
         <p className="muted small">Cargando leads…</p>
@@ -140,54 +169,112 @@ export default function MarketingLeads() {
           <p>{tableReady ? 'Sin leads que matcheen los filtros.' : 'Esperando que se cree la tabla MarketingLeads.'}</p>
         </div>
       ) : (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Score</th>
-              <th>Email</th>
-              <th>Contacto</th>
-              <th>Empresa</th>
-              <th>Urgencia</th>
-              <th>Salary target</th>
-              <th>Source</th>
-              <th>Estado</th>
-              <th>Recibido</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leads.map((l) => (
-              <tr key={l.ROWID}>
-                <td>
-                  <span style={{ fontWeight: 700, color: scoreColor(l.score_quality) }}>
-                    {l.score_quality}
-                  </span>
-                </td>
-                <td>{l.email}</td>
-                <td>{l.contact_name ?? '—'}</td>
-                <td>{l.company ?? '—'}</td>
-                <td>{URGENCY_LABELS[l.urgency] ?? l.urgency}</td>
-                <td>{l.salary_target ? `$${l.salary_target.toLocaleString()}` : '—'}</td>
-                <td className="muted small">{l.utm_source ?? l.source}{l.utm_campaign ? ` · ${l.utm_campaign}` : ''}</td>
-                <td>
-                  <span className={`status-tag status-${l.status}`}>
-                    {STATUS_LABELS[l.status] ?? l.status}
-                  </span>
-                </td>
-                <td className="muted small">
-                  {new Date(l.created_at).toLocaleDateString()}
-                </td>
-                <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  <SendDemoButton lead={l} />
-                  <ViewReportButton lead={l} />
-                  <ConvertToTenantButton lead={l} />
-                  <SendContractButton lead={l} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <>
+          <p className="muted small" style={{ marginBottom: '0.5rem' }}>
+            Arrastrá una tarjeta a otra columna para cambiar el estado del lead.
+          </p>
+          <div className="kanban-board">
+            {KANBAN_STAGES.map((stage) => {
+              const colLeads = leads.filter((l) => l.status === stage.key);
+              return (
+                <div
+                  key={stage.key}
+                  className={`kanban-col ${dragOverCol === stage.key ? 'is-drag-over' : ''}`}
+                  onDragOver={(e) => { e.preventDefault(); setDragOverCol(stage.key); }}
+                  onDragLeave={() => { if (dragOverCol === stage.key) setDragOverCol(null); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOverCol(null);
+                    const leadId = e.dataTransfer.getData('text/plain');
+                    if (leadId) void moveLead(leadId, stage.key);
+                  }}
+                >
+                  <header className="kanban-col-header" style={{ borderTopColor: stage.color }}>
+                    <span className="kanban-col-label">{stage.label}</span>
+                    <span className="kanban-col-count">{colLeads.length}</span>
+                  </header>
+                  <div className="kanban-col-body">
+                    {colLeads.length === 0 ? (
+                      <p className="muted small kanban-empty">—</p>
+                    ) : (
+                      colLeads.map((l) => (
+                        <LeadCard key={l.ROWID} lead={l} isMoving={movingIds.has(l.ROWID)} />
+                      ))
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {(() => {
+            const lostLeads = leads.filter((l) => l.status === 'lost');
+            if (lostLeads.length === 0) return null;
+            return (
+              <details className="kanban-lost"
+                onDragOver={(e) => { e.preventDefault(); setDragOverCol('lost'); }}
+                onDragLeave={() => { if (dragOverCol === 'lost') setDragOverCol(null); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragOverCol(null);
+                  const leadId = e.dataTransfer.getData('text/plain');
+                  if (leadId) void moveLead(leadId, 'lost');
+                }}
+              >
+                <summary>Perdidos · {lostLeads.length}</summary>
+                <div className="kanban-lost-grid">
+                  {lostLeads.map((l) => (
+                    <LeadCard key={l.ROWID} lead={l} isMoving={movingIds.has(l.ROWID)} />
+                  ))}
+                </div>
+              </details>
+            );
+          })()}
+        </>
       )}
+    </div>
+  );
+}
+
+function LeadCard({ lead, isMoving }: { lead: ApiMarketingLead; isMoving: boolean }) {
+  const [isDragging, setIsDragging] = useState(false);
+  return (
+    <div
+      className={`kanban-card ${isDragging ? 'is-dragging' : ''} ${isMoving ? 'is-moving' : ''}`}
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData('text/plain', lead.ROWID);
+        e.dataTransfer.effectAllowed = 'move';
+        setIsDragging(true);
+      }}
+      onDragEnd={() => setIsDragging(false)}
+    >
+      <div className="kanban-card-header">
+        <span className="kanban-card-score" style={{ color: scoreColor(lead.score_quality) }}>
+          {lead.score_quality}
+        </span>
+        <span className="kanban-card-name" title={lead.email}>
+          {lead.contact_name ?? lead.email}
+        </span>
+      </div>
+      <div className="kanban-card-meta">
+        {lead.company && <div className="kanban-card-company">{lead.company}</div>}
+        <div className="kanban-card-row">
+          <span>{URGENCY_LABELS[lead.urgency] ?? lead.urgency}</span>
+          {lead.salary_target ? <span>${lead.salary_target.toLocaleString()}</span> : null}
+        </div>
+        <div className="kanban-card-source muted small">
+          {lead.utm_source ?? lead.source} · {new Date(lead.created_at).toLocaleDateString()}
+        </div>
+      </div>
+      <div className="kanban-card-actions">
+        <SendDemoButton lead={lead} />
+        <ViewReportButton lead={lead} />
+        {(lead.status === 'eval_completed' || lead.status === 'call_booked' || lead.status === 'won') && (
+          <ConvertToTenantButton lead={lead} />
+        )}
+        {lead.status === 'won' && <SendContractButton lead={lead} />}
+      </div>
     </div>
   );
 }
@@ -682,6 +769,94 @@ function scoreColor(score: number): string {
   if (score >= 60) return 'var(--st-warn-fg, #f59e0b)';
   if (score >= 40) return 'var(--st-fg)';
   return 'var(--st-fg-muted)';
+}
+
+/**
+ * Botón "Capturar manual" — crea un MarketingLead directo desde el admin sin pasar
+ * por el funnel público. Útil para: leads que llegaron por WhatsApp/llamada/recomendación,
+ * setup de tests E2E, y cualquier lead sin tracking.
+ */
+function CaptureManualLeadButton({ onCreated }: { onCreated: () => void }) {
+  const api = useApi();
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [company, setCompany] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+
+  async function handleSubmit() {
+    setError(null);
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Email inválido.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.marketing.createManualLead({
+        email: email.trim(),
+        contact_name: contactName.trim() || undefined,
+        company: company.trim() || undefined,
+        whatsapp: whatsapp.trim() || undefined,
+      });
+      setOpen(false);
+      setEmail(''); setContactName(''); setCompany(''); setWhatsapp('');
+      onCreated();
+    } catch (err) {
+      setError((err as Error).message || 'No se pudo crear el lead.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        className="btn-toolbar"
+        onClick={() => setOpen(true)}
+      >
+        ➕ Capturar manual
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => !submitting && setOpen(false)}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--st-bg)', border: '1px solid var(--st-border-soft)', borderRadius: '10px', padding: '1.5rem', width: '100%', maxWidth: '480px' }}>
+        <h3 style={{ marginTop: 0, marginBottom: '0.4rem' }}>➕ Capturar lead manual</h3>
+        <p className="muted small" style={{ marginTop: 0, marginBottom: '1rem' }}>
+          Crear un lead sin pasar por el funnel público. Útil para leads que llegaron por WhatsApp, llamada o recomendación.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+            <span className="muted small">Email *</span>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="cliente@empresa.com" style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--st-border-soft)', background: 'var(--st-bg-elev)', color: 'var(--st-fg)' }} />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+            <span className="muted small">Nombre de contacto</span>
+            <input type="text" value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Diego Méndez" style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--st-border-soft)', background: 'var(--st-bg-elev)', color: 'var(--st-fg)' }} />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+            <span className="muted small">Empresa</span>
+            <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="PixelWeb Digital" style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--st-border-soft)', background: 'var(--st-bg-elev)', color: 'var(--st-fg)' }} />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+            <span className="muted small">WhatsApp (opcional)</span>
+            <input type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+507..." style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--st-border-soft)', background: 'var(--st-bg-elev)', color: 'var(--st-fg)' }} />
+          </label>
+          {error && <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.4)', borderRadius: '6px', color: '#ff8888', fontSize: '0.88rem' }}>{error}</div>}
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+            <button type="button" className="btn-toolbar" onClick={() => setOpen(false)} disabled={submitting}>Cancelar</button>
+            <button type="button" className="btn-primary" onClick={handleSubmit} disabled={submitting || !email.trim()}>
+              {submitting ? 'Creando…' : 'Crear lead'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function StatCard({ label, value, highlight, muted }: { label: string; value: number; highlight?: boolean; muted?: boolean }) {

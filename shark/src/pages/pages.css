@@ -842,3 +842,200 @@
   outline: 2px solid var(--st-accent);
   outline-offset: 2px;
 }
+
+/* ===========================================
+   Kanban (Marketing Leads)
+   =========================================== */
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0.5rem 0 1.5rem;
+  align-items: start;
+}
+
+.kanban-col {
+  background: var(--st-card-bg, #131923);
+  border: 1px solid var(--st-card-border, #1c2230);
+  border-radius: 8px;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.kanban-col.is-drag-over {
+  background: rgba(218, 253, 111, 0.06);
+  border-color: #dafd6f;
+}
+
+.kanban-col-header {
+  padding: 0.6rem 0.75rem;
+  border-top: 3px solid #6b7280;
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--st-text, #f3f4f6);
+}
+
+.kanban-col-count {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+  padding: 0 0.55rem;
+  min-width: 22px;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.kanban-col-body {
+  flex: 1;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 120px;
+}
+
+.kanban-empty {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: #6b7585;
+  opacity: 0.6;
+}
+
+.kanban-card {
+  background: #0a0e15;
+  border: 1px solid #2c3442;
+  border-radius: 6px;
+  padding: 0.6rem;
+  cursor: grab;
+  transition: border-color 0.1s, opacity 0.15s, transform 0.1s;
+}
+
+.kanban-card:hover {
+  border-color: #475569;
+}
+
+.kanban-card:active {
+  cursor: grabbing;
+}
+
+.kanban-card.is-dragging {
+  opacity: 0.35;
+  transform: scale(0.98);
+}
+
+.kanban-card.is-moving {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.kanban-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.kanban-card-score {
+  font-weight: 700;
+  font-size: 0.95rem;
+  min-width: 28px;
+}
+
+.kanban-card-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--st-text, #f3f4f6);
+}
+
+.kanban-card-meta {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kanban-card-company {
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.kanban-card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.kanban-card-source {
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+
+.kanban-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.kanban-lost {
+  margin-top: 1.5rem;
+  background: var(--st-card-bg, #131923);
+  border: 1px solid #1c2230;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  transition: border-color 0.15s;
+}
+
+.kanban-lost[open] {
+  padding-bottom: 0.75rem;
+}
+
+.kanban-lost summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #6b7585;
+  padding: 0.25rem 0;
+}
+
+.kanban-lost-grid {
+  margin-top: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.5rem;
+}
+
+.kanban-move-error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+}
+
+@media (max-width: 980px) {
+  .kanban-board {
+    grid-template-columns: repeat(5, minmax(230px, 1fr));
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .kanban-card-actions {
+    flex-direction: column;
+  }
+}

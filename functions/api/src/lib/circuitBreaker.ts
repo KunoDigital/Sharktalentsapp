@@ -74,11 +74,19 @@ export async function withBreaker<T>(opts: BreakerOptions, fn: () => Promise<T>)
     b.consecutive_failures = 0;
     return result;
   } catch (err) {
-    b.consecutive_failures += 1;
-    b.total_failures += 1;
-    if (b.state === 'half_open' || b.consecutive_failures >= opts.threshold) {
-      b.state = 'open';
-      b.opened_at = Date.now();
+    // Errores que no deberían abrir el breaker: facturación, validación del caller, etc.
+    // Detectados por flag `skipBreaker=true` en el error. Estos errores fluyen al caller
+    // sin ensuciar el estado del breaker (sino, p.ej., "credit balance too low" en Anthropic
+    // bloquea TODO el sistema hasta que termine el cooldown — incluyendo el ping para
+    // verificar si se recargaron créditos).
+    const skipBreaker = (err as Error & { skipBreaker?: boolean }).skipBreaker === true;
+    if (!skipBreaker) {
+      b.consecutive_failures += 1;
+      b.total_failures += 1;
+      if (b.state === 'half_open' || b.consecutive_failures >= opts.threshold) {
+        b.state = 'open';
+        b.opened_at = Date.now();
+      }
     }
     throw err;
   }
@@ -86,6 +94,17 @@ export async function withBreaker<T>(opts: BreakerOptions, fn: () => Promise<T>)
 
 export function getBreakerState(name: string): Breaker | null {
   return breakers.get(name) ?? null;
+}
+
+export function listBreakers(): Array<{ name: string; state: BreakerState; consecutive_failures: number; opened_at: number | null; total_calls: number; total_failures: number }> {
+  return Array.from(breakers.entries()).map(([name, b]) => ({
+    name,
+    state: b.state,
+    consecutive_failures: b.consecutive_failures,
+    opened_at: b.opened_at,
+    total_calls: b.total_calls,
+    total_failures: b.total_failures,
+  }));
 }
 
 export function resetBreaker(name: string): void {

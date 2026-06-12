@@ -109,6 +109,9 @@ export async function listPool(ctx: RequestContext): Promise<void> {
   const url = new URL(ctx.req.url ?? '/', 'http://x');
   const availableOnly = url.searchParams.get('available_only') === 'true';
   const tag = url.searchParams.get('tag');
+  // Tags multi: ?tags=react,senior&match=all|any (default any)
+  const tagsParam = url.searchParams.get('tags');
+  const matchMode = url.searchParams.get('match') === 'all' ? 'all' : 'any';
   const limit = Math.max(1, Math.min(500, Number(url.searchParams.get('limit') ?? 100)));
 
   const filters = [`tenant_id = '${escapeSql(tenantId)}'`];
@@ -117,10 +120,18 @@ export async function listPool(ctx: RequestContext): Promise<void> {
   const q = `SELECT * FROM ${TABLE} WHERE ${filters.join(' AND ')} ORDER BY CREATEDTIME DESC LIMIT ${limit}`;
   const rows = unwrapRows<PoolRow>((await zcql(ctx.req).executeZCQLQuery(q)) as unknown[], TABLE);
 
-  // Filtrar por tag en memoria (ZCQL no permite contains en strings JSON)
-  const filtered = tag
-    ? rows.filter((r) => tryParseArray(r.tags).map((t) => t.toLowerCase()).includes(tag.toLowerCase()))
-    : rows;
+  // Filtrar por tags en memoria (ZCQL no permite contains en strings JSON)
+  let filtered = rows;
+  const tagsToMatch: string[] = tagsParam
+    ? tagsParam.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean)
+    : tag ? [tag.toLowerCase()] : [];
+  if (tagsToMatch.length > 0) {
+    filtered = rows.filter((r) => {
+      const rowTags = tryParseArray(r.tags).map((t) => t.toLowerCase());
+      if (matchMode === 'all') return tagsToMatch.every((t) => rowTags.includes(t));
+      return tagsToMatch.some((t) => rowTags.includes(t));
+    });
+  }
 
   sendJson(ctx.res, 200, {
     pool: filtered.map((r) => ({
@@ -293,11 +304,15 @@ export async function matchPool(ctx: RequestContext): Promise<void> {
 
   const ideal = parseIdealProfile(jobRow.ideal_profile ?? null);
 
+  // 2026-06-04 (audit fix #21): LIMIT en ambas queries. Sin LIMIT, un pool de 8.000
+  // candidatos + un job con 1.500 Results traía 2.5MB+ a memoria por cada request.
+  // 5.000 es generoso para casos reales (tenant grande), pero acota el blast radius.
+
   // Excluir candidatos que ya aplicaron a este job
   type AppliedRow = { candidate_id: string };
   const applied = unwrapRows<AppliedRow>(
     (await zcql(ctx.req).executeZCQLQuery(
-      `SELECT candidate_id FROM Results WHERE assessment_id = '${escapeSql(jobId)}'`,
+      `SELECT candidate_id FROM Results WHERE assessment_id = '${escapeSql(jobId)}' LIMIT 300`,
     )) as unknown[],
     'Results',
   ).map((r) => r.candidate_id);
@@ -306,7 +321,7 @@ export async function matchPool(ctx: RequestContext): Promise<void> {
   // Cargar pool del tenant disponible
   const poolRows = unwrapRows<PoolRow>(
     (await zcql(ctx.req).executeZCQLQuery(
-      `SELECT * FROM ${TABLE} WHERE tenant_id = '${escapeSql(tenantId)}' AND disponible_para_outreach = true`,
+      `SELECT * FROM ${TABLE} WHERE tenant_id = '${escapeSql(tenantId)}' AND disponible_para_outreach = true LIMIT 300`,
     )) as unknown[],
     TABLE,
   );
@@ -339,6 +354,109 @@ export async function matchPool(ctx: RequestContext): Promise<void> {
     pool_size: poolRows.length,
     available_for_match: available.length,
     matches: top,
+  });
+}
+
+/**
+ * POST /api/pool/:id/invite-to-job
+ * Body: { job_id, send_email?: true }
+ *
+ * Crea una Application (Result) en stage 'prefilter_passed' del candidato del pool al job
+ * indicado. Si send_email=true (default), encola email "Tenemos un puesto para vos".
+ *
+ * Idempotente: si ya hay un Result para ese candidate+job, devuelve el existente.
+ */
+export async function invitePoolToJob(ctx: RequestContext): Promise<void> {
+  await requireAuth(ctx);
+  const tenantId = await requireTenant(ctx);
+  if (!(await isTableReady(ctx.req))) throw TABLE_NOT_READY;
+
+  const poolId = ctx.req.url?.match(/^\/api\/pool\/([^/?]+)\/invite-to-job/)?.[1];
+  if (!poolId) throw new ValidationError('pool id missing');
+
+  const body = await readJsonBody<{ job_id?: string; send_email?: boolean }>(ctx.req);
+  const jobId = typeof body.job_id === 'string' ? body.job_id : '';
+  if (!jobId) throw new ValidationError('job_id required');
+  const sendEmail = body.send_email !== false;
+
+  const poolEntry = await fetchPoolEntry(ctx.req, poolId, tenantId);
+  if (!poolEntry) throw new NotFoundError(`Pool entry ${poolId} not found`);
+
+  // Validar que el job pertenece al tenant
+  const jobRows = unwrapRows<{ ROWID: string; tenant_id: string; title: string }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT ROWID, tenant_id, title FROM Jobs WHERE ROWID = '${escapeSql(jobId)}' LIMIT 1`,
+    )) as unknown[],
+    'Jobs',
+  );
+  const job = jobRows[0];
+  if (!job || job.tenant_id !== tenantId) {
+    throw new NotFoundError(`Job ${jobId} not found in tenant`);
+  }
+
+  // Chequear si ya existe Result para este candidate+job
+  let existingResult = unwrapRows<{ ROWID: string; pipeline_stage: string }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT ROWID, pipeline_stage FROM Results
+       WHERE candidate_id = '${escapeSql(poolEntry.candidate_id)}'
+         AND assessment_id = '${escapeSql(jobId)}' LIMIT 1`,
+    )) as unknown[],
+    'Results',
+  )[0];
+
+  let createdNew = false;
+  if (!existingResult) {
+    // Crear Result nuevo en prefilter_passed (saltamos prescreening — vienen del pool)
+    const inserted = await datastore(ctx.req).table('Results').insertRow({
+      assessment_id: jobId,
+      candidate_id: poolEntry.candidate_id,
+      answers: null,
+      pipeline_stage: 'prefilter_passed',
+      started_at: now(),
+      completed_at: null,
+      report_downloaded_at: null,
+      idempotency_key: null,
+    });
+    existingResult = unwrapRow<{ ROWID: string; pipeline_stage: string }>(inserted, 'Results') ?? undefined as never;
+    createdNew = true;
+  }
+
+  // Actualizar pool entry: incrementar times_contacted + last_contacted_at
+  await datastore(ctx.req).table(TABLE).updateRow({
+    ROWID: poolId,
+    times_contacted: (poolEntry.times_contacted ?? 0) + 1,
+    last_contacted_at: now(),
+    updated_at: now(),
+  });
+
+  // Mandar email opcionalmente
+  if (sendEmail && createdNew) {
+    void (async () => {
+      try {
+        const { notifyCandidateOnTransition } = await import('../lib/candidateNotifier.js');
+        await notifyCandidateOnTransition(ctx.req, {
+          applicationId: existingResult.ROWID,
+          toStage: 'prefilter_passed',
+        });
+      } catch (err) {
+        log.warn('invite email failed', { error: (err as Error).message });
+      }
+    })();
+  }
+
+  void auditLog(ctx, {
+    action: 'application.create',
+    resource_type: 'application',
+    resource_id: existingResult.ROWID,
+    changes: { source: 'pool_invite', pool_id: poolId, job_id: jobId, created_new: createdNew },
+  });
+
+  sendJson(ctx.res, createdNew ? 201 : 200, {
+    application_id: existingResult.ROWID,
+    job_title: job.title,
+    created_new: createdNew,
+    pipeline_stage: existingResult.pipeline_stage,
+    email_sent: sendEmail && createdNew,
   });
 }
 

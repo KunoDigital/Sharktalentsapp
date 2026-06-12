@@ -1,7 +1,7 @@
 import type { IncomingMessage } from 'http';
 import type { RequestContext } from '../lib/context';
 import { datastore, zcql, now } from '../lib/db';
-import { escapeSql, unwrapRow, unwrapRows } from '../lib/dbHelpers';
+import { escapeSql, unwrapRow, unwrapRows, formatCatalystDateTime, safeLimit, bigintInClause } from '../lib/dbHelpers';
 import { NotFoundError, ValidationError } from '../lib/errors';
 import { sendJson, readJsonBody } from '../lib/http';
 import { logger } from '../lib/logger';
@@ -75,45 +75,82 @@ function validatePatch(body: unknown): CandidatePatch {
   if (b.interview_file_id !== undefined) {
     out.interview_file_id = typeof b.interview_file_id === 'string' ? b.interview_file_id : null;
   }
+  // 2026-06-03: agregado recruit_candidate_id porque era el missing link que impedía
+  // que SharkTalents updateara el stage del candidato en Recruit (transit sync skipping
+  // silenciosamente por has_recruit_id=false). En uso normal lo setea recruit-test-link,
+  // pero si el candidato ya existía por apply directo, esa update fallaba en silencio.
+  if (b.recruit_candidate_id !== undefined) {
+    (out as Record<string, unknown>).recruit_candidate_id = typeof b.recruit_candidate_id === 'string' ? b.recruit_candidate_id : null;
+  }
   return out;
 }
 
 // ---- DB ----
 
 /**
+ * 2026-06-04: helper compartido — obtiene los ROWIDs de Jobs del tenant + los
+ * candidate_ids vinculados via Results. Reemplaza los JOINs triples que Catalyst
+ * rompió ("No relationship between tables J and R"). Más queries pero más robusto.
+ */
+async function getTenantCandidateIds(req: IncomingMessage, tenantId: string): Promise<Set<string>> {
+  const jobRows = unwrapRows<{ ROWID: string }>(
+    (await zcql(req).executeZCQLQuery(
+      `SELECT ROWID FROM Jobs WHERE tenant_id = '${escapeSql(tenantId)}' LIMIT ${safeLimit(undefined, 300)}`,
+    )) as unknown[],
+    'Jobs',
+  );
+  if (jobRows.length === 0) return new Set();
+
+  const candidateIds = new Set<string>();
+  for (let i = 0; i < jobRows.length; i += 30) {
+    const chunk = jobRows.slice(i, i + 30);
+    const inClause = bigintInClause(chunk.map((j) => j.ROWID));
+    if (!inClause) continue;
+    const rows = unwrapRows<{ candidate_id: string }>(
+      (await zcql(req).executeZCQLQuery(
+        `SELECT candidate_id FROM Results WHERE assessment_id IN (${inClause}) LIMIT 300`,
+      )) as unknown[],
+      'Results',
+    );
+    for (const r of rows) {
+      if (r.candidate_id) candidateIds.add(String(r.candidate_id));
+    }
+  }
+  return candidateIds;
+}
+
+/**
  * Tenant-scoped lookup: el candidato debe tener al menos un Result en un Job del tenant.
  * Sin esto, cualquier admin puede leer/modificar candidatos de otros tenants si conoce el ROWID.
+ *
+ * 2026-06-04: refactor sin JOIN (Catalyst rompió los JOINs triples). Ahora:
+ *   1) traer ROWID del candidato.
+ *   2) verificar que tenga al menos un Result vinculado a un Job del tenant.
  */
 async function getByIdScopedToTenant(req: IncomingMessage, candidateId: string, tenantId: string): Promise<Candidate | null> {
-  const query = `
-    SELECT C.*
-    FROM Candidates C
-    JOIN Results R ON R.candidate_id = C.ROWID
-    JOIN Jobs J ON J.ROWID = R.assessment_id
-    WHERE C.ROWID = '${escapeSql(candidateId)}'
-      AND J.tenant_id = '${escapeSql(tenantId)}'
-    LIMIT 1
-  `.replace(/\s+/g, ' ');
-  const result = (await zcql(req).executeZCQLQuery(query)) as unknown[];
+  const ids = await getTenantCandidateIds(req, tenantId);
+  if (!ids.has(candidateId)) return null;
+  const result = (await zcql(req).executeZCQLQuery(
+    `SELECT * FROM ${TABLE} WHERE ROWID = '${escapeSql(candidateId)}' LIMIT 1`,
+  )) as unknown[];
   return unwrapRows<Candidate>(result, TABLE)[0] ?? null;
 }
 
 /**
- * Búsqueda de candidato por email scope-eada al tenant. Usa el mismo JOIN que getByIdScopedToTenant.
- * Si el candidato existe pero NO está vinculado al tenant, devuelve null (no leak).
+ * Búsqueda de candidato por email scope-eada al tenant.
+ * 2026-06-04: refactor sin JOIN — primero busca el ROWID por email globalmente,
+ * después verifica que esté en el set de candidate_ids del tenant.
  */
 async function getByEmailScopedToTenant(req: IncomingMessage, email: string, tenantId: string): Promise<Candidate | null> {
-  const query = `
-    SELECT C.*
-    FROM Candidates C
-    JOIN Results R ON R.candidate_id = C.ROWID
-    JOIN Jobs J ON J.ROWID = R.assessment_id
-    WHERE C.email = '${escapeSql(email)}'
-      AND J.tenant_id = '${escapeSql(tenantId)}'
-    LIMIT 1
-  `.replace(/\s+/g, ' ');
-  const result = (await zcql(req).executeZCQLQuery(query)) as unknown[];
-  return unwrapRows<Candidate>(result, TABLE)[0] ?? null;
+  const candByEmail = unwrapRows<Candidate>(
+    (await zcql(req).executeZCQLQuery(
+      `SELECT * FROM ${TABLE} WHERE email = '${escapeSql(email)}' LIMIT 1`,
+    )) as unknown[],
+    TABLE,
+  )[0];
+  if (!candByEmail) return null;
+  const ids = await getTenantCandidateIds(req, tenantId);
+  return ids.has(String(candByEmail.ROWID)) ? candByEmail : null;
 }
 
 async function getByEmailGlobal(req: IncomingMessage, email: string): Promise<Candidate | null> {
@@ -124,18 +161,39 @@ async function getByEmailGlobal(req: IncomingMessage, email: string): Promise<Ca
   return unwrapRows<Candidate>(result, TABLE)[0] ?? null;
 }
 
-async function listByTenant(req: IncomingMessage, tenantId: string, limit = 100): Promise<Candidate[]> {
-  const query = `
-    SELECT C.*
-    FROM Candidates C
-    JOIN Results R ON R.candidate_id = C.ROWID
-    JOIN Jobs J ON J.ROWID = R.assessment_id
-    WHERE J.tenant_id = '${escapeSql(tenantId)}'
-    ORDER BY C.CREATEDTIME DESC
-    LIMIT ${Math.min(limit, 500)}
-  `.replace(/\s+/g, ' ');
-  const result = (await zcql(req).executeZCQLQuery(query)) as unknown[];
-  return unwrapRows<Candidate>(result, TABLE);
+/**
+ * 2026-06-04: refactor sin JOIN — usa getTenantCandidateIds + IN clause + dateFilter
+ * con formato Catalyst-compatible.
+ */
+async function listByTenant(req: IncomingMessage, tenantId: string, opts: { limit?: number; lastNDays?: number } = {}): Promise<Candidate[]> {
+  const limit = Math.max(1, Math.min(500, opts.limit ?? 100));
+  const lastNDays = opts.lastNDays ?? 90;
+
+  const ids = await getTenantCandidateIds(req, tenantId);
+  if (ids.size === 0) return [];
+
+  const dateFilter = lastNDays > 0
+    ? ` AND CREATEDTIME >= '${formatCatalystDateTime(new Date(Date.now() - lastNDays * 86400_000))}'`
+    : '';
+
+  const candidates: Candidate[] = [];
+  const idsArr = Array.from(ids);
+  const cappedLimit = safeLimit(limit, 100);
+  for (let i = 0; i < idsArr.length && candidates.length < cappedLimit; i += 30) {
+    const chunk = idsArr.slice(i, i + 30);
+    const inClause = bigintInClause(chunk);
+    if (!inClause) continue;
+    const rows = unwrapRows<Candidate>(
+      (await zcql(req).executeZCQLQuery(
+        `SELECT * FROM ${TABLE} WHERE ROWID IN (${inClause})${dateFilter} ORDER BY CREATEDTIME DESC LIMIT ${cappedLimit}`,
+      )) as unknown[],
+      TABLE,
+    );
+    candidates.push(...rows);
+  }
+  // Sort + cap
+  candidates.sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
+  return candidates.slice(0, limit);
 }
 
 async function insertCandidate(req: IncomingMessage, payload: CandidateInsert): Promise<Candidate> {
@@ -153,12 +211,53 @@ async function updateCandidate(req: IncomingMessage, rowId: string, patch: Candi
 
 // ---- Handlers ----
 
+/**
+ * GET /api/candidates/_search?q=X
+ * Busca candidatos por nombre o email parcial. Solo retorna candidatos
+ * scope-eados al tenant (con al menos un Result en un Job del tenant).
+ *
+ * Max 20 resultados — pensado para autocompletado / quick search.
+ */
+export async function searchCandidates(ctx: RequestContext): Promise<void> {
+  await requireAuth(ctx);
+  const tenantId = await requireTenant(ctx);
+  const url = new URL(ctx.req.url ?? '/', 'http://x');
+  const q = (url.searchParams.get('q') ?? '').trim();
+  if (q.length < 2) {
+    sendJson(ctx.res, 200, { candidates: [] });
+    return;
+  }
+
+  // Búsqueda LIKE — ZCQL no tiene full-text, pero LIKE %X% funciona.
+  // Limitamos a 20 para responder rápido en quick-search.
+  try {
+    const safe = escapeSql(q.toLowerCase());
+    const query = `
+      SELECT DISTINCT C.ROWID, C.name, C.email, C.phone
+      FROM Candidates C
+      JOIN Results R ON R.candidate_id = C.ROWID
+      JOIN Jobs J ON J.ROWID = R.assessment_id
+      WHERE J.tenant_id = '${escapeSql(tenantId)}'
+        AND (LOWER(C.email) LIKE '%${safe}%' OR LOWER(C.name) LIKE '%${safe}%')
+      LIMIT 20
+    `.replace(/\s+/g, ' ');
+    const result = (await zcql(ctx.req).executeZCQLQuery(query)) as unknown[];
+    const candidates = unwrapRows<Candidate>(result, TABLE);
+    sendJson(ctx.res, 200, { candidates });
+  } catch (err) {
+    log.warn('search failed', { error: (err as Error).message });
+    sendJson(ctx.res, 200, { candidates: [], error: 'search_failed' });
+  }
+}
+
 export async function listCandidates(ctx: RequestContext): Promise<void> {
   await requireAuth(ctx);
   const tenantId = await requireTenant(ctx);
   const url = new URL(ctx.req.url ?? '/', 'http://x');
   const limit = Math.max(1, Math.min(500, Number(url.searchParams.get('limit') ?? 100)));
-  const candidates = await listByTenant(ctx.req, tenantId, limit);
+  // Default 90 días para escalabilidad. Pasar ?last_n_days=0 para todo.
+  const lastNDays = Number.parseInt(url.searchParams.get('last_n_days') ?? '90', 10);
+  const candidates = await listByTenant(ctx.req, tenantId, { limit, lastNDays });
   log.info('list', { traceId: ctx.traceId, tenantId, count: candidates.length });
   sendJson(ctx.res, 200, { candidates });
 }

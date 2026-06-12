@@ -3,7 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { config } from '../../config';
 import { publicApi, type PortalApi, type PortalJobApi, type PortalJobStage } from '../../lib/publicApi';
 import { trackPortalEvent } from '../../lib/portalTracker';
-import { ApiError } from '../../lib/api';
+import { ClientHelpBox } from './ClientHelpBox';
+import { PublicPortalFooter } from './PublicPortalFooter';
 import { logger } from '../../lib/logger';
 import { getPortalByToken } from '../../data/mockClientPortals';
 import './client-portal.css';
@@ -45,26 +46,29 @@ export default function ClientPortalLanding() {
             setLoading(false);
             return;
           }
+          // useApi=true pero res sin portal — tratar como no encontrado
+          setNotFound(true);
+          return;
         }
-        // Fallback: mock data (modo dev sin backend)
+        // Modo dev sin backend: mock fallback. En prod useApi=true así que esto no corre.
         const mock = getPortalByToken(token!);
         if (cancelled) return;
-        if (mock) {
-          setPortal(mockToApi(mock));
-        } else {
-          setNotFound(true);
-        }
+        if (mock) setPortal(mockToApi(mock));
+        else setNotFound(true);
       } catch (err) {
         if (cancelled) return;
         log.warn('portal load failed', { error: (err as Error).message });
-        if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
+        // En prod (useApi=true) NO caemos al mock — exponer mock data a un cliente real
+        // sería peor que mostrarle "error temporal". Si es 401/404 → notFound; otros →
+        // notFound con mismo mensaje (cliente puede reintentar más tarde).
+        if (config.useApi) {
           setNotFound(true);
-        } else {
-          // Errores transitorios: caer al mock para que la UI no se rompa
-          const mock = getPortalByToken(token!);
-          if (mock) setPortal(mockToApi(mock));
-          else setNotFound(true);
+          return;
         }
+        // Solo en dev (useApi=false) intentamos mock como último recurso.
+        const mock = getPortalByToken(token!);
+        if (mock) setPortal(mockToApi(mock));
+        else setNotFound(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -142,18 +146,13 @@ export default function ClientPortalLanding() {
           </div>
         )}
 
-        <div className="cp-help-box">
-          <div className="cp-help-title">¿Algo no está claro?</div>
-          <p>
-            Escribime a <a href="mailto:cris@kunodigital.com" className="cp-help-link">cris@kunodigital.com</a> o por WhatsApp.
-          </p>
-        </div>
+        <ClientHelpBox
+          recruiterEmail={portal.recruiter_email}
+          recruiterWhatsapp={portal.recruiter_whatsapp}
+        />
       </main>
 
-      <footer className="cp-footer">
-        <div className="cp-brand">SharkTalents.AI</div>
-        <div className="cp-footer-tag">Plataforma de evaluación de talento con IA</div>
-      </footer>
+      <PublicPortalFooter agencyName={portal.agency_name} />
     </div>
   );
 }
@@ -161,8 +160,33 @@ export default function ClientPortalLanding() {
 function JobCard({ job, token }: { job: PortalJobApi; token: string }) {
   const info = STAGE_INFO[job.stage];
   const completed = job.milestones.filter((m) => m.completed_at !== null).length;
+
+  // "Nuevo desde tu última visita" — usa localStorage para trackear conteo previo
+  const storageKey = `portal_seen_${token}_${job.id}`;
+  const currentSignal = job.funnel?.applied ?? 0;
+  let badge: string | null = null;
+  try {
+    const prev = Number(localStorage.getItem(storageKey) ?? '');
+    if (job.stage === 'finalists_ready' && prev < 1000) {
+      badge = '🎯 ¡Finalistas listos!';
+    } else if (Number.isFinite(prev) && currentSignal > prev) {
+      const delta = currentSignal - prev;
+      badge = `🆕 ${delta} ${delta === 1 ? 'nuevo' : 'nuevos'} desde tu última visita`;
+    }
+  } catch { /* localStorage disabled */ }
+
   return (
-    <Link to={`/portal/${token}/jobs/${job.id}`} className={`cp-job-card cp-stage-${info.color}`}>
+    <Link
+      to={`/portal/${token}/jobs/${job.id}`}
+      className={`cp-job-card cp-stage-${info.color}`}
+      onClick={() => {
+        try {
+          // Marcar como visto: si es finalists_ready, usamos un valor alto para no re-disparar
+          const sentinel = job.stage === 'finalists_ready' ? 1000000 : currentSignal;
+          localStorage.setItem(storageKey, String(sentinel));
+        } catch { /* ignore */ }
+      }}
+    >
       <div className="cp-job-card-header">
         <div className={`cp-stage-tag cp-stage-tag-${info.color}`}>{info.label}</div>
         <div className="cp-job-progress">
@@ -175,6 +199,15 @@ function JobCard({ job, token }: { job: PortalJobApi; token: string }) {
         </div>
       </div>
       <div className="cp-job-title">{job.display_title}</div>
+      {badge && (
+        <div style={{
+          marginTop: 8, padding: '4px 10px', borderRadius: 99,
+          background: 'rgba(218, 253, 111, 0.15)', color: '#dafd6f',
+          fontSize: 12, fontWeight: 600, display: 'inline-block',
+        }}>
+          {badge}
+        </div>
+      )}
       <div className="cp-job-cta">{info.cta} →</div>
     </Link>
   );

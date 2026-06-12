@@ -84,42 +84,61 @@ export type TokenUsageRecord = {
   latencyMs: number;
   /** Trace ID para correlacionar con logs. */
   traceId?: string;
+  /** Job ID si la llamada está atribuible a un puesto específico (para cost dashboard). */
+  jobId?: string;
 };
 
 /**
  * Registra un uso de tokens en la tabla. Best-effort — si la tabla no existe o falla
  * el insert, no rompe el flow del caller. Solo se loggea warning.
+ *
+ * Side-effect: si record.jobId está presente, también persiste en JobCosts (cost dashboard).
  */
 export async function recordTokenUsage(
   req: IncomingMessage,
   record: TokenUsageRecord,
 ): Promise<void> {
-  if (!(await isTableReady(req))) return;
-
   const costUsd = estimateCostUsd({
     input_tokens: record.inputTokens,
     output_tokens: record.outputTokens,
     cached_input_tokens: record.cachedInputTokens,
   });
 
-  try {
-    await datastore(req).table(TABLE).insertRow({
-      tenant_id: record.tenantId,
-      feature: record.feature,
-      model: record.model,
-      input_tokens: record.inputTokens,
-      cached_input_tokens: record.cachedInputTokens ?? 0,
-      output_tokens: record.outputTokens,
-      latency_ms: record.latencyMs,
-      trace_id: record.traceId ?? null,
-      cost_usd_estimated: Math.round(costUsd * 100000) / 100000, // 5 decimales
-      occurred_at: now(),
-    });
-  } catch (err) {
-    log.warn('recordTokenUsage failed', {
-      feature: record.feature,
-      error: (err as Error).message,
-    });
+  if (await isTableReady(req)) {
+    try {
+      await datastore(req).table(TABLE).insertRow({
+        tenant_id: record.tenantId,
+        feature: record.feature,
+        model: record.model,
+        input_tokens: record.inputTokens,
+        cached_input_tokens: record.cachedInputTokens ?? 0,
+        output_tokens: record.outputTokens,
+        latency_ms: record.latencyMs,
+        trace_id: record.traceId ?? null,
+        cost_usd_estimated: Math.round(costUsd * 100000) / 100000, // 5 decimales
+        occurred_at: now(),
+      });
+    } catch (err) {
+      log.warn('recordTokenUsage failed', {
+        feature: record.feature,
+        error: (err as Error).message,
+      });
+    }
+  }
+
+  // Cost tracking por job (independiente de TokenUsage). No-op si jobId ausente o JobCosts no existe.
+  if (record.jobId) {
+    try {
+      const { trackJobCost } = await import('./costTracking.js');
+      await trackJobCost(req, {
+        jobId: record.jobId,
+        tenantId: record.tenantId ?? undefined,
+        type: 'anthropic',
+        amountUsd: costUsd,
+        count: 1,
+        metadata: { feature: record.feature, model: record.model },
+      });
+    } catch { /* best-effort */ }
   }
 }
 

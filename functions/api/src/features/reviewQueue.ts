@@ -260,7 +260,7 @@ export async function getBotStats(ctx: RequestContext): Promise<void> {
       (await zcql(ctx.req).executeZCQLQuery(
         `SELECT decision, confidence, auto_executed FROM BotDecisions
          WHERE tenant_id = '${escapeSql(tenantId)}'
-         ORDER BY CREATEDTIME DESC LIMIT 500`,
+         ORDER BY CREATEDTIME DESC LIMIT 300`,
       )) as unknown[],
       'BotDecisions',
     );

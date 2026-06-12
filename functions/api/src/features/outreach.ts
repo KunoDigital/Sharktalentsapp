@@ -285,11 +285,15 @@ export async function replyOutreachInbox(ctx: RequestContext): Promise<void> {
   // Si es LinkedIn DM y tenemos URL del contacto, enquear envío real via HeyReach.
   // Si es email, enquear via email.send_pending. Sino, queda solo registrado en inbox.
   if (original.channel === 'linkedin_dm' && original.contact_linkedin) {
-    void publishOutboxEvent(ctx.req, 'outreach.send_dm', {
-      campaign_id: original.campaign_id,
-      contact_linkedin_url: original.contact_linkedin,
-      message: text,
-    });
+    // audit fix #24: fireAndForget wrap.
+    const { fireAndForget } = await import('../lib/fireAndForget.js');
+    fireAndForget('publishOutbox.outreach_send_dm', () =>
+      publishOutboxEvent(ctx.req, 'outreach.send_dm', {
+        campaign_id: original.campaign_id,
+        contact_linkedin_url: original.contact_linkedin,
+        message: text,
+      }),
+    );
   }
 
   log.info('outreach reply queued', {

@@ -179,11 +179,13 @@ async function createColumns(ctx: ApiCtx, tableId: string, columns: ColumnSpec[]
   // Eventual consistency: Catalyst tarda hasta 60s en propagar la nueva tabla a la columns API.
   // Si no esperamos suficiente, el primer POST devuelve 404 y la tabla queda "huérfana"
   // (table_id permanentemente roto, hay que borrarla manual y reintentar con otra).
-  // Por eso esperamos GENEROSO desde el primer intento — 60s.
+  // 2026-06-04: JobCosts falló con 120s totales (60+30+30). Subido a 6 intentos /
+  // 360s totales (120+60+60+60+30+30) para darle más margen a la eventual consistency.
+  const delaysSec = [120, 60, 60, 60, 30, 30];
   let lastError = '';
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const delayMs = attempt === 1 ? 60000 : 30000;
-    log('info', `Esperando ${delayMs / 1000}s antes de POST /column (intento ${attempt}/3)`);
+  for (let attempt = 1; attempt <= delaysSec.length; attempt++) {
+    const delayMs = delaysSec[attempt - 1] * 1000;
+    log('info', `Esperando ${delayMs / 1000}s antes de POST /column (intento ${attempt}/${delaysSec.length})`);
     await new Promise((r) => setTimeout(r, delayMs));
 
     const res = await fetch(url, { method: 'POST', headers: headers(ctx), body: JSON.stringify(columns) });

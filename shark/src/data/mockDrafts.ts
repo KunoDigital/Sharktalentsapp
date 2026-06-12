@@ -41,6 +41,7 @@ export type DraftPayload = {
   modalidad: 'Presencial' | 'Híbrido' | 'Remoto';
   ubicacion: string;
   tecnica_minimo_pct: number;
+  fee_usd?: number;
 };
 
 export type Draft = {

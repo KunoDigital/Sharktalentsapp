@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import { config } from '../config';
 
 type MindsetScore = {
@@ -31,6 +32,7 @@ const PATTERN_COLORS: Record<string, string> = {
 };
 
 export default function CandidateMindsetPanel({ applicationId }: { applicationId: string }) {
+  const { getToken } = useAuth();
   const [data, setData] = useState<MindsetScore | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,9 +41,17 @@ export default function CandidateMindsetPanel({ applicationId }: { applicationId
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetch(`${config.apiBase}/api/applications/${encodeURIComponent(applicationId)}/mindset`, {
-      credentials: 'include',
-    })
+    (async () => {
+      // El gateway de Catalyst rechaza Bearer JWT, por eso usamos X-Clerk-Token (mismo
+      // patrón que useApi() en lib/api.ts).
+      const token = await getToken();
+      const headers: Record<string, string> = { Accept: 'application/json' };
+      if (token) headers['X-Clerk-Token'] = token;
+      return fetch(`${config.apiBase}/api/applications/${encodeURIComponent(applicationId)}/mindset`, {
+        credentials: 'include',
+        headers,
+      });
+    })()
       .then(async (res) => {
         if (cancelled) return;
         if (res.status === 404) {

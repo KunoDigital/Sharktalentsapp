@@ -327,11 +327,14 @@ export async function uploadTestVideo(ctx: RequestContext): Promise<void> {
   try {
     const { filestore } = await import('../lib/db.js');
     const folder = (filestore(ctx.req) as { folder: (id: string) => unknown }).folder(folderId);
-    const uploadResult = await ((folder as { uploadFile: (opts: { name: string; file: Buffer }) => Promise<{ file_id?: string; ROWID?: string }> }).uploadFile({
+    // Catalyst SDK v2.5: campo `code` (no `file`), response trae `id` (no `file_id`).
+    // Ver lib/largeContentStore.ts para el patrón completo con fs.ReadStream.
+    const { Readable } = await import('stream');
+    const uploadResult = await ((folder as { uploadFile: (opts: { name: string; code: import('stream').Readable }) => Promise<{ id?: string; file_id?: string; ROWID?: string }> }).uploadFile({
       name: filename,
-      file: buffer,
+      code: Readable.from(buffer),
     }));
-    fileId = String(uploadResult.file_id ?? uploadResult.ROWID ?? '');
+    fileId = String(uploadResult.id ?? uploadResult.file_id ?? uploadResult.ROWID ?? '');
   } catch (err) {
     log.error('file store upload failed', {
       traceId: ctx.traceId,

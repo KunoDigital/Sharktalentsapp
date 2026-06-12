@@ -110,19 +110,32 @@ function splitName(fullName: string): { first_name: string; last_name: string } 
 }
 
 /**
- * Search a lead by email. Returns the CRM lead id if found, null otherwise.
- * No-op (returns null) if CRM is not configured or the search fails.
+ * Search a lead by email. Returns the CRM lead id + current Lead_Status + Lead_Source if found,
+ * null otherwise. No-op (returns null) if CRM is not configured or the search fails.
+ *
+ * Necesitamos Lead_Status porque el layout Sharktalents lo tiene como mandatorio,
+ * y un UPDATE sin ese campo es rechazado con MANDATORY_NOT_FOUND. Lo leemos para
+ * reenviarlo tal cual y no pisar el estado actual.
  */
-async function findLeadByEmail(email: string, traceId: string): Promise<string | null> {
+async function findLeadByEmail(
+  email: string,
+  traceId: string,
+): Promise<{ id: string; lead_status: string | null; lead_source: string | null } | null> {
   const e = env();
   const module = e.ZOHO_CRM_LEADS_MODULE;
-  const result = await callCrm<{ data?: Array<{ id: string }> }>(
+  const result = await callCrm<{ data?: Array<{ id: string; Lead_Status?: string | null; Lead_Source?: string | null }> }>(
     `/${encodeURIComponent(module)}/search?email=${encodeURIComponent(email)}`,
     { method: 'GET' },
     traceId,
   );
   if (!result.ok) return null;
-  return result.data.data?.[0]?.id ?? null;
+  const first = result.data.data?.[0];
+  if (!first) return null;
+  return {
+    id: first.id,
+    lead_status: first.Lead_Status ?? null,
+    lead_source: first.Lead_Source ?? null,
+  };
 }
 
 /**
@@ -172,19 +185,37 @@ export async function createLead(input: CreateLeadInput, traceId: string): Promi
   }
 
   // Search-before-create: chequear si ya existe lead con este email
-  const existingId = await findLeadByEmail(input.email, traceId);
+  const existing = await findLeadByEmail(input.email, traceId);
 
   let result: CrmResult<{ data: Array<{ details: { id: string }; status: string }> }>;
-  if (existingId) {
-    // Lead existe → UPDATE (no incluir Lead_Status en update salvo que venga en custom_fields,
-    // para no pisar el estado actual que Cris pudo haber movido manualmente)
+  if (existing) {
+    // Lead existe → UPDATE. Preservar el estado actual y la fuente original:
+    //   - Lead_Status: el layout Sharktalents lo tiene como mandatorio, así que SIEMPRE
+    //     debe ir en el body o Zoho rechaza con MANDATORY_NOT_FOUND. Usamos el valor
+    //     actual del lead (lo leímos en findLeadByEmail) para no pisar lo que Cris
+    //     movió manualmente. Fallback 'Nuevo' si el lead nunca tuvo status.
+    //   - Lead_Source: igual, preservar el original (ej: 'meta_ads', 'Zoho Bookings')
+    //     salvo que venga explícito en custom_fields.
+    //   - Last_Name: si el caller NO envió input.last_name, NO incluir en el UPDATE
+    //     para no pisar el valor existente con el fallback (que es prefijo del email).
+    //     En CREATE sí necesitamos el fallback porque Last_Name es mandatorio.
     const updateData = { ...data } as Record<string, unknown>;
     if (!input.custom_fields || !('Lead_Status' in input.custom_fields)) {
-      delete updateData.Lead_Status;
+      updateData.Lead_Status = existing.lead_status || 'Nuevo';
     }
-    log.info('crm lead exists, updating', { traceId, existingId, email_masked: input.email.slice(0, 2) + '***' });
+    if (!input.custom_fields || !('Lead_Source' in input.custom_fields)) {
+      if (existing.lead_source) {
+        updateData.Lead_Source = existing.lead_source;
+      } else {
+        delete updateData.Lead_Source;
+      }
+    }
+    if (!input.last_name) {
+      delete updateData.Last_Name;
+    }
+    log.info('crm lead exists, updating', { traceId, existingId: existing.id, email_masked: input.email.slice(0, 2) + '***', update_fields: Object.keys(updateData) });
     result = await callCrm<{ data: Array<{ details: { id: string }; status: string }> }>(
-      `/${encodeURIComponent(module)}/${encodeURIComponent(existingId)}`,
+      `/${encodeURIComponent(module)}/${encodeURIComponent(existing.id)}`,
       { method: 'PUT', body: { data: [updateData] } },
       traceId,
     );
@@ -294,6 +325,60 @@ export async function listLeadsByTag(
     return result;
   }
   return { ok: true, data: result.data.data ?? [] };
+}
+
+export type CrmLayoutSummary = {
+  id: string;
+  name: string;
+  api_name?: string;
+  display_label?: string;
+  status?: string;
+  source?: string;
+};
+
+export type CrmFieldSummary = {
+  api_name: string;
+  field_label: string;
+  data_type: string;
+  custom_field: boolean;
+  required: boolean;
+  pick_list_values?: Array<{ display_value: string; actual_value: string }>;
+};
+
+/**
+ * Lista todos los layouts disponibles para un módulo de Zoho CRM (default: Leads).
+ * Devuelve nombre + id de cada uno — útil para identificar cuál es el layout específico
+ * de SharkTalents y luego setearlo en env (ZOHO_CRM_LEAD_LAYOUT_ID).
+ */
+export async function listLayouts(
+  traceId: string,
+  module = 'Leads',
+): Promise<CrmResult<CrmLayoutSummary[]>> {
+  const result = await callCrm<{ layouts?: CrmLayoutSummary[] }>(
+    `/settings/layouts?module=${encodeURIComponent(module)}`,
+    { method: 'GET' },
+    traceId,
+  );
+  if (!result.ok) return result;
+  return { ok: true, data: result.data.layouts ?? [] };
+}
+
+/**
+ * Lista todos los campos (incluyendo custom_fields) de un módulo de Zoho CRM.
+ * Útil para descubrir qué campos custom existen (ej: RUC, dirección fiscal) sin
+ * tener que entrar manualmente al setup del CRM.
+ */
+export async function listFields(
+  traceId: string,
+  module = 'Leads',
+): Promise<CrmResult<CrmFieldSummary[]>> {
+  const result = await callCrm<{ fields?: CrmFieldSummary[] }>(
+    `/settings/fields?module=${encodeURIComponent(module)}`,
+    { method: 'GET' },
+    traceId,
+  );
+  if (!result.ok) return result;
+  return { ok: true, data: result.data.fields ?? [] };
 }
 
 export async function updateLeadStatus(leadId: string, newStatus: string, traceId: string): Promise<CrmResult<CrmLead>> {

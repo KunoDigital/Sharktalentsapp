@@ -53,7 +53,12 @@ export const TERMINAL_STAGES: readonly PipelineStage[] = [
 
 const ALLOWED_TRANSITIONS: Record<PipelineStage, PipelineStage[]> = {
   prefilter_pending: ['prefilter_passed', 'salary_out_of_range', 'rejected_by_admin', 'withdrew'],
-  prefilter_passed: ['tecnica_completed', 'rejected_by_admin', 'withdrew'],
+  // 2026-06-03: agregado `auto_rejected_low_score` — si la prueba técnica se reprueba,
+  // el candidato pasa directo a rechazo automático. Antes la state machine no permitía
+  // este transition desde `prefilter_passed`, así que el rechazo se ignoraba y el
+  // candidato quedaba colgado en `prefilter_passed` para siempre (detectado con
+  // Andrea Martínez completando la técnica con score bajo).
+  prefilter_passed: ['tecnica_completed', 'auto_rejected_low_score', 'rejected_by_admin', 'withdrew'],
   salary_out_of_range: ['prefilter_passed', 'rejected_by_admin', 'withdrew'],
   // tecnica_completed → integridad_completed: necesario para el demo del funnel marketing,
   // donde la persona puede hacer la integridad antes que el conductual (links independientes).

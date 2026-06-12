@@ -8,6 +8,7 @@ import { MOCK_DRAFTS } from '../data/mockDrafts';
 import { MOCK_MESSAGES } from '../data/mockOutreach';
 import { MOCK_REPORTS } from '../data/mockReports';
 import SetupChecklist from '../components/SetupChecklist';
+import { LiveActionQueue } from '../components/LiveActionQueue';
 import { useApi } from '../lib/api';
 import { useApiData } from '../hooks/useApiData';
 import './pages.css';
@@ -104,9 +105,13 @@ export default function Dashboard() {
 
       <SetupChecklist />
 
-      {totalActions > 0 && (
+      {config.useApi && <LiveActionQueue />}
+
+      {/* La cola mock no se muestra cuando el backend está en uso — sino aparece
+          duplicada con LiveActionQueue. Solo aplica en modo demo/dev sin backend. */}
+      {!config.useApi && totalActions > 0 && (
         <section className="action-queue">
-          <h2 className="action-queue-title">Tu cola</h2>
+          <h2 className="action-queue-title">Tu cola (demo)</h2>
           <div className="action-queue-list">
             {draftsPending.length > 0 && (
               <ActionItem
@@ -186,9 +191,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="dashboard-charts-grid">
+      {/* Charts de funnel + DISC + sources: derivados de MOCK_APPLICATIONS. Se esconden
+          en modo backend hasta que tengamos los endpoints que agreguen estos counts en vivo. */}
+      {!config.useApi && <div className="dashboard-charts-grid">
         <div className="chart-card chart-card-wide">
-          <div className="chart-card-title">Funnel de conversión</div>
+          <div className="chart-card-title">Funnel de conversión (demo)</div>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={funnelStages} layout="vertical" margin={{ left: 30, right: 30 }}>
               <XAxis type="number" stroke={NEUTRAL} fontSize={12} />
@@ -235,46 +242,53 @@ export default function Dashboard() {
             </PieChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </div>}
 
       <CostsWidget />
 
       <MarketingFunnelWidget />
 
-      <h2 className="section-title">Estados del pipeline</h2>
-      <div className="dashboard-states-grid">
-        {Object.entries(STATE_LABELS).map(([state, label]) => {
-          const count = MOCK_APPLICATIONS.filter((a) => a.state === state).length;
-          if (count === 0) return null;
-          return (
-            <div key={state} className="dashboard-state-pill">
-              <span className="dashboard-state-count">{count}</span>
-              <span className="dashboard-state-label">{label}</span>
-            </div>
-          );
-        })}
-      </div>
+      {/* Sección "Estados del pipeline" + "Tus puestos" + banner mock: solo en modo demo
+          sin backend. Con backend, los Counts/Jobs vivos se ven en stat-cards arriba y en
+          el LiveActionQueue + página /jobs. */}
+      {!config.useApi && (
+        <>
+          <h2 className="section-title">Estados del pipeline (demo)</h2>
+          <div className="dashboard-states-grid">
+            {Object.entries(STATE_LABELS).map(([state, label]) => {
+              const count = MOCK_APPLICATIONS.filter((a) => a.state === state).length;
+              if (count === 0) return null;
+              return (
+                <div key={state} className="dashboard-state-pill">
+                  <span className="dashboard-state-count">{count}</span>
+                  <span className="dashboard-state-label">{label}</span>
+                </div>
+              );
+            })}
+          </div>
 
-      <h2 className="section-title">Tus puestos</h2>
-      <div className="job-cards">
-        {MOCK_JOBS.slice(0, 3).map((job) => (
-          <Link key={job.id} to={`/jobs/${job.id}`} className="job-card">
-            <div className="job-card-status">{job.status}</div>
-            <div className="job-card-title">{job.title}</div>
-            <div className="job-card-company">{job.client_company}</div>
-            <div className="job-card-meta">
-              <span>{job.applications_count} apps</span>
-              <span>·</span>
-              <span>{job.finalists_count} finalistas</span>
-            </div>
-          </Link>
-        ))}
-      </div>
+          <h2 className="section-title">Tus puestos (demo)</h2>
+          <div className="job-cards">
+            {MOCK_JOBS.slice(0, 3).map((job) => (
+              <Link key={job.id} to={`/jobs/${job.id}`} className="job-card">
+                <div className="job-card-status">{job.status}</div>
+                <div className="job-card-title">{job.title}</div>
+                <div className="job-card-company">{job.client_company}</div>
+                <div className="job-card-meta">
+                  <span>{job.applications_count} apps</span>
+                  <span>·</span>
+                  <span>{job.finalists_count} finalistas</span>
+                </div>
+              </Link>
+            ))}
+          </div>
 
-      <p className="muted-note">
-        💡 Datos mock — el backend (Catalyst Datastore) todavía no está conectado. Ver{' '}
-        <code>shark/src/data/mock*.ts</code>.
-      </p>
+          <p className="muted-note">
+            💡 Datos mock — el backend (Catalyst Datastore) todavía no está conectado. Ver{' '}
+            <code>shark/src/data/mock*.ts</code>.
+          </p>
+        </>
+      )}
     </div>
   );
 }

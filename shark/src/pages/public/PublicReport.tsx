@@ -9,6 +9,7 @@ import { publicApi, type BundleVideoAnalysis, type BundleMindset, type BundleEng
 import { ApiError } from '../../lib/api';
 import { adaptBundleReport } from '../../lib/reportAdapter';
 import { logger } from '../../lib/logger';
+import { PublicPortalFooter } from './PublicPortalFooter';
 import './public-report.css';
 
 const log = logger('PUBLIC_REPORT');
@@ -44,6 +45,7 @@ export default function PublicReport() {
   const [feedback, setFeedback] = useState<FeedbackState>({});
   const [submitted, setSubmitted] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [shareTooltip, setShareTooltip] = useState<string | null>(null);
   const reportRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -88,10 +90,13 @@ export default function PublicReport() {
       } catch (err) {
         if (cancelled) return;
         log.warn('report load failed', { error: (err as Error).message });
-        if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
+        // En prod NO caer al mock — un cliente real no debe ver datos falsos.
+        if (config.useApi) {
+          setNotFound(true);
+        } else if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
           setNotFound(true);
         } else {
-          // Fallback a mock en errores transitorios
+          // Solo dev (useApi=false): mock como último recurso
           const mockReport = getReportByToken(token!);
           const mockJob = mockReport ? getJobById(mockReport.job_id) : undefined;
           if (mockReport && mockJob) {
@@ -142,9 +147,33 @@ export default function PublicReport() {
     }));
   }
 
-  function submitFeedback() {
+  async function submitFeedback() {
+    if (!token) return;
+    // Mandamos al backend solo los candidatos que tienen `choice` seleccionado.
+    const entries = Object.entries(feedback).filter(([, v]) => v.choice);
+    if (entries.length === 0) {
+      alert('Marcá al menos una decisión antes de enviar.');
+      return;
+    }
+    const failed: string[] = [];
+    for (const [appId, v] of entries) {
+      if (!v.choice) continue;
+      try {
+        const res = await publicApi.submitReportFeedback(token, {
+          application_id: appId,
+          choice: v.choice,
+          comment: v.comment?.trim() || undefined,
+        });
+        if (!res || !res.ok) failed.push(appId);
+      } catch {
+        failed.push(appId);
+      }
+    }
+    if (failed.length > 0) {
+      alert(`No se pudieron enviar ${failed.length} de ${entries.length} decisiones. Probá de nuevo.`);
+      return;
+    }
     setSubmitted(true);
-    setTimeout(() => alert('Mock: feedback enviado a Kuno Digital'), 100);
   }
 
   async function handleDownloadPdf() {
@@ -160,6 +189,29 @@ export default function PublicReport() {
     }
   }
 
+  function handlePrint() {
+    window.print();
+  }
+
+  async function handleShare() {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: job?.title ? `Reporte de finalistas — ${job.title}` : 'Reporte de finalistas',
+          url,
+        });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setShareTooltip('Link copiado al portapapeles');
+      setTimeout(() => setShareTooltip(null), 2500);
+    } catch (err) {
+      // Si el clipboard también falla, mostrar el link visible para copia manual
+      window.prompt('Copiá este link para compartirlo con tu equipo:', url);
+    }
+  }
+
   return (
     <div className="pr-root">
       <header className="pr-header">
@@ -168,6 +220,20 @@ export default function PublicReport() {
           <span className="pr-brand-tag">Evaluación de talento con inteligencia artificial</span>
         </div>
         <div className="pr-header-actions">
+          <button
+            className="pr-share-btn"
+            onClick={handleShare}
+            title="Copiar link para compartir"
+          >
+            📤 Compartir con tu equipo
+          </button>
+          <button
+            className="pr-share-btn"
+            onClick={handlePrint}
+            title="Imprimir o guardar como PDF desde tu navegador"
+          >
+            🖨️ Imprimir
+          </button>
           <button
             className="pr-download-btn"
             onClick={handleDownloadPdf}
@@ -179,10 +245,13 @@ export default function PublicReport() {
           <div className="pr-header-finalists">
             {candidates.length} {candidates.length === 1 ? 'persona evaluada' : 'finalistas'}
           </div>
+          {shareTooltip && (
+            <div className="pr-share-tooltip" role="status">{shareTooltip}</div>
+          )}
         </div>
       </header>
 
-      <main className="pr-main" ref={reportRef as React.RefObject<HTMLElement>}>
+      <main className="pr-main" ref={reportRef as React.RefObject<HTMLElement>} data-print-url={typeof window !== 'undefined' ? window.location.href : ''}>
         <div className="pr-title-block">
           <h1 className="pr-title">{job.title.toUpperCase()}</h1>
           <div className="pr-subtitle">{report.tenant_name}</div>
@@ -390,10 +459,7 @@ export default function PublicReport() {
         </section>
       </main>
 
-      <footer className="pr-footer">
-        <div className="pr-brand">SharkTalents.AI</div>
-        <div className="pr-footer-tag">Evaluación de talento con inteligencia artificial</div>
-      </footer>
+      <PublicPortalFooter variant="report" agencyName={report.tenant_name} />
     </div>
   );
 }
@@ -500,9 +566,59 @@ function CandidateCard({
       {app.tecnica ? (
         <div className="pr-tecnica-block">
           <div className="pr-tecnica-pill">
-            Prueba técnica: <strong>{app.tecnica.pct}%</strong> {app.tecnica.estado}
+            Conocimiento técnico: <strong>{app.tecnica.pct}%</strong> {app.tecnica.estado}
           </div>
           <div className="pr-tecnica-min">Mínimo requerido: {app.tecnica.minimo_requerido_pct}%</div>
+
+          {typeof app.tecnica.style_autonomy_consult === 'number' && (
+            <div style={{ marginTop: '0.75rem', padding: '0.6rem 0.75rem', background: 'rgba(99, 102, 241, 0.05)', border: '1px solid rgba(99, 102, 241, 0.2)', borderRadius: '6px' }}>
+              <div style={{ fontSize: '0.85rem', color: '#1f2937', marginBottom: '0.4rem' }}>
+                <strong>Estilo profesional</strong>
+                <span style={{ fontWeight: 'normal', color: '#4b5563' }}> — cómo decide en situaciones del rol</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.78rem' }}>
+                <span style={{ color: '#4b5563', minWidth: '70px', textAlign: 'right' }}>Consulta</span>
+                <div style={{ flex: 1, position: 'relative', height: '8px', background: 'linear-gradient(to right, #f59e0b, #6366f1)', borderRadius: '4px' }}>
+                  <div style={{
+                    position: 'absolute',
+                    left: `${app.tecnica.style_autonomy_consult}%`,
+                    top: '-4px',
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    background: '#1f2937',
+                    border: '2px solid #fff',
+                    transform: 'translateX(-50%)',
+                  }} />
+                </div>
+                <span style={{ color: '#4b5563', minWidth: '70px' }}>Autonomía</span>
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#4b5563', marginTop: '0.3rem', textAlign: 'center' }}>
+                {app.tecnica.style_autonomy_consult >= 65 ? 'Tiende a decidir solo'
+                  : app.tecnica.style_autonomy_consult >= 35 ? 'Equilibrado entre decidir y consultar'
+                  : 'Tiende a consultar antes de decidir'}
+              </div>
+
+              {typeof app.tecnica.style_match_with_boss_pct === 'number' && (
+                <div style={{ marginTop: '0.5rem', fontSize: '0.82rem', color: '#1f2937' }}>
+                  Match con estilo del jefe: <strong>{app.tecnica.style_match_with_boss_pct}%</strong>
+                  {' '}
+                  {app.tecnica.style_match_with_boss_pct >= 75 ? '✓ Alineado'
+                    : app.tecnica.style_match_with_boss_pct >= 50 ? '~ Neutro'
+                    : '⚠️ Desalineado'}
+                </div>
+              )}
+            </div>
+          )}
+
+          {typeof app.tecnica.situational_validity_pct === 'number' && app.tecnica.situational_validity_pct < 75 && (
+            <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '6px', fontSize: '0.8rem', color: '#1f2937' }}>
+              ⚠️ <strong>Validez situacional: {app.tecnica.situational_validity_pct}%</strong>
+              <span style={{ color: '#4b5563' }}>
+                {' '}— en {Math.round((100 - app.tecnica.situational_validity_pct) / 100 * 13)} de 13 situaciones eligió una opción profesionalmente cuestionable. Revisar en entrevista.
+              </span>
+            </div>
+          )}
         </div>
       ) : (
         <NotAvailableBlock

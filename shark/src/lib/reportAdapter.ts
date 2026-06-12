@@ -117,7 +117,7 @@ function adaptCandidate(
       dominant_label: typeof scores['disc_perfil_dominante'] === 'string' ? (scores['disc_perfil_dominante'] as string) : '',
       pk_profile_code: '',
       pk_profile_name: '',
-      similitud_pct: 0,
+      similitud_pct: pickScore(scores, 'disc_similarity_pct') ?? 0,
     } : undefined,
     velna: scores ? {
       verbal: pickScore(scores, 'velna_verbal') ?? 0,
@@ -125,7 +125,7 @@ function adaptCandidate(
       logica: pickScore(scores, 'velna_logica') ?? 0,
       numerica: pickScore(scores, 'velna_numerica') ?? 0,
       abstracta: pickScore(scores, 'velna_abstracta') ?? 0,
-      similitud_pct: velnaIndice ?? 0,
+      similitud_pct: pickScore(scores, 'velna_similarity_pct') ?? velnaIndice ?? 0,
     } : undefined,
     integridad: intPct != null ? {
       dimensions: bc.integrity_dimensions.map((d) => ({
@@ -144,6 +144,9 @@ function adaptCandidate(
       pct: tecPct,
       estado: tecPassed ? 'Aprobado' : 'No aprobado',
       minimo_requerido_pct: 70,
+      situational_validity_pct: pickScore(scores, 'tec_situational_validity_pct') ?? undefined,
+      style_autonomy_consult: pickScore(scores, 'tec_style_autonomy_consult') ?? undefined,
+      style_match_with_boss_pct: pickScore(scores, 'tec_style_match_with_boss_pct') ?? undefined,
     } : undefined,
   };
 

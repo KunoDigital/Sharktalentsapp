@@ -10,6 +10,14 @@ import './pages.css';
 
 const STATUS_FILTERS: ('all' | JobStatus)[] = ['all', 'active', 'paused', 'draft', 'closed'];
 
+type SmartFilter = 'all' | 'finalists_ready' | 'in_tests' | 'no_activity';
+const SMART_FILTERS: { key: SmartFilter; label: string; icon: string }[] = [
+  { key: 'all', label: 'Todos', icon: '' },
+  { key: 'finalists_ready', label: 'Finalistas listos', icon: '🎯' },
+  { key: 'in_tests', label: 'Con candidatos en pruebas', icon: '⚙️' },
+  { key: 'no_activity', label: 'Sin candidatos', icon: '○' },
+];
+
 /**
  * Adapta un ApiJob (shape de BD) al shape rico Job (mock) que la UI espera.
  * Hasta que el schema de BD tenga todos los campos (location, fee_usd, salary_range, etc.)
@@ -25,7 +33,9 @@ function adaptApiJob(api: ApiJob): Job {
     location: '',
     status: api.is_active ? 'active' : 'paused',
     created_at: api.created_at,
-    fee_usd: 0,
+    // 2026-06-05: usamos fee real si vino del backend, si no `null` para que el render
+    // muestre "—" en vez de "$0" que es engañoso (puede leerse como "fee cero").
+    fee_usd: api.fee_usd ?? null as unknown as number,
     salary_range_usd: { min: 0, max: 0 },
     disc_ideal_a: {
       d: 50, i: 50, s: 50, c: 50,
@@ -47,17 +57,34 @@ export default function JobsList() {
   const api = useApi();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | JobStatus>('all');
+  const [smartFilter, setSmartFilter] = useState<SmartFilter>('all');
 
-  // Fetch del backend (solo si VITE_USE_API=true)
+  // Fetch jobs + stage counts en paralelo
   const { data, loading, error } = useApiData(
-    () => (config.useApi ? api.jobs.list() : Promise.resolve(null)),
+    () => (config.useApi
+      ? Promise.all([api.jobs.list(), api.jobs.getAllStageCounts().catch(() => ({ counts: {} as Record<string, { applied: number; in_tests: number; finalists: number; closed: number }> }))])
+        .then(([j, c]) => ({ jobs: j.jobs, counts: c.counts }))
+      : Promise.resolve(null)),
     [config.useApi],
   );
 
   const jobs: Job[] = useMemo(() => {
     if (config.useApi && data) {
-      return data.jobs.map(adaptApiJob);
+      return data.jobs.map((j) => {
+        const adapted = adaptApiJob(j);
+        const c = data.counts[j.ROWID];
+        if (c) {
+          adapted.applications_count = c.applied;
+          adapted.applications_in_progress = c.in_tests;
+          adapted.finalists_count = c.finalists;
+        }
+        return adapted;
+      });
     }
+    // 2026-06-05: NO usar mock como fallback en modo backend. Si el fetch falla, el UI
+    // muestra error explícito (vía `error` de useApiData). Mostrar MOCK_JOBS en una app
+    // multi-tenant productiva podría exponer datos inventados como reales.
+    if (config.useApi) return [];
     return MOCK_JOBS;
   }, [data]);
 
@@ -66,9 +93,12 @@ export default function JobsList() {
     return jobs.filter((job) => {
       if (statusFilter !== 'all' && job.status !== statusFilter) return false;
       if (q && !job.title.toLowerCase().includes(q) && !job.client_company.toLowerCase().includes(q)) return false;
+      if (smartFilter === 'finalists_ready' && job.finalists_count < 3) return false;
+      if (smartFilter === 'in_tests' && (job.applications_in_progress ?? 0) === 0) return false;
+      if (smartFilter === 'no_activity' && job.applications_count > 0) return false;
       return true;
     });
-  }, [jobs, search, statusFilter]);
+  }, [jobs, search, statusFilter, smartFilter]);
 
   return (
     <div>
@@ -122,6 +152,28 @@ export default function JobsList() {
         </div>
       </div>
 
+      <div className="filters-bar" style={{ marginTop: -8 }}>
+        <div className="filter-pills">
+          {SMART_FILTERS.map((f) => {
+            const count = f.key === 'all' ? jobs.length
+              : f.key === 'finalists_ready' ? jobs.filter((j) => j.finalists_count >= 3).length
+                : f.key === 'in_tests' ? jobs.filter((j) => (j.applications_in_progress ?? 0) > 0).length
+                  : jobs.filter((j) => j.applications_count === 0).length;
+            return (
+              <button
+                key={f.key}
+                className={`filter-pill ${smartFilter === f.key ? 'is-active' : ''}`}
+                onClick={() => setSmartFilter(f.key)}
+                title={f.key === 'finalists_ready' ? 'Jobs con 3+ candidatos finalistas listos para mandar al cliente' : ''}
+              >
+                {f.icon && <span style={{ marginRight: 4 }}>{f.icon}</span>}{f.label}
+                <span className="filter-pill-count">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {filteredJobs.length === 0 ? (
         <EmptyState
           icon="🔍"
@@ -152,7 +204,7 @@ export default function JobsList() {
                   <Link to={`/jobs/${job.id}`} className="link">{job.title}</Link>
                 </td>
                 <td>{job.client_company}</td>
-                <td className="muted">{job.location}</td>
+                <td className="muted">{job.location || '—'}</td>
                 <td>
                   <span className={`status-tag status-${job.status}`}>{job.status}</span>
                 </td>
@@ -176,7 +228,7 @@ export default function JobsList() {
                 </td>
                 <td>{job.applications_count}</td>
                 <td>{job.finalists_count}</td>
-                <td>${job.fee_usd.toLocaleString()}</td>
+                <td>{job.fee_usd ? `$${job.fee_usd.toLocaleString()}` : '—'}</td>
               </tr>
             ))}
           </tbody>

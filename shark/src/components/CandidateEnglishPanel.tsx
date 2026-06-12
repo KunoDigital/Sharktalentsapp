@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import { config } from '../config';
 
 type EnglishSession = {
@@ -31,6 +32,7 @@ type EnglishSession = {
 };
 
 export default function CandidateEnglishPanel({ applicationId }: { applicationId: string }) {
+  const { getToken } = useAuth();
   const [data, setData] = useState<EnglishSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,9 +42,15 @@ export default function CandidateEnglishPanel({ applicationId }: { applicationId
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetch(`${config.apiBase}/api/applications/${encodeURIComponent(applicationId)}/english`, {
-      credentials: 'include',
-    })
+    (async () => {
+      const token = await getToken();
+      const headers: Record<string, string> = { Accept: 'application/json' };
+      if (token) headers['X-Clerk-Token'] = token;
+      return fetch(`${config.apiBase}/api/applications/${encodeURIComponent(applicationId)}/english`, {
+        credentials: 'include',
+        headers,
+      });
+    })()
       .then(async (res) => {
         if (cancelled) return;
         if (res.status === 404) {
@@ -150,7 +158,7 @@ export default function CandidateEnglishPanel({ applicationId }: { applicationId
             onClick={() => setShowWriting(!showWriting)}
             style={{
               background: 'transparent',
-              border: '1px solid #d1d5db',
+              border: '1px solid var(--st-border-strong)',
               borderRadius: '4px',
               padding: '4px 12px',
               cursor: 'pointer',
@@ -165,7 +173,7 @@ export default function CandidateEnglishPanel({ applicationId }: { applicationId
               style={{
                 marginTop: '0.5rem',
                 padding: '0.75rem',
-                background: '#f9fafb',
+                background: 'var(--st-bg-elev-2)',
                 borderRadius: '4px',
                 whiteSpace: 'pre-wrap',
                 fontFamily: 'inherit',

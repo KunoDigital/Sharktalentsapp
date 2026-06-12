@@ -152,19 +152,26 @@ export async function findJobApplication(
   jobOpeningId: string,
   traceId = '',
 ): Promise<ZohoRecruitResult<{ id: string } | null>> {
-  const criteria = `((Candidate_Id:equals:${candidateId})and(Job_Opening_Id:equals:${jobOpeningId}))`;
-  const path = `/JobApplications/search?criteria=${encodeURIComponent(criteria)}`;
-  const result = await zohoCall<{ data?: Array<{ id: string }> }>(path, { traceId });
+  // 2026-06-03: Zoho Recruit v2 API NO permite search por lookups en Applications
+  // (Job_Opening y Candidate_Id no son fields buscables). En su lugar usamos el
+  // related list — /Candidates/{id}/Applications — que devuelve todas las
+  // applications del candidato. Filtramos client-side por job_opening.
+  const path = `/Candidates/${encodeURIComponent(candidateId)}/Applications`;
+  const result = await zohoCall<{ data?: Array<{ id: string; Job_Opening?: { id?: string } | string }> }>(path, { traceId });
   if (!result.ok) {
-    // Search devuelve 204 No Content si no encuentra match → algunos clients lo
-    // mapean a error. Considerar "no encontrado" como caso válido.
     if (result.error.includes('204') || result.error.includes('No Content')) {
       return { ok: true, data: null };
     }
     return { ok: false, error: result.error };
   }
-  const application = result.data.data?.[0];
-  return { ok: true, data: application ? { id: application.id } : null };
+  const all = result.data.data ?? [];
+  const matching = all.find((a) => {
+    const jl = a.Job_Opening;
+    if (typeof jl === 'string') return jl === jobOpeningId;
+    if (jl && typeof jl === 'object') return jl.id === jobOpeningId;
+    return false;
+  });
+  return { ok: true, data: matching ? { id: matching.id } : null };
 }
 
 /**
@@ -180,7 +187,7 @@ export async function updateApplicationStatus(
   applicationStatus: string,
   traceId = '',
 ): Promise<ZohoRecruitResult<unknown>> {
-  return zohoCall(`/JobApplications/${encodeURIComponent(jobApplicationId)}`, {
+  return zohoCall(`/Applications/${encodeURIComponent(jobApplicationId)}`, {
     method: 'PUT',
     body: {
       data: [{ Application_Status: applicationStatus }],
@@ -198,7 +205,17 @@ export async function getRecruitCandidate(
   candidateId: string,
   traceId = '',
 ): Promise<ZohoRecruitResult<{ data: Array<Record<string, unknown>> }>> {
-  return zohoCall(`/Candidates/${encodeURIComponent(candidateId)}`, { traceId });
+  // Recruit acepta tanto el ROWID numérico (756144...) como el Candidate_ID custom
+  // (ej. ZR_8696_CAND). Pero el endpoint /Candidates/{id} solo funciona con ROWID.
+  // Si llega un ID no-numérico (custom display ID), usamos search by criteria.
+  const isNumericRowId = /^\d{15,}$/.test(candidateId);
+  if (isNumericRowId) {
+    return zohoCall(`/Candidates/${encodeURIComponent(candidateId)}`, { traceId });
+  }
+  // Custom display ID — buscar por Candidate_ID (el field "ID de Candidato" en UI).
+  // Criteria search devuelve la misma shape { data: [...] }.
+  const criteria = `(Candidate_ID:equals:${candidateId})`;
+  return zohoCall(`/Candidates/search?criteria=${encodeURIComponent(criteria)}`, { traceId });
 }
 
 /**

@@ -141,7 +141,7 @@ export default function EmailPreviews() {
       return;
     }
     let cancelled = false;
-    api.emailTemplates.list(locale)
+    api.emailTemplatesPreview.list(locale)
       .then((r) => {
         if (cancelled) return;
         setBackendTemplates(r.templates);

@@ -36,6 +36,9 @@ export type NotificationType =
   | 'finalist_ready'
   | 'inbox_message'
   | 'client_feedback'
+  | 'new_candidate'
+  | 'candidate_auto_rejected'
+  | 'candidate_stage_advanced'
   | 'system';
 
 export type NotificationRow = {

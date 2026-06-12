@@ -81,6 +81,34 @@
 
 .draft-review {
   padding-bottom: 6rem;
+  /* Estándar: 80% del ancho, max 1200px, centrado — feedback Cristian 2026-06-02 */
+  width: 80%;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-size: 1rem;
+}
+
+@media (max-width: 900px) {
+  .draft-review {
+    width: 95%;
+  }
+}
+
+/* Bump global de los inputs/textareas del draft para que la letra no se vea chica */
+.draft-review .draft-input,
+.draft-review .draft-textarea,
+.draft-review input,
+.draft-review textarea,
+.draft-review select {
+  font-size: 0.98rem;
+}
+
+.draft-review .draft-field-label {
+  font-size: 0.85rem;
+}
+
+.draft-review .page-title {
+  font-size: 1.5rem;
 }
 
 .draft-summary-card {

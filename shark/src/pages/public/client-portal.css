@@ -57,6 +57,33 @@
 
 .cp-header-user {
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.cp-sound-toggle {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cp-sound-toggle[aria-pressed="true"] {
+  background: rgba(218, 253, 111, 0.12);
+  color: #dafd6f;
+  border-color: #dafd6f;
+}
+
+.cp-sound-toggle:hover {
+  border-color: #dafd6f;
+  color: #dafd6f;
 }
 
 .cp-user-name {
@@ -283,6 +310,28 @@
   margin-top: 0.25rem;
 }
 
+.ppf-legal {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: #6b7585;
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ppf-legal a {
+  color: #94a3b8;
+  text-decoration: none;
+  border-bottom: 1px dotted #475569;
+}
+
+.ppf-legal a:hover {
+  color: #dafd6f;
+  border-bottom-color: #dafd6f;
+}
+
 /* ===========================================
    Job detail (cp-job page)
    =========================================== */
@@ -348,6 +397,17 @@
   font-size: 0.85rem;
   font-weight: 700;
   z-index: 1;
+  transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
+}
+
+@keyframes trackFlash {
+  0%   { box-shadow: 0 0 0 0 rgba(218, 253, 111, 0); }
+  40%  { box-shadow: 0 0 0 14px rgba(218, 253, 111, 0.55); }
+  100% { box-shadow: 0 0 0 0 rgba(218, 253, 111, 0); }
+}
+
+.cp-track-dot.is-just-done {
+  animation: trackFlash 1.4s ease-out;
 }
 
 .cp-track-dot.is-done {
@@ -375,6 +435,7 @@
   min-height: 28px;
   margin-top: 4px;
   margin-bottom: -4px;
+  transition: background-color 0.5s ease;
 }
 
 .cp-track-line.is-done {
@@ -636,5 +697,82 @@
   }
   .cp-job-title-big {
     font-size: 1.4rem;
+  }
+  .cp-header {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .cp-header-user {
+    text-align: left;
+    width: 100%;
+    font-size: 0.85rem;
+  }
+  .cp-main {
+    padding: 1.5rem 1rem 3rem;
+  }
+  .cp-greeting {
+    font-size: 1.4rem;
+  }
+  .cp-greeting-sub {
+    font-size: 0.95rem;
+  }
+  .cp-jobs-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .cp-job-card {
+    padding: 1rem;
+  }
+  .cp-callout {
+    padding: 1rem;
+  }
+  .cp-section {
+    padding: 1.25rem;
+  }
+  .cp-section-title {
+    font-size: 1.1rem;
+  }
+  /* Tracking en mobile: vertical en lugar de horizontal */
+  .cp-tracking-bar {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cp-track-step {
+    flex-direction: row;
+    align-items: flex-start;
+    width: 100%;
+  }
+  .cp-track-line {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .cp-funnel-row {
+    grid-template-columns: 110px 1fr 32px;
+    font-size: 0.85rem;
+  }
+  .cp-funnel-label {
+    font-size: 0.85rem;
+  }
+  .cp-job-title-big {
+    font-size: 1.25rem;
+  }
+  .cp-greeting {
+    font-size: 1.2rem;
+  }
+  .cp-section-title {
+    font-size: 1rem;
+  }
+  .cp-help-box {
+    padding: 1rem;
+  }
+  /* CTA buttons: full-width en mobile pequeño */
+  .cp-submit-btn,
+  .cp-finalists-cta {
+    width: 100%;
+    text-align: center;
+    display: block;
   }
 }

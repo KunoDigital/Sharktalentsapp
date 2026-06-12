@@ -21,6 +21,9 @@
  */
 
 import type { IncomingMessage } from 'http';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { filestore } from './db.js';
 import { env } from './env.js';
 import { logger } from './logger.js';
@@ -56,7 +59,10 @@ export async function persistLargeContent(
     );
   }
 
-  const filename = `${contextLabel.replace(/[^a-zA-Z0-9_.-]/g, '_')}__${Date.now()}.txt`;
+  // Catalyst File Store rechaza filenames con múltiples puntos (INVALID_INPUT).
+  // Sanitizar TODO a alfanumérico/underscore + agregar una única extensión.
+  const safeLabel = contextLabel.replace(/[^a-zA-Z0-9]/g, '_');
+  const filename = `${safeLabel}_${Date.now()}.txt`;
   const buffer = Buffer.from(content, 'utf8');
 
   log.info('uploading large content to file store', {
@@ -65,24 +71,50 @@ export async function persistLargeContent(
     filename,
   });
 
+  // Catalyst SDK v2.5 espera específicamente fs.ReadStream (no Readable genérico).
+  // form-data necesita poder hacer stat() del file para calcular el content-length del
+  // multipart. Readable.from(buffer) no expone el path → form-data no calcula longitud
+  // → multipart se manda mal → Catalyst responde INVALID_INPUT.
+  // Solución: persistir buffer a /tmp y usar fs.createReadStream — el path real permite
+  // que form-data lea el size correctamente.
+  const tmpPath = path.join(os.tmpdir(), `${process.pid}_${Date.now()}_${Math.floor(Math.random() * 1e6)}_${filename}`);
+  fs.writeFileSync(tmpPath, buffer);
+
   let fileId: string;
   try {
     const folder = (filestore(req) as { folder: (id: string) => unknown }).folder(folderId);
+    const stream = fs.createReadStream(tmpPath);
     const result = await (folder as {
-      uploadFile: (opts: { name: string; file: Buffer }) => Promise<{ file_id?: string; ROWID?: string }>;
-    }).uploadFile({ name: filename, file: buffer });
-    fileId = String(result.file_id ?? result.ROWID ?? '');
+      uploadFile: (opts: { name: string; code: fs.ReadStream }) => Promise<{ id?: string; file_id?: string; ROWID?: string }>;
+    }).uploadFile({ name: filename, code: stream });
+    // Catalyst SDK v2.5 devuelve { id, file_name, file_size, ... } — el campo es `id`.
+    fileId = String(result.id ?? result.file_id ?? result.ROWID ?? '');
   } catch (err) {
+    // El SDK de Catalyst a veces tira objetos sin .message — extraemos lo que podamos.
+    const errAny = err as Record<string, unknown> | null;
+    const errDetail = errAny
+      ? (typeof errAny['message'] === 'string' && errAny['message']) ||
+        (typeof errAny['error_message'] === 'string' && errAny['error_message']) ||
+        (typeof errAny['error_code'] === 'string' && `code ${errAny['error_code']}`) ||
+        JSON.stringify(errAny).slice(0, 300) ||
+        String(err)
+      : String(err);
     log.error('file store upload failed', {
       contextLabel,
       chars: content.length,
-      error: (err as Error).message,
+      folderId,
+      filename,
+      error: errDetail,
+      raw: JSON.stringify(err)?.slice(0, 500),
     });
     throw new AppError(
       502,
       'large_content_upload_failed',
-      `Failed to upload ${contextLabel} to File Store: ${(err as Error).message}`,
+      `Failed to upload ${contextLabel} to File Store (folder ${folderId}): ${errDetail}`,
     );
+  } finally {
+    // Cleanup tmp file pase lo que pase.
+    try { fs.unlinkSync(tmpPath); } catch { /* no-op */ }
   }
 
   if (!fileId) {
@@ -117,8 +149,9 @@ export async function loadLargeContent(
 
   try {
     const folder = (filestore(req) as { folder: (id: string) => unknown }).folder(folderId);
-    const file = (folder as { file: (id: string) => unknown }).file(fileId);
-    const buffer = await (file as { downloadFile: () => Promise<Buffer> }).downloadFile();
+    // Catalyst SDK v2.5: el download se hace directo desde folder.downloadFile(id),
+    // NO folder.file(id).downloadFile(). El primer patrón fue de una versión vieja.
+    const buffer = await (folder as { downloadFile: (id: string) => Promise<Buffer> }).downloadFile(fileId);
     return buffer.toString('utf8');
   } catch (err) {
     log.error('file store download failed', {
@@ -144,7 +177,8 @@ export async function deleteLargeContent(
   if (!folderId) return;
 
   try {
-    const folder = (filestore(req) as { folder: (id: string) => unknown }).folder(folderId);
+    // Catalyst SDK v2.5: folder.deleteFile(id) directo, mismo patrón que downloadFile.
+    const folder = (filestore(req) as { folder: (id: string) => unknown; deleteFile?: never }).folder(folderId);
     await (folder as { deleteFile: (id: string) => Promise<unknown> }).deleteFile(fileId);
   } catch (err) {
     log.warn('file store delete failed (non-fatal)', {

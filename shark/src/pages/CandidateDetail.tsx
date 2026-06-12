@@ -13,8 +13,14 @@ import CandidateVideosPanel from '../components/CandidateVideosPanel';
 import CandidateMindsetPanel from '../components/CandidateMindsetPanel';
 import CandidateEnglishPanel from '../components/CandidateEnglishPanel';
 import PrefilterAnswersPanel from '../components/PrefilterAnswersPanel';
+import { CandidateOtherApplicationsPanel } from '../components/CandidateOtherApplicationsPanel';
+import { BotDecisionPanel } from '../components/BotDecisionPanel';
+import { CandidateNotesPanel } from '../components/CandidateNotesPanel';
+import { CandidateTagsPanel } from '../components/CandidateTagsPanel';
+import { FavoriteButton } from '../components/FavoriteButton';
+import { useFavoriteShortcut } from '../hooks/useFavorites';
 import OfferForm from '../components/OfferForm';
-import { useApi, ApiError } from '../lib/api';
+import { useApi, ApiError, type PipelineStage } from '../lib/api';
 import { adaptToMockApplication } from '../lib/applicationAdapter';
 import { config } from '../config';
 import './pages.css';
@@ -41,8 +47,12 @@ export default function CandidateDetail() {
   const { id } = useParams<{ id: string }>();
   const api = useApi();
   const [liveApp, setLiveApp] = useState<Application | null>(null);
+  const [livePipelineStage, setLivePipelineStage] = useState<PipelineStage | null>(null);
+  const [cvFileId, setCvFileId] = useState<string | null>(null);
+  const [downloadingCv, setDownloadingCv] = useState(false);
   const [loading, setLoading] = useState(config.useApi);
   const [loadError, setLoadError] = useState<string | null>(null);
+  useFavoriteShortcut('candidate', liveApp?.id ?? null, liveApp?.candidate_name);
 
   useEffect(() => {
     if (!id || !config.useApi) {
@@ -83,6 +93,8 @@ export default function CandidateDetail() {
           })),
         );
         setLiveApp(adapted);
+        setLivePipelineStage(a.pipeline_stage);
+        setCvFileId(a.cv_file_id ?? null);
       } catch (e) {
         if (cancelled) return;
         if (e instanceof ApiError && e.status === 404) {
@@ -122,6 +134,82 @@ export default function CandidateDetail() {
   const hasAntiCheat = app.anti_cheat_events.length > 0;
   const usingFallbackMock = config.useApi && !liveApp && mockApp;
 
+  // Map de "siguiente etapa natural" para el botón Avanzar — coincide con la state
+  // machine del backend (functions/api/src/lib/pipelineStateMachine.ts). El backend
+  // valida la transition, así que si el stage no aplica devuelve 400 y mostramos error.
+  const NEXT_STAGE: Partial<Record<PipelineStage, PipelineStage>> = {
+    prefilter_pending: 'prefilter_passed',
+    prefilter_passed: 'tecnica_completed',
+    tecnica_completed: 'conductual_completed',
+    conductual_completed: 'integridad_completed',
+    integridad_completed: 'videos_completed',
+    videos_completed: 'bot_decision_advance',
+    bot_decision_advance: 'finalist',
+    finalist: 'offered',
+    offered: 'hired',
+  };
+
+  const currentStage = livePipelineStage ?? undefined;
+  const nextStage = currentStage ? NEXT_STAGE[currentStage] : undefined;
+
+  async function handleDownloadCv() {
+    if (!liveApp || !cvFileId) return;
+    setDownloadingCv(true);
+    try {
+      const blob = await api.applications.downloadCv(liveApp.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cv-${liveApp.candidate_name.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(`No se pudo descargar el CV: ${(err as Error).message}`);
+    } finally {
+      setDownloadingCv(false);
+    }
+  }
+
+  async function handleAdvance() {
+    if (!liveApp || !nextStage) {
+      alert(`Este candidato está en "${currentStage}" — no tiene siguiente etapa natural. Usa Duda o Rechazar.`);
+      return;
+    }
+    const reason = window.prompt(`Razón del avance a "${nextStage}" (opcional):`) ?? undefined;
+    try {
+      await api.applications.transition(liveApp.id, nextStage, reason || undefined);
+      window.location.reload();
+    } catch (err) {
+      alert(`Error al avanzar: ${(err as Error).message}`);
+    }
+  }
+
+  async function handleReject() {
+    if (!liveApp) return;
+    const reason = window.prompt('Razón del rechazo (queda en el timeline):');
+    if (reason === null) return;
+    try {
+      await api.applications.transition(liveApp.id, 'rejected_by_admin', reason || undefined);
+      window.location.reload();
+    } catch (err) {
+      alert(`Error al rechazar: ${(err as Error).message}`);
+    }
+  }
+
+  async function handleDoubt() {
+    if (!liveApp) return;
+    const note = window.prompt('¿Qué duda tienes sobre este candidato? (queda como nota interna)');
+    if (!note) return;
+    try {
+      await api.applications.createNote(liveApp.id, `🤔 Duda: ${note}`);
+      window.location.reload();
+    } catch (err) {
+      alert(`Error guardando duda: ${(err as Error).message}`);
+    }
+  }
+
   return (
     <div className="candidate-detail">
       {usingFallbackMock && (
@@ -135,7 +223,10 @@ export default function CandidateDetail() {
 
       <header className="cd-header">
         <div>
-          <h1 className="cd-name">{app.candidate_name}</h1>
+          <h1 className="cd-name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {liveApp && <FavoriteButton type="candidate" resourceId={liveApp.id} label={app.candidate_name} size={22} />}
+            {app.candidate_name}
+          </h1>
           <div className="cd-meta">
             {app.candidate_email} · {app.candidate_age} años · ${app.salary_aspiration_usd.toLocaleString()}/mes
             {' · '}
@@ -155,6 +246,17 @@ export default function CandidateDetail() {
       </section>
 
       <PrefilterAnswersPanel applicationId={app.id} />
+
+      {liveApp && <BotDecisionPanel applicationId={liveApp.id} />}
+      {liveApp && <CandidateNotesPanel applicationId={liveApp.id} />}
+      {liveApp?.candidate_id && <CandidateTagsPanel candidateId={liveApp.candidate_id} />}
+
+      {liveApp?.candidate_id && (
+        <CandidateOtherApplicationsPanel
+          candidateId={liveApp.candidate_id}
+          currentApplicationId={liveApp.id}
+        />
+      )}
 
       {app.state === 'finalist' && (
         <section style={{ marginBottom: '1rem' }}>
@@ -369,17 +471,32 @@ export default function CandidateDetail() {
       </section>
 
       <div className="cd-sticky-actions">
-        <button className="btn-primary" onClick={() => alert('Mock: avanzar etapa')}>
-          → Avanzar etapa
+        <button
+          className="btn-primary"
+          onClick={handleAdvance}
+          disabled={!liveApp || !nextStage}
+          title={nextStage ? `Avanza a ${nextStage}` : 'Sin siguiente etapa natural'}
+        >
+          → Avanzar etapa{nextStage ? ` · ${nextStage}` : ''}
         </button>
-        <button className="cd-btn-secondary" onClick={() => alert('Mock: marcar duda')}>
+        <button className="cd-btn-secondary" onClick={handleDoubt} disabled={!liveApp}>
           ? Duda — Revisar CV
         </button>
-        <button className="cd-btn-danger" onClick={() => alert('Mock: rechazar')}>
+        <button className="cd-btn-danger" onClick={handleReject} disabled={!liveApp}>
           ✕ Rechazar
         </button>
-        <button className="cd-btn-ghost" onClick={() => alert('Mock: descargar PDF')}>
-          📄 Descargar PDF
+        {cvFileId && (
+          <button
+            className="cd-btn-secondary"
+            onClick={handleDownloadCv}
+            disabled={downloadingCv}
+            title="Descargar CV del candidato"
+          >
+            {downloadingCv ? '⏳ Descargando…' : '📄 Descargar CV'}
+          </button>
+        )}
+        <button className="cd-btn-ghost" disabled title="Próximamente">
+          📄 Descargar reporte PDF
         </button>
       </div>
     </div>

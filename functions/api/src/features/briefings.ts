@@ -32,6 +32,7 @@ import { env } from '../lib/env';
 import { auditLog } from '../lib/auditLog';
 import { zcql } from '../lib/db';
 import { unwrapRows, escapeSql } from '../lib/dbHelpers';
+import { publishOutboxEvent } from './outbox';
 
 const log = logger('BRIEFINGS');
 
@@ -167,4 +168,78 @@ export async function listBriefings(ctx: RequestContext): Promise<void> {
     log.info('Briefings table not yet ready — returning empty list');
     sendJson(ctx.res, 200, { briefings: [], count: 0, table_ready: false });
   }
+}
+
+/**
+ * POST /api/briefings/upload-transcript
+ *
+ * Permite a Cris pegar/uploadear manualmente el transcript de una reunión que ya
+ * pasó. Útil para flujo Bookings público: el cliente agenda solo via link público,
+ * Cris hace la reunión, copia el transcript de Zoho Meeting al portapapeles, y lo
+ * pega acá. El backend persiste el transcript y publica el outbox event
+ * `briefing.transcript_received` → mismo handler que el webhook Zia → auto-genera draft.
+ *
+ * Body: { client_email, client_name, client_company?, transcript, meeting_date? }
+ */
+export async function uploadBriefingTranscript(ctx: RequestContext): Promise<void> {
+  await requireAuth(ctx);
+  const tenantId = await requireTenant(ctx);
+
+  const body = (await readJsonBody(ctx.req)) as Record<string, unknown>;
+  const clientEmail = typeof body.client_email === 'string' ? body.client_email.trim().toLowerCase() : '';
+  const clientName = typeof body.client_name === 'string' ? body.client_name.trim() : '';
+  const clientCompany = typeof body.client_company === 'string' ? body.client_company.trim() : '';
+  const transcript = typeof body.transcript === 'string' ? body.transcript.trim() : '';
+  const meetingDate = typeof body.meeting_date === 'string' ? body.meeting_date : new Date().toISOString();
+
+  if (!clientEmail || !EMAIL_RE.test(clientEmail)) throw new ValidationError('client_email inválido');
+  if (!clientName) throw new ValidationError('client_name required');
+  if (!transcript || transcript.length < 100) {
+    throw new ValidationError('transcript muy corto (mínimo 100 caracteres)');
+  }
+  if (transcript.length > 100_000) {
+    throw new ValidationError('transcript muy largo (máximo 100k caracteres)');
+  }
+
+  // Generar meeting_id determinístico para idempotencia (no se procesa dos veces el mismo).
+  const meetingId = `manual_${tenantId}_${Date.now().toString(36)}`;
+
+  // Persistir en File Store si excede límite Catalyst, sino inline.
+  const { persistLargeContent } = await import('../lib/largeContentStore.js');
+  const transcriptRef = await persistLargeContent(
+    ctx.req,
+    transcript,
+    `Briefings.transcript_text[${meetingId}]`,
+  );
+
+  // Publicar evento outbox — el handler dispatchBriefingAutoDraft llamará Anthropic
+  // y generará el draft con los datos del cliente.
+  await publishOutboxEvent(ctx.req, 'briefing.transcript_received', {
+    meeting_id: meetingId,
+    booking_id: null,
+    tenant_id: tenantId,
+    client_email: clientEmail,
+    client_name: clientName,
+    client_company: clientCompany || null,
+    transcript_ref: transcriptRef,
+    transcript_chars: transcript.length,
+    language: 'es',
+    occurred_at: meetingDate,
+    source: 'manual_upload',
+  });
+
+  log.info('manual transcript uploaded + queued', {
+    traceId: ctx.traceId,
+    tenantId,
+    meetingId,
+    transcript_chars: transcript.length,
+    client_email_masked: clientEmail.slice(0, 2) + '***',
+  });
+
+  sendJson(ctx.res, 201, {
+    queued: true,
+    meeting_id: meetingId,
+    transcript_chars: transcript.length,
+    next_step: 'El draft se genera en background (~30 segundos). Va a aparecer en /drafts.',
+  });
 }

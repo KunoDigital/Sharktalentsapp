@@ -4,6 +4,7 @@ import { getTestSession, type VelnaSubtest } from '../../data/mockCandidateTests
 import { getJobById } from '../../data/mockJobs';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
 import { usePersistedState } from '../../hooks/usePersistedState';
+import { useTestTokenGuard, renderTokenGuardError } from '../../hooks/useTestTokenGuard';
 import { calculateVelnaResult } from '../../lib/scoring';
 import { shuffleOptions } from '../../lib/shuffle';
 import { buildVelnaSubtestsFromReal } from '../../data/realQuestionsAdapter';
@@ -28,6 +29,8 @@ export default function CandidateVelnaTest() {
   const [questionIdx, setQuestionIdx] = useState(0);
   const [answers, setAnswers, clearAnswers] = usePersistedState<Record<string, string>>(storageKey, {});
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const guard = useTestTokenGuard(token);
 
   // Cognitive level: viene del job. Mock no lo tiene aún, default 'mid' (100 preguntas).
   // Cuando el frontend hable con backend real, se lee de ApiJob.cognitive_level.
@@ -108,7 +111,22 @@ export default function CandidateVelnaTest() {
       const ideal = job?.velna_ideal ?? { verbal: 50, espacial: 50, logica: 50, numerica: 50, abstracta: 50 };
       const result = calculateVelnaResult(VELNA_SUBTESTS, answers, ideal);
 
-      // Submit al backend (skip silently si useApi=false)
+      const navigateOnSuccess = () => {
+        clearAnswers();
+        setTimeout(() => navigate(`/test/${token}/disc`, result ? {
+          state: {
+            score: {
+              type: 'velna',
+              data: {
+                aggregate: result.aggregate_pct,
+                similarity: result.similarity_with_ideal_pct,
+                per_subtest: result.per_subtest,
+              },
+            },
+          },
+        } : undefined), 1500);
+      };
+
       if (token) {
         const subtestPcts = result.per_subtest;
         const get = (k: string) => subtestPcts.find((s) => s.key === k)?.pct ?? 0;
@@ -127,29 +145,14 @@ export default function CandidateVelnaTest() {
             events: antiCheatEvents.map((e) => ({ type: e.type, question_id: e.question_id, duration_ms: e.duration_ms })),
             phase: 'conductual',
           } : undefined,
-        }).catch((err: unknown) => {
-          if (err instanceof ApiError) {
-            log.warn('submit falló', { status: err.status, code: err.code, msg: err.message });
-          } else {
-            log.warn('submit error', { error: (err as Error).message });
-          }
-          // No bloqueamos al candidato — el flow sigue. Cris ve el fallo en logs/admin.
+        }).then(navigateOnSuccess).catch((err: unknown) => {
+          const msg = err instanceof ApiError ? err.message : (err as Error).message;
+          log.warn('submit failed', { error: msg, status: err instanceof ApiError ? err.status : undefined });
+          setSubmitError(msg || 'No pudimos guardar tus respuestas. Probá de nuevo en un momento.');
         });
+      } else {
+        navigateOnSuccess();
       }
-
-      clearAnswers();
-      setTimeout(() => navigate(`/test/${token}/disc`, result ? {
-        state: {
-          score: {
-            type: 'velna',
-            data: {
-              aggregate: result.aggregate_pct,
-              similarity: result.similarity_with_ideal_pct,
-              per_subtest: result.per_subtest,
-            },
-          },
-        },
-      } : undefined), 1500);
     }
   }
 
@@ -165,6 +168,29 @@ export default function CandidateVelnaTest() {
     } else {
       handleSubtestEnd();
     }
+  }
+
+  const guardError = renderTokenGuardError(guard);
+  if (guardError) return guardError;
+
+  if (submitError) {
+    return (
+      <div className="ct-root">
+        <main className="ct-main">
+          <div className="ct-thanks">
+            <h1>No pudimos guardar tus respuestas</h1>
+            <p>{submitError}</p>
+            <p style={{ marginTop: 16 }}>
+              Tus respuestas están seguras en este navegador. Recargá la página y volvé a enviar.
+              Si sigue fallando, escribinos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.
+            </p>
+            <button className="ct-btn-primary" style={{ marginTop: 24 }} onClick={() => { setSubmitError(null); setPhase('done'); }}>
+              Reintentar
+            </button>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   if (phase === 'intro') {

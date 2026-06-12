@@ -110,18 +110,37 @@ function fmt(prefix: string, level: Level, msg: string, meta?: Record<string, un
   return `${base} ${JSON.stringify(safeMeta)}`;
 }
 
+// Hook al request context para que el logger también pushee entries al buffer del
+// request actual (usado por Stratus log loop). Lazy-loaded para evitar circular imports.
+let pushLogFn: ((entry: { level: 'debug' | 'info' | 'warn' | 'error'; ts: string; prefix: string; msg: string; meta?: Record<string, unknown> }) => void) | null = null;
+function tryPushToContext(level: 'debug' | 'info' | 'warn' | 'error', prefix: string, msg: string, meta?: Record<string, unknown>): void {
+  if (!pushLogFn) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      pushLogFn = require('./requestContext').pushLog;
+    } catch { return; }
+  }
+  if (pushLogFn) {
+    try { pushLogFn({ level, ts: new Date().toISOString(), prefix, msg, meta: redactMeta(meta) }); } catch { /* nunca bloquear */ }
+  }
+}
+
 export function logger(prefix: string) {
   return {
     debug(msg: string, meta?: Record<string, unknown>) {
+      tryPushToContext('debug', prefix, msg, meta);
       if (LEVELS.debug >= currentLevel()) console.log(fmt(prefix, 'debug', msg, meta));
     },
     info(msg: string, meta?: Record<string, unknown>) {
+      tryPushToContext('info', prefix, msg, meta);
       if (LEVELS.info >= currentLevel()) console.log(fmt(prefix, 'info', msg, meta));
     },
     warn(msg: string, meta?: Record<string, unknown>) {
+      tryPushToContext('warn', prefix, msg, meta);
       if (LEVELS.warn >= currentLevel()) console.warn(fmt(prefix, 'warn', msg, meta));
     },
     error(msg: string, meta?: Record<string, unknown>) {
+      tryPushToContext('error', prefix, msg, meta);
       if (LEVELS.error >= currentLevel()) console.error(fmt(prefix, 'error', msg, meta));
     },
   };

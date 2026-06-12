@@ -108,13 +108,18 @@ export async function handleRecruitTestLink(ctx: RequestContext): Promise<void> 
   )[0];
 
   if (!application) {
-    // No hay application — crearla. Como el candidato ya pasó el prefilter en Recruit,
-    // arranca en `prefilter_passed` directamente.
+    // No hay application — crearla. Stage inicial depende del `phase` que vino en URL:
+    //  - phase='prescreening' (default desde el email de Recruit) → arranca en prefilter_pending,
+    //    el candidato responde el prescreening primero
+    //  - phase='tecnica' o cualquier otro → arranca en prefilter_passed (compatibilidad con
+    //    flow viejo donde Cris movía manualmente al candidato)
+    const initialStage = phase === 'prescreening' || phase == null
+      ? 'prefilter_pending' : 'prefilter_passed';
     const inserted = await datastore(ctx.req).table('Results').insertRow({
       assessment_id: job.ROWID,
       candidate_id: candidate.ROWID,
       answers: null,
-      pipeline_stage: 'prefilter_passed',
+      pipeline_stage: initialStage,
       started_at: now(),
       completed_at: null,
       report_downloaded_at: null,
@@ -130,6 +135,22 @@ export async function handleRecruitTestLink(ctx: RequestContext): Promise<void> 
       applicationId: application.ROWID,
       origin: 'recruit_email_link',
     });
+
+    // Notificar a Cris que llegó un candidato nuevo. audit fix #16.
+    {
+      const { fireAndForget } = await import('../lib/fireAndForget.js');
+      fireAndForget('enqueueNotification[new_candidate]', async () => {
+        const { enqueueNotification } = await import('./notifications.js');
+        await enqueueNotification(ctx.req, {
+          tenantId: job.tenant_id,
+          type: 'new_candidate',
+          message: `Nuevo candidato ${candidate.name ?? candidate.email} aplicó a ${job.title}`,
+          resourceType: 'application',
+          resourceId: application.ROWID,
+          link: `/candidates/${application.ROWID}`,
+        });
+      });
+    }
   }
 
   // 4. Generar token + URL de redirect al test
@@ -183,12 +204,15 @@ async function createCandidateFromRecruit(
   )[0];
 
   if (existing) {
-    // Linkear el recruit_id al candidato existente
+    // Linkear el recruit_id al candidato existente.
+    // NOTA: Candidates table NO tiene updated_at column (descubierto 2026-06-03).
+    // El intento previo de pasar updated_at causaba 400 INVALID_INPUT que era catch-eado
+    // silenciosamente; el candidato existente NUNCA recibía su recruit_candidate_id,
+    // bloqueando el dispatchRecruitSync downstream.
     try {
       await datastore(ctx.req).table('Candidates').updateRow({
         ROWID: existing.ROWID,
         recruit_candidate_id: recruitCandidateId,
-        updated_at: now(),
       });
     } catch (err) {
       log.warn('failed to link recruit_id to existing candidate', { error: (err as Error).message });

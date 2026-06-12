@@ -25,6 +25,25 @@ export default function PoolMatchPanel({ jobId, areaTags, requiresEnglish }: {
   const [poolSize, setPoolSize] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tableNotReady, setTableNotReady] = useState(false);
+  const [invitingId, setInvitingId] = useState<string | null>(null);
+  const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
+
+  async function invite(poolEntryId: string) {
+    if (invitingId || invitedIds.has(poolEntryId)) return;
+    if (!window.confirm('¿Invitar a este candidato al puesto? Le va a llegar email/WhatsApp con el link.')) return;
+    setInvitingId(poolEntryId);
+    try {
+      const res = await api.pool.inviteToJob(poolEntryId, jobId, true);
+      setInvitedIds((curr) => new Set(curr).add(poolEntryId));
+      alert(res.created_new
+        ? `✓ Invitado a "${res.job_title}". Email enviado al candidato.`
+        : `Ya tenía una aplicación en este puesto (stage: ${res.pipeline_stage}).`);
+    } catch (err) {
+      alert(`Error: ${(err as Error).message}`);
+    } finally {
+      setInvitingId(null);
+    }
+  }
 
   async function search() {
     if (!config.useApi) {
@@ -116,6 +135,22 @@ export default function PoolMatchPanel({ jobId, areaTags, requiresEnglish }: {
                           <div className="bot-queue-conf-label">match</div>
                         </div>
                       </div>
+                      {m.available && (
+                        <div style={{ marginTop: '0.5rem' }}>
+                          {invitedIds.has(m.pool_entry_id) ? (
+                            <span style={{ color: '#16a34a', fontSize: 12, fontWeight: 600 }}>✓ Invitado</span>
+                          ) : (
+                            <button
+                              className="btn-toolbar"
+                              onClick={() => invite(m.pool_entry_id)}
+                              disabled={invitingId !== null}
+                              style={{ fontSize: 12 }}
+                            >
+                              {invitingId === m.pool_entry_id ? 'Invitando…' : '📩 Invitar a este puesto'}
+                            </button>
+                          )}
+                        </div>
+                      )}
                       <ul style={{ marginTop: '0.5rem', fontSize: '0.85rem', paddingLeft: '1rem' }}>
                         {m.reasoning.map((r, idx) => <li key={idx}>{r}</li>)}
                       </ul>

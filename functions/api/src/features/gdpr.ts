@@ -53,29 +53,41 @@ export async function exportCandidateData(ctx: RequestContext): Promise<void> {
   if (!candidate) throw new NotFoundError(`No candidate with email ${email}`);
   const candidateId = String(candidate.ROWID);
 
-  // 2) Sus Results (aplicaciones)
+  // 2) Sus Results (aplicaciones).
+  // 2026-06-04 (audit fix #27): LIMIT 100 — un candidato puede tener N aplicaciones,
+  // pero >100 es un caso de uso degenerado. Si pasa, devolvemos 100 y un warning para
+  // que Cris haga el resto manual. Reportable a través del campo `truncated`.
+  const RESULTS_LIMIT = 100;
   const results = unwrapRows<Record<string, unknown>>(
     (await zcql(ctx.req).executeZCQLQuery(
-      `SELECT * FROM Results WHERE candidate_id = '${escapeSql(candidateId)}'`,
+      `SELECT * FROM Results WHERE candidate_id = '${escapeSql(candidateId)}' LIMIT ${RESULTS_LIMIT}`,
     )) as unknown[],
     'Results',
   );
 
-  // 3) Para cada Result, traer scores + transitions + integrity dims
-  const enriched = await Promise.all(results.map(async (r) => {
-    const resultId = String(r.ROWID);
-    const [scores, transitions, dims] = await Promise.all([
-      zcql(ctx.req).executeZCQLQuery(`SELECT * FROM Scores WHERE result_id = '${escapeSql(resultId)}'`),
-      zcql(ctx.req).executeZCQLQuery(`SELECT * FROM PipelineTransitions WHERE result_id = '${escapeSql(resultId)}'`),
-      zcql(ctx.req).executeZCQLQuery(`SELECT * FROM IntegrityDimensions WHERE result_id = '${escapeSql(resultId)}'`),
-    ]);
-    return {
-      result: r,
-      scores: unwrapRows<Record<string, unknown>>(scores as unknown[], 'Scores')[0] ?? null,
-      transitions: unwrapRows<Record<string, unknown>>(transitions as unknown[], 'PipelineTransitions'),
-      integrity_dimensions: unwrapRows<Record<string, unknown>>(dims as unknown[], 'IntegrityDimensions'),
-    };
-  }));
+  // 3) Para cada Result, traer scores + transitions + integrity dims.
+  // audit fix #27: chunks de 5 con concurrencia controlada (en lugar de Promise.all
+  // sobre todos). Catalyst tiene contention en queries paralelas a misma tabla.
+  const CHUNK_SIZE = 5;
+  const enriched: Array<Record<string, unknown>> = [];
+  for (let i = 0; i < results.length; i += CHUNK_SIZE) {
+    const chunk = results.slice(i, i + CHUNK_SIZE);
+    const chunkEnriched = await Promise.all(chunk.map(async (r) => {
+      const resultId = String(r.ROWID);
+      const [scores, transitions, dims] = await Promise.all([
+        zcql(ctx.req).executeZCQLQuery(`SELECT * FROM Scores WHERE result_id = '${escapeSql(resultId)}' LIMIT 1`),
+        zcql(ctx.req).executeZCQLQuery(`SELECT * FROM PipelineTransitions WHERE result_id = '${escapeSql(resultId)}' LIMIT 50`),
+        zcql(ctx.req).executeZCQLQuery(`SELECT * FROM IntegrityDimensions WHERE result_id = '${escapeSql(resultId)}' LIMIT 50`),
+      ]);
+      return {
+        result: r,
+        scores: unwrapRows<Record<string, unknown>>(scores as unknown[], 'Scores')[0] ?? null,
+        transitions: unwrapRows<Record<string, unknown>>(transitions as unknown[], 'PipelineTransitions'),
+        integrity_dimensions: unwrapRows<Record<string, unknown>>(dims as unknown[], 'IntegrityDimensions'),
+      };
+    }));
+    enriched.push(...chunkEnriched);
+  }
 
   log.info('GDPR export', { traceId: ctx.traceId, candidate_id: candidateId, results_count: results.length });
   void auditLog(ctx, {
@@ -89,6 +101,7 @@ export async function exportCandidateData(ctx: RequestContext): Promise<void> {
     exported_at: new Date().toISOString(),
     candidate,
     applications: enriched,
+    truncated: results.length === RESULTS_LIMIT,
   });
 }
 

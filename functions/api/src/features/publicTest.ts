@@ -9,7 +9,7 @@
  */
 
 import type { RequestContext } from '../lib/context';
-import { ValidationError, NotFoundError, ConflictError, UnauthorizedError } from '../lib/errors';
+import { ValidationError, NotFoundError, ConflictError, UnauthorizedError, AppError } from '../lib/errors';
 import { sendJson, readJsonBody } from '../lib/http';
 import { logger } from '../lib/logger';
 import { datastore, zcql, now } from '../lib/db';
@@ -178,26 +178,55 @@ async function getScoresRow(ctx: RequestContext, resultId: string): Promise<Scor
   return unwrapRows<ScoresRow>(result, T_SCORES)[0] ?? null;
 }
 
+/** Columnas opcionales que pueden no existir todavía en Catalyst (deferred schema). */
+const SCORES_OPTIONAL_COLS = [
+  'tec_situational_validity_pct',
+  'tec_style_autonomy_consult',
+  'tec_style_match_with_boss_pct',
+];
+
 async function upsertScoresPatch(
   ctx: RequestContext,
   resultId: string,
   patch: Record<string, unknown>,
 ): Promise<void> {
   const existing = await getScoresRow(ctx, resultId);
-  if (existing) {
-    await datastore(ctx.req).table(T_SCORES).updateRow({ ROWID: existing.ROWID, ...patch });
-    return;
-  }
+  const doUpsert = async (p: Record<string, unknown>): Promise<void> => {
+    if (existing) {
+      await datastore(ctx.req).table(T_SCORES).updateRow({ ROWID: existing.ROWID, ...p });
+      return;
+    }
+    try {
+      await datastore(ctx.req).table(T_SCORES).insertRow({ result_id: resultId, ...p });
+    } catch (err) {
+      // Race: otra request creó el row entre nuestro SELECT y INSERT. Reintentar como update.
+      log.warn('Scores upsert race detected (publicTest), retrying as update', {
+        traceId: ctx.traceId, resultId, error: (err as Error).message,
+      });
+      const concurrent = await getScoresRow(ctx, resultId);
+      if (!concurrent) throw err;
+      await datastore(ctx.req).table(T_SCORES).updateRow({ ROWID: concurrent.ROWID, ...p });
+    }
+  };
+
   try {
-    await datastore(ctx.req).table(T_SCORES).insertRow({ result_id: resultId, ...patch });
+    await doUpsert(patch);
   } catch (err) {
-    // Race: otra request creó el row entre nuestro SELECT y INSERT. Reintentar como update.
-    log.warn('Scores upsert race detected (publicTest), retrying as update', {
-      traceId: ctx.traceId, resultId, error: (err as Error).message,
-    });
-    const concurrent = await getScoresRow(ctx, resultId);
-    if (!concurrent) throw err;
-    await datastore(ctx.req).table(T_SCORES).updateRow({ ROWID: concurrent.ROWID, ...patch });
+    const msg = (err as Error).message ?? '';
+    // Si Catalyst rechazó por columna missing (típicamente las 3 doble eje pendientes),
+    // re-intentamos SIN esas columnas opcionales para no perder el score técnico básico.
+    const looksLikeMissingColumn = /column|unknown|invalid/i.test(msg);
+    const hasOptionalCols = SCORES_OPTIONAL_COLS.some((c) => c in patch);
+    if (looksLikeMissingColumn && hasOptionalCols) {
+      log.warn('Scores upsert failed, retrying without optional cols', {
+        traceId: ctx.traceId, resultId, error: msg.slice(0, 200),
+      });
+      const cleanPatch: Record<string, unknown> = { ...patch };
+      for (const c of SCORES_OPTIONAL_COLS) delete cleanPatch[c];
+      await doUpsert(cleanPatch);
+      return;
+    }
+    throw err;
   }
 }
 
@@ -218,13 +247,126 @@ export async function getTestStatus(ctx: RequestContext): Promise<void> {
   const result = await getResult(ctx, claims.ref);
   if (!result) throw new NotFoundError(`Application not found`);
 
+  // Enriquecer con job + candidate para que el frontend pueda renderizar las pantallas
+  // (título del puesto, nombre del candidato, etc.) sin volver a hacer otra request.
+  let job: { ROWID: string; title: string; company: string; cognitive_level?: string } | null = null;
+  let candidate: { name: string; email: string } | null = null;
+  try {
+    const jobRows = unwrapRows<{ ROWID: string; title: string; company: string; cognitive_level?: string }>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT ROWID, title, company, cognitive_level FROM Jobs WHERE ROWID = '${escapeSql(result.assessment_id)}' LIMIT 1`,
+      )) as unknown[],
+      'Jobs',
+    );
+    job = jobRows[0] ?? null;
+  } catch { /* tolerate missing columns */ }
+  try {
+    const candRows = unwrapRows<{ name: string; email: string; salary_expectation?: number | null; availability?: string | null }>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT name, email, salary_expectation, availability FROM Candidates WHERE ROWID = '${escapeSql(result.candidate_id)}' LIMIT 1`,
+      )) as unknown[],
+      'Candidates',
+    );
+    const c = candRows[0];
+    if (c) {
+      candidate = c as { name: string; email: string };
+      (candidate as Record<string, unknown>).salary_expectation = c.salary_expectation;
+      (candidate as Record<string, unknown>).availability = c.availability;
+    }
+  } catch { /* tolerate */ }
+
   sendJson(ctx.res, 200, {
     application_id: result.ROWID,
     pipeline_stage: result.pipeline_stage,
     started_at: result.started_at,
     completed_at: result.completed_at,
     expired: claims.exp < Math.floor(Date.now() / 1000),
+    job,
+    candidate,
   });
+}
+
+/**
+ * POST /test/:token/register
+ * Body: { full_name?, salary_expectation?, availability? }
+ *
+ * Permite al candidato completar/actualizar campos de su perfil ANTES de empezar las pruebas.
+ * Llamado desde la pantalla de registro previa al primer test (técnica).
+ *
+ * Auth: token signed (mismo que el resto de endpoints públicos del test).
+ */
+export async function registerCandidateInfo(ctx: RequestContext): Promise<void> {
+  const token = extractTokenFromPath(ctx.req.url ?? '/');
+  if (!token) throw new ValidationError('token missing');
+  let claims;
+  try {
+    claims = verifyToken(token, 'test');
+  } catch (err) {
+    if (err instanceof TokenError) throw new UnauthorizedError(`Token: ${err.reason}`);
+    throw err;
+  }
+
+  const result = await getResult(ctx, claims.ref);
+  if (!result) throw new NotFoundError('Application not found');
+
+  const body = await readJsonBody<{
+    full_name?: string;
+    salary_expectation?: number | string;
+    availability?: string;
+  }>(ctx.req);
+
+  const patch: Record<string, unknown> = { ROWID: result.candidate_id };
+  if (typeof body.full_name === 'string' && body.full_name.trim()) {
+    patch.name = body.full_name.trim().slice(0, 255);
+  }
+  if (body.salary_expectation !== undefined && body.salary_expectation !== null && body.salary_expectation !== '') {
+    const n = Number(body.salary_expectation);
+    if (Number.isFinite(n) && n > 0) patch.salary_expectation = n;
+  }
+  if (typeof body.availability === 'string' && body.availability.trim()) {
+    patch.availability = body.availability.trim().slice(0, 255);
+  }
+
+  if (Object.keys(patch).length <= 1) {
+    throw new ValidationError('Nada para guardar — manda al menos un campo');
+  }
+
+  // 2026-06-04 (audit fix #8): defensa contra el caso donde el candidato tiene
+  // aplicaciones en >1 tenant (vector: admin malicioso del tenant B le crea una
+  // Application falsa al candidato de tenant A para luego pisar sus datos personales
+  // vía el link público del tenant A). Si detectamos >1 tenant tocando este candidato,
+  // bloqueamos los campos compartidos (name) y solo permitimos los que aplican al
+  // Result específico (salary_expectation, availability).
+  const tenantsRows = unwrapRows<{ tenant_id: string }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT DISTINCT j.tenant_id AS tenant_id
+       FROM Results r JOIN Jobs j ON r.assessment_id = j.ROWID
+       WHERE r.candidate_id = '${escapeSql(result.candidate_id)}'
+       LIMIT 5`,
+    )) as unknown[],
+    'Results',
+  );
+  const distinctTenants = new Set(tenantsRows.map((t) => t.tenant_id).filter(Boolean));
+  if (distinctTenants.size > 1) {
+    log.warn('registerCandidateInfo: candidate in multiple tenants — name update blocked', {
+      traceId: ctx.traceId, candidateId: result.candidate_id, tenantCount: distinctTenants.size,
+    });
+    delete patch.name;
+    if (Object.keys(patch).length <= 1) {
+      // Solo quedaba name → nada que guardar
+      sendJson(ctx.res, 200, { ok: true, note: 'name not updated (candidate in multiple tenants)' });
+      return;
+    }
+  }
+
+  try {
+    await datastore(ctx.req).table('Candidates').updateRow(patch as { ROWID: string });
+  } catch (err) {
+    log.warn('register candidate info failed', { traceId: ctx.traceId, error: (err as Error).message });
+    throw new AppError(500, 'register_failed', `No se pudo guardar el registro: ${(err as Error).message}`);
+  }
+
+  sendJson(ctx.res, 200, { ok: true });
 }
 
 export async function submitTest(ctx: RequestContext): Promise<void> {
@@ -474,12 +616,18 @@ export async function submitTest(ctx: RequestContext): Promise<void> {
 
   await upsertScoresPatch(ctx, resultId, patch);
 
-  // Si integridad incluida, insertar las dimensiones en su tabla
+  // Si integridad incluida, insertar las dimensiones en su tabla.
+  // Pattern: SECUENCIAL con retry por dimensión (3 intentos, backoff exponencial).
+  // Por qué no Promise.all: Catalyst Data Store tiene rate limits / contention con
+  // inserts paralelos a la misma tabla — 6% de las corridas tenían 10-12/13 filas
+  // por failures silenciosas (detectado en test loop de 100 reps, 2026-06-02).
   if (integrityDimsToInsert && integrityDimsToInsert.length > 0) {
     const inserted: string[] = [];
     const failed: Array<{ dim: string; err: string }> = [];
-    await Promise.all(
-      integrityDimsToInsert.map(async (d) => {
+
+    for (const d of integrityDimsToInsert) {
+      let lastErr: Error | null = null;
+      for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           await datastore(ctx.req).table('IntegrityDimensions').insertRow({
             result_id: resultId,
@@ -489,13 +637,23 @@ export async function submitTest(ctx: RequestContext): Promise<void> {
             created_at: now(),
           });
           inserted.push(d.dimension);
+          lastErr = null;
+          break;
         } catch (err) {
-          failed.push({ dim: d.dimension, err: (err as Error).message });
+          lastErr = err as Error;
+          if (attempt < 3) {
+            // Backoff exponencial: 100ms, 300ms, 900ms.
+            await new Promise((r) => setTimeout(r, 100 * Math.pow(3, attempt - 1)));
+          }
         }
-      }),
-    );
+      }
+      if (lastErr) {
+        failed.push({ dim: d.dimension, err: lastErr.message });
+      }
+    }
+
     if (failed.length > 0) {
-      log.error('IntegrityDimensions insert failed for some dimensions', {
+      log.error('IntegrityDimensions insert failed for some dimensions despite retries', {
         traceId: ctx.traceId,
         resultId,
         insertedCount: inserted.length,
@@ -592,14 +750,28 @@ async function transitResult(ctx: RequestContext, result: ResultRow, toStage: st
       ? { completed_at: now() }
       : {}),
   });
-  await datastore(ctx.req).table(T_TRANSITIONS).insertRow({
-    result_id: result.ROWID,
-    from_stage: result.pipeline_stage,
-    to_stage: toStage,
-    actor,
-    reason: `Auto-transition on submit`,
-    transitioned_at: now(),
-  });
+  // 2026-06-04 (audit fix #17): Results es la fuente de verdad (ya quedó OK arriba).
+  // PipelineTransitions es auditoría histórica — si falla, log.warn y seguir.
+  // Sin este try/catch un throttle de Catalyst sobre la segunda escritura tiraba 500
+  // y dejaba el invariante OK pero el caller veía error 500.
+  try {
+    await datastore(ctx.req).table(T_TRANSITIONS).insertRow({
+      result_id: result.ROWID,
+      from_stage: result.pipeline_stage,
+      to_stage: toStage,
+      actor,
+      reason: `Auto-transition on submit`,
+      transitioned_at: now(),
+    });
+  } catch (err) {
+    log.warn('PipelineTransitions insert failed (Results already updated)', {
+      traceId: ctx.traceId,
+      resultId: result.ROWID,
+      from: result.pipeline_stage,
+      to: toStage,
+      error: (err as Error).message,
+    });
+  }
 
   // Auto-populate del pool: cuando el candidato termina la fase intermedia
   // (integridad o videos), entra al pool histórico para futuro matching.
@@ -607,6 +779,56 @@ async function transitResult(ctx: RequestContext, result: ResultRow, toStage: st
     const { upsertPoolFromApplication } = await import('../lib/poolAutoPopulate.js');
     void upsertPoolFromApplication(ctx.req, result.ROWID);
   }
+
+  // Notificación al candidato del siguiente paso (email + WhatsApp).
+  // 2026-06-04 (audit fix #16): fireAndForget wrapper para garantizar que un fallo
+  // de la importación dinámica o del notify no tumbe el proceso (UnhandledRejection).
+  const { fireAndForget } = await import('../lib/fireAndForget.js');
+  fireAndForget('notifyCandidateOnTransition', async () => {
+    const { notifyCandidateOnTransition } = await import('../lib/candidateNotifier.js');
+    await notifyCandidateOnTransition(ctx.req, {
+      applicationId: result.ROWID,
+      toStage,
+    });
+  });
+
+  // Notificación a Cris cuando candidato avanza una etapa importante o es auto-rechazado.
+  void (async () => {
+    try {
+      const { enqueueNotification } = await import('./notifications.js');
+      const { zcql: zcqlFn } = await import('../lib/db.js');
+      const { escapeSql: esc, unwrapRows: unr } = await import('../lib/dbHelpers.js');
+      const meta = unr<{ tenant_id: string; candidate_name: string; job_title: string }>(
+        (await zcqlFn(ctx.req).executeZCQLQuery(
+          `SELECT J.tenant_id AS tenant_id, C.name AS candidate_name, J.title AS job_title
+           FROM Results R JOIN Jobs J ON J.ROWID = R.assessment_id
+           JOIN Candidates C ON C.ROWID = R.candidate_id
+           WHERE R.ROWID = '${esc(result.ROWID)}' LIMIT 1`,
+        )) as unknown[],
+        'Results',
+      )[0];
+      if (!meta) return;
+      const candName = meta.candidate_name || 'Candidato';
+      // Solo notificar en stages importantes — sino floodea a Cris
+      const NOTIFY_ON: Record<string, { type: 'candidate_auto_rejected' | 'candidate_stage_advanced'; msg: string }> = {
+        auto_rejected_low_score: { type: 'candidate_auto_rejected', msg: `${candName} fue auto-rechazado por score bajo en ${meta.job_title}` },
+        integridad_completed: { type: 'candidate_stage_advanced', msg: `${candName} completó integridad para ${meta.job_title}` },
+        videos_completed: { type: 'candidate_stage_advanced', msg: `${candName} completó los videos para ${meta.job_title}` },
+      };
+      const cfg = NOTIFY_ON[toStage];
+      if (!cfg) return;
+      await enqueueNotification(ctx.req, {
+        tenantId: meta.tenant_id,
+        type: cfg.type,
+        message: cfg.msg,
+        resourceType: 'application',
+        resourceId: result.ROWID,
+        link: `/candidates/${result.ROWID}`,
+      });
+    } catch (err) {
+      log.warn('cris notification failed', { error: (err as Error).message });
+    }
+  })();
 
   // Marketing demo flow: si el Result es de un MarketingLead, chequear si ambas
   // secciones (conductual + integridad) están completas para disparar el reporte.
@@ -639,4 +861,386 @@ async function transitResult(ctx: RequestContext, result: ResultRow, toStage: st
       });
     }
   })();
+}
+
+/**
+ * GET /test/:token/my-progress
+ *
+ * Vista para el candidato: muestra dónde está en el proceso, qué pruebas ya hizo,
+ * qué le falta. UX premium — devuelve estado humano-friendly sin exponer scores,
+ * decisiones del bot ni info interna.
+ */
+export async function getCandidateProgress(ctx: RequestContext): Promise<void> {
+  const url = ctx.req.url ?? '/';
+  const m = url.match(/^\/test\/([^/]+)\/my-progress\/?$/);
+  const token = m?.[1];
+  if (!token) throw new ValidationError('token missing');
+
+  let claims;
+  try {
+    claims = verifyToken(token, 'test');
+  } catch (err) {
+    if (err instanceof TokenError) throw new UnauthorizedError(`Token: ${err.reason}`);
+    throw err;
+  }
+
+  const result = await getResult(ctx, claims.ref);
+  if (!result) throw new NotFoundError(`Application not found`);
+
+  // Cargar job (título solamente — el candidato no debe ver más)
+  const jobRows = unwrapRows<{ title: string; company: string }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT title, company FROM Jobs WHERE ROWID = '${escapeSql(result.assessment_id)}' LIMIT 1`,
+    )) as unknown[],
+    'Jobs',
+  );
+  const job = jobRows[0];
+  if (!job) throw new NotFoundError('Job not found');
+
+  // Mapear stage interno → estado humano + qué prueba sigue
+  const STAGE_LABELS: Record<string, { label: string; description: string; next_phase?: string; next_label?: string; show_completed: string[]; is_terminal?: boolean; is_positive?: boolean }> = {
+    prefilter_pending: {
+      label: 'Empezando',
+      description: 'Te queda hacer unas preguntas cortas de prescreening (5 min).',
+      next_phase: 'prescreening',
+      next_label: 'Hacer prescreening',
+      show_completed: [],
+    },
+    prefilter_passed: {
+      label: 'Prescreening completo ✓',
+      description: 'Ya pasaste el prescreening. Ahora viene la prueba técnica.',
+      next_phase: 'tecnica',
+      next_label: 'Empezar prueba técnica',
+      show_completed: ['prescreening'],
+    },
+    tecnica_completed: {
+      label: 'Técnica completa ✓',
+      description: 'Pasaste a evaluación conductual (DISC).',
+      next_phase: 'disc',
+      next_label: 'Hacer DISC',
+      show_completed: ['prescreening', 'tecnica'],
+    },
+    conductual_completed: {
+      label: 'DISC completo ✓',
+      description: 'Siguiente: prueba de integridad.',
+      next_phase: 'integridad',
+      next_label: 'Hacer integridad',
+      show_completed: ['prescreening', 'tecnica', 'disc'],
+    },
+    integridad_completed: {
+      label: 'Integridad completa ✓',
+      description: 'Última prueba: video respuestas cortas.',
+      next_phase: 'videos',
+      next_label: 'Grabar videos',
+      show_completed: ['prescreening', 'tecnica', 'disc', 'integridad'],
+    },
+    videos_pending: {
+      label: 'Video respuestas',
+      description: 'Tenés preguntas en video por contestar.',
+      next_phase: 'videos',
+      next_label: 'Continuar videos',
+      show_completed: ['prescreening', 'tecnica', 'disc', 'integridad'],
+    },
+    videos_completed: {
+      label: 'Todas las pruebas completas ✓',
+      description: 'Estamos revisando tu perfil. Si avanzás, te contactamos para entrevista.',
+      show_completed: ['prescreening', 'tecnica', 'disc', 'integridad', 'video'],
+    },
+    bot_decision_advance: {
+      label: 'En revisión final',
+      description: 'Tu perfil está siendo evaluado. Te avisaremos en los próximos días.',
+      show_completed: ['prescreening', 'tecnica', 'disc', 'integridad', 'video'],
+    },
+    finalist: {
+      label: 'Finalista 🎯',
+      description: 'Quedaste como finalista. La empresa cliente está revisando tu perfil.',
+      show_completed: ['prescreening', 'tecnica', 'disc', 'integridad', 'video'],
+      is_positive: true,
+    },
+    awaiting_client_review: {
+      label: 'Esperando respuesta del cliente',
+      description: 'Tu reporte fue enviado al cliente. Si avanzás, te contactamos para entrevista.',
+      show_completed: ['prescreening', 'tecnica', 'disc', 'integridad', 'video'],
+      is_positive: true,
+    },
+    interview_scheduled: {
+      label: 'Entrevista agendada 📅',
+      description: 'La empresa te quiere entrevistar. Revisá el email con los detalles.',
+      show_completed: ['prescreening', 'tecnica', 'disc', 'integridad', 'video'],
+      is_positive: true,
+    },
+    offered: {
+      label: 'Oferta enviada 💼',
+      description: 'Recibiste una oferta. Revisá el email para detalles.',
+      show_completed: ['prescreening', 'tecnica', 'disc', 'integridad', 'video'],
+      is_positive: true,
+      is_terminal: true,
+    },
+    hired: {
+      label: 'Contratado 🎉',
+      description: '¡Felicitaciones! Comenzaste tu nueva posición.',
+      show_completed: ['prescreening', 'tecnica', 'disc', 'integridad', 'video'],
+      is_positive: true,
+      is_terminal: true,
+    },
+    auto_rejected_low_score: {
+      label: 'Gracias por participar',
+      description: 'En esta búsqueda decidimos avanzar con otros candidatos. Te dejamos en nuestra base para futuras oportunidades.',
+      show_completed: [],
+      is_terminal: true,
+    },
+    rejected_by_admin: {
+      label: 'Gracias por participar',
+      description: 'En esta búsqueda decidimos avanzar con otros candidatos. Te dejamos en nuestra base para futuras oportunidades.',
+      show_completed: [],
+      is_terminal: true,
+    },
+    salary_out_of_range: {
+      label: 'Gracias por participar',
+      description: 'Tu expectativa salarial está fuera del rango del puesto. Te dejamos en nuestra base para puestos compatibles.',
+      show_completed: [],
+      is_terminal: true,
+    },
+    withdrew: {
+      label: 'Proceso cancelado',
+      description: 'Te retiraste del proceso.',
+      show_completed: [],
+      is_terminal: true,
+    },
+    offer_declined: {
+      label: 'Oferta declinada',
+      description: 'Declinaste la oferta. Te dejamos en nuestra base para futuras oportunidades.',
+      show_completed: [],
+      is_terminal: true,
+    },
+  };
+
+  const meta = STAGE_LABELS[result.pipeline_stage] ?? {
+    label: 'En proceso',
+    description: 'Estamos procesando tu perfil.',
+    show_completed: [],
+  };
+
+  sendJson(ctx.res, 200, {
+    job: { title: job.title, company: job.company },
+    status: {
+      stage: result.pipeline_stage,
+      label: meta.label,
+      description: meta.description,
+      is_terminal: meta.is_terminal ?? false,
+      is_positive: meta.is_positive ?? false,
+    },
+    completed_phases: meta.show_completed,
+    next: meta.next_phase ? { phase: meta.next_phase, label: meta.next_label } : null,
+  });
+}
+
+// =============================================================================
+// Prescreening — feature post-Recruit (reemplaza el filtro inicial de Recruit)
+// =============================================================================
+
+/**
+ * GET /test/:token/prescreening — devuelve las preguntas del prescreening del job
+ * SIN exponer accepted_indices (eso es server-side, sino el candidato puede hackear).
+ */
+export async function getTestPrescreening(ctx: RequestContext): Promise<void> {
+  const token = extractTokenFromPath(ctx.req.url ?? '/');
+  if (!token) throw new ValidationError('token missing');
+
+  let claims;
+  try {
+    claims = verifyToken(token, 'test');
+  } catch (err) {
+    if (err instanceof TokenError) throw new UnauthorizedError(`Token: ${err.reason}`);
+    throw err;
+  }
+
+  const result = await getResult(ctx, claims.ref);
+  if (!result) throw new NotFoundError(`Application not found`);
+
+  const jobRow = unwrapRows<{ ROWID: string; prescreening_questions_cache?: string | null; title?: string }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT ROWID, prescreening_questions_cache, title FROM Jobs WHERE ROWID = '${escapeSql(result.assessment_id)}' LIMIT 1`,
+    )) as unknown[],
+    'Jobs',
+  )[0];
+
+  if (!jobRow) {
+    sendJson(ctx.res, 200, { questions: [], status: 'job_not_found' });
+    return;
+  }
+
+  const cache = jobRow.prescreening_questions_cache;
+  if (!cache) {
+    sendJson(ctx.res, 200, { questions: [], status: 'no_cache', job_title: jobRow.title });
+    return;
+  }
+
+  // Parsear cache. Si es status marker, devolver vacío con status.
+  let parsedCache: unknown;
+  try { parsedCache = JSON.parse(cache); } catch { parsedCache = null; }
+
+  if (parsedCache && typeof parsedCache === 'object' && 'status' in parsedCache && !Array.isArray(parsedCache)) {
+    const marker = parsedCache as { status?: string };
+    sendJson(ctx.res, 200, { questions: [], status: marker.status ?? 'unknown', job_title: jobRow.title });
+    return;
+  }
+
+  if (!Array.isArray(parsedCache)) {
+    sendJson(ctx.res, 200, { questions: [], status: 'no_cache', job_title: jobRow.title });
+    return;
+  }
+
+  // Sanitizar: NO exponer accepted_indices ni rejection_reason ni criterion
+  type Internal = { id: string; text: string; type: string; options: string[] };
+  const sanitized = (parsedCache as Internal[]).map((q) => ({
+    id: q.id,
+    text: q.text,
+    type: q.type,
+    options: q.options,
+  }));
+
+  sendJson(ctx.res, 200, {
+    questions: sanitized,
+    status: 'ok',
+    job_title: jobRow.title,
+  });
+}
+
+/**
+ * POST /test/:token/prescreening/submit — recibe respuestas, evalúa server-side,
+ * transiciona stage.
+ *
+ * Body: { answers: [{ question_id, selected_index }] }
+ *
+ * Response:
+ *   - { passed: true, next_step: 'tecnica' }      → candidato avanza
+ *   - { passed: false, reason }                    → auto-rechazo
+ */
+export async function submitTestPrescreening(ctx: RequestContext): Promise<void> {
+  const url = ctx.req.url ?? '/';
+  const match = url.match(/^\/test\/([^/]+)\/prescreening\/submit\/?$/);
+  const token = match?.[1];
+  if (!token) throw new ValidationError('token missing in path');
+
+  let claims;
+  try {
+    claims = verifyToken(token, 'test');
+  } catch (err) {
+    if (err instanceof TokenError) throw new UnauthorizedError(`Token: ${err.reason}`);
+    throw err;
+  }
+
+  const body = await readJsonBody<{ answers?: Array<{ question_id: string; selected_index: number }> }>(ctx.req);
+  if (!body?.answers || !Array.isArray(body.answers)) {
+    throw new ValidationError('answers array required');
+  }
+
+  const result = await getResult(ctx, claims.ref);
+  if (!result) throw new NotFoundError(`Application not found`);
+
+  const jobRow = unwrapRows<{ ROWID: string; prescreening_questions_cache?: string | null }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT ROWID, prescreening_questions_cache FROM Jobs WHERE ROWID = '${escapeSql(result.assessment_id)}' LIMIT 1`,
+    )) as unknown[],
+    'Jobs',
+  )[0];
+  if (!jobRow?.prescreening_questions_cache) {
+    throw new NotFoundError('Prescreening no configurado en este puesto');
+  }
+
+  let questions: import('../lib/prescreeningQuestions').PrescreeningQuestion[] = [];
+  try {
+    const parsed = JSON.parse(jobRow.prescreening_questions_cache);
+    if (Array.isArray(parsed)) questions = parsed;
+  } catch { /* questions stays [] */ }
+  if (questions.length === 0) {
+    throw new NotFoundError('Prescreening no configurado correctamente');
+  }
+
+  const { evaluatePrescreeningAnswers } = await import('../lib/prescreeningQuestions.js');
+  const verdict = evaluatePrescreeningAnswers(questions, body.answers);
+
+  const targetStage = verdict.passed ? 'prefilter_passed' : 'auto_rejected_low_score';
+
+  // Transicionar stage
+  await datastore(ctx.req).table('Results').updateRow({
+    ROWID: result.ROWID,
+    pipeline_stage: targetStage,
+  });
+
+  // Registrar la transición en PipelineTransitions
+  try {
+    await datastore(ctx.req).table('PipelineTransitions').insertRow({
+      result_id: result.ROWID,
+      from_stage: result.pipeline_stage,
+      to_stage: targetStage,
+      actor: 'system:prescreening',
+      reason: verdict.passed ? 'prescreening_passed' : `prescreening_failed:${verdict.failedQuestion?.id ?? 'unknown'}`,
+      transitioned_at: now(),
+    });
+  } catch (err) {
+    log.warn('failed to record PipelineTransitions', { error: (err as Error).message });
+  }
+
+  // Notificación al candidato (siguiente paso o rechazo amable). audit fix #16.
+  {
+    const { fireAndForget } = await import('../lib/fireAndForget.js');
+    fireAndForget('notifyCandidateOnTransition[prescreening]', async () => {
+      const { notifyCandidateOnTransition } = await import('../lib/candidateNotifier.js');
+      await notifyCandidateOnTransition(ctx.req, {
+        applicationId: result.ROWID,
+        toStage: targetStage,
+        reason: verdict.failedQuestion?.criterion,
+      });
+    });
+  }
+
+  // Notificación a Cris si el candidato fue auto-rechazado en prescreening.
+  // Útil para afinar criterios (¿estás filtrando de más?).
+  if (!verdict.passed) {
+    void (async () => {
+      try {
+        const { enqueueNotification } = await import('./notifications.js');
+        const meta = unwrapRows<{ tenant_id: string; candidate_name: string; job_title: string }>(
+          (await zcql(ctx.req).executeZCQLQuery(
+            `SELECT J.tenant_id AS tenant_id, C.name AS candidate_name, J.title AS job_title
+             FROM Results R JOIN Jobs J ON J.ROWID = R.assessment_id
+             JOIN Candidates C ON C.ROWID = R.candidate_id
+             WHERE R.ROWID = '${escapeSql(result.ROWID)}' LIMIT 1`,
+          )) as unknown[],
+          'Results',
+        )[0];
+        if (meta) {
+          await enqueueNotification(ctx.req, {
+            tenantId: meta.tenant_id,
+            type: 'candidate_auto_rejected',
+            message: `${meta.candidate_name || 'Candidato'} no pasó prescreening para ${meta.job_title} (criterio: ${verdict.failedQuestion?.criterion ?? 'desconocido'})`,
+            resourceType: 'application',
+            resourceId: result.ROWID,
+            link: `/candidates/${result.ROWID}`,
+          });
+        }
+      } catch (err) {
+        log.warn('cris prescreening notification failed', { error: (err as Error).message });
+      }
+    })();
+  }
+
+  log.info('prescreening evaluated', {
+    traceId: ctx.traceId,
+    resultId: result.ROWID,
+    passed: verdict.passed,
+    failedQuestion: verdict.failedQuestion?.id,
+  });
+
+  if (verdict.passed) {
+    sendJson(ctx.res, 200, { passed: true, next_step: 'tecnica' });
+  } else {
+    sendJson(ctx.res, 200, {
+      passed: false,
+      reason: verdict.failedQuestion?.rejection_reason ?? 'No cumplís con un criterio crítico del puesto',
+      failed_criterion: verdict.failedQuestion?.criterion,
+    });
+  }
 }

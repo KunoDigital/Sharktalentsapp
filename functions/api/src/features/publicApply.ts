@@ -272,12 +272,24 @@ export async function submitApplication(ctx: RequestContext): Promise<void> {
       applicationId: existing.ROWID,
       stage: existing.pipeline_stage,
     });
+    // E2E: devolver token también en path idempotente para que el test pueda navegar
+    const e2eKeyDup = process.env.E2E_TEST_KEY;
+    const e2eHeaderDup = (ctx.req.headers['x-e2e-test-key'] as string | undefined) ?? '';
+    let testTokenDup: string | null = null;
+    if (e2eKeyDup && e2eHeaderDup && e2eHeaderDup === e2eKeyDup) {
+      testTokenDup = signToken({
+        kind: 'test',
+        ref: existing.ROWID,
+        exp: expiresIn(2 * WEEK_SEC),
+      });
+    }
     sendJson(ctx.res, 200, {
       application_id: existing.ROWID,
       candidate_id: candidate.ROWID,
       pipeline_stage: existing.pipeline_stage,
       created_now: false,
       message: 'Ya tenés una aplicación a este puesto. Revisá tu email para los próximos pasos.',
+      ...(testTokenDup ? { e2e_test_token: testTokenDup } : {}),
     });
     return;
   }
@@ -306,15 +318,13 @@ export async function submitApplication(ctx: RequestContext): Promise<void> {
     applicationId: application.ROWID,
   });
 
-  // Fire-and-forget: enqueue welcome email con link a las pruebas. No bloqueamos el response
-  // del apply si la queue falla — el candidato igual puede pedir el link de recovery después.
-  void enqueueCandidateWelcomeEmail(ctx.req, {
-    candidateEmail: candidate.email,
-    candidateName: typeof body.name === 'string' ? body.name.trim() : candidate.email.split('@')[0],
-    jobTitle: job.title,
-    company: job.company,
-    applicationId: application.ROWID,
-  });
+  // DESHABILITADO 2026-06-03: el welcome email lo manda RECRUIT (vía workflows), no
+  // SharkTalents. La estrategia es clara — candidato vive en Recruit, SharkTalents solo
+  // hace las pruebas. Mantener `enqueueCandidateWelcomeEmail` causaba emails duplicados.
+  // Si en el futuro hay candidatos que aplican DIRECTO a SharkTalents (sin pasar por Recruit),
+  // re-habilitar acá con un flag tipo `source: 'direct_apply'` para distinguir.
+  // Ver: project_email_strategy memory.
+  // void enqueueCandidateWelcomeEmail(...) — intencionalmente NO se llama.
 
   // Fire-and-forget: sync con Recruit.
   //
@@ -351,15 +361,32 @@ export async function submitApplication(ctx: RequestContext): Promise<void> {
     }
   })();
 
+  // Para E2E tests: si viene con X-E2E-Test-Key (admin), devolvemos el test_token
+  // para que Playwright pueda navegar al test sin esperar el email.
+  const e2eKey = process.env.E2E_TEST_KEY;
+  const e2eHeader = (ctx.req.headers['x-e2e-test-key'] as string | undefined) ?? '';
+  let testTokenForE2E: string | null = null;
+  if (e2eKey && e2eHeader && e2eHeader === e2eKey) {
+    testTokenForE2E = signToken({
+      kind: 'test',
+      ref: application.ROWID,
+      exp: expiresIn(2 * WEEK_SEC),
+    });
+  }
+
   sendJson(ctx.res, 201, {
     application_id: application.ROWID,
     candidate_id: candidate.ROWID,
     pipeline_stage: 'prefilter_pending',
     created_now: true,
     message: 'Aplicación recibida. Te enviamos un email con el link para comenzar tus pruebas.',
+    ...(testTokenForE2E ? { e2e_test_token: testTokenForE2E } : {}),
   });
 }
 
+// @ts-ignore — función no usada hoy (welcome email lo manda Recruit, no SharkTalents),
+// se mantiene por si en el futuro hay candidatos que aplican directo sin pasar por Recruit.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function enqueueCandidateWelcomeEmail(
   req: IncomingMessage,
   input: { candidateEmail: string; candidateName: string; jobTitle: string; company: string; applicationId: string },

@@ -407,9 +407,23 @@ export async function buildNarrativesForReport(args: {
     };
   }
 
-  const candidateResults = await Promise.all(
-    candidates.map((c) => generateCandidateNarrative(jobTitle, jobCompany, idealProfile, c, traceId, lang)),
-  );
+  // 2026-06-04 (audit fix #18): cap de concurrencia 3 sobre las narrativas. Antes era
+  // Promise.all sin límite → con 10 finalistas disparaba 10 calls Anthropic simultáneas
+  // = costo concentrado + presión sobre el circuit breaker. 3 balanced entre velocidad
+  // (10 cands ≈ 3 rondas) y carga.
+  const candidateResults: Array<Awaited<ReturnType<typeof generateCandidateNarrative>>> = new Array(candidates.length);
+  const CONCURRENCY = 3;
+  let nextIdx = 0;
+  async function worker(): Promise<void> {
+    while (true) {
+      const i = nextIdx++;
+      if (i >= candidates.length) return;
+      candidateResults[i] = await generateCandidateNarrative(
+        jobTitle, jobCompany, idealProfile, candidates[i], traceId, lang,
+      );
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, candidates.length) }, () => worker()));
   const conclusion = await generateConclusion(jobTitle, jobCompany, idealProfile, candidates, traceId, lang);
 
   const candidatesMap: Record<string, CandidateNarrative> = {};

@@ -69,6 +69,42 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.pr-share-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pr-share-btn:hover {
+  border-color: #dafd6f;
+  color: #dafd6f;
+}
+
+.pr-share-tooltip {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.4rem;
+  background: #1f2937;
+  color: #dafd6f;
+  border: 1px solid #dafd6f;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  z-index: 5;
 }
 
 .pr-download-btn {
@@ -811,6 +847,28 @@
   text-align: center;
 }
 
+.ppf-legal {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: #6b7585;
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ppf-legal a {
+  color: #94a3b8;
+  text-decoration: none;
+  border-bottom: 1px dotted #475569;
+}
+
+.ppf-legal a:hover {
+  color: #dafd6f;
+  border-bottom-color: #dafd6f;
+}
+
 .pr-footer-tag {
   font-size: 0.75rem;
   color: #6b7585;
@@ -846,7 +904,34 @@
   .pr-header-actions,
   .pr-feedback-section,
   .pr-feedback-block,
+  .pr-share-btn,
+  .pr-share-tooltip,
   .pr-download-btn { display: none !important; }
+
+  /* Mostrar URL al final para que el lector del impreso pueda volver al original */
+  .pr-main::after {
+    content: "Reporte completo: " attr(data-print-url);
+    display: block;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #9ca3af;
+    font-size: 0.7rem;
+    color: #6b7280;
+    text-align: center;
+    word-break: break-all;
+  }
+
+  /* Forzar abrir detalles cerrados en impresión */
+  details { display: block !important; }
+  details > summary { list-style: none; }
+  details[open] > summary { font-weight: 600; }
+
+  /* Una persona evaluada por página cuando hay varias */
+  .pr-candidate-card + .pr-candidate-card { page-break-before: always; }
+
+  /* Tipografía amigable para impreso */
+  @page { margin: 1.5cm; size: A4; }
+  html, body { font-size: 10.5pt; line-height: 1.4; }
   .pr-brand,
   .pr-section-title,
   .pr-candidate-name,

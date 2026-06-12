@@ -127,6 +127,107 @@ export async function getHealth(ctx: RequestContext): Promise<void> {
  * Pensado para que un dashboard interno (Grafana o similar) lo consulte cada 30s,
  * o para que Cris lo cure manualmente cuando hay un incident.
  */
+/**
+ * GET /api/admin/health-tenant
+ * Versión auth=tenant del health check para que Cris lo vea en /alerts o /health en admin.
+ * No expone INTERNAL_API_KEY-specific data, pero sí breakers + outbox + alerts.
+ */
+export async function getTenantHealthCheck(ctx: RequestContext): Promise<void> {
+  const { requireAuth } = await import('../lib/auth.js');
+  const { requireTenant } = await import('./tenants.js');
+  await requireAuth(ctx);
+  await requireTenant(ctx);
+
+  const { listBreakers } = await import('../lib/circuitBreaker.js');
+  const breakers = listBreakers();
+
+  // Outbox stats
+  let outboxPending = 0;
+  let outboxFailed = 0;
+  let outboxOldestPendingMin: number | null = null;
+  try {
+    const pendingRows = unwrapRows<{ ROWID: string; created_at: string }>(
+      (await zcql(ctx.req).executeZCQLQuery(`SELECT ROWID, created_at FROM OutboxEvents WHERE status = 'pending' ORDER BY CREATEDTIME ASC LIMIT 300`)) as unknown[],
+      'OutboxEvents',
+    );
+    outboxPending = pendingRows.length;
+    if (pendingRows[0]?.created_at) {
+      const ageMs = Date.now() - new Date(pendingRows[0].created_at).getTime();
+      outboxOldestPendingMin = Math.round(ageMs / 60000);
+    }
+    const failedRows = unwrapRows<{ ROWID: string }>(
+      (await zcql(ctx.req).executeZCQLQuery(`SELECT ROWID FROM OutboxEvents WHERE status = 'failed'`)) as unknown[],
+      'OutboxEvents',
+    );
+    outboxFailed = failedRows.length;
+  } catch { /* table may not exist */ }
+
+  // Alerts críticas abiertas
+  let alertsOpenCritical = 0;
+  try {
+    const rows = unwrapRows<{ ROWID: string }>(
+      (await zcql(ctx.req).executeZCQLQuery(`SELECT ROWID FROM SystemAlerts WHERE status = 'open' AND severity = 'critical'`)) as unknown[],
+      'SystemAlerts',
+    );
+    alertsOpenCritical = rows.length;
+  } catch { /* table may not exist */ }
+
+  // 2026-06-04: 500s en la última hora (auto-alertas del router con code = router.unhandled_5xx).
+  // Si > 0, el sistema está degradado aunque circuit breakers estén OK — endpoints están rotos.
+  let recentUnhandled5xx = 0;
+  let recentUnhandled5xxEndpoints: string[] = [];
+  try {
+    const { formatCatalystDateTime } = await import('../lib/dbHelpers.js');
+    const cutoff = formatCatalystDateTime(new Date(Date.now() - 60 * 60_000));
+    const rows = unwrapRows<{ resource_id: string; occurrence_count: number }>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT resource_id, occurrence_count FROM SystemAlerts
+         WHERE code = 'router.unhandled_5xx' AND status = 'open' AND last_occurred_at >= '${cutoff}'
+         LIMIT 100`,
+      )) as unknown[],
+      'SystemAlerts',
+    );
+    recentUnhandled5xx = rows.reduce((acc, r) => acc + (Number(r.occurrence_count) || 1), 0);
+    recentUnhandled5xxEndpoints = Array.from(new Set(rows.map((r) => r.resource_id).filter(Boolean))).slice(0, 10);
+  } catch { /* table may not exist */ }
+
+  // Env presence (sin valores)
+  const env = {
+    zeptomail: !!process.env.ZEPTOMAIL_API_TOKEN,
+    twilio_whatsapp: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_WHATSAPP_FROM),
+    meta_whatsapp: !!(process.env.WHATSAPP_API_URL && process.env.WHATSAPP_ACCESS_TOKEN),
+    anthropic: !!process.env.ANTHROPIC_API_KEY,
+    zoho_recruit_oauth: !!(process.env.ZOHO_OAUTH_CLIENT_ID && process.env.ZOHO_OAUTH_REFRESH_TOKEN),
+    recruiter_notify_email: !!process.env.RECRUITER_NOTIFY_EMAIL,
+  };
+
+  // Status global
+  const breakersOpen = breakers.filter((b) => b.state === 'open');
+  const outboxStuck = outboxOldestPendingMin != null && outboxOldestPendingMin > 30;
+  // 2026-06-04: 500s en última hora también degradan el status.
+  //   > 0  → degraded (algo está roto pero podría ser puntual)
+  //   ≥ 5 alertas distintas O ≥ 50 ocurrencias totales → critical (varios endpoints rotos / loop)
+  const many5xxOccurrences = recentUnhandled5xx >= 50;
+  const many5xxEndpoints = recentUnhandled5xxEndpoints.length >= 5;
+  const status: 'ok' | 'degraded' | 'critical' =
+    breakersOpen.length > 1 || alertsOpenCritical > 5 || many5xxOccurrences || many5xxEndpoints ? 'critical'
+      : breakersOpen.length > 0 || alertsOpenCritical > 0 || outboxFailed > 0 || outboxStuck || recentUnhandled5xx > 0 ? 'degraded'
+        : 'ok';
+
+  sendJson(ctx.res, 200, {
+    status,
+    checked_at: new Date().toISOString(),
+    breakers,
+    outbox: { pending: outboxPending, failed: outboxFailed, oldest_pending_min: outboxOldestPendingMin },
+    alerts: { open_critical: alertsOpenCritical },
+    recent_5xx: {
+      count_last_hour: recentUnhandled5xx,
+      endpoints: recentUnhandled5xxEndpoints,
+    },
+    env_configured: env,
+  });
+}
+
 export async function getAdminHealthCheck(ctx: RequestContext): Promise<void> {
   requireInternalKey(ctx);
 

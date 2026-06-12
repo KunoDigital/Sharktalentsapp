@@ -62,11 +62,19 @@ export async function publishRecruitSync(
 ): Promise<boolean> {
   // Si Zoho Recruit no está configurado, no publicar (evita acumular eventos failed
   // en outbox que nunca se van a procesar).
+  //
+  // FIX 2026-06-03: el chequeo previo usaba env vars `ZOHO_RECRUIT_API_URL` +
+  // `ZOHO_RECRUIT_OAUTH_TOKEN` (legacy). Pero el resto del sistema (zohoOAuth helper
+  // que usa zohoRecruitClient) usa `ZOHO_OAUTH_REFRESH_TOKEN` + `ZOHO_OAUTH_CLIENT_ID`.
+  // Como las vars legacy NO están seteadas, esta función skipeaba SILENCIOSAMENTE
+  // y la transición de candidato NUNCA llegaba a Recruit. Detectado cuando Andrea
+  // completó técnica y no cambió de etapa en Recruit. Síntoma: no había evento
+  // `sync.recruit` en outbox después del submit.
   const recruitConfigured =
-    !!process.env.ZOHO_RECRUIT_API_URL && !!process.env.ZOHO_RECRUIT_OAUTH_TOKEN;
+    !!process.env.ZOHO_OAUTH_REFRESH_TOKEN && !!process.env.ZOHO_OAUTH_CLIENT_ID;
 
   if (!recruitConfigured) {
-    log.debug('skipping recruit sync — not configured', {
+    log.debug('skipping recruit sync — Zoho OAuth no configurado', {
       application_id: event.application_id,
     });
     return false;

@@ -57,6 +57,42 @@
   font-weight: 500;
 }
 
+.admin-nav-link-nested {
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+}
+
+.admin-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-top: 0.5rem;
+}
+
+.admin-nav-group-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--st-fg-muted-2);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.admin-nav-group-title:hover {
+  color: var(--st-fg-strong);
+  background: var(--st-bg-elev-2);
+}
+
 .admin-cmdk-hint {
   font-size: 0.75rem;
   color: var(--st-fg-muted-2);

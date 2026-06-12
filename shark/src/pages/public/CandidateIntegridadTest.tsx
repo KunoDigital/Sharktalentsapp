@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getTestSession } from '../../data/mockCandidateTests';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
 import { usePersistedState, hasPersistedState } from '../../hooks/usePersistedState';
+import { useTestTokenGuard, renderTokenGuardError } from '../../hooks/useTestTokenGuard';
 import { scoreIntegrity } from '../../lib/scoring';
 import { shuffleOptions } from '../../lib/shuffle';
 import { getRealIntegrityQuestions } from '../../data/realQuestionsAdapter';
@@ -39,6 +40,8 @@ export default function CandidateIntegridadTest() {
   const [answers, setAnswers, clearAnswers] = usePersistedState<Record<string, number>>(`${storageKey}_answers`, {});
   const [currentIdx, setCurrentIdx, clearIdx] = usePersistedState<number>(`${storageKey}_idx`, 0);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const guard = useTestTokenGuard(token);
 
   const currentQ = questions[currentIdx];
   const isLast = currentIdx === questions.length - 1;
@@ -75,7 +78,26 @@ export default function CandidateIntegridadTest() {
       setSubmitted(true);
       const result = scoreIntegrity(questions, answers);
 
-      // Submit al backend (skip silently si useApi=false)
+      const navigateOnSuccess = () => {
+        log.info('submitted', { overall: result.overall, overall_pct: result.overall_pct, antiCheatCount: events.length });
+        clearAnswers();
+        clearIdx();
+        setTimeout(() => navigate(`/test/${token}/done?phase=integridad`, {
+          state: {
+            score: {
+              type: 'integridad',
+              data: {
+                overall: result.overall,
+                overall_pct: result.overall_pct,
+                recomendacion: result.recomendacion,
+                buena_impresion: result.buena_impresion,
+                dimensiones: result.dimensiones,
+              },
+            },
+          },
+        }), 1500);
+      };
+
       if (token) {
         publicApi.submitTest(token, {
           integridad: {
@@ -86,41 +108,42 @@ export default function CandidateIntegridadTest() {
             events: events.map((e) => ({ type: e.type, question_id: e.question_id, duration_ms: e.duration_ms })),
             phase: 'integridad',
           } : undefined,
-        }).catch((err: unknown) => {
-          if (err instanceof ApiError) {
-            log.warn('submit falló', { status: err.status, code: err.code, msg: err.message });
-          } else {
-            log.warn('submit error', { error: (err as Error).message });
-          }
+        }).then(navigateOnSuccess).catch((err: unknown) => {
+          const msg = err instanceof ApiError ? err.message : (err as Error).message;
+          log.warn('submit failed', { error: msg, status: err instanceof ApiError ? err.status : undefined });
+          setSubmitError(msg || 'No pudimos guardar tus respuestas. Probá de nuevo en un momento.');
         });
+      } else {
+        navigateOnSuccess();
       }
-
-      log.info('submitted', {
-        overall: result.overall,
-        overall_pct: result.overall_pct,
-        antiCheatCount: events.length,
-      });
-      clearAnswers();
-      clearIdx();
-      setTimeout(() => navigate(`/test/${token}/done?phase=integridad`, {
-        state: {
-          score: {
-            type: 'integridad',
-            data: {
-              overall: result.overall,
-              overall_pct: result.overall_pct,
-              recomendacion: result.recomendacion,
-              buena_impresion: result.buena_impresion,
-              dimensiones: result.dimensiones,
-            },
-          },
-        },
-      }), 1500);
     }
   }
 
   function prev() {
     if (currentIdx > 0) setCurrentIdx((i) => i - 1);
+  }
+
+  const guardError = renderTokenGuardError(guard);
+  if (guardError) return guardError;
+
+  if (submitError) {
+    return (
+      <div className="ct-root">
+        <main className="ct-main">
+          <div className="ct-thanks">
+            <h1>No pudimos guardar tus respuestas</h1>
+            <p>{submitError}</p>
+            <p style={{ marginTop: 16 }}>
+              Tus respuestas están seguras en este navegador. Intentá recargar la página y volver a enviar.
+              Si sigue fallando, escribinos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.
+            </p>
+            <button className="ct-btn-primary" style={{ marginTop: 24 }} onClick={() => { setSubmitError(null); setSubmitted(false); }}>
+              Reintentar
+            </button>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   if (submitted) {

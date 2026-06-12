@@ -41,6 +41,7 @@ import {
   bulkTransitionApplications,
   getApplicationTransitions,
   getApplicationBotDecision,
+  downloadApplicationCv,
 } from './features/applications';
 import { writeScores, readScores } from './features/scores';
 import { writeIntegrity, readIntegrity } from './features/integrity';
@@ -317,6 +318,7 @@ const routes: Route[] = [
   { method: 'GET', pattern: /^\/api\/applications\/?$/, handler: listApplications, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/applications\/?$/, handler: createApplication, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/transitions\/?$/, handler: getApplicationTransitions, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/cv-download\/?$/, handler: downloadApplicationCv, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/applications\/[^/]+\/transition\/?$/, handler: transitionApplication, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/applications\/_bulk-transition\/?$/, handler: bulkTransitionApplications, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/bot-decision\/?$/, handler: getApplicationBotDecision, auth: 'tenant' },

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { MOCK_JOBS } from '../data/mockJobs';
 import { MOCK_APPLICATIONS } from '../data/mockApplications';
 import { MOCK_DRAFTS } from '../data/mockDrafts';
+import { useApi } from '../lib/api';
+import { config } from '../config';
 import './command-palette.css';
 
 type Command = {
@@ -16,21 +18,31 @@ type Command = {
 
 const STATIC_PAGES: Command[] = [
   { id: 'p-dash', type: 'page', label: 'Dashboard', to: '/' },
-  { id: 'p-drafts', type: 'page', label: 'Drafts (cliente)', hint: 'Borradores post-reunión', to: '/drafts' },
-  { id: 'p-jobs', type: 'page', label: 'Jobs', hint: 'Lista de puestos', to: '/jobs' },
-  { id: 'p-cands', type: 'page', label: 'Candidatos', hint: 'Vista cross-job', to: '/candidates' },
-  { id: 'p-bot', type: 'page', label: 'Bot — Review queue', hint: 'Decisiones que necesitan tu revisión', to: '/bot/review' },
-  { id: 'p-reports', type: 'page', label: 'Reportes', hint: 'Reportes generados a clientes', to: '/reports' },
+  { id: 'p-leads', type: 'page', label: 'Leads marketing', hint: 'Clientes potenciales del funnel', to: '/marketing/leads' },
+  { id: 'p-drafts', type: 'page', label: 'Drafts pendientes', hint: 'Borradores post-reunión', to: '/drafts' },
+  { id: 'p-reports', type: 'page', label: 'Reportes enviados', hint: 'Reportes a clientes', to: '/reports' },
+  { id: 'p-jobs', type: 'page', label: 'Puestos', hint: 'Lista de puestos activos', to: '/jobs' },
+  { id: 'p-cands', type: 'page', label: 'Embudo (candidatos)', hint: 'Vista cross-job', to: '/candidates' },
+  { id: 'p-bot', type: 'page', label: 'Bot review queue', hint: 'Decisiones pendientes', to: '/bot/review' },
   { id: 'p-inbox', type: 'page', label: 'Inbox outbound', hint: 'Mensajes LinkedIn / email', to: '/inbox' },
+  { id: 'p-alerts', type: 'page', label: 'Alertas', hint: 'Notificaciones del sistema', to: '/alerts' },
   { id: 'p-settings', type: 'page', label: 'Settings', hint: 'Integraciones, API keys, equipo', to: '/settings' },
 ];
+
+type LiveCandidateResult = { id: string; name: string; email: string };
+type LiveJobResult = { id: string; title: string; company: string };
+type LiveDraftResult = { id: string; clientCompany: string; clientName: string; status: string };
 
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
+  const [liveCandidates, setLiveCandidates] = useState<LiveCandidateResult[]>([]);
+  const [liveJobs, setLiveJobs] = useState<LiveJobResult[]>([]);
+  const [liveDrafts, setLiveDrafts] = useState<LiveDraftResult[]>([]);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
+  const api = useApi();
 
   // Hotkey global
   useEffect(() => {
@@ -51,13 +63,60 @@ export default function CommandPalette() {
     if (open) {
       setQuery('');
       setActiveIdx(0);
+      setLiveCandidates([]);
+      setLiveJobs([]);
+      setLiveDrafts([]);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [open]);
 
+  // Búsqueda live debounced de candidatos + jobs + drafts en paralelo
+  useEffect(() => {
+    if (!open || !config.useApi || query.length < 2) {
+      setLiveCandidates([]);
+      setLiveJobs([]);
+      setLiveDrafts([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      api.candidates.search(query).then((res) => {
+        setLiveCandidates(res.candidates.map((c) => ({ id: c.ROWID, name: c.name, email: c.email })));
+      }).catch(() => setLiveCandidates([]));
+      api.jobs.search(query).then((res) => {
+        setLiveJobs(res.jobs.map((j) => ({ id: j.ROWID, title: j.title, company: j.company })));
+      }).catch(() => setLiveJobs([]));
+      api.drafts.search(query).then((res) => {
+        setLiveDrafts(res.drafts.map((d) => ({ id: d.ROWID, clientCompany: d.client_company, clientName: d.client_name, status: d.status })));
+      }).catch(() => setLiveDrafts([]));
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [open, query, api]);
+
   const commands = useMemo<Command[]>(() => {
     const all: Command[] = [
       ...STATIC_PAGES,
+      // Live results del backend primero (más relevantes que mocks)
+      ...liveCandidates.map<Command>((c) => ({
+        id: `lc-${c.id}`,
+        type: 'candidate',
+        label: c.name || c.email,
+        hint: `${c.email} · live`,
+        to: `/candidates/${c.id}`,
+      })),
+      ...liveJobs.map<Command>((j) => ({
+        id: `lj-${j.id}`,
+        type: 'job',
+        label: j.title,
+        hint: `${j.company} · live`,
+        to: `/jobs/${j.id}`,
+      })),
+      ...liveDrafts.map<Command>((d) => ({
+        id: `ld-${d.id}`,
+        type: 'draft',
+        label: `${d.clientCompany} (draft)`,
+        hint: `${d.clientName} · ${d.status} · live`,
+        to: `/drafts/${d.id}`,
+      })),
       ...MOCK_JOBS.map<Command>((j) => ({
         id: `j-${j.id}`,
         type: 'job',
@@ -89,7 +148,7 @@ export default function CommandPalette() {
         c.label.toLowerCase().includes(q) || (c.hint?.toLowerCase().includes(q) ?? false),
       )
       .slice(0, 30);
-  }, [query]);
+  }, [query, liveCandidates, liveJobs, liveDrafts]);
 
   function exec(cmd: Command) {
     setOpen(false);

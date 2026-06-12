@@ -198,6 +198,27 @@ async function tryHandleMarketingContractSigned(
       signRequestId,
     });
 
+    // Notificar a Cris en el dashboard (SystemAlerts) — aparece en el banner de alertas.
+    try {
+      const { alertCris } = await import('../lib/alerting.js');
+      await alertCris(ctx.req, {
+        severity: 'warning',
+        code: 'marketing.contract.signed',
+        message: `${lead.company} firmó el contrato. Tenant creado, agendar onboarding.`,
+        resourceType: 'MarketingLead',
+        resourceId: lead.ROWID,
+        context: {
+          company: lead.company,
+          contact_email: lead.email,
+          contact_name: lead.contact_name,
+          tenant_id: tenant.ROWID,
+          sign_request_id: signRequestId,
+        },
+      });
+    } catch (alertErr) {
+      log.warn('contract signed alert publish failed (non-blocking)', { error: (alertErr as Error).message });
+    }
+
     return true;
   } catch (err) {
     log.warn('tryHandleMarketingContractSigned failed', { error: (err as Error).message });

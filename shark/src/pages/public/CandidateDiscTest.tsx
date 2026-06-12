@@ -4,6 +4,7 @@ import { getTestSession } from '../../data/mockCandidateTests';
 import { getJobById } from '../../data/mockJobs';
 import { useAntiCheat } from '../../hooks/useAntiCheat';
 import { usePersistedState, hasPersistedState } from '../../hooks/usePersistedState';
+import { useTestTokenGuard, renderTokenGuardError } from '../../hooks/useTestTokenGuard';
 import { scoreDisc, normalizeDiscRaw, calculateDiscSimilarity, discDominantLabel } from '../../lib/scoring';
 import { shuffleOptions } from '../../lib/shuffle';
 import { getRealDiscQuestions } from '../../data/realQuestionsAdapter';
@@ -38,6 +39,9 @@ export default function CandidateDiscTest() {
   const [answers, setAnswers, clearAnswers] = usePersistedState<Record<string, number>>(`${storageKey}_answers`, {});
   const [currentIdx, setCurrentIdx, clearIdx] = usePersistedState<number>(`${storageKey}_idx`, 0);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const guard = useTestTokenGuard(token);
 
   const currentQ = questions[currentIdx];
   const isLast = currentIdx === questions.length - 1;
@@ -81,7 +85,8 @@ export default function CandidateDiscTest() {
         d: job.disc_ideal_a.d, i: job.disc_ideal_a.i, s: job.disc_ideal_a.s, c: job.disc_ideal_a.c,
       }) : undefined;
 
-      // Submit al backend (skip silently si useApi=false)
+      // Submit al backend. Si falla, mostramos error claro al candidato
+      // en lugar de silenciar el error (regla: nunca decir "guardado" si no se guardó).
       if (token) {
         publicApi.submitTest(token, {
           disc: {
@@ -96,40 +101,66 @@ export default function CandidateDiscTest() {
             events: events.map((e) => ({ type: e.type, question_id: e.question_id, duration_ms: e.duration_ms })),
             phase: 'conductual',
           } : undefined,
-        }).catch((err: unknown) => {
-          if (err instanceof ApiError) {
-            log.warn('submit falló', { status: err.status, code: err.code, msg: err.message });
-          } else {
-            log.warn('submit error', { error: (err as Error).message });
-          }
-        });
-      }
-
-      log.info('submitted', {
-        d: result.d, i: result.i, s: result.s, c: result.c,
-        dominant: dominant.label,
-        similarity,
-        antiCheatCount: events.length,
-      });
-      clearAnswers();
-      clearIdx();
-      setTimeout(() => navigate(`/test/${token}/done?phase=conductual`, {
-        state: {
-          score: {
-            type: 'disc',
-            data: {
-              d: normalized.d, i: normalized.i, s: normalized.s, c: normalized.c,
-              dominant: dominant.label,
-              similarity,
+        }).then(() => {
+          log.info('submitted', { d: result.d, i: result.i, s: result.s, c: result.c, dominant: dominant.label, similarity, antiCheatCount: events.length });
+          clearAnswers();
+          clearIdx();
+          setTimeout(() => navigate(`/test/${token}/done?phase=conductual`, {
+            state: {
+              score: {
+                type: 'disc',
+                data: { d: normalized.d, i: normalized.i, s: normalized.s, c: normalized.c, dominant: dominant.label, similarity },
+              },
             },
-          },
-        },
-      }), 1200);
+          }), 1200);
+        }).catch((err: unknown) => {
+          const msg = err instanceof ApiError ? err.message : (err as Error).message;
+          log.warn('submit failed', { error: msg, status: err instanceof ApiError ? err.status : undefined });
+          setSubmitError(msg || 'No pudimos guardar tus respuestas. Probá de nuevo en un momento.');
+        });
+      } else {
+        log.info('submitted (no token, dev mode)', { d: result.d, i: result.i, s: result.s, c: result.c });
+        clearAnswers();
+        clearIdx();
+        setTimeout(() => navigate(`/test/${token}/done?phase=conductual`, {
+          state: { score: { type: 'disc', data: { d: normalized.d, i: normalized.i, s: normalized.s, c: normalized.c, dominant: dominant.label, similarity } } },
+        }), 1200);
+      }
     }
   }
 
   function prev() {
     if (currentIdx > 0) setCurrentIdx((i) => i - 1);
+  }
+
+  const guardError = renderTokenGuardError(guard);
+  if (guardError) return guardError;
+
+  if (submitError) {
+    return (
+      <div className="ct-root">
+        <main className="ct-main">
+          <div className="ct-thanks">
+            <h1>No pudimos guardar tus respuestas</h1>
+            <p>{submitError}</p>
+            <p style={{ marginTop: 16 }}>
+              Tus respuestas no se perdieron — están en este navegador. Intentá:
+            </p>
+            <ul style={{ textAlign: 'left', marginTop: 8 }}>
+              <li>Recargar la página y tocar el botón de Enviar otra vez.</li>
+              <li>Si sigue fallando, escribinos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.</li>
+            </ul>
+            <button
+              className="ct-btn-primary"
+              style={{ marginTop: 24 }}
+              onClick={() => { setSubmitError(null); setSubmitted(false); }}
+            >
+              Reintentar
+            </button>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   if (submitted) {

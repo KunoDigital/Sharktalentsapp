@@ -61,6 +61,14 @@ export type TechnicalScore = {
   pct: number;
   estado: 'Aprobado' | 'Pendiente' | 'No aprobado';
   minimo_requerido_pct: number;
+  // Doble eje (doc 19). Opcionales — solo presentes si el test técnico nuevo corrió.
+  // - situational_validity_pct: % de opciones objetivamente válidas elegidas en 13 situacionales.
+  //   Es flag de criterio (eligió mentir/ocultar?), NO el puntaje principal.
+  // - style_autonomy_consult: 0 (full consult) ↔ 100 (full autonomy). Perfil, no califica.
+  // - style_match_with_boss_pct: % match con estilo del jefe configurado en el puesto.
+  situational_validity_pct?: number;
+  style_autonomy_consult?: number;
+  style_match_with_boss_pct?: number;
 };
 
 export type AntiCheatEvent = {
@@ -110,6 +118,8 @@ export type BotDecisionDetail = {
 export type Application = {
   id: string;
   job_id: string;
+  /** Si la app viene del backend, el ROWID del candidato (para tags/notes que usan candidate como subject). */
+  candidate_id?: string;
   candidate_name: string;
   candidate_email: string;
   candidate_age: number;

@@ -40,6 +40,19 @@ export type AnthropicSystemBlock = {
   cache_control?: { type: 'ephemeral' };
 };
 
+/** Tool definition para forzar output estructurado (sin markdown, sin JSON.parse manual). */
+export type AnthropicTool = {
+  name: string;
+  description: string;
+  input_schema: Record<string, unknown>; // JSON Schema
+};
+
+/** Si seteado a {type:'tool', name:X}, el modelo SIEMPRE llama ese tool. */
+export type AnthropicToolChoice =
+  | { type: 'auto' }
+  | { type: 'any' }
+  | { type: 'tool'; name: string };
+
 export type AnthropicRequest = {
   system?: string | AnthropicSystemBlock[];
   messages: AnthropicMessage[];
@@ -47,6 +60,8 @@ export type AnthropicRequest = {
   temperature?: number;
   model?: string;
   stop_sequences?: string[];
+  tools?: AnthropicTool[];
+  tool_choice?: AnthropicToolChoice;
 };
 
 export type AnthropicUsage = {
@@ -56,11 +71,16 @@ export type AnthropicUsage = {
   output_tokens: number;
 };
 
+/** Bloque del content: text (legacy) o tool_use (cuando se forzó un tool). */
+export type AnthropicContentBlock =
+  | { type: 'text'; text: string }
+  | { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> };
+
 export type AnthropicResponse = {
   id: string;
   type: 'message';
   role: 'assistant';
-  content: Array<{ type: 'text'; text: string }>;
+  content: AnthropicContentBlock[];
   model: string;
   stop_reason: string | null;
   usage: AnthropicUsage;
@@ -106,7 +126,7 @@ async function callAnthropicOnce(req: AnthropicRequest, traceId: string): Promis
     headers['anthropic-beta'] = 'prompt-caching-2024-07-31';
   }
 
-  const body = {
+  const body: Record<string, unknown> = {
     model,
     max_tokens: maxTokens,
     temperature,
@@ -114,6 +134,14 @@ async function callAnthropicOnce(req: AnthropicRequest, traceId: string): Promis
     messages: req.messages,
     stop_sequences: req.stop_sequences,
   };
+  // Tool use: forzar output estructurado server-side. Elimina markdown wrapping,
+  // JSON.parse manual y reduce el riesgo de respuestas malformadas.
+  if (req.tools && req.tools.length > 0) {
+    body.tools = req.tools;
+  }
+  if (req.tool_choice) {
+    body.tool_choice = req.tool_choice;
+  }
 
   const response = await fetchWithTimeout(ANTHROPIC_API_URL, {
     method: 'POST',
@@ -126,11 +154,24 @@ async function callAnthropicOnce(req: AnthropicRequest, traceId: string): Promis
     const errBody = await response.text();
     log.warn('non-2xx response', { traceId, status: response.status, body: errBody.slice(0, 500) });
     const retryable = shouldRetry(response.status);
+    // Detección de "credit balance too low": Anthropic devuelve 400 con ese mensaje cuando
+    // la cuenta se queda sin créditos. Marcamos skipBreaker para que el circuit breaker
+    // NO se abra (sino bloquea el ping admin que necesitamos para verificar recarga) y
+    // emitimos un SystemAlert visible para que Cris se entere sin debuggear.
+    const isBillingError = response.status === 400 && /credit balance is too low/i.test(errBody);
     const err = new UpstreamError('anthropic', `HTTP ${response.status}`, {
       status: response.status,
       body: errBody.slice(0, 500),
+      billing_error: isBillingError,
     });
     (err as Error & { retryable?: boolean }).retryable = retryable;
+    if (isBillingError) {
+      (err as Error & { skipBreaker?: boolean }).skipBreaker = true;
+      log.error('ANTHROPIC BILLING: credit balance too low — recharge at console.anthropic.com', {
+        traceId,
+        body: errBody.slice(0, 200),
+      });
+    }
     throw err;
   }
 
@@ -147,6 +188,8 @@ export type AnthropicContext = {
   tenantId?: string | null;
   /** IncomingMessage para acceder a Catalyst datastore (necesario para registrar TokenUsage). */
   req?: import('http').IncomingMessage;
+  /** Job ID si la llamada es atribuible a un puesto (para JobCosts dashboard). */
+  jobId?: string;
 };
 
 export async function anthropicMessage(
@@ -202,6 +245,7 @@ export async function anthropicMessage(
               outputTokens: res.usage.output_tokens,
               latencyMs,
               traceId,
+              jobId: ctx.jobId,
             });
           } catch {
             // Best-effort — si falla TokenUsage, no rompe la llamada
@@ -234,10 +278,55 @@ export async function anthropicMessage(
 }
 
 /**
- * Helper: extrae el texto plano del primer bloque de respuesta.
+ * Helper: extrae el texto plano de los bloques de respuesta. Ignora bloques tool_use
+ * (esos los maneja `extractToolUse`).
  */
 export function extractText(response: AnthropicResponse): string {
-  return response.content.map((c) => c.text).join('\n');
+  return response.content
+    .filter((c): c is { type: 'text'; text: string } => c.type === 'text')
+    .map((c) => c.text)
+    .join('\n');
+}
+
+/**
+ * Helper: extrae el input parseado del primer bloque tool_use con el nombre dado.
+ *
+ * Cuando se manda `tools` + `tool_choice: {type:'tool', name}`, Anthropic SIEMPRE invoca
+ * ese tool y devuelve `content: [{type: 'tool_use', name, input: <parsed JSON>}]`.
+ *
+ * Ventajas vs extractJson:
+ *   - SIN markdown wrapping (no aparece ```json...``` ni warnings al prompt)
+ *   - SIN JSON.parse manual (Anthropic ya validó el shape contra el schema server-side)
+ *   - Si la respuesta excede maxTokens y el input está incompleto, `stop_reason`
+ *     viene como 'max_tokens' y podemos detectarlo explícitamente
+ *
+ * Lanza error explícito si el tool no fue invocado o el shape es inesperado.
+ */
+export function extractToolUse<T = Record<string, unknown>>(
+  response: AnthropicResponse,
+  toolName: string,
+): T {
+  const toolBlock = response.content.find(
+    (c): c is { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> } =>
+      c.type === 'tool_use' && c.name === toolName,
+  );
+  if (!toolBlock) {
+    const text = extractText(response).slice(0, 300);
+    log.error('extractToolUse: tool not invoked by model', {
+      requested_tool: toolName,
+      content_types: response.content.map((c) => c.type),
+      stop_reason: response.stop_reason,
+      text_preview: text,
+    });
+    throw new Error(`Model did not invoke tool "${toolName}" — stop_reason=${response.stop_reason}`);
+  }
+  if (response.stop_reason === 'max_tokens') {
+    log.warn('extractToolUse: tool input may be incomplete due to max_tokens limit', {
+      tool: toolName,
+      output_tokens: response.usage?.output_tokens,
+    });
+  }
+  return toolBlock.input as T;
 }
 
 /**
@@ -245,7 +334,43 @@ export function extractText(response: AnthropicResponse): string {
  */
 export function extractJson<T = unknown>(response: AnthropicResponse): T {
   const text = extractText(response);
-  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]+?)\s*```/);
-  const candidate = fenceMatch ? fenceMatch[1] : text;
-  return JSON.parse(candidate) as T;
+  // Estrategia: limpiar markdown fences si existen (apertura y cierre opcionales)
+  // y parsear lo que queda. Si la respuesta está truncada (maxTokens agotado), el
+  // JSON.parse va a fallar con error que apunta a la posición exacta — eso es bueno
+  // para diagnóstico. NO intentamos "reparar" el JSON: el approach firstBrace/lastBrace
+  // que probamos antes agarraba el `}` de un object interno cuando el JSON estaba
+  // truncado, dando errores confusos como "Expected ',' or ']' at position X".
+  let cleaned = text.trim();
+  // Sacar fence de apertura ```json o ``` (con o sin newline).
+  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
+  // Sacar fence de cierre si existe al final.
+  cleaned = cleaned.replace(/\n?```\s*$/, '');
+  try {
+    return JSON.parse(cleaned) as T;
+  } catch (parseErr) {
+    // Log obligatorio cuando parsing falla — sin este detalle estamos adivinando.
+    // El raw text completo es lo único que permite diagnosticar JSON malformados,
+    // truncamientos, escapado mal de comillas, caracteres unicode raros, etc.
+    log.error('extractJson failed — dumping raw response for diagnosis', {
+      parse_error: (parseErr as Error).message,
+      raw_text_length: text.length,
+      raw_text_start: text.slice(0, 200),
+      raw_text_end: text.slice(-200),
+      raw_text_around_error: extractRawAroundError(cleaned, parseErr as Error),
+      response_id: response.id,
+      stop_reason: response.stop_reason,
+      output_tokens: response.usage?.output_tokens,
+    });
+    throw parseErr;
+  }
+}
+
+/** Intenta extraer el chunk del text alrededor de la posición donde falló JSON.parse. */
+function extractRawAroundError(text: string, err: Error): string {
+  const m = /position\s+(\d+)/i.exec(err.message);
+  if (!m) return '';
+  const pos = Number(m[1]);
+  const from = Math.max(0, pos - 200);
+  const to = Math.min(text.length, pos + 200);
+  return `[...${text.slice(from, pos)}<<<HERE>>>${text.slice(pos, to)}...]`;
 }

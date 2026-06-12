@@ -24,7 +24,7 @@ export type AuditAction =
   | 'application.create' | 'application.transition'
   | 'scores.write' | 'integrity.write'
   | 'bot.review_applied' | 'bot.review_only'
-  | 'draft.generate' | 'draft.refine' | 'draft.send_to_client'
+  | 'draft.generate' | 'draft.refine' | 'draft.iterate' | 'draft.send_to_client'
   | 'tenant.create' | 'tenant.update' | 'tenant.delete'
   | 'admin.outbox_process' | 'admin.anthropic_ping'
   | 'portal.issued'

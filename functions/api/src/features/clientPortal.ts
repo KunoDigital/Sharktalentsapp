@@ -103,6 +103,8 @@ export async function getClientPortal(ctx: RequestContext): Promise<void> {
       client_email: claims.client_email,
       client_company: claims.company,
       agency_name: claims.agency_name,
+      recruiter_email: process.env.RECRUITER_NOTIFY_EMAIL || process.env.ZEPTOMAIL_REPLY_TO || 'proyectos@kunodigital.com',
+      recruiter_whatsapp: process.env.RECRUITER_WHATSAPP || null,
       jobs: portalJobs,
     },
   });
@@ -127,14 +129,44 @@ export async function getClientPortalJob(ctx: RequestContext): Promise<void> {
 
   log.info('portal job listed', { traceId: ctx.traceId, tenant: claims.ref, jobId });
 
+  // Preview de finalistas si está en stage 'finalists_ready' — para que el cliente
+  // vea snapshot de los 3 sin tener que ir al reporte completo.
+  let finalistsPreview: Array<{ display_name: string; one_liner: string; match_pct: number | null }> | undefined;
+  if (portalJob.stage === 'finalists_ready') {
+    try {
+      const finalistRows = unwrapRows<{ candidate_name: string; final_score_pct: number | null; one_liner: string | null }>(
+        (await zcql(ctx.req).executeZCQLQuery(
+          `SELECT C.name AS candidate_name, R.final_score_pct, R.one_liner
+           FROM Results R JOIN Candidates C ON C.ROWID = R.candidate_id
+           WHERE R.assessment_id = '${escapeSql(jobId)}' AND R.pipeline_stage = 'finalist'
+           ORDER BY R.final_score_pct DESC NULLS LAST LIMIT 3`,
+        )) as unknown[],
+        'Results',
+      );
+      finalistsPreview = finalistRows.map((r) => ({
+        // Mostrar primer nombre + inicial apellido (privacy)
+        display_name: (r.candidate_name ?? '').split(/\s+/).filter(Boolean)
+          .map((p: string, i: number) => i === 0 ? p : `${p[0]}.`).join(' '),
+        one_liner: (r.one_liner ?? 'Pasó todas las evaluaciones con buen perfil para el puesto.').slice(0, 150),
+        match_pct: r.final_score_pct == null ? null : Math.round(Number(r.final_score_pct)),
+      }));
+    } catch (err) {
+      log.debug('finalists preview failed', { error: (err as Error).message });
+    }
+  }
+
   sendJson(ctx.res, 200, {
     portal: {
       client_name: claims.client_name,
       client_email: claims.client_email,
       client_company: claims.company,
       agency_name: claims.agency_name,
+      recruiter_email: process.env.RECRUITER_NOTIFY_EMAIL || process.env.ZEPTOMAIL_REPLY_TO || 'proyectos@kunodigital.com',
+      recruiter_whatsapp: process.env.RECRUITER_WHATSAPP || null,
     },
     job: portalJob,
+    finalists_preview: finalistsPreview,
+    fetched_at: new Date().toISOString(),
   });
 }
 

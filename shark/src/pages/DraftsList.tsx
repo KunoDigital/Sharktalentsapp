@@ -4,7 +4,9 @@ import { MOCK_DRAFTS, STATUS_LABELS, STATUS_COLOR } from '../data/mockDrafts';
 import { useApi, ApiError, type JobDraft } from '../lib/api';
 import { config } from '../config';
 import { logger } from '../lib/logger';
-import BriefingForm from '../components/BriefingForm';
+// 2026-06-05: BriefingForm reemplazado por TranscriptUploadForm inline — el flow
+// de schedule por API fue eliminado (era frágil). Cris manda link de Bookings al
+// cliente y sube el transcript después manualmente.
 import { TableNotReadyBanner } from '../components/TableNotReadyBanner';
 import './pages.css';
 import './draft-review.css';
@@ -108,7 +110,6 @@ export default function DraftsList() {
       <Section title={`Cerrados (${closed.length})`} drafts={closed} dim />
 
       <TranscriptUploader />
-      <BriefingScheduler />
     </div>
   );
 }
@@ -121,10 +122,33 @@ function TranscriptUploader() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [marketingLeadId, setMarketingLeadId] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [meetingUrl, setMeetingUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [leads, setLeads] = useState<Array<{ ROWID: string; email: string; contact_name: string | null; company: string | null }>>([]);
+
+  // Cargar leads al abrir el form — el dropdown reemplaza el typing manual del email
+  // que era fuente de errores humanos (ver flujo Kuno 2026-06-02).
+  useEffect(() => {
+    if (!open || !config.useApi) return;
+    api.marketing.listLeads({ limit: 300 })
+      .then((res) => setLeads(res.leads.map((l) => ({ ROWID: l.ROWID, email: l.email, contact_name: l.contact_name, company: l.company }))))
+      .catch((err) => log.warn('load leads for picker failed', { error: (err as Error).message }));
+  }, [open, api.marketing]);
+
+  // Al seleccionar un lead del dropdown, auto-rellenar email (preview — el backend lo
+  // re-resuelve igual de la fuente en MarketingLeads para evitar drift).
+  function handleLeadChange(leadId: string) {
+    setMarketingLeadId(leadId);
+    if (!leadId) {
+      setClientEmail('');
+      return;
+    }
+    const lead = leads.find((l) => l.ROWID === leadId);
+    if (lead?.email) setClientEmail(lead.email);
+  }
 
   async function handleGenerate() {
     setError(null);
@@ -133,21 +157,43 @@ function TranscriptUploader() {
       setError('El transcript debe tener al menos 100 caracteres.');
       return;
     }
+    // 2026-06-05: usamos endpoint ASYNC (briefings/upload-transcript) que publica al
+    // outbox y devuelve rápido (<2s) en vez del síncrono que esperaba Anthropic 30-90s.
+    // El síncrono se caía con "JWT is expired" porque los tokens Clerk duran 60s y
+    // el request entero superaba eso. Async resuelve el problema de raíz.
+    // El draft se genera en background; el frontend redirige a /drafts donde aparece
+    // cuando el outbox lo procesa (~30-60s después).
+    let resolvedEmail = clientEmail.trim();
+    let resolvedName = '';
+    if (marketingLeadId) {
+      const lead = leads.find((l) => l.ROWID === marketingLeadId);
+      if (lead) {
+        resolvedEmail = resolvedEmail || lead.email;
+        resolvedName = lead.contact_name ?? lead.email.split('@')[0];
+      }
+    }
+    if (!resolvedEmail) {
+      setError('Seleccioná un lead o ingresá el email del cliente manualmente.');
+      return;
+    }
+    if (!resolvedName) {
+      resolvedName = resolvedEmail.split('@')[0];
+    }
     setSubmitting(true);
     try {
-      const gen = await api.drafts.generate({ transcript: t });
-      const saved = await api.drafts.save({
-        draft_payload: gen.draft,
+      const r = await api.briefings.uploadTranscript({
+        client_email: resolvedEmail,
+        client_name: resolvedName,
         transcript: t,
-        transcript_source: 'manual',
-        status: 'draft_generated',
-        client_email: clientEmail.trim() || undefined,
-        meeting_url: meetingUrl.trim() || undefined,
       });
-      navigate(`/drafts/${saved.draft.ROWID}`);
+      if (!r || !r.queued) throw new Error('No se pudo encolar el transcript');
+      // Redirigir a la lista de drafts con mensaje. El draft va a aparecer en ~30-60s
+      // cuando el outbox procese el evento. El usuario hace refresh y lo ve.
+      alert('✅ Transcript en cola. El draft se genera en background (~30-60 segundos). Refrescá la página de Drafts para verlo aparecer.');
+      navigate('/drafts');
     } catch (err) {
-      log.warn('generate draft failed', { error: (err as Error).message });
-      setError((err as Error).message || 'No se pudo generar el draft.');
+      log.warn('upload transcript failed', { error: (err as Error).message });
+      setError((err as Error).message || 'No se pudo subir el transcript.');
     } finally {
       setSubmitting(false);
     }
@@ -168,15 +214,34 @@ function TranscriptUploader() {
       </div>
       {open && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.75rem' }}>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span className="muted small">Cliente (vincular con Marketing Lead)</span>
+            <select
+              value={marketingLeadId}
+              onChange={(e) => handleLeadChange(e.target.value)}
+              style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--st-border-soft)', background: 'var(--st-bg-elev)', color: 'var(--st-fg)' }}
+            >
+              <option value="">— Sin vincular (escribir email manual) —</option>
+              {leads.map((l) => (
+                <option key={l.ROWID} value={l.ROWID}>
+                  {l.company || l.contact_name || l.email} · {l.email}
+                </option>
+              ))}
+            </select>
+            {marketingLeadId && (
+              <span className="muted small">Email auto-resuelto del lead. Si el lead no tiene email, editalo en Marketing Leads.</span>
+            )}
+          </label>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              <span className="muted small">Email del cliente (opcional)</span>
+              <span className="muted small">Email del cliente {marketingLeadId ? '(del lead)' : '(manual)'}</span>
               <input
                 type="email"
                 value={clientEmail}
                 onChange={(e) => setClientEmail(e.target.value)}
                 placeholder="cliente@empresa.com"
-                style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)' }}
+                disabled={Boolean(marketingLeadId)}
+                style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--st-border-soft)', background: marketingLeadId ? 'var(--st-bg-elev-2)' : 'var(--st-bg-elev)', color: 'var(--st-fg)', opacity: marketingLeadId ? 0.7 : 1 }}
               />
             </label>
             <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -186,7 +251,7 @@ function TranscriptUploader() {
                 value={meetingUrl}
                 onChange={(e) => setMeetingUrl(e.target.value)}
                 placeholder="https://meeting.zoho.com/..."
-                style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)' }}
+                style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--st-border-soft)', background: 'transparent', color: 'var(--st-fg)' }}
               />
             </label>
           </div>
@@ -197,7 +262,7 @@ function TranscriptUploader() {
               onChange={(e) => setTranscript(e.target.value)}
               placeholder="Pegá acá el texto completo de la reunión. La IA va a inferir: rol, requisitos, perfil DISC ideal, capacidad cognitiva esperada, salario, contexto."
               rows={10}
-              style={{ padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', fontFamily: 'inherit', fontSize: '0.92rem', lineHeight: 1.5 }}
+              style={{ padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--st-border-soft)', background: 'transparent', color: 'var(--st-fg)', fontFamily: 'inherit', fontSize: '0.92rem', lineHeight: 1.5 }}
             />
             <span className="muted small">{transcript.length} caracteres · mínimo 100</span>
           </label>
@@ -207,7 +272,7 @@ function TranscriptUploader() {
             </div>
           )}
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-            <button type="button" className="btn-toolbar" onClick={() => { setTranscript(''); setClientEmail(''); setMeetingUrl(''); setError(null); }} disabled={submitting}>
+            <button type="button" className="btn-toolbar" onClick={() => { setTranscript(''); setMarketingLeadId(''); setClientEmail(''); setMeetingUrl(''); setError(null); }} disabled={submitting}>
               Limpiar
             </button>
             <button type="button" className="btn-primary" onClick={handleGenerate} disabled={submitting || transcript.trim().length < 100}>
@@ -216,30 +281,6 @@ function TranscriptUploader() {
           </div>
         </div>
       )}
-    </section>
-  );
-}
-
-/**
- * Sección colapsable para schedular un briefing nuevo. Mostramos arriba un toggle
- * "Agendar briefing" para no inflar la página principal de drafts.
- */
-function BriefingScheduler() {
-  const [open, setOpen] = useState(false);
-  return (
-    <section style={{ marginTop: '2rem', padding: '1rem 1.25rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '8px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: open ? '0.75rem' : 0 }}>
-        <div>
-          <strong>Agendar nuevo briefing</strong>
-          <p className="muted small" style={{ marginTop: '0.2rem' }}>
-            Cliente nuevo? Agendá la reunión inicial. El transcript de Zia se procesa automático.
-          </p>
-        </div>
-        <button type="button" className="btn-toolbar" onClick={() => setOpen((o) => !o)}>
-          {open ? 'Cerrar' : 'Agendar briefing'}
-        </button>
-      </div>
-      {open && <BriefingForm />}
     </section>
   );
 }

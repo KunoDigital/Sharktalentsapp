@@ -33,15 +33,22 @@ type EnvShape = {
   BOT_MODE: 'cold' | 'warm' | 'hot';
   BOT_CONFIDENCE_THRESHOLD_DEFAULT: number;
   BOT_RAG_TOP_K: number;
+  // Pricing: fee_usd = salary_max * FEE_MULTIPLIER (configurable sin redeploy)
+  FEE_MULTIPLIER: number;
   // CORS
   ALLOWED_ORIGINS: string;
   // Catalyst File Store
   FILESTORE_VIDEO_FOLDER_ID: string;
   FILESTORE_LARGE_CONTENT_FOLDER_ID: string;
+  FILESTORE_CV_FOLDER_ID: string;
   // Integraciones externas (opcionales — vacíos = integración desactivada)
   ZOHO_RECRUIT_API_URL: string;
   ZOHO_RECRUIT_OAUTH_TOKEN: string;
   ZOHO_RECRUIT_WEBHOOK_SECRET: string;
+  // Zoho CRM webhook receptor (leads que entran al CRM por canales externos)
+  CRM_WEBHOOK_SECRET: string;
+  CRM_META_LEAD_SOURCE: string; // CSV: lista de Lead_Source que disparan el flow
+  CRM_BOOKINGS_URL: string; // Link Bookings para "primera llamada"
   HEYREACH_API_URL: string;
   HEYREACH_API_KEY: string;
   HEYREACH_WEBHOOK_SECRET: string;
@@ -118,8 +125,12 @@ export function env(): EnvShape {
     ANTHROPIC_API_KEY: required('ANTHROPIC_API_KEY'),
     ANTHROPIC_MODEL: optional('ANTHROPIC_MODEL', 'claude-haiku-4-5-20251001'),
     ANTHROPIC_CACHING_ENABLED: asBool('ANTHROPIC_CACHING_ENABLED', true),
-    ANTHROPIC_TIMEOUT_MS: asNumber('ANTHROPIC_TIMEOUT_MS', 55_000),
-    ANTHROPIC_MAX_RETRIES: asNumber('ANTHROPIC_MAX_RETRIES', 3),
+    // 2026-06-04 (audit fix #20): defaults antiguos (55s, 3 retries) → worst-case ~228s
+    // pero Catalyst mata handlers a 30s. Resultado: 504 al usuario + retries en background
+    // pagando tokens sin que nadie lo escuche. Defaults nuevos: 14s + 1 retry (worst-case
+    // ~29s). Para llamadas que requieren más tiempo pasar overrides explícitos.
+    ANTHROPIC_TIMEOUT_MS: asNumber('ANTHROPIC_TIMEOUT_MS', 14_000),
+    ANTHROPIC_MAX_RETRIES: asNumber('ANTHROPIC_MAX_RETRIES', 1),
     INTERNAL_API_KEY: required('INTERNAL_API_KEY'),
     URL_SIGNING_SECRET: required('URL_SIGNING_SECRET'),
     CRYPTO_MASTER_KEY: required('CRYPTO_MASTER_KEY'),
@@ -138,12 +149,17 @@ export function env(): EnvShape {
     BOT_MODE: optional('BOT_MODE', 'cold') as EnvShape['BOT_MODE'],
     BOT_CONFIDENCE_THRESHOLD_DEFAULT: asNumber('BOT_CONFIDENCE_THRESHOLD_DEFAULT', 0.75),
     BOT_RAG_TOP_K: asNumber('BOT_RAG_TOP_K', 5),
+    FEE_MULTIPLIER: asNumber('FEE_MULTIPLIER', 1.2),
     ALLOWED_ORIGINS: optional('ALLOWED_ORIGINS', 'http://localhost:3000'),
     FILESTORE_VIDEO_FOLDER_ID: optional('FILESTORE_VIDEO_FOLDER_ID', ''),
     FILESTORE_LARGE_CONTENT_FOLDER_ID: optional('FILESTORE_LARGE_CONTENT_FOLDER_ID', ''),
+    FILESTORE_CV_FOLDER_ID: optional('FILESTORE_CV_FOLDER_ID', ''),
     ZOHO_RECRUIT_API_URL: optional('ZOHO_RECRUIT_API_URL', ''),
     ZOHO_RECRUIT_OAUTH_TOKEN: optional('ZOHO_RECRUIT_OAUTH_TOKEN', ''),
     ZOHO_RECRUIT_WEBHOOK_SECRET: optional('ZOHO_RECRUIT_WEBHOOK_SECRET', ''),
+    CRM_WEBHOOK_SECRET: optional('CRM_WEBHOOK_SECRET', ''),
+    CRM_META_LEAD_SOURCE: optional('CRM_META_LEAD_SOURCE', 'Meta leads ad'),
+    CRM_BOOKINGS_URL: optional('CRM_BOOKINGS_URL', 'https://zbooking.us/vde72'),
     HEYREACH_API_URL: optional('HEYREACH_API_URL', ''),
     HEYREACH_API_KEY: optional('HEYREACH_API_KEY', ''),
     HEYREACH_WEBHOOK_SECRET: optional('HEYREACH_WEBHOOK_SECRET', ''),

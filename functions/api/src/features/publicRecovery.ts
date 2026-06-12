@@ -18,6 +18,7 @@ import { logger } from '../lib/logger';
 import { zcql } from '../lib/db';
 import { escapeSql, unwrapRows } from '../lib/dbHelpers';
 import { signToken, expiresIn, WEEK_SEC } from '../lib/urlSigning';
+import { env } from '../lib/env';
 import { publishOutboxEvent } from './outbox';
 
 const log = logger('PUBLIC_RECOVERY');
@@ -162,4 +163,107 @@ export async function resendCandidateLink(ctx: RequestContext): Promise<void> {
     sent: true,
     message: 'Si tu email tiene una aplicación a este puesto, recibirás un nuevo link en los próximos minutos.',
   });
+}
+
+/**
+ * Recovery genérico: candidato perdió el link entero (no sabe a qué tenant/job).
+ *
+ *   POST /candidate-recovery
+ *   Body: { email: "candidato@ejemplo.com" }
+ *
+ * Busca el email entre Candidates, encuentra su Application activa más reciente,
+ * genera un token de test fresco y manda email con el link a la fase que corresponde.
+ *
+ * **Importante:** SIEMPRE devuelve 200 con "si tu email está en nuestro sistema...",
+ * para no leakear qué emails están registrados.
+ *
+ * Rate-limit por IP en el router.
+ */
+export async function genericRecoveryByEmail(ctx: RequestContext): Promise<void> {
+  const body = await readJsonBody<Record<string, unknown>>(ctx.req);
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new ValidationError('email inválido');
+  }
+
+  const successMsg = {
+    sent: true,
+    message: 'Si tu email está en nuestro sistema, vas a recibir un link en los próximos minutos.',
+  };
+
+  // Buscar candidato
+  const cand = unwrapRows<{ ROWID: string; email: string; name?: string }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT ROWID, email, name FROM Candidates WHERE email = '${escapeSql(email)}' LIMIT 1`,
+    )) as unknown[],
+    'Candidates',
+  )[0];
+  if (!cand) {
+    sendJson(ctx.res, 200, successMsg);
+    return;
+  }
+
+  // Buscar Application activa más reciente
+  type Row = {
+    ROWID: string;
+    pipeline_stage: string;
+    assessment_id: string;
+    job_title: string;
+  };
+  const apps = unwrapRows<Row>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT R.ROWID, R.pipeline_stage, R.assessment_id, J.title AS job_title
+       FROM Results R
+       JOIN Jobs J ON J.ROWID = R.assessment_id
+       WHERE R.candidate_id = '${escapeSql(cand.ROWID)}'
+         AND R.pipeline_stage NOT IN ('hired','offer_declined','withdrew','auto_rejected_low_score','rejected_by_admin')
+       ORDER BY R.CREATEDTIME DESC LIMIT 1`,
+    )) as unknown[],
+    'Results',
+  );
+  const app = apps[0];
+  if (!app) {
+    sendJson(ctx.res, 200, successMsg);
+    return;
+  }
+
+  // Mapear stage actual → próxima fase a continuar
+  const PHASE_MAP: Record<string, string> = {
+    prefilter_pending: 'prescreening',
+    prefilter_passed: 'tecnica',
+    tecnica_completed: 'disc',
+    conductual_completed: 'integridad',
+    integridad_completed: 'videos',
+    videos_pending: 'videos',
+  };
+  const phase = PHASE_MAP[app.pipeline_stage] ?? 'prescreening';
+
+  // Token + URL
+  const token = signToken({
+    kind: 'test',
+    ref: app.ROWID,
+    exp: expiresIn(2 * WEEK_SEC),
+  });
+  const base = env().APP_BASE_URL.replace(/\/$/, '');
+  const testUrl = `${base}/app/#/test/${token}/${phase}`;
+
+  // Encolar email
+  try {
+    await publishOutboxEvent(ctx.req, 'email.send_pending', {
+      to: email,
+      template: 'recovery_link',
+      locale: 'es',
+      job_id: app.assessment_id,
+      vars: {
+        candidate_name: (cand.name ?? '').trim() || 'candidato',
+        job_title: app.job_title,
+        test_url: testUrl,
+      },
+    });
+    log.info('recovery link sent', { applicationId: app.ROWID, phase, email_masked: email.slice(0, 2) + '***' });
+  } catch (err) {
+    log.warn('recovery enqueue failed', { error: (err as Error).message });
+  }
+
+  sendJson(ctx.res, 200, successMsg);
 }

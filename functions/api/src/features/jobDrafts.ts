@@ -18,6 +18,7 @@
 import type { IncomingMessage } from 'http';
 import type { RequestContext } from '../lib/context';
 import { datastore, zcql, now } from '../lib/db';
+import { assertTenantId } from '../lib/tenantGuard';
 import { escapeSql, unwrapRow, unwrapRows } from '../lib/dbHelpers';
 import { stringifyAndTruncate, FIELD_LIMITS } from '../lib/dbLimits';
 import { persistLargeContent, persistLargeJson, loadLargeContent, loadLargeJson, deleteLargeContent } from '../lib/largeContentStore';
@@ -107,8 +108,11 @@ export async function saveJobDraft(ctx: RequestContext): Promise<void> {
   const transcriptSource = typeof body.transcript_source === 'string' ? body.transcript_source : 'manual';
   const status: DraftStatus = body.status !== undefined ? validateStatus(body.status) : 'draft_generated';
   const version = typeof body.version === 'number' ? body.version : 1;
-  const clientEmail = typeof body.client_email === 'string' ? body.client_email.trim().slice(0, 255) : null;
+  let clientEmail = typeof body.client_email === 'string' ? body.client_email.trim().slice(0, 255) : null;
   const meetingId = typeof body.meeting_url === 'string' ? body.meeting_url.slice(0, 255) : null;
+  const marketingLeadId = typeof body.marketing_lead_id === 'string' && body.marketing_lead_id.trim()
+    ? body.marketing_lead_id.trim().slice(0, 100)
+    : null;
   const highlights = body.highlights !== undefined
     ? stringifyAndTruncate(body.highlights, FIELD_LIMITS.DRAFT_HIGHLIGHTS, 'JobProfileDrafts.highlights')
     : null;
@@ -116,8 +120,37 @@ export async function saveJobDraft(ctx: RequestContext): Promise<void> {
   // Extraer client_name + client_company del draft_payload generado por la IA
   // (la tabla los tiene como columnas separadas, los persistimos para queries rápidas).
   const draftObj = body.draft_payload as Record<string, unknown>;
-  const clientName = typeof draftObj.title === 'string' ? draftObj.title.slice(0, 255) : null;
-  const clientCompany = typeof draftObj.company === 'string' ? draftObj.company.slice(0, 255) : null;
+  let clientName = typeof draftObj.title === 'string' ? draftObj.title.slice(0, 255) : null;
+  let clientCompany = typeof draftObj.company === 'string' ? draftObj.company.slice(0, 255) : null;
+
+  // Si se vinculó a un Marketing Lead, traer email/nombre/empresa de ahí — single source
+  // of truth: el lead manda. Esto evita el bug de email manual mal escrito (lead linking
+  // resuelve esto en origen). Solo lookup si el caller no pasó client_email explícito.
+  if (marketingLeadId && !clientEmail) {
+    try {
+      // MarketingLeads es tabla global (sin tenant_id) — filtramos solo por ROWID.
+      // Schema usa contact_name (no name).
+      const leadRows = unwrapRows<{ email?: string; contact_name?: string; company?: string }>(
+        (await zcql(ctx.req).executeZCQLQuery(
+          `SELECT email, contact_name, company FROM MarketingLeads WHERE ROWID = '${escapeSql(marketingLeadId)}' LIMIT 1`,
+        )) as unknown[],
+        'MarketingLeads',
+      );
+      const lead = leadRows[0];
+      if (lead) {
+        if (lead.email) clientEmail = String(lead.email).trim().slice(0, 255);
+        // Solo override company/name si la IA no extrajo nada útil del transcript.
+        if (lead.company && !clientCompany) clientCompany = String(lead.company).slice(0, 255);
+        if (lead.contact_name && !clientName) clientName = String(lead.contact_name).slice(0, 255);
+      } else {
+        log.warn('marketing lead lookup found 0 rows', { traceId: ctx.traceId, marketingLeadId });
+      }
+    } catch (err) {
+      log.warn('marketing lead lookup failed (continuing without auto-fill)', {
+        traceId: ctx.traceId, marketingLeadId, error: (err as Error).message,
+      });
+    }
+  }
 
   let transcriptStored: string | null = null;
   let draftPayloadStored: string;
@@ -137,6 +170,7 @@ export async function saveJobDraft(ctx: RequestContext): Promise<void> {
     throw new AppError(500, 'save_failed_persist', `Save fail (persist): ${(err as Error).message}`);
   }
 
+  assertTenantId(tenantId, 'saveJobDraft.JobProfileDrafts.insert');
   const insert: Record<string, unknown> = {
     tenant_id: tenantId,
     transcript: transcriptStored,
@@ -149,6 +183,7 @@ export async function saveJobDraft(ctx: RequestContext): Promise<void> {
     client_name: clientName,
     client_company: clientCompany,
     meeting_id: meetingId,
+    marketing_lead_id: marketingLeadId,
     job_id: null,
     created_at: now(),
     updated_at: now(),
@@ -195,6 +230,43 @@ export async function saveJobDraft(ctx: RequestContext): Promise<void> {
   sendJson(ctx.res, 201, { draft: saved });
 }
 
+/**
+ * GET /api/drafts/jobs/_search?q=X
+ * Búsqueda por client_company, client_name o título del draft. Max 20.
+ */
+export async function searchJobDrafts(ctx: RequestContext): Promise<void> {
+  await requireAuth(ctx);
+  const tenantId = await requireTenant(ctx);
+  if (!(await isTableReady(ctx.req))) {
+    sendJson(ctx.res, 200, { drafts: [] });
+    return;
+  }
+  const url = new URL(ctx.req.url ?? '/', 'http://x');
+  const q = (url.searchParams.get('q') ?? '').trim();
+  if (q.length < 2) {
+    sendJson(ctx.res, 200, { drafts: [] });
+    return;
+  }
+  try {
+    const safe = escapeSql(q.toLowerCase());
+    const query = `
+      SELECT ROWID, client_company, client_name, client_email, status, created_at
+      FROM ${TABLE}
+      WHERE tenant_id = '${escapeSql(tenantId)}'
+        AND (LOWER(client_company) LIKE '%${safe}%' OR LOWER(client_name) LIKE '%${safe}%' OR LOWER(client_email) LIKE '%${safe}%')
+      ORDER BY CREATEDTIME DESC LIMIT 20
+    `.replace(/\s+/g, ' ');
+    const rows = unwrapRows<{ ROWID: string; client_company: string; client_name: string; client_email: string; status: string; created_at: string }>(
+      (await zcql(ctx.req).executeZCQLQuery(query)) as unknown[],
+      TABLE,
+    );
+    sendJson(ctx.res, 200, { drafts: rows });
+  } catch (err) {
+    log.warn('drafts search failed', { error: (err as Error).message });
+    sendJson(ctx.res, 200, { drafts: [], error: 'search_failed' });
+  }
+}
+
 export async function listJobDrafts(ctx: RequestContext): Promise<void> {
   await requireAuth(ctx);
   const tenantId = await requireTenant(ctx);
@@ -213,7 +285,20 @@ export async function listJobDrafts(ctx: RequestContext): Promise<void> {
     TABLE,
   );
 
-  sendJson(ctx.res, 200, { drafts: rows, count: rows.length });
+  // 2026-06-06: resolver `draft_payload` cuando es file:<id> reference para que el
+  // frontend pueda parsear el título sin tener que llamar al endpoint detallado.
+  // Antes la card de DraftsList mostraba "Pendiente de generar" para drafts grandes
+  // (>9.5K) porque JSON.parse("file:xxx") fallaba.
+  const resolved = await Promise.all(rows.map(async (r) => {
+    let payload = r.draft_payload;
+    if (typeof payload === 'string' && payload.startsWith('file:')) {
+      const loaded = await loadLargeContent(ctx.req, payload).catch(() => null);
+      if (loaded) payload = loaded;
+    }
+    return { ...r, draft_payload: payload };
+  }));
+
+  sendJson(ctx.res, 200, { drafts: resolved, count: resolved.length });
 }
 
 export async function getJobDraft(ctx: RequestContext): Promise<void> {
@@ -249,18 +334,38 @@ export async function patchJobDraft(ctx: RequestContext): Promise<void> {
   const patch: Record<string, unknown> = { ROWID: id, updated_at: now() };
 
   if (body.status !== undefined) patch.status = validateStatus(body.status);
-  // NOTA: NO permitimos patchear draft_payload via PATCH. El payload se persiste UNA
-  // VEZ con saveJobDraft (que recibe el JSON original generado por la IA). Si se
-  // permite patchearlo después, el frontend admin puede sobreescribirlo con un shape
-  // adaptado (subset del original) y se pierden los campos narrativos (objetivo_cargo,
-  // responsabilidades, disc_perfil_descripcion, etc.) que el portal del cliente
-  // necesita mostrar. Si alguien manda draft_payload en el body, lo IGNORAMOS y
-  // logueamos warning para detectar callers que lo intenten.
-  if (body.draft_payload !== undefined) {
-    log.warn('patchJobDraft: draft_payload in body ignored (use save endpoint to overwrite)', {
+
+  // draft_payload_patch — objeto parcial con SOLO los campos que el admin editó.
+  // Se hace DEEP-MERGE sobre el payload existente (no replace), así no se pierden
+  // los campos narrativos (responsabilidades, tareas, etc.) que el admin no editó.
+  // Si el caller manda body.draft_payload (replace completo), se ignora — usar
+  // draft_payload_patch para evitar el bug histórico de pisar narrativa con subset.
+  if (body.draft_payload !== undefined && body.draft_payload_patch === undefined) {
+    log.warn('patchJobDraft: draft_payload (full replace) en body — usar draft_payload_patch para deep-merge', {
       traceId: ctx.traceId, draftId: id,
     });
   }
+  if (body.draft_payload_patch !== undefined && body.draft_payload_patch !== null && typeof body.draft_payload_patch === 'object') {
+    const patchPayload = body.draft_payload_patch as Record<string, unknown>;
+    // Validar el patch antes de mergear — competencias contra catálogo, DISC sum, rangos.
+    validatePayloadPatch(patchPayload);
+    // Cargar payload actual (resolver File Store si aplica)
+    const existingPayload = (await loadLargeJson<Record<string, unknown>>(ctx.req, existing.draft_payload)) ?? {};
+    const merged = deepMergePayload(existingPayload, patchPayload);
+    // Persistir merged (inline o File Store según tamaño)
+    try {
+      const newStored = await persistLargeJson(ctx.req, merged, 'JobProfileDrafts.draft_payload');
+      // Borrar el File Store viejo si era ref
+      await deleteLargeContent(ctx.req, existing.draft_payload).catch(() => {});
+      patch.draft_payload = newStored;
+    } catch (err) {
+      log.error('patchJobDraft: persist merged payload failed', {
+        traceId: ctx.traceId, draftId: id, error: (err as Error).message,
+      });
+      throw new AppError(500, 'patch_persist_failed', `No se pudo persistir el payload editado: ${(err as Error).message}`);
+    }
+  }
+
   if (body.version !== undefined && typeof body.version === 'number') {
     patch.version = body.version;
   }
@@ -278,11 +383,116 @@ export async function patchJobDraft(ctx: RequestContext): Promise<void> {
     action: 'draft.refine',
     resource_type: 'job_profile_draft',
     resource_id: id,
-    changes: { status: patch.status, version: patch.version },
+    changes: { status: patch.status, version: patch.version, payload_patched: body.draft_payload_patch !== undefined },
   });
 
   sendJson(ctx.res, 200, { draft: updated });
 }
+
+/**
+ * Deep-merge: para cada key del patch, si ambos lados son objetos planos (no arrays/null),
+ * mergea recursivo; si patch tiene valor primitivo o array, REEMPLAZA el del existing
+ * (no concatena arrays — el admin define el array nuevo completo, ej. competencias).
+ *
+ * Casos especiales:
+ * - Arrays se reemplazan completos (ej. competencias: [{name, pct}, ...] → la nueva lista pisa)
+ * - null en patch borra el campo
+ * - undefined en patch deja el original
+ */
+function deepMergePayload(base: Record<string, unknown>, patch: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(patch)) {
+    if (value === undefined) continue;
+    if (value === null) {
+      result[key] = null;
+      continue;
+    }
+    if (Array.isArray(value)) {
+      result[key] = value;
+      continue;
+    }
+    if (typeof value === 'object') {
+      const existing = base[key];
+      if (existing && typeof existing === 'object' && !Array.isArray(existing)) {
+        result[key] = deepMergePayload(existing as Record<string, unknown>, value as Record<string, unknown>);
+      } else {
+        result[key] = value;
+      }
+      continue;
+    }
+    result[key] = value;
+  }
+  return result;
+}
+
+/**
+ * Validaciones de integridad sobre el patch del payload:
+ * - competencias: cada id debe estar en el catálogo cerrado de 54
+ * - disc_ideal: suma D+I+S+C debería ser ~200 (invariante DISC normalizado).
+ *   Si difiere, WARN pero permitimos — el admin sabe lo que hace; auto-normalizar
+ *   sorprendería al usuario (decisión 2026-06-02).
+ * - velna_ideal: rangos 0-100 por componente
+ * - tecnica_minimo_pct: rango 0-100
+ *
+ * Throw ValidationError solo en errores que rompen el schema. Warns van a logs.
+ */
+function validatePayloadPatch(p: Record<string, unknown>): void {
+  if (p.competencias !== undefined) {
+    if (!Array.isArray(p.competencias)) {
+      throw new ValidationError('competencias debe ser un array');
+    }
+    if (p.competencias.length > 5) {
+      throw new ValidationError('máximo 5 competencias por puesto');
+    }
+    for (const c of p.competencias as Array<Record<string, unknown>>) {
+      const id = typeof c.id === 'string' ? c.id : (typeof c.name === 'string' ? c.name : '');
+      if (!id) {
+        throw new ValidationError('cada competencia requiere id (snake_case del catálogo)');
+      }
+      if (!COMPETENCIAS_CATALOG_IDS.has(id)) {
+        throw new ValidationError(`Competencia "${id}" no está en el catálogo cerrado de 54. IDs válidos: ver shark/src/data/competencias.ts`);
+      }
+      const pct = typeof c.required_pct === 'number' ? c.required_pct : 0;
+      if (pct < 0 || pct > 100) {
+        throw new ValidationError(`required_pct de "${id}" fuera de rango 0-100: ${pct}`);
+      }
+    }
+  }
+  if (p.disc_ideal !== undefined && p.disc_ideal !== null && typeof p.disc_ideal === 'object') {
+    const d = p.disc_ideal as { d?: number; i?: number; s?: number; c?: number };
+    const sum = (d.d ?? 0) + (d.i ?? 0) + (d.s ?? 0) + (d.c ?? 0);
+    if (sum > 0 && Math.abs(sum - 200) > 10) {
+      log.warn('DISC sum != 200 (invariante)', { sum, values: d });
+    }
+  }
+  if (p.velna_ideal !== undefined && p.velna_ideal !== null && typeof p.velna_ideal === 'object') {
+    const v = p.velna_ideal as Record<string, number>;
+    for (const [k, val] of Object.entries(v)) {
+      if (typeof val === 'number' && (val < 0 || val > 100)) {
+        throw new ValidationError(`velna_ideal.${k} fuera de rango 0-100: ${val}`);
+      }
+    }
+  }
+  if (typeof p.tecnica_minimo_pct === 'number' && (p.tecnica_minimo_pct < 0 || p.tecnica_minimo_pct > 100)) {
+    throw new ValidationError(`tecnica_minimo_pct fuera de rango 0-100: ${p.tecnica_minimo_pct}`);
+  }
+}
+
+// Set de los 40 IDs del catálogo cerrado de competencias.
+// Sincronizado con shark/src/data/competencias.ts (frontend single source of truth).
+// Si actualizás el catálogo del frontend, actualizá esto.
+const COMPETENCIAS_CATALOG_IDS = new Set([
+  'comunicacion_digital', 'colaboracion', 'adaptabilidad', 'iniciativa', 'planificacion',
+  'manejo_ambiguedad', 'trabajo_equipo', 'retroalimentacion', 'orientacion_cliente',
+  'aprendizaje_vuelo', 'resolucion_problemas', 'inteligencia_emocional', 'creatividad_innovacion',
+  'liderazgo', 'orientacion_logro', 'persuasion_negociacion', 'mentalidad_digital',
+  'foco_data', 'impacto_influencia', 'autoconfianza', 'comprension_interpersonal',
+  'desarrollo_interrelaciones', 'orden_calidad', 'asertividad', 'dinamismo_energia',
+  'habilidad_analitica', 'perseverancia', 'orientacion_accion', 'compromiso_organizacional',
+  'actitud_servicio', 'manejo_conflictos', 'toma_decisiones_oportuna', 'calidad_decisiones',
+  'capacidad_intelectual', 'capacidad_escuchar', 'paciencia', 'comunicacion_escrita',
+  'gestion_riesgo', 'pensamiento_critico', 'resiliencia',
+]);
 
 /**
  * Convierte un draft en un Job real.
@@ -367,11 +577,71 @@ async function convertDraftInternal(
   if (typeof payload.context_summary === 'string') {
     idealProfile.context_summary = payload.context_summary;
   }
+  // Campos descriptivos públicos para el candidato. El draft IA ya genera los datos con
+  // otros nombres; mapeamos al shape público que mira el endpoint /api/public/jobs/:slug.
+  //
+  //   que_busco       ← payload.que_busco (admin manual) || payload.objetivo_cargo (IA)
+  //   que_debe_hacer  ← payload.que_debe_hacer (admin) || responsabilidades + tareas_especificas
+  //   que_debe_saber  ← payload.que_debe_saber (admin) || herramientas_conocimientos
+  //
+  // Si admin editó los campos directos en JobForm, esos ganan. Sino mapeamos desde el draft IA.
+  const queBusco = typeof payload.que_busco === 'string' && payload.que_busco.trim()
+    ? payload.que_busco
+    : (typeof payload.objetivo_cargo === 'string' ? payload.objetivo_cargo : '');
+  if (queBusco.trim()) idealProfile.que_busco = queBusco.trim().slice(0, 500);
+
+  const adminQueDebeHacer = Array.isArray(payload.que_debe_hacer) ? payload.que_debe_hacer : null;
+  const iaResp = Array.isArray(payload.responsabilidades) ? payload.responsabilidades : [];
+  const iaTareas = Array.isArray(payload.tareas_especificas) ? payload.tareas_especificas : [];
+  const queDebeHacer = adminQueDebeHacer ?? [...iaResp, ...iaTareas];
+  const queDebeHacerClean = queDebeHacer
+    .filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
+    .map((s) => s.trim().slice(0, 200))
+    .slice(0, 6);
+  if (queDebeHacerClean.length > 0) idealProfile.que_debe_hacer = queDebeHacerClean;
+
+  const adminQueDebeSaber = Array.isArray(payload.que_debe_saber) ? payload.que_debe_saber : null;
+  const iaHerr = Array.isArray(payload.herramientas_conocimientos) ? payload.herramientas_conocimientos : [];
+  const queDebeSaber = adminQueDebeSaber ?? iaHerr;
+  const queDebeSaberClean = queDebeSaber
+    .filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
+    .map((s) => s.trim().slice(0, 200))
+    .slice(0, 6);
+  if (queDebeSaberClean.length > 0) idealProfile.que_debe_saber = queDebeSaberClean;
+  // Salario del candidato. Persistido dentro del ideal_profile JSON (sin tocar la tabla Jobs).
+  // El público lo lee desde acá. Si min == max, es monto único (caso típico).
+  const payloadSalary = payload.salary_range_usd as { min?: unknown; max?: unknown } | undefined;
+  if (payloadSalary && typeof payloadSalary === 'object') {
+    const salMin = Number(payloadSalary.min);
+    const salMax = Number(payloadSalary.max);
+    if (Number.isFinite(salMax) && salMax > 0) {
+      idealProfile.salary_range_usd = {
+        min: Number.isFinite(salMin) && salMin > 0 ? Math.round(salMin) : Math.round(salMax),
+        max: Math.round(salMax),
+      };
+    }
+  }
+
+  // Calcular fee_usd auto: salary_max * FEE_MULTIPLIER (default 1.2).
+  // Si el draft trae fee_usd explícito (legacy), lo respetamos. Sino lo derivamos del salario.
+  const { env } = await import('../lib/env.js');
+  const feeMultiplier = env().FEE_MULTIPLIER;
+  const draftFee = Number((draft as Record<string, unknown>).fee_usd ?? (payload as Record<string, unknown>).fee_usd);
+  let computedFeeUsd: number | null = null;
+  if (Number.isFinite(draftFee) && draftFee > 0) {
+    computedFeeUsd = Math.round(draftFee);
+  } else {
+    const sr = idealProfile.salary_range_usd as { min: number; max: number } | undefined;
+    if (sr && Number.isFinite(sr.max) && sr.max > 0) {
+      computedFeeUsd = Math.round(sr.max * feeMultiplier);
+    }
+  }
 
   const cognitiveLevel = (typeof payload.cognitive_level === 'string'
     ? payload.cognitive_level
     : 'mid') as 'basic' | 'mid' | 'senior';
 
+  assertTenantId(tenantId, 'convertDraftInternal.Jobs.insert');
   const jobInsert = {
     tenant_id: tenantId,
     title: title.slice(0, 255),
@@ -383,6 +653,7 @@ async function convertDraftInternal(
     created_by: opts.createdBy,
     created_at: now(),
     updated_at: now(),
+    ...(computedFeeUsd != null ? { fee_usd: computedFeeUsd } : {}),
     ...(Object.keys(idealProfile).length > 0 ? { ideal_profile: JSON.stringify(idealProfile) } : {}),
   };
 
@@ -432,32 +703,99 @@ async function syncJobToRecruit(
 
     // Paso 1: crear el Job Opening (sin los campos custom porque necesitamos el recruit_id
     // para construir las URLs de las pruebas).
+    // Location fields: si el draft no los trae, defaults Panamá (Cris opera desde ahí).
+    // Sin estos, Recruit crea el puesto pero NO lo publica en el career site.
+    const payloadAny = input.payload as Record<string, unknown>;
+    const city = typeof payloadAny.city === 'string' ? payloadAny.city : 'Ciudad de Panamá';
+    const state = typeof payloadAny.state === 'string' ? payloadAny.state : 'Panamá';
+    const country = typeof payloadAny.country === 'string' ? payloadAny.country : 'Panama';
+    const industry = typeof payloadAny.industry === 'string' ? payloadAny.industry
+      : (typeof payloadAny.sector === 'string' ? (payloadAny.sector as string) : 'Tecnología');
+    // Recruit Remote_Job es BOOLEAN, no string. Si el payload trae 'Yes'/'Si'/'true', mapeamos a true.
+    const remoteJobRaw = payloadAny.remote_job;
+    const remoteJob = remoteJobRaw === true
+      || (typeof remoteJobRaw === 'string' && /^(true|yes|si|sí|1)$/i.test(remoteJobRaw));
     const result = await createRecruitJobOpening({
       Job_Opening_Name: input.title,
       Posting_Title: input.title,
       Client_Name: input.company,
       Job_Description: description,
       Salary: salary,
+      Industry: industry,
       Job_Opening_Status: 'In-progress',
       // Publicar en el career site de Kuno Talentos (sino el puesto se crea pero queda invisible).
-      customFields: { Publish: true, Keep_on_Career_Site: true },
+      // Recruit exige Date_Opened y Zip_Code para validar la publicación en bolsa de empleo.
+      // Panamá no usa códigos postales — pasamos '0000' como placeholder válido.
+      customFields: {
+        Publish: true,
+        Keep_on_Career_Site: true,
+        City: city,
+        State: state,
+        Country: country,
+        Remote_Job: remoteJob,
+        Date_Opened: new Date().toISOString().slice(0, 10),
+        Zip_Code: '0000',
+      },
     }, ctx.traceId);
     if (!result.ok) {
       log.warn('recruit job opening create failed', { jobId: input.jobId, error: result.error });
       return;
     }
-    const recruitId = result.data.data?.[0]?.details?.id ?? '';
+    // Recruit puede devolver el id en varios shapes según la versión de la API:
+    //   v2 clásica: { data: [{ details: { id: '...' } }] }
+    //   v2 nueva:   { data: [{ id: '...' }] }
+    //   raw record: { data: [{ Job_Opening_Id: '...' }] }
+    // Si ninguno matchea → loguear el shape real del response para diagnosticar.
+    const respData = result.data as unknown as Record<string, unknown>;
+    const dataArr = (respData?.data ?? respData) as Array<Record<string, unknown>> | undefined;
+    const first = Array.isArray(dataArr) ? dataArr[0] : undefined;
+    const details = (first?.details ?? {}) as Record<string, unknown>;
+    const recruitId = String(
+      (details.id as string | undefined) ??
+      (first?.id as string | undefined) ??
+      (first?.Job_Opening_Id as string | undefined) ??
+      ''
+    );
     if (!recruitId) {
-      log.warn('recruit job opening created but no id returned', { jobId: input.jobId });
+      log.warn('recruit job opening created but no id returned', {
+        jobId: input.jobId,
+        topKeys: respData ? Object.keys(respData).join(',') : 'no_data',
+        firstKeys: first ? Object.keys(first).join(',') : 'no_first',
+        rawSlice: JSON.stringify(respData).slice(0, 500),
+      });
       return;
     }
 
-    // Paso 2: persistir recruit_id en SharkTalents (Jobs.recruit_job_id)
+    // Paso 1.5: obtener el slug humano (Job_Opening_Id = ZR_XX_JOB) de Recruit.
+    // Lo guardamos junto al bigint para que cuando Recruit dispare un webhook
+    // con el slug (formato típico), SharkTalents pueda matchear el Job.
+    let recruitJobSlug: string | null = null;
     try {
-      await datastore(ctx.req).table('Jobs').updateRow({
-        ROWID: input.jobId, recruit_job_id: recruitId, updated_at: now(),
+      const { getZohoAuthHeader } = await import('../lib/zohoOAuth.js');
+      const { fetchWithTimeout } = await import('../lib/fetchWithTimeout.js');
+      const auth = await getZohoAuthHeader(ctx.traceId);
+      if (auth) {
+        const slugRes = await fetchWithTimeout(
+          `https://recruit.zoho.com/recruit/v2/Job_Openings/${recruitId}`,
+          { headers: { Authorization: auth, Accept: 'application/json' }, timeoutMs: 10_000 },
+        );
+        const slugData = await slugRes.json().catch(() => null) as { data?: Array<{ Job_Opening_Id?: string }> } | null;
+        recruitJobSlug = slugData?.data?.[0]?.Job_Opening_Id ?? null;
+      }
+    } catch (err) {
+      log.warn('recruit slug fetch failed (continuing without slug)', {
+        jobId: input.jobId, recruitId, error: (err as Error).message,
       });
-      log.info('recruit job opening created + linked', { jobId: input.jobId, recruitId });
+    }
+
+    // Paso 2: persistir recruit_id + slug en SharkTalents (Jobs.recruit_job_id + recruit_job_slug)
+    try {
+      const patch: Record<string, unknown> = {
+        ROWID: input.jobId, recruit_job_id: recruitId, updated_at: now(),
+      };
+      if (recruitJobSlug) patch.recruit_job_slug = recruitJobSlug;
+      await datastore(ctx.req).table('Jobs').updateRow(patch as { ROWID: string });
+      log.info('recruit job opening created + linked', { jobId: input.jobId, recruitId, recruitJobSlug });
     } catch (err) {
       log.warn('Jobs.recruit_job_id column may not exist; opening created but not linked', {
         jobId: input.jobId, recruitId, error: (err as Error).message,
@@ -536,6 +874,32 @@ export async function sendDraftToClient(ctx: RequestContext): Promise<void> {
   } catch { /* ignore */ }
   const jobTitle = typeof payload.title === 'string' ? payload.title : 'Puesto';
 
+  // 2026-06-05 (process gating): antes de mandar el draft al cliente, validar que
+  // los campos comerciales críticos estén completos. Sin esto, Cris (o el agente IA
+  // operando en su nombre) podía mandar el draft sin precio del puesto o sin
+  // rango salarial — el cliente recibe un perfil incompleto.
+  //
+  // Devolvemos error estructurado (PreconditionsNotMetError) con missing_fields y
+  // next_action para que un agente IA pueda parsear y autocorregir sin intervención.
+  // Solo el salario es required — el fee se deriva auto (salary_max * FEE_MULTIPLIER) al aprobar.
+  // Si por alguna razón el draft legacy traía fee_usd explícito, lo respetamos en convertDraft.
+  const missing: string[] = [];
+  const salaryRange = (payload as Record<string, unknown>).salary_range_usd as { min?: number; max?: number } | undefined;
+  const maxSalary = Number(salaryRange?.max ?? 0);
+  if (!Number.isFinite(maxSalary) || maxSalary <= 0) missing.push('salary_range_usd.max');
+
+  if (missing.length > 0) {
+    const { PreconditionsNotMetError } = await import('../lib/errors.js');
+    throw new PreconditionsNotMetError(
+      `Antes de enviar al cliente, completá: salario del puesto.`,
+      {
+        missing_fields: missing,
+        next_action: 'patch_draft_with_missing_fields_then_retry',
+        hint: 'PATCH /api/drafts/jobs/:id con salary_range_usd: { min, max } en el body. El fee se calcula automático.',
+      },
+    );
+  }
+
   // Cargar nombre de la agencia (el tenant — el slug o name de la agencia)
   let agencyName = 'SharkTalents';
   try {
@@ -577,14 +941,29 @@ export async function sendDraftToClient(ctx: RequestContext): Promise<void> {
   }
   await datastore(ctx.req).table(TABLE).updateRow(draftUpdate as { ROWID: string });
 
+  // Detectar si el cliente ya había pedido cambios antes. Si sí, el email que mandamos
+  // debe ser "Aplicamos tus cambios" (no la primera invitación a revisar).
+  // El draft.highlights guarda los comentarios del cliente (ver requestChangesDraftPublic).
+  let isRevisionAfterChanges = false;
+  try {
+    const draftHighlights = typeof draftAny.highlights === 'string' ? (draftAny.highlights as string) : '';
+    if (draftHighlights) {
+      const parsed = JSON.parse(draftHighlights) as { client_comments?: Array<{ at: string; text: string }> };
+      if (Array.isArray(parsed.client_comments) && parsed.client_comments.length > 0) {
+        isRevisionAfterChanges = true;
+      }
+    }
+  } catch { /* no comments → primera vez */ }
+
   // Encolar email y procesarlo EN EL MISMO REQUEST. publishAndProcessEvent llama al
   // dispatcher inmediatamente; si falla, el evento queda en pending para retry posterior.
   // Así el email llega al cliente al instante en vez de esperar al cron manual.
   try {
     const { publishAndProcessEvent } = await import('./outbox.js');
+    const template = isRevisionAfterChanges ? 'client_changes_applied' : 'client_draft_review';
     const result = await publishAndProcessEvent(ctx.req, 'email.send_pending', {
       to: clientEmail,
-      template: 'client_draft_review',
+      template,
       locale: 'es',
       vars: {
         client_name: draftClientName || 'equipo',
@@ -595,12 +974,12 @@ export async function sendDraftToClient(ctx: RequestContext): Promise<void> {
       },
     });
     if (!result.ok) {
-      log.warn('client draft review email queued but dispatch failed', { error: result.error, draftId: id });
+      log.warn('client email queued but dispatch failed', { error: result.error, draftId: id, template });
     } else {
-      log.info('client draft review email sent immediately', { draftId: id, eventId: result.id });
+      log.info('client email sent immediately', { draftId: id, eventId: result.id, template, isRevision: isRevisionAfterChanges });
     }
   } catch (err) {
-    log.warn('failed to enqueue client draft review email', { error: (err as Error).message, draftId: id });
+    log.warn('failed to enqueue client email', { error: (err as Error).message, draftId: id });
   }
 
   void auditLog(ctx, {
@@ -710,8 +1089,20 @@ export async function approveDraftPublic(ctx: RequestContext): Promise<void> {
     throw new AppError(403, 'forbidden', 'Portal token no pertenece al tenant del draft');
   }
 
-  const body = await readJsonBody<{ client_comment?: string }>(ctx.req).catch(() => ({} as { client_comment?: string }));
+  type ClientData = {
+    contact_name?: string;
+    contact_email?: string;
+    contact_phone?: string;
+    company?: string;
+    ruc_nit?: string;
+    address_street?: string;
+    address_city?: string;
+    address_state?: string;
+    address_country?: string;
+  };
+  const body = await readJsonBody<{ client_comment?: string; client_data?: ClientData }>(ctx.req).catch(() => ({} as { client_comment?: string; client_data?: ClientData }));
   const comment = typeof body.client_comment === 'string' ? body.client_comment.slice(0, 500) : null;
+  const clientData = body.client_data && typeof body.client_data === 'object' ? body.client_data : null;
 
   await datastore(ctx.req).table(TABLE).updateRow({
     ROWID: draftId,
@@ -734,10 +1125,12 @@ export async function approveDraftPublic(ctx: RequestContext): Promise<void> {
     // No throw — el approve igual fue exitoso. Cris convierte manual después.
   }
 
-  // Outbox: notificar a Cris
+  // Outbox: publica + procesa inline para que el cliente reciba el email
+  // "Búsqueda iniciada" sin esperar al cron. Si el dispatch falla (ej. ZeptoMail
+  // caído), queda en pending y el cron retries automáticamente.
   try {
-    const { publishOutboxEvent } = await import('./outbox.js');
-    await publishOutboxEvent(ctx.req, 'draft.client_approved', {
+    const { publishAndProcessEvent } = await import('./outbox.js');
+    await publishAndProcessEvent(ctx.req, 'draft.client_approved', {
       tenant_id: draft.tenant_id,
       draft_id: draftId,
       client_email: draft.client_email,
@@ -748,16 +1141,239 @@ export async function approveDraftPublic(ctx: RequestContext): Promise<void> {
     log.warn('draft approved outbox publish failed', { error: (err as Error).message });
   }
 
-  // Tracking server-side
-  void (async () => {
-    const { recordPortalSnapshot } = await import('./jobTracking.js');
-    await recordPortalSnapshot(ctx, {
-      tenantId: draft.tenant_id,
-      eventType: 'portal.draft_approved',
-      portalToken: token,
-      eventData: { draft_id: draftId, has_comment: !!comment, job_id: jobId },
+  // Tracking server-side. audit fix #16: wrapped fire-and-forget.
+  {
+    const { fireAndForget } = await import('../lib/fireAndForget.js');
+    fireAndForget('recordPortalSnapshot.draft_approved', async () => {
+      const { recordPortalSnapshot } = await import('./jobTracking.js');
+      await recordPortalSnapshot(ctx, {
+        tenantId: draft.tenant_id,
+        eventType: 'portal.draft_approved',
+        portalToken: token,
+        eventData: { draft_id: draftId, has_comment: !!comment, job_id: jobId },
+      });
     });
-  })();
+  }
+
+  // 2026-06-07: si el cliente completó el formulario embebido pre-aprobación con
+  // sus datos para el contrato (RUC, dirección, etc), persistirlos en MarketingLead
+  // y pushear a Zoho CRM (layout Sharktalents) ANTES de disparar el contrato. Así
+  // el contrato sale con la data correcta y el lead queda enriquecido en CRM.
+  if (clientData) {
+    try {
+      const draftAny = draft as Record<string, unknown>;
+      const marketingLeadId = typeof draftAny.marketing_lead_id === 'string' ? draftAny.marketing_lead_id : '';
+      if (marketingLeadId) {
+        const updates: { ROWID: string; updated_at: string; contact_name?: string; company?: string; whatsapp?: string } = {
+          ROWID: marketingLeadId,
+          updated_at: now(),
+        };
+        if (clientData.contact_name) updates.contact_name = clientData.contact_name.slice(0, 255);
+        if (clientData.company) updates.company = clientData.company.slice(0, 255);
+        if (clientData.contact_phone) updates.whatsapp = clientData.contact_phone.slice(0, 255);
+        if (Object.keys(updates).length > 2) {
+          await datastore(ctx.req).table('MarketingLeads').updateRow(updates);
+        }
+      }
+    } catch (err) {
+      log.warn('approve: update marketing lead with client_data failed', { error: (err as Error).message });
+    }
+
+    try {
+      const { createLead } = await import('../lib/zohoCrmClient.js');
+      const customFields: Record<string, string | number | boolean | null> = {};
+      if (clientData.ruc_nit) customFields.RUC_NIT = clientData.ruc_nit.slice(0, 100);
+      if (clientData.address_street) customFields.Street = clientData.address_street.slice(0, 250);
+      if (clientData.address_city) customFields.City = clientData.address_city.slice(0, 100);
+      if (clientData.address_state) customFields.State = clientData.address_state.slice(0, 100);
+      if (clientData.address_country) customFields.Country = clientData.address_country.slice(0, 100);
+      const fullName = (clientData.contact_name ?? '').trim();
+      const [firstName, ...rest] = fullName.split(/\s+/);
+      const crmEmail = clientData.contact_email || draft.client_email;
+      if (!crmEmail) {
+        log.warn('approve: no email for CRM push, skipping', { draftId });
+      } else {
+        // 2026-06-07: respetar el `source` real del MarketingLead. ANTES estaba hardcoded
+        // como 'SharkTalents Funnel' → todos los leads quedaban etiquetados igual en CRM
+        // aunque viniera de landing demo / meta / pauta / etc. Ahora cargamos el source
+        // real y mapeamos al picklist de Lead_Source en CRM.
+        const draftAnyForSrc = draft as Record<string, unknown>;
+        const mlId = typeof draftAnyForSrc.marketing_lead_id === 'string' ? draftAnyForSrc.marketing_lead_id : '';
+        let leadSource: string | null = null;
+        if (mlId) {
+          try {
+            const sourceRows = unwrapRows<{ source: string | null }>(
+              (await zcql(ctx.req).executeZCQLQuery(
+                `SELECT source FROM MarketingLeads WHERE ROWID = '${escapeSql(mlId)}' LIMIT 1`,
+              )) as unknown[],
+              'MarketingLeads',
+            );
+            leadSource = sourceRows[0]?.source ?? null;
+          } catch { /* best-effort */ }
+        }
+        // Mapping shark source → CRM Lead_Source picklist (matchea opciones reales del CRM).
+        function mapToCrmLeadSource(src: string | null): string {
+          if (!src) return 'Contacto directo';
+          const s = src.toLowerCase();
+          if (s.includes('meta') || s.includes('facebook') || s.includes('instagram')) return 'Meta leads ad';
+          if (s.includes('pauta') || s.includes('google_ads') || s.includes('googleads')) return 'Pauta';
+          if (s.includes('referido') || s.includes('referral')) return 'Referidos';
+          if (s.includes('landing') || s.includes('quiz') || s.includes('demo') || s.includes('marketing_funnel') || s.includes('playwright')) return 'Lading demo';
+          if (s.includes('sharktalents') || s.includes('funnel')) return 'SharkTalents Funnel';
+          return 'Contacto directo';
+        }
+        const crmLeadSource = mapToCrmLeadSource(leadSource);
+        log.info('approve: pushing to CRM', {
+          draftId,
+          email_masked: crmEmail.slice(0, 3) + '***',
+          first_name: firstName,
+          has_company: !!clientData.company,
+          has_phone: !!clientData.contact_phone,
+          shark_source: leadSource,
+          crm_lead_source: crmLeadSource,
+          custom_field_keys: Object.keys(customFields),
+        });
+        const crmResult = await createLead({
+          email: crmEmail,
+          first_name: firstName || undefined,
+          last_name: rest.join(' ') || (firstName ? '' : undefined),
+          company: clientData.company,
+          phone: clientData.contact_phone,
+          lead_source: crmLeadSource,
+          custom_fields: Object.keys(customFields).length > 0 ? customFields : undefined,
+        }, ctx.traceId);
+        if (crmResult.ok) {
+          log.info('approve: CRM push succeeded', { draftId, crm_lead_id: crmResult.data?.id });
+        } else {
+          log.error('approve: CRM push returned error', {
+            draftId,
+            crm_error: crmResult.error,
+            crm_status: crmResult.status,
+            payload_keys: Object.keys(customFields),
+          });
+        }
+      }
+    } catch (err) {
+      log.error('approve: push to CRM with client_data threw exception', {
+        draftId,
+        error: (err as Error).message,
+        stack: (err as Error).stack?.slice(0, 500),
+      });
+    }
+  } else {
+    log.info('approve: no client_data in body, skipping CRM push', { draftId });
+  }
+
+  // 2026-06-05 (P0-#2): cuando el cliente aprueba el draft → disparar envío
+  // automático del contrato a Zoho Sign. Antes del fix, el contrato quedaba
+  // pendiente de envío manual por Cris (proceso colgado). Fire-and-forget para
+  // no bloquear el approve del cliente; si falla, queda warn en log + Cris
+  // puede reenviarlo manualmente desde Marketing Leads.
+  {
+    const { fireAndForget } = await import('../lib/fireAndForget.js');
+    fireAndForget('sendContract.draft_approved', async () => {
+      try {
+        const draftAny = draft as Record<string, unknown>;
+        const marketingLeadId = typeof draftAny.marketing_lead_id === 'string' ? draftAny.marketing_lead_id : '';
+        // Cargar lead por ID si está; si no, intentar por email (fallback para drafts
+        // que la IA generó sin marketing_lead_id seteado, ej: vía _diag-generate-draft).
+        const { unwrapRows: unr } = await import('../lib/dbHelpers.js');
+        type LeadFields = { email: string; contact_name: string | null; company: string | null; whatsapp: string | null };
+        let lead: LeadFields | undefined;
+        if (marketingLeadId) {
+          lead = unr<LeadFields>(
+            (await zcql(ctx.req).executeZCQLQuery(
+              `SELECT email, contact_name, company, whatsapp FROM MarketingLeads WHERE ROWID = '${escapeSql(marketingLeadId)}' LIMIT 1`,
+            )) as unknown[],
+            'MarketingLeads',
+          )[0];
+        }
+        if (!lead && draft.client_email) {
+          lead = unr<LeadFields>(
+            (await zcql(ctx.req).executeZCQLQuery(
+              `SELECT email, contact_name, company, whatsapp FROM MarketingLeads WHERE email = '${escapeSql(draft.client_email)}' LIMIT 1`,
+            )) as unknown[],
+            'MarketingLeads',
+          )[0];
+        }
+        // Si clientData vino completo (form embebido), podemos seguir aunque no haya lead.
+        const hasClientDataComplete = !!(clientData?.contact_name && clientData?.company && clientData?.contact_email);
+        if (!lead && !hasClientDataComplete) {
+          log.warn('skip auto-contract: no lead found and no clientData', { draftId, marketingLeadId, client_email: draft.client_email });
+          return;
+        }
+        // Usar lead como fallback, pero requerir name + company al final del merge.
+        if (lead && (!lead.contact_name || !lead.company) && !hasClientDataComplete) {
+          log.warn('skip auto-contract: lead incomplete and no clientData', { draftId, marketingLeadId });
+          return;
+        }
+        // Garantizar valores no-null para el contrato. El email es mandatorio: si no
+        // hay lead Y clientData no trae email, falla más abajo en la validación.
+        const fallbackEmail = clientData?.contact_email || draft.client_email || '';
+        const safeLead: LeadFields = lead ?? {
+          email: fallbackEmail,
+          contact_name: clientData?.contact_name ?? null,
+          company: clientData?.company ?? null,
+          whatsapp: clientData?.contact_phone ?? null,
+        };
+        // Variable renombrada para compatibilidad con bloque siguiente.
+        const leadForContract = safeLead;
+        // Reasignamos para que el código siguiente compile sin cambios.
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        lead = leadForContract;
+        // Salario para fee — del payload del draft.
+        let salaryMax = 0;
+        try {
+          const loaded = await loadLargeJson<Record<string, unknown>>(ctx.req, draft.draft_payload);
+          if (loaded) {
+            const range = (loaded as Record<string, unknown>).salary_range_usd as { max?: number } | undefined;
+            salaryMax = Number(range?.max ?? 0);
+          }
+        } catch { /* ignore */ }
+        if (!Number.isFinite(salaryMax) || salaryMax <= 0) {
+          log.warn('skip auto-contract: salary_range_usd.max missing in draft payload', { draftId });
+          return;
+        }
+        const puestoNombre = (draftAny.title as string | undefined) || 'Puesto';
+        // Si vino client_data en este request, usar esos datos (más completos) para el contrato.
+        // Caso contrario, usar los del MarketingLead.
+        const contractAddress = clientData
+          ? [clientData.address_street, clientData.address_city, clientData.address_state, clientData.address_country]
+              .filter((s) => typeof s === 'string' && s.trim().length > 0).join(', ')
+          : undefined;
+        const { sendContract } = await import('../lib/zohoSignClient.js');
+        const resolvedName = clientData?.contact_name || leadForContract.contact_name;
+        const resolvedCompany = clientData?.company || leadForContract.company;
+        if (!resolvedName || !resolvedCompany) {
+          log.warn('skip auto-contract: missing name or company after merge', { draftId, marketingLeadId });
+          return;
+        }
+        const result = await sendContract({
+          client_email: clientData?.contact_email ?? leadForContract.email,
+          client_name: resolvedName,
+          client_company: resolvedCompany,
+          client_phone: clientData?.contact_phone ?? leadForContract.whatsapp ?? undefined,
+          client_ruc_nit_ein: clientData?.ruc_nit,
+          client_address: contractAddress || undefined,
+          puesto_nombre: puestoNombre,
+          puesto_salario_usd: salaryMax,
+          plazo_min_dias: 14,
+          plazo_max_dias: 30,
+        }, ctx.traceId);
+        if (result.ok) {
+          log.info('contract auto-sent to client after draft approval', {
+            draftId, marketingLeadId, signRequestId: result.data?.request_id ?? 'no_id',
+          });
+        } else {
+          log.warn('contract auto-send failed (Zoho Sign returned error)', {
+            draftId, marketingLeadId, error: result.error,
+          });
+        }
+      } catch (err) {
+        log.warn('contract auto-send threw', { draftId, error: (err as Error).message });
+      }
+    });
+  }
 
   log.info('draft approved by client + converted to job', { draftId, tenantId: draft.tenant_id, jobId });
   sendJson(ctx.res, 200, { ok: true, status: 'client_approved', job_id: jobId });
@@ -825,8 +1441,8 @@ export async function requestChangesDraftPublic(ctx: RequestContext): Promise<vo
   });
 
   try {
-    const { publishOutboxEvent } = await import('./outbox.js');
-    await publishOutboxEvent(ctx.req, 'draft.client_requested_changes', {
+    const { publishAndProcessEvent } = await import('./outbox.js');
+    await publishAndProcessEvent(ctx.req, 'draft.client_requested_changes', {
       tenant_id: draft.tenant_id,
       draft_id: draftId,
       client_email: draft.client_email,
@@ -836,15 +1452,19 @@ export async function requestChangesDraftPublic(ctx: RequestContext): Promise<vo
     log.warn('draft request-changes outbox publish failed', { error: (err as Error).message });
   }
 
-  void (async () => {
-    const { recordPortalSnapshot } = await import('./jobTracking.js');
-    await recordPortalSnapshot(ctx, {
-      tenantId: draft.tenant_id,
-      eventType: 'portal.draft_rejected',
-      portalToken: token,
-      eventData: { draft_id: draftId },
+  // audit fix #16: wrapped fire-and-forget.
+  {
+    const { fireAndForget } = await import('../lib/fireAndForget.js');
+    fireAndForget('recordPortalSnapshot.draft_rejected', async () => {
+      const { recordPortalSnapshot } = await import('./jobTracking.js');
+      await recordPortalSnapshot(ctx, {
+        tenantId: draft.tenant_id,
+        eventType: 'portal.draft_rejected',
+        portalToken: token,
+        eventData: { draft_id: draftId },
+      });
     });
-  })();
+  }
 
   log.info('draft changes requested by client', { draftId });
   sendJson(ctx.res, 200, { ok: true, status: 'pending_client_review' });
@@ -889,6 +1509,308 @@ export async function listRecentDraftComments(ctx: RequestContext): Promise<void
   } catch (err) {
     sendJson(ctx.res, 200, { items: [], count: 0, error: String((err as Error).message) });
   }
+}
+
+// ===== Admin: iterar draft con IA usando comentarios del cliente =====
+
+/**
+ * POST /api/drafts/jobs/:id/iterate
+ * Body opcional: { extra_feedback?: string }
+ *
+ * Toma el draft actual + todos los `client_comments` acumulados en highlights,
+ * los pasa como feedback a Claude (REFINE_SYSTEM_PROMPT), y persiste el draft
+ * refinado encima del actual (mismo ROWID, version+1).
+ *
+ * Después de iterar:
+ * - El draft_payload queda actualizado con la nueva versión
+ * - Los comentarios SE MANTIENEN en highlights (historial — útil para ver qué pidió)
+ * - El status pasa a 'draft_generated' (re-revisión interna antes de re-enviar al cliente)
+ * - Version+1 marca que hubo una iteración IA
+ */
+export async function iterateJobDraft(ctx: RequestContext): Promise<void> {
+  await requireAuth(ctx);
+  const tenantId = await requireTenant(ctx);
+  if (!(await isTableReady(ctx.req))) throw TABLE_NOT_READY;
+  const id = extractIdFromPath(ctx.req.url ?? '/', '/iterate');
+  if (!id) throw new ValidationError('draft id missing');
+
+  const draft = await fetchDraft(ctx.req, id, tenantId);
+  if (!draft) throw new NotFoundError(`Draft ${id} not found`);
+
+  const body = await readJsonBody<{ extra_feedback?: string }>(ctx.req).catch(() => ({} as { extra_feedback?: string }));
+  const extraFeedback = typeof body.extra_feedback === 'string' ? body.extra_feedback.trim() : '';
+
+  // Cargar el draft_payload actual (puede estar en File Store)
+  const currentPayload = await loadLargeJson<Record<string, unknown>>(ctx.req, draft.draft_payload);
+  if (!currentPayload) {
+    throw new AppError(500, 'iterate_payload_not_loadable', 'No se pudo cargar el draft_payload actual.');
+  }
+
+  // Extraer comentarios del cliente desde highlights
+  let clientComments: Array<{ at: string; text: string }> = [];
+  if (draft.highlights) {
+    try {
+      const parsed = JSON.parse(draft.highlights);
+      if (parsed && Array.isArray(parsed.client_comments)) {
+        clientComments = parsed.client_comments;
+      }
+    } catch { /* ignore */ }
+  }
+
+  if (clientComments.length === 0 && !extraFeedback) {
+    throw new ValidationError('No hay comentarios del cliente ni feedback extra para iterar');
+  }
+
+  // Construir feedback consolidado
+  const feedbackBlocks: string[] = [];
+  if (clientComments.length > 0) {
+    feedbackBlocks.push('Comentarios del cliente:');
+    clientComments.forEach((c, i) => {
+      feedbackBlocks.push(`${i + 1}. ${c.text}`);
+    });
+  }
+  if (extraFeedback) {
+    feedbackBlocks.push('Feedback adicional de la recruiter:');
+    feedbackBlocks.push(extraFeedback);
+  }
+  const feedback = feedbackBlocks.join('\n');
+
+  log.info('iterating draft with client comments', {
+    traceId: ctx.traceId,
+    draftId: id,
+    commentsCount: clientComments.length,
+    extraFeedbackLength: extraFeedback.length,
+  });
+
+  // Llamar a Claude con el draft actual + feedback (mismo patrón que refineDraft)
+  const { anthropicMessage, extractJson, extractText } = await import('../lib/anthropic.js');
+  const REFINE_PROMPT = `Sos el mismo experto en talent profiling. Te paso el Job Profile Draft actual y feedback del cliente/recruiter. Aplicá el feedback con cuidado y devolvé el JSON corregido (mismo schema, mismas keys). Si el feedback es vago o no aplica a un campo, mantené el original. Si el feedback pide cambios que afecten el perfil DISC ideal o velna_ideal, ajustá esos valores acordemente. Devolvé SOLO el JSON.`;
+
+  const response = await anthropicMessage({
+    system: REFINE_PROMPT,
+    messages: [
+      {
+        role: 'user',
+        content: `Draft actual:\n\`\`\`json\n${JSON.stringify(currentPayload, null, 2)}\n\`\`\`\n\nFeedback:\n${feedback}`,
+      },
+    ],
+    maxTokens: 6000,
+    temperature: 0.3,
+  }, ctx.traceId);
+
+  let refined: Record<string, unknown>;
+  try {
+    refined = extractJson<Record<string, unknown>>(response);
+  } catch (err) {
+    log.error('iterate: IA returned malformed JSON', {
+      traceId: ctx.traceId, draftId: id,
+      preview: extractText(response).slice(0, 300),
+      error: (err as Error).message,
+    });
+    throw new AppError(502, 'iterate_ia_parse_failed', 'La IA devolvió un JSON inválido al iterar. Intentá de nuevo.');
+  }
+
+  // Persistir el nuevo payload (puede ir a File Store si pesa)
+  let newPayloadStored: string;
+  try {
+    newPayloadStored = await persistLargeJson(ctx.req, refined, 'JobProfileDrafts.draft_payload');
+  } catch (err) {
+    log.error('iterate: persist new payload failed', {
+      traceId: ctx.traceId, draftId: id, error: (err as Error).message,
+    });
+    throw new AppError(500, 'iterate_persist_failed', `No se pudo persistir el draft iterado: ${(err as Error).message}`);
+  }
+
+  // Borrar el File Store del payload viejo si era ref a File Store (no inline)
+  // — el storage de Catalyst tiene cuota; limpiar ayuda. Best-effort, no crítico.
+  await deleteLargeContent(ctx.req, draft.draft_payload).catch(() => {});
+
+  const newVersion = (typeof (draft as { version?: number }).version === 'number' ? (draft as { version: number }).version : 1) + 1;
+  await datastore(ctx.req).table(TABLE).updateRow({
+    ROWID: id,
+    draft_payload: newPayloadStored,
+    version: newVersion,
+    status: 'draft_generated', // vuelve a internal review tras iteración
+    updated_at: now(),
+  });
+
+  void auditLog(ctx, {
+    action: 'draft.iterate',
+    resource_type: 'job_profile_draft',
+    resource_id: id,
+    changes: { version: newVersion, comments_used: clientComments.length, has_extra_feedback: !!extraFeedback },
+  });
+
+  log.info('draft iterated', { traceId: ctx.traceId, draftId: id, version: newVersion });
+  sendJson(ctx.res, 200, {
+    ok: true,
+    draft: { ...draft, draft_payload: JSON.stringify(refined), version: newVersion, status: 'draft_generated' },
+    usage: { input_tokens: response.usage.input_tokens, output_tokens: response.usage.output_tokens },
+  });
+}
+
+// ===== Admin: generar URL de vista previa (sin enviar email, sin cambiar status) =====
+
+/**
+ * POST /api/drafts/jobs/:id/preview-url
+ *
+ * Devuelve el portal URL que el cliente VERÍA, sin enviar email ni cambiar el status
+ * del draft. Útil para que el admin abra una pestaña y previsualice cómo le va a quedar
+ * el draft al cliente antes de aprobar y enviar.
+ *
+ * Pre-requisito: el draft debe tener client_email (de la vinculación al lead o de un send
+ * previo). Si no, devolvemos 400 con el motivo — el preview usa el mismo token contract
+ * que el envío real para que la experiencia sea idéntica.
+ */
+export async function previewDraftUrl(ctx: RequestContext): Promise<void> {
+  await requireAuth(ctx);
+  const tenantId = await requireTenant(ctx);
+  if (!(await isTableReady(ctx.req))) throw TABLE_NOT_READY;
+  const id = extractIdFromPath(ctx.req.url ?? '/', '/preview-url');
+  if (!id) throw new ValidationError('draft id missing');
+
+  const draft = await fetchDraft(ctx.req, id, tenantId);
+  if (!draft) throw new NotFoundError(`Draft ${id} not found`);
+
+  const draftAny = draft as Record<string, unknown>;
+  const draftClientEmail = typeof draftAny.client_email === 'string' ? (draftAny.client_email as string).trim() : '';
+  // Si no hay email, igual generamos el preview con un placeholder — el token contract
+  // requiere email para que el portal lo muestre en el welcome, pero como es preview
+  // del admin, no importa que sea ficticio.
+  const previewEmail = draftClientEmail || 'preview@admin.local';
+  const draftClientName = typeof draftAny.client_name === 'string' ? (draftAny.client_name as string).trim() : '';
+  const draftCompany = typeof draftAny.client_company === 'string' ? (draftAny.client_company as string).trim() : '';
+
+  // Nombre de agencia (mismo lookup que sendDraftToClient)
+  let agencyName = 'SharkTalents';
+  try {
+    const { unwrapRows: unr } = await import('../lib/dbHelpers.js');
+    const tenantRows = unr<{ name?: string }>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT name FROM Tenants WHERE ROWID = '${escapeSql(tenantId)}' LIMIT 1`,
+      )) as unknown[],
+      'Tenants',
+    );
+    if (tenantRows[0]?.name) agencyName = String(tenantRows[0].name);
+  } catch { /* default */ }
+
+  const { signPortalToken } = await import('../lib/clientPortalTokens.js');
+  const portalToken = signPortalToken({
+    ref: tenantId,
+    company: draftCompany || 'Cliente',
+    client_name: draftClientName || 'Cliente',
+    client_email: previewEmail,
+    agency_name: agencyName,
+    // TTL corto para previews — 1 hora es suficiente para abrir la pestaña.
+    ttl_days: 1,
+  });
+
+  const e = env();
+  const portalUrl = `${e.APP_BASE_URL.replace(/\/$/, '')}/app/#/portal/${portalToken}/draft/${id}`;
+
+  log.info('preview url generated', { traceId: ctx.traceId, draftId: id });
+  sendJson(ctx.res, 200, { ok: true, portal_url: portalUrl });
+}
+
+// ===== Admin: regenerar narrativa DISC cuando cambian los valores =====
+
+/**
+ * POST /api/drafts/jobs/:id/regenerate-disc-narrative
+ * Body: { disc_ideal: { d, i, s, c } }
+ *
+ * Cuando el admin edita los números DISC manualmente, los campos narrativos asociados
+ * quedan desactualizados (disc_perfil_descripcion + disc_ventajas + disc_desventajas).
+ * Este endpoint regenera SOLO esos 3 campos coherentes con los nuevos valores,
+ * usando el transcript original + contexto del puesto para que la narrativa sea rica
+ * y específica al rol (no genérica).
+ *
+ * NO persiste — devuelve los 3 campos al admin para que decida si los aplica
+ * (el admin manda PATCH después con draft_payload_patch si los acepta).
+ */
+export async function regenerateDiscNarrative(ctx: RequestContext): Promise<void> {
+  await requireAuth(ctx);
+  const tenantId = await requireTenant(ctx);
+  if (!(await isTableReady(ctx.req))) throw TABLE_NOT_READY;
+  const id = extractIdFromPath(ctx.req.url ?? '/', '/regenerate-disc-narrative');
+  if (!id) throw new ValidationError('draft id missing');
+
+  const draft = await fetchDraft(ctx.req, id, tenantId);
+  if (!draft) throw new NotFoundError(`Draft ${id} not found`);
+
+  const body = await readJsonBody<{ disc_ideal?: { d?: number; i?: number; s?: number; c?: number } }>(ctx.req);
+  const disc = body.disc_ideal;
+  if (!disc || typeof disc.d !== 'number' || typeof disc.i !== 'number' || typeof disc.s !== 'number' || typeof disc.c !== 'number') {
+    throw new ValidationError('disc_ideal { d, i, s, c } requerido (todos numéricos)');
+  }
+
+  // Cargar payload + transcript para contexto rico
+  const payload = (await loadLargeJson<Record<string, unknown>>(ctx.req, draft.draft_payload)) ?? {};
+  const transcript = (await loadLargeContent(ctx.req, draft.transcript)) ?? '';
+
+  const jobTitle = typeof payload.title === 'string' ? payload.title : '';
+  const company = typeof payload.company === 'string' ? payload.company : '';
+  const objetivo = typeof payload.objetivo_cargo === 'string' ? payload.objetivo_cargo : '';
+  const responsabilidades = Array.isArray(payload.responsabilidades)
+    ? (payload.responsabilidades as string[]).join('; ')
+    : '';
+
+  log.info('regenerating disc narrative', { traceId: ctx.traceId, draftId: id, disc });
+
+  const { anthropicMessage, extractJson, extractText } = await import('../lib/anthropic.js');
+
+  const PROMPT = `Sos un experto en talent profiling DISC. Te paso los nuevos valores DISC ideales y el contexto del puesto.
+Regenerá 3 campos narrativos coherentes con esos números:
+
+1. "disc_perfil_descripcion": un párrafo de 2-3 oraciones explicando el perfil ideal para este rol específico (por qué estos valores hacen sentido al rol).
+2. "disc_ventajas": array de 3-4 strings — qué este perfil va a lograr en este puesto específico.
+3. "disc_desventajas_potenciales": array de 2-3 strings — qué riesgos o puntos a vigilar tiene este perfil para este rol.
+
+Reglas:
+- Específico al rol del transcript, NO genérico.
+- Coherente con los valores numéricos (un D alto → asertividad/decisión; un C alto → análisis/detalle; etc.).
+- Sin emoji, sin markdown.
+- D = Dominante (decisión, resultados, control). I = Influyente (gente, comunicación, persuasión). S = Estable (paciencia, equipo, consistencia). C = Concienzudo (datos, análisis, calidad).
+
+Devolvé SOLO el JSON con esas 3 keys.`;
+
+  const userMsg = `Valores DISC nuevos: D=${disc.d}, I=${disc.i}, S=${disc.s}, C=${disc.c}
+
+Puesto: ${jobTitle}
+Empresa: ${company}
+Objetivo del cargo: ${objetivo}
+Responsabilidades clave: ${responsabilidades}
+
+Transcript original (extracto):
+${transcript.slice(0, 4000)}`;
+
+  const response = await anthropicMessage({
+    system: PROMPT,
+    messages: [{ role: 'user', content: userMsg }],
+    maxTokens: 1500,
+    temperature: 0.3,
+  }, ctx.traceId);
+
+  let narrative: { disc_perfil_descripcion?: string; disc_ventajas?: string[]; disc_desventajas_potenciales?: string[] };
+  try {
+    narrative = extractJson<typeof narrative>(response);
+  } catch (err) {
+    log.error('regenerate disc narrative: parse failed', {
+      traceId: ctx.traceId, preview: extractText(response).slice(0, 200), error: (err as Error).message,
+    });
+    throw new AppError(502, 'narrative_parse_failed', 'La IA devolvió JSON inválido al regenerar la narrativa.');
+  }
+
+  if (typeof narrative.disc_perfil_descripcion !== 'string' ||
+      !Array.isArray(narrative.disc_ventajas) ||
+      !Array.isArray(narrative.disc_desventajas_potenciales)) {
+    throw new AppError(502, 'narrative_missing_fields', 'IA omitió uno de los 3 campos requeridos.');
+  }
+
+  sendJson(ctx.res, 200, {
+    ok: true,
+    narrative,
+    usage: { input_tokens: response.usage.input_tokens, output_tokens: response.usage.output_tokens },
+  });
 }
 
 // ===== Helpers: builders de texto enriquecido para Recruit =====
@@ -974,4 +1896,72 @@ async function fetchDraft(req: IncomingMessage, id: string, tenantId: string): P
     TABLE,
   );
   return rows[0] ?? null;
+}
+
+/**
+ * GET /admin/diagnose/zia-orphan-drafts
+ *
+ * Lista drafts persistidos sin tenant_id (huérfanos del handler de briefing.transcript_received
+ * antes del fix #6). Solo accesible con X-Internal-Key. No modifica nada — solo reporte.
+ *
+ * Pensado para que Cris decida si los salva o los borra (decisión pendiente).
+ */
+export async function diagnoseZiaOrphanDrafts(ctx: RequestContext): Promise<void> {
+  const { requireInternalKey } = await import('../lib/internalAuth.js');
+  requireInternalKey(ctx);
+
+  type OrphanRow = {
+    ROWID: string;
+    tenant_id: string | null;
+    transcript_source: string;
+    meeting_url: string | null;
+    status: string;
+    created_at: string;
+    job_id: string | null;
+  };
+
+  let rows: OrphanRow[] = [];
+  let tableExists = true;
+  try {
+    rows = unwrapRows<OrphanRow>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT ROWID, tenant_id, transcript_source, meeting_url, status, created_at, job_id
+         FROM ${TABLE}
+         WHERE tenant_id IS NULL
+         ORDER BY created_at DESC LIMIT 100`,
+      )) as unknown[],
+      TABLE,
+    );
+  } catch (err) {
+    log.warn('diagnoseZiaOrphanDrafts query failed', { error: (err as Error).message });
+    tableExists = false;
+  }
+
+  // Para cada huérfano, intentar inferir el cliente del transcript_source o meeting_url.
+  const summary = rows.map((r) => ({
+    rowid: r.ROWID,
+    status: r.status,
+    source: r.transcript_source,
+    meeting_url: r.meeting_url,
+    job_id: r.job_id,
+    created_at: r.created_at,
+    likely_client_hint: extractClientHint(r.meeting_url, r.transcript_source),
+  }));
+
+  sendJson(ctx.res, 200, {
+    table_exists: tableExists,
+    orphan_count: summary.length,
+    drafts: summary,
+    note: 'Estos drafts fueron creados antes del fix #6 (handler de Zia con tenant_id=null). Cris decide si los salva (asignar tenant_id manual) o los borra. Endpoint solo de lectura.',
+  });
+}
+
+function extractClientHint(meetingUrl: string | null, source: string): string | null {
+  if (meetingUrl) {
+    // Zoom URLs suelen tener parámetros con info del meeting
+    const m = meetingUrl.match(/meetings\/[a-z0-9_-]+\/([^?#]+)/i);
+    if (m) return `meeting ID: ${m[1]}`;
+  }
+  if (source && source.includes('@')) return `email: ${source}`;
+  return null;
 }

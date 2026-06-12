@@ -182,3 +182,22 @@ select:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+/* 2026-06-05: defaults globales para inputs sin styling propio. Antes los browsers
+   ponían fondo blanco por default → en una app dark se veían como manchas blancas
+   con placeholder invisible (caso: BriefingForm). Fix: forzamos fondo dark + texto
+   claro + placeholder con contraste decente. Componentes con su propia clase CSS
+   (Settings, Clerk inputs, etc.) sobrescriben sin problema. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+textarea,
+select {
+  background: var(--st-bg-input);
+  color: var(--st-fg);
+  border: 1px solid var(--st-border);
+}
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: var(--st-fg-muted);
+  opacity: 1; /* Firefox por default baja al 0.54 */
+}

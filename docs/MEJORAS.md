@@ -323,6 +323,41 @@ Cris debe confirmar arranque del banco. Diseño actual:
 
 ---
 
+## Tracking de costos — gaps de precisión (no urgente)
+
+**Estado:** En exploración. La página Operaciones → Gastos se va a construir SIN estos cierres. Anthropic y Ads manuales son lo más realista hoy y representan ~95% del costo real.
+
+**Última actualización:** 2026-06-08
+
+### Problema que resuelve
+
+Hoy el tracking de costos por puesto tiene 3 gaps que distorsionan ~5% del total. No bloquean operar pero limitan la precisión absoluta del reporte de gastos.
+
+### Gaps identificados
+
+**1. Storage de videos NO se mide automáticamente**
+- Tarifa configurada en [costTracking.ts:172](functions/api/src/lib/costTracking.ts#L172): `storage_per_mb_usd: 0.00002`
+- Comentario dice "estimado en runtime" pero NO hay call que mida el peso del archivo subido y registre el costo.
+- Para arreglar: en el handler de upload de video, después de persistir en File Store, llamar `trackJobCost({ type: 'storage', amountUsd: fileBytes * SERVICE_COSTS.storage_per_mb_usd / 1024 / 1024 })`.
+- Impacto estimado: <2% del costo total por puesto.
+
+**2. WhatsApp NO está integrado en el flujo productivo**
+- Tarifa parametrizada $0.005/mensaje pero Twilio sigue diferido (memoria: `project_arquitectura_post_recruit.md`).
+- Cuando se integre Twilio, ya está el `trackJobCost` listo — solo hay que llamarlo desde el handler de envío.
+- Impacto estimado: <5% del costo total (no activo hoy).
+
+**3. Anthropic "sin atribuir" (sin job_id)**
+- Algunas llamadas a Anthropic se hacen sin vincular `jobId` (ej: drafts antiguos, narrativas multi-job, bot decisor cross-tenant).
+- Esas llamadas SÍ se registran en `TokenUsage` pero NO disparan `trackJobCost` (línea [tokenUsage.ts:127](functions/api/src/lib/tokenUsage.ts) bajo `if (record.jobId)`).
+- Resultado: vista de gastos puede mostrar menos consumo Anthropic del real.
+- Para arreglar: agregar en la página Gastos una métrica "Anthropic sin atribuir = SUM(TokenUsage.cost_usd) - SUM(JobCostEvents.amount_usd WHERE type='anthropic')". Si es >5% de Anthropic total, mostrar warning.
+
+### Decisión pendiente
+
+Cris decidió 2026-06-08: NO hacer estos cierres ahora. La página Gastos se monta con lo que hay (Anthropic real + email gratis + ads manuales). Reabrir si el costo real desviado se vuelve material (>10%).
+
+---
+
 ## Plantilla para nuevas mejoras
 
 ```markdown

@@ -18,6 +18,34 @@ export class ValidationError extends AppError {
   }
 }
 
+/**
+ * Errores de "preconditions not met" — algo que debe estar listo ANTES de que el endpoint
+ * pueda ejecutar. Diseñado para que un agente IA pueda leer `missing_fields` y
+ * `next_action` y autocorregir sin intervención humana.
+ *
+ * Ejemplo de payload devuelto al cliente:
+ * {
+ *   error: {
+ *     code: 'preconditions_not_met',
+ *     message: 'Antes de enviar al cliente faltan campos obligatorios',
+ *     details: {
+ *       missing_fields: ['fee_usd', 'salary_range_usd.max'],
+ *       next_action: 'patch_draft_with_missing_fields_then_retry',
+ *       hint: 'Editá el draft y completá los campos faltantes antes de enviar.'
+ *     }
+ *   }
+ * }
+ */
+export class PreconditionsNotMetError extends AppError {
+  constructor(
+    message: string,
+    info: { missing_fields: string[]; next_action: string; hint?: string },
+  ) {
+    super(400, 'preconditions_not_met', message, info);
+    this.name = 'PreconditionsNotMetError';
+  }
+}
+
 export class UnauthorizedError extends AppError {
   constructor(message = 'Unauthorized') {
     super(401, 'unauthorized', message);

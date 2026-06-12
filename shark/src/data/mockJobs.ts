@@ -55,6 +55,11 @@ export type Job = {
   english_min_level?: 'A2' | 'B1' | 'B2' | 'C1';
   // Test de mentalidades (opcional por puesto, default true) — ver doc 26
   mindset_test_enabled?: boolean;
+  // Campos públicos que el candidato ve en sharktalents.ai/jobs/:slug
+  // Si no se llenan acá, se heredan del draft IA al aprobar (objetivo_cargo, responsabilidades, etc.)
+  que_busco?: string;
+  que_debe_hacer?: string[];
+  que_debe_saber?: string[];
 };
 
 export type BossProfile = {

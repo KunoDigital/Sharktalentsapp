@@ -50,7 +50,7 @@ function isConfigured(): boolean {
 
 async function callBookings<T>(
   path: string,
-  options: { method: 'GET' | 'POST'; body?: unknown },
+  options: { method: 'GET' | 'POST'; body?: unknown; bodyAsForm?: boolean },
   traceId: string,
 ): Promise<ZohoBookingsResult<T>> {
   if (!isConfigured()) {
@@ -59,16 +59,33 @@ async function callBookings<T>(
   const e = env();
   const url = `${e.ZOHO_BOOKINGS_API_URL.replace(/\/$/, '')}${path}`;
 
+  // Zoho Bookings v1 espera form-urlencoded con un campo `data` que tiene JSON
+  // stringificado adentro. Es muy distinto a un REST tradicional con JSON body.
+  // Bandera bodyAsForm controla esto por endpoint.
+  const isForm = options.bodyAsForm === true;
+  const headers: Record<string, string> = {
+    Authorization: `Zoho-oauthtoken ${e.ZOHO_BOOKINGS_OAUTH_TOKEN}`,
+    Accept: 'application/json',
+  };
+  let body: string | undefined;
+  if (options.body !== undefined) {
+    if (isForm) {
+      headers['Content-Type'] = 'application/x-www-form-urlencoded';
+      const params = new URLSearchParams();
+      params.set('data', JSON.stringify(options.body));
+      body = params.toString();
+    } else {
+      headers['Content-Type'] = 'application/json';
+      body = JSON.stringify(options.body);
+    }
+  }
+
   try {
     const result = await withBreaker(BREAKER_OPTS, async () => {
       const response = await fetchWithTimeout(url, {
         method: options.method,
-        headers: {
-          Authorization: `Zoho-oauthtoken ${e.ZOHO_BOOKINGS_OAUTH_TOKEN}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: options.body ? JSON.stringify(options.body) : undefined,
+        headers,
+        body,
         timeoutMs: 15000,
       });
       if (!response.ok) {
@@ -89,15 +106,80 @@ async function callBookings<T>(
 }
 
 export async function createBooking(input: CreateBookingInput, traceId: string): Promise<ZohoBookingsResult<Booking>> {
-  return callBookings<Booking>('/bookings', { method: 'POST', body: input }, traceId);
+  // Zoho Bookings v1 — endpoint correcto es `/appointment` (NO `/bookings`).
+  // El body va form-urlencoded con un campo `data` que tiene este shape JSON:
+  //   { service_id, staff_id?, from_time, customer_details: { name, email, phone_number } }
+  // from_time formato: 'dd-MMM-yyyy HH:mm:ss' (ej. '06-Jun-2026 15:00:00'). NO ISO 8601.
+  const startDate = new Date(input.start_time);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const fromTime = `${pad(startDate.getDate())}-${months[startDate.getMonth()]}-${startDate.getFullYear()} ${pad(startDate.getHours())}:${pad(startDate.getMinutes())}:${pad(startDate.getSeconds())}`;
+  const zohoBody = {
+    service_id: input.service_id,
+    ...(input.staff_id ? { staff_id: input.staff_id } : {}),
+    from_time: fromTime,
+    customer_details: {
+      name: input.customer_name,
+      email: input.customer_email,
+      ...(input.customer_phone ? { phone_number: input.customer_phone } : {}),
+    },
+    ...(input.notes ? { notes: input.notes } : {}),
+  };
+  const result = await callBookings<Record<string, unknown>>(
+    '/appointment',
+    { method: 'POST', body: zohoBody, bodyAsForm: true },
+    traceId,
+  );
+  if (!result.ok) return result;
+
+  // Zoho Bookings v1 puede devolver el booking_id en varios shapes según versión:
+  //   { response: { returnvalue: { booking_id } } }   ← v1 clásica
+  //   { response: { returnvalue: [ { booking_id } ] } } ← variantes
+  //   { booking_id }                                  ← v2 (poco probable acá)
+  // O si hay error de negocio, devuelve { response: { status: "failure", message: "..." } }.
+  const data = result.data as Record<string, unknown>;
+  const response = (data?.response ?? data) as Record<string, unknown>;
+  const status = String(response?.status ?? '');
+  if (status.toLowerCase() === 'failure' || response?.error_message) {
+    const msg = response?.error_message ?? response?.message ?? 'Bookings rechazó la solicitud';
+    log.warn('zoho bookings failure response', { traceId, status, response: JSON.stringify(response).slice(0, 500) });
+    return { ok: false, error: `Bookings: ${msg}` };
+  }
+  let rv = response?.returnvalue as Record<string, unknown> | Record<string, unknown>[] | undefined;
+  if (Array.isArray(rv)) rv = rv[0];
+  const bookingId = (rv?.booking_id ?? rv?.appointment_id ?? data?.booking_id) as string | undefined;
+  if (!bookingId) {
+    // Diagnóstico: si no encontramos booking_id, mostrar las primeras keys reales para
+    // que sepamos qué shape devolvió la API.
+    const topKeys = Object.keys(data ?? {}).join(',');
+    const rvKeys = rv ? Object.keys(rv).join(',') : 'no_returnvalue';
+    log.warn('Bookings response shape unknown', { traceId, topKeys, rvKeys, raw: JSON.stringify(data).slice(0, 800) });
+    return { ok: false, error: `Bookings response missing booking_id (top:${topKeys} rv:${rvKeys})` };
+  }
+  return {
+    ok: true,
+    data: {
+      booking_id: String(bookingId),
+      status: String(rv?.status ?? 'scheduled'),
+      customer_email: String((rv?.customer_more_info as Record<string, unknown> | undefined)?.email ?? input.customer_email),
+      start_time: String(rv?.start_time ?? input.start_time),
+      meeting_url: rv?.meeting_url as string | undefined,
+    },
+  };
 }
 
 export async function getBooking(bookingId: string, traceId: string): Promise<ZohoBookingsResult<Booking>> {
-  return callBookings<Booking>(`/bookings/${encodeURIComponent(bookingId)}`, { method: 'GET' }, traceId);
+  // GET /appointment?booking_id=...
+  return callBookings<Booking>(`/appointment?booking_id=${encodeURIComponent(bookingId)}`, { method: 'GET' }, traceId);
 }
 
 export async function cancelBooking(bookingId: string, traceId: string): Promise<ZohoBookingsResult<{ ok: boolean }>> {
-  return callBookings<{ ok: boolean }>(`/bookings/${encodeURIComponent(bookingId)}/cancel`, { method: 'POST' }, traceId);
+  // Cancel appointment: POST /updateappointment con action=cancel
+  return callBookings<{ ok: boolean }>(
+    '/updateappointment',
+    { method: 'POST', body: { booking_id: bookingId, action: 'cancel' }, bodyAsForm: true },
+    traceId,
+  );
 }
 
 export const _internal = { isConfigured };

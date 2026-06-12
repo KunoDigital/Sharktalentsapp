@@ -73,13 +73,16 @@ async function isAlreadyProcessed(req: RequestContext['req'], meetingId: string)
 
 async function markProcessed(req: RequestContext['req'], meetingId: string): Promise<void> {
   try {
+    // Schema real de ProcessedEvents (2026-06-05): event_id, provider, received_at.
+    // Antes pasaba processed_at y Catalyst rechazaba con "Invalid input value for column name".
     await datastore(req).table('ProcessedEvents').insertRow({
       event_id: meetingId,
       provider: 'zia_webhook',
-      processed_at: now(),
+      received_at: now(),
     });
   } catch (err) {
-    log.warn('failed to mark zia event processed', { meetingId, error: (err as Error).message });
+    const errStr = (err as Error)?.message || String(err);
+    log.warn('failed to mark zia event processed', { meetingId, error: errStr.slice(0, 300) });
   }
 }
 

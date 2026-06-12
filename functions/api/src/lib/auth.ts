@@ -18,6 +18,49 @@ export function clerk() {
 }
 
 export async function requireAuth(ctx: RequestContext): Promise<void> {
+  // E2E test backdoor — si el caller pasa X-E2E-Test-Key con el valor de la env var
+  // E2E_TEST_KEY (random secret), se setea un user fake con el tenant configurado en
+  // E2E_TEST_CLERK_ORG_ID. Permite que Playwright corra el flujo completo sin necesidad
+  // de un JWT real de Clerk.
+  //
+  // 2026-06-04 fix #1 (revisado): SharkTalents corre TODO el tráfico en el ambiente
+  // Development de Catalyst (regla de Cris — no se usa Production). Por eso NO podemos
+  // gatear el backdoor por `CATALYST_ENVIRONMENT === 'Production'` (esa rama nunca
+  // matchea y dejaría el backdoor abierto en su entorno real).
+  //
+  // **Diseño correcto:** el backdoor es OPT-IN explícito. Requiere DOS cosas
+  // simultáneas:
+  //   1. E2E_BACKDOOR_ALLOWED === 'true'  (flag explícito en Catalyst Console)
+  //   2. E2E_TEST_KEY seteada con un secret real (≥32 chars)
+  //
+  // Si falta (1), aunque E2E_TEST_KEY exista por accidente, el backdoor queda cerrado.
+  // Cris setea (1) solo cuando va a correr Playwright contra el ambiente desde fuera,
+  // y lo borra después. (1) ausente por default = seguro por default.
+  const backdoorAllowed = process.env.E2E_BACKDOOR_ALLOWED === 'true';
+  const e2eKey = backdoorAllowed ? (process.env.E2E_TEST_KEY ?? '') : '';
+  const e2eHeader = (ctx.req.headers['x-e2e-test-key'] as string | undefined) ?? '';
+  // Defensa adicional: si el key es corto (<32 chars), no aceptarlo nunca aunque matchee.
+  // Evita el escenario "alguien dejó E2E_TEST_KEY=test123 por descuido".
+  if (e2eKey && e2eKey.length >= 32 && e2eHeader && e2eHeader === e2eKey) {
+    ctx.user = {
+      id: process.env.E2E_TEST_USER_ID || 'e2e_test_user',
+      clerk_user_id: process.env.E2E_TEST_USER_ID || 'e2e_test_user',
+      clerk_org_id: process.env.E2E_TEST_CLERK_ORG_ID || null,
+      clerk_org_role: 'admin',
+      email: 'e2e@kunodigital.com',
+    };
+    log.info('e2e test auth granted', { traceId: ctx.traceId, path: ctx.req.url });
+    return;
+  }
+  // Aviso ruidoso si alguien intenta usar el backdoor (señal de scanning).
+  if (!backdoorAllowed && e2eHeader) {
+    log.warn('e2e backdoor attempted but disabled (E2E_BACKDOOR_ALLOWED!=true) — ignored', {
+      traceId: ctx.traceId,
+      path: ctx.req.url,
+      ip: ctx.req.headers['x-forwarded-for'],
+    });
+  }
+
   // Catalyst gateway intercepta `Authorization: Bearer xxx` y lo valida como token
   // de Catalyst — los JWT de Clerk son rechazados antes de llegar acá. Por eso
   // preferimos el header custom `X-Clerk-Token` que no es interceptado. Mantenemos
