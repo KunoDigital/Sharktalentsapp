@@ -1,0 +1,50 @@
+/* ClientDraftReview — la página pública que ve el cliente con el draft del puesto.
+ * Los estilos base están inline en ClientDraftReview.tsx; este archivo solo agrega
+ * los overrides responsive que inline styles no soportan (media queries).
+ *
+ * Cristian feedback (2026-06-02):
+ * - Desktop: 80% width, max 1200px (ya está en inline)
+ * - Mobile: 100% width, padding interno 5% por lado
+ */
+
+/* Desktop default: 80% width, max 1200px, padding generoso del wrapper */
+.client-draft-page-wrapper {
+  padding: 32px 16px;
+}
+
+.client-draft-card {
+  width: 80%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  /* Mobile: card al 100% del ancho, padding 0 del wrapper (el card ocupa todo el viewport) */
+  .client-draft-page-wrapper {
+    padding: 0;
+  }
+  .client-draft-card {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  /* Padding interno del card al 5% por lado en mobile */
+  .client-draft-card-header,
+  .client-draft-card-body {
+    padding-left: 5% !important;
+    padding-right: 5% !important;
+  }
+  .client-draft-card-header {
+    padding-top: 28px !important;
+    padding-bottom: 28px !important;
+  }
+  .client-draft-card-body {
+    padding-top: 24px !important;
+    padding-bottom: 24px !important;
+  }
+  /* Title más chico en mobile (32px se ve enorme) */
+  .client-draft-card-header h1 {
+    font-size: 24px !important;
+  }
+}
