@@ -1,532 +1,428 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { getJobById } from '../data/mockJobs';
-import {
-  getApplicationsByJobId,
-  type Application,
-} from '../data/mockApplications';
-import { useApi, ApiError } from '../lib/api';
+/**
+ * CandidateComparison — vista comparativa de 3-4 candidatos finalistas lado a lado.
+ *
+ * Reemplaza el comparativo viejo (oculto desde V1 con hooks order bugs).
+ *
+ * Decisión confirmada (BUGS_FEEDBACK M3): hacer nuevo desde cero con shape doble eje (Opción B)
+ * — máximo 3-4 candidatos lado a lado.
+ *
+ * Secciones:
+ *   - Cabecera con nombre, edad, salario aspirado
+ *   - DISC (4 ejes vs perfil ideal)
+ *   - VELNA (5 dimensiones)
+ *   - Técnico (puntaje + estilo situacional + match con jefe + validez)
+ *   - Inglés / Mindset / Integridad (estados)
+ *   - Recomendación rápida (avanzar / duda CV / rechazar)
+ *
+ * URL: /jobs/:jobId/compare?candidates=id1,id2,id3,id4
+ */
+import React, { useEffect, useState, useMemo } from 'react';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
+import type { Application } from '../data/mockApplications';
+import { useApi } from '../lib/api';
 import { adaptToMockApplication } from '../lib/applicationAdapter';
 import { config } from '../config';
-import { logger } from '../lib/logger';
-import './pages.css';
-import './comparativo.css';
+import { Term } from '../components/Tooltip';
 
-const log = logger('COMPARATIVO');
-const MAX_SELECTED = 4;
+const MAX_CANDIDATES = 4;
 
-export default function Comparativo() {
-  const { id } = useParams<{ id: string }>();
-  const api = useApi();
-  const [backendApps, setBackendApps] = useState<Application[] | null>(null);
-  const [loading, setLoading] = useState(config.useApi);
-  const [_error, setError] = useState<string | null>(null);
-  void _error;
+type ScoreCellProps = {
+  value: number | null | undefined;
+  thresholdGood?: number;
+  thresholdMid?: number;
+  suffix?: string;
+};
 
-  // Si useApi=true, cargar applications reales del backend
-  useEffect(() => {
-    if (!config.useApi || !id) return;
-    let cancelled = false;
-    setLoading(true);
-    Promise.all([
-      api.applications.list({ jobId: id, limit: 100 }),
-      api.candidates.list({ limit: 500 }),
-    ])
-      .then(async ([appsRes, candsRes]) => {
-        if (cancelled) return;
-        const candById = new Map(candsRes.candidates.map((c) => [c.ROWID, c]));
-        // Para cada application, traer scores
-        const apps: Application[] = await Promise.all(
-          appsRes.applications.map(async (a) => {
-            try {
-              const s = await api.applications.readScores(a.ROWID);
-              return adaptToMockApplication(a, candById.get(a.candidate_id), s.scores, s.integrity_dimensions);
-            } catch {
-              return adaptToMockApplication(a, candById.get(a.candidate_id), null, []);
-            }
-          }),
-        );
-        if (cancelled) return;
-        setBackendApps(apps);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        log.warn('comparativo load failed', { error: (err as Error).message });
-        if (err instanceof ApiError) setError(`${err.code}: ${err.message}`);
-        else setError((err as Error).message);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [id]);
-
-  const job = id ? getJobById(id) : undefined;
-  const allApps = useMemo(() => {
-    if (config.useApi && backendApps) return backendApps;
-    return job ? getApplicationsByJobId(job.id) : [];
-  }, [job, backendApps]);
-
-  if (loading) return <p className="muted">Cargando candidatos…</p>;
-
-  // pre-seleccionar finalistas
-  const initial = useMemo(
-    () => allApps.filter((a) => a.state === 'finalist').slice(0, 3).map((a) => a.id),
-    [allApps],
-  );
-  const [selectedIds, setSelectedIds] = useState<string[]>(initial);
-  const selected = allApps.filter((a) => selectedIds.includes(a.id));
-
-  if (!job) {
-    return <p>Puesto no encontrado. <Link to="/jobs">Volver</Link></p>;
-  }
-
-  function toggle(appId: string) {
-    setSelectedIds((curr) => {
-      if (curr.includes(appId)) return curr.filter((id) => id !== appId);
-      if (curr.length >= MAX_SELECTED) return curr;
-      return [...curr, appId];
-    });
-  }
-
+function ScoreCell({ value, thresholdGood = 70, thresholdMid = 50, suffix = '%' }: ScoreCellProps) {
+  if (value == null) return <span style={{ color: '#94a3b8' }}>—</span>;
+  const color = value >= thresholdGood ? '#047857'
+    : value >= thresholdMid ? '#1f2937'
+    : '#b45309';
   return (
-    <div className="comparativo">
-      <Link to={`/jobs/${job.id}`} className="back-link">← {job.title}</Link>
-
-      <div className="page-header-row">
-        <h1 className="page-title">Comparar candidatos — {job.title}</h1>
-        <button className="btn-primary" disabled={selected.length === 0}>
-          Preparar reporte para cliente ({selected.length} {selected.length === 1 ? 'candidato' : 'candidatos'})
-        </button>
-      </div>
-
-      <div className="comp-selector">
-        <div className="comp-selector-label">
-          Selecciona hasta {MAX_SELECTED} candidatos ({selected.length}/{MAX_SELECTED}):
-        </div>
-        <div className="comp-selector-chips">
-          {allApps.map((a) => {
-            const isSelected = selectedIds.includes(a.id);
-            const disabled = !isSelected && selected.length >= MAX_SELECTED;
-            return (
-              <button
-                key={a.id}
-                className={`comp-chip${isSelected ? ' is-selected' : ''}`}
-                disabled={disabled}
-                onClick={() => toggle(a.id)}
-                title={disabled ? `Máximo ${MAX_SELECTED} candidatos` : ''}
-              >
-                {isSelected ? '● ' : '+ '}
-                {a.candidate_name}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {selected.length === 0 ? (
-        <div className="comp-empty">
-          Seleccioná al menos un candidato para comparar.
-        </div>
-      ) : (
-        <div className="comp-sections">
-          <DiscSection job={job} selected={selected} />
-          <VelnaSection job={job} selected={selected} />
-          <CompetenciasSection job={job} selected={selected} />
-          <AntiTrampaSection selected={selected} />
-          <SalarioSection job={job} selected={selected} />
-          <EmocionSection selected={selected} />
-          <TecnicaSection job={job} selected={selected} />
-          <IntegridadSection selected={selected} />
-          <DecisionSection selected={selected} phase="conductual" />
-          <DecisionSection selected={selected} phase="integridad" />
-        </div>
-      )}
-    </div>
+    <strong style={{ color, fontVariantNumeric: 'tabular-nums' }}>
+      {value}{suffix}
+    </strong>
   );
 }
 
-// ============== DISC ==============
-
-function DiscSection({ job, selected }: { job: ReturnType<typeof getJobById>; selected: Application[] }) {
-  if (!job) return null;
-  return (
-    <section className="comp-section">
-      <h2 className="comp-section-title">DISC</h2>
-      <div className="comp-cards-row">
-        <div className="comp-card comp-card-ideal">
-          <div className="comp-card-header">Perfil ideal A</div>
-          <DiscBars d={job.disc_ideal_a.d} i={job.disc_ideal_a.i} s={job.disc_ideal_a.s} c={job.disc_ideal_a.c} />
-          <div className="comp-pk-tag">
-            <span className="comp-pk-code">{job.disc_ideal_a.pk_profile_code}</span>
-            <span className="comp-pk-name">{job.disc_ideal_a.pk_profile_name}</span>
-          </div>
-          <ul className="comp-pk-desc">
-            {job.disc_ideal_a.description.map((d, i) => <li key={i}>{d}</li>)}
-          </ul>
-        </div>
-        {job.disc_ideal_b && (
-          <div className="comp-card comp-card-ideal">
-            <div className="comp-card-header">Perfil ideal B</div>
-            <DiscBars d={job.disc_ideal_b.d} i={job.disc_ideal_b.i} s={job.disc_ideal_b.s} c={job.disc_ideal_b.c} />
-            <div className="comp-pk-tag">
-              <span className="comp-pk-code">{job.disc_ideal_b.pk_profile_code}</span>
-              <span className="comp-pk-name">{job.disc_ideal_b.pk_profile_name}</span>
-            </div>
-            <ul className="comp-pk-desc">
-              {job.disc_ideal_b.description.map((d, i) => <li key={i}>{d}</li>)}
-            </ul>
-          </div>
-        )}
-      </div>
-      <div className="comp-cards-row">
-        {selected.map((app) => (
-          <div key={app.id} className="comp-card">
-            <div className="comp-card-header comp-card-name">
-              {app.candidate_name}
-              {app.disc && (
-                <span className={`comp-similitud comp-similitud-${classifySim(app.disc.similitud_pct)}`}>
-                  {app.disc.similitud_pct}% similitud
-                </span>
-              )}
-            </div>
-            {app.disc ? (
-              <>
-                <DiscBars d={app.disc.d} i={app.disc.i} s={app.disc.s} c={app.disc.c} />
-                <div className="comp-pk-tag">
-                  <span className="comp-pk-code">{app.disc.pk_profile_code}</span>
-                  <span className="comp-pk-name">{app.disc.pk_profile_name}</span>
-                </div>
-              </>
-            ) : (
-              <div className="comp-pending">Pendiente</div>
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
-  );
+function TextCell({ value, accent }: { value: string | null | undefined; accent?: 'good' | 'warn' | 'bad' }) {
+  if (!value) return <span style={{ color: '#94a3b8' }}>—</span>;
+  const color = accent === 'good' ? '#047857'
+    : accent === 'warn' ? '#b45309'
+    : accent === 'bad' ? '#b91c1c'
+    : '#1f2937';
+  return <span style={{ color, fontWeight: accent ? 600 : 400 }}>{value}</span>;
 }
 
-function DiscBars({ d, i, s, c }: { d: number; i: number; s: number; c: number }) {
-  return (
-    <div className="comp-disc-bars">
-      {([
-        ['D', d, '#ef4444'],
-        ['I', i, '#f59e0b'],
-        ['S', s, '#10b981'],
-        ['C', c, '#3b82f6'],
-      ] as const).map(([label, val, color]) => (
-        <div key={label} className="comp-disc-bar-col">
-          <div className="comp-disc-bar-label">{label}</div>
-          <div className="comp-disc-bar-graph">
-            <div className="comp-disc-bar-fill" style={{ height: `${val}%`, background: color }} />
-          </div>
-          <div className="comp-disc-bar-val">{val}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
+function PhaseRecommendation({ app }: { app: Application }) {
+  // Recomendación rápida basada en estados del adapter
+  const isRejected = app.state === 'auto_rejected_low_score'
+    || app.state === 'rejected_by_admin'
+    || app.integridad_state === 'rechazado'
+    || app.tecnica_state === 'rechazado';
+  const isDuda = app.tecnica_state === 'duda_cv'
+    || app.conductual_state === 'duda_cv'
+    || app.integridad_state === 'duda_cv'
+    || (app.needs_review_reasons && app.needs_review_reasons.length > 0);
+  const isFinalist = app.state === 'finalist' || app.state === 'offered' || app.state === 'hired';
 
-// ============== VELNA ==============
-
-function VelnaSection({ job, selected }: { job: ReturnType<typeof getJobById>; selected: Application[] }) {
-  if (!job) return null;
-  const labels: { key: keyof typeof job.velna_ideal; label: string; color: string }[] = [
-    { key: 'verbal', label: 'Verbal', color: '#3b82f6' },
-    { key: 'espacial', label: 'Espacial', color: '#10b981' },
-    { key: 'logica', label: 'Lógica', color: '#f59e0b' },
-    { key: 'numerica', label: 'Numérica', color: '#ef4444' },
-    { key: 'abstracta', label: 'Abstracta', color: '#a855f7' },
-  ];
-  return (
-    <section className="comp-section">
-      <h2 className="comp-section-title">Cognitiva VELNA</h2>
-      <div className="comp-card comp-card-ideal">
-        <div className="comp-card-header">Perfil ideal</div>
-        {labels.map(({ key, label, color }) => (
-          <VelnaRow key={key as string} label={label} value={job.velna_ideal[key]} color={color} />
-        ))}
-      </div>
-      <div className="comp-cards-row">
-        {selected.map((app) => (
-          <div key={app.id} className="comp-card">
-            <div className="comp-card-header comp-card-name">
-              {app.candidate_name}
-              {app.velna && (
-                <span className={`comp-similitud comp-similitud-${classifySim(app.velna.similitud_pct)}`}>
-                  {app.velna.similitud_pct}% similitud
-                </span>
-              )}
-            </div>
-            {app.velna ? (
-              labels.map(({ key, label, color }) => (
-                <VelnaRow key={key as string} label={label} value={app.velna![key as keyof typeof app.velna]} color={color} />
-              ))
-            ) : (
-              <div className="comp-pending">Pendiente</div>
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function VelnaRow({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className="comp-velna-row">
-      <span className="comp-velna-label">{label}</span>
-      <div className="comp-velna-track">
-        <div className="comp-velna-fill" style={{ width: `${value}%`, background: color }} />
-      </div>
-      <span className="comp-velna-val">{value}</span>
-    </div>
-  );
-}
-
-// ============== Competencias ==============
-
-function CompetenciasSection({ job, selected }: { job: ReturnType<typeof getJobById>; selected: Application[] }) {
-  if (!job) return null;
-  return (
-    <section className="comp-section">
-      <h2 className="comp-section-title">Competencias</h2>
-      <div className="comp-card comp-card-ideal">
-        <div className="comp-card-header">Requeridas</div>
-        {job.competencias_ideales.map((c) => (
-          <div key={c.name} className="comp-comp-row">
-            <span className="comp-comp-label">{c.name}</span>
-            <span className="comp-comp-required">≥ {c.required_pct}%</span>
-          </div>
-        ))}
-      </div>
-      <div className="comp-cards-row">
-        {selected.map((app) => (
-          <div key={app.id} className="comp-card">
-            <div className="comp-card-header comp-card-name">{app.candidate_name}</div>
-            <div className="comp-comp-pending">
-              <p className="muted">Mock — competencias se calculan post-conductual.</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// ============== Anti-trampa ==============
-
-function AntiTrampaSection({ selected }: { selected: Application[] }) {
-  return (
-    <section className="comp-section">
-      <h2 className="comp-section-title">Monitoreo anti-trampa</h2>
-      <div className="comp-cards-row">
-        {selected.map((app) => {
-          const byPhase = {
-            tecnica: app.anti_cheat_events.filter((e) => e.phase === 'tecnica').length,
-            conductual: app.anti_cheat_events.filter((e) => e.phase === 'conductual').length,
-            integridad: app.anti_cheat_events.filter((e) => e.phase === 'integridad').length,
-          };
-          const total = app.anti_cheat_events.length;
-          return (
-            <div key={app.id} className={`comp-card ${total > 0 ? 'comp-card-warn' : ''}`}>
-              <div className="comp-card-header comp-card-name">{app.candidate_name}</div>
-              {total === 0 ? (
-                <div className="comp-no-events">✓ Sin salidas detectadas</div>
-              ) : (
-                <>
-                  <div className="comp-ac-summary">
-                    {byPhase.tecnica > 0 && <span className="comp-ac-tag">Técnica: {byPhase.tecnica}</span>}
-                    {byPhase.conductual > 0 && <span className="comp-ac-tag">Conductual: {byPhase.conductual}</span>}
-                    {byPhase.integridad > 0 && <span className="comp-ac-tag">Integridad: {byPhase.integridad}</span>}
-                  </div>
-                  <ul className="comp-ac-events">
-                    {app.anti_cheat_events.slice(0, 5).map((e, i) => (
-                      <li key={i}>
-                        {e.phase} · {e.type === 'cursor_out' ? 'cursor fuera' : e.type === 'window_blur' ? 'ventana perdió foco' : 'paste'} en {e.question_id}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-// ============== Salario ==============
-
-function SalarioSection({ job, selected }: { job: ReturnType<typeof getJobById>; selected: Application[] }) {
-  if (!job) return null;
-  return (
-    <section className="comp-section">
-      <h2 className="comp-section-title">Aspiración salarial</h2>
-      <div className="comp-salario-range muted">
-        Rango del puesto: ${job.salary_range_usd.min.toLocaleString()} – ${job.salary_range_usd.max.toLocaleString()}/mes
-      </div>
-      <div className="comp-cards-row">
-        {selected.map((app) => {
-          const inRange = app.salary_aspiration_usd >= job.salary_range_usd.min && app.salary_aspiration_usd <= job.salary_range_usd.max;
-          return (
-            <div key={app.id} className={`comp-card comp-salario-card ${!inRange ? 'comp-card-warn' : ''}`}>
-              <div className="comp-card-header comp-card-name">{app.candidate_name}</div>
-              <div className="comp-salario-amount">${app.salary_aspiration_usd.toLocaleString()}<span className="comp-salario-mes">/mes</span></div>
-              {!inRange && (
-                <div className="comp-salario-flag">
-                  {app.salary_aspiration_usd < job.salary_range_usd.min ? 'Debajo del rango' : 'Encima del rango'}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-// ============== Emoción ==============
-
-function EmocionSection({ selected }: { selected: Application[] }) {
-  return (
-    <section className="comp-section">
-      <h2 className="comp-section-title">Emoción</h2>
-      <div className="comp-emocion-track">
-        {selected.map((app) => app.emocional && (
-          <div key={app.id} className="comp-emocion-marker" style={{ left: `${app.emocional.value}%` }}>
-            <div className="comp-emocion-dot" />
-            <div className="comp-emocion-name">{app.candidate_name.split(' ')[0]}</div>
-          </div>
-        ))}
-      </div>
-      <div className="comp-emocion-axis">
-        <span>Espontáneo</span>
-        <span>Mesura</span>
-        <span>Reflexivo</span>
-      </div>
-      <div className="comp-emocion-list">
-        {selected.map((app) => app.emocional && (
-          <span key={app.id} className="comp-emocion-item">
-            <strong>{app.candidate_name}</strong>: {app.emocional.label} ({app.emocional.value})
-          </span>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// ============== Técnica ==============
-
-function TecnicaSection({ job, selected }: { job: ReturnType<typeof getJobById>; selected: Application[] }) {
-  if (!job) return null;
-  return (
-    <section className="comp-section">
-      <h2 className="comp-section-title">Técnica</h2>
-      <div className="comp-tecnica-row">
-        <div className="comp-tecnica-min">Mínimo requerido: <strong>{job.tecnica_minimo_pct}%</strong></div>
-        {selected.map((app) => (
-          <div key={app.id} className={`comp-tecnica-pill ${app.tecnica?.estado === 'Aprobado' ? 'is-aprobado' : app.tecnica?.estado === 'No aprobado' ? 'is-rechazado' : 'is-pendiente'}`}>
-            <strong>{app.candidate_name.split(' ')[0]}</strong>: {app.tecnica ? `${app.tecnica.pct}% ${app.tecnica.estado}` : 'Pendiente'}
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// ============== Integridad ==============
-
-function IntegridadSection({ selected }: { selected: Application[] }) {
-  const integrityCands = selected.filter((a) => a.integridad);
-  if (integrityCands.length === 0) {
+  if (isRejected) {
     return (
-      <section className="comp-section">
-        <h2 className="comp-section-title">Integridad</h2>
-        <p className="muted">Ningún candidato seleccionado completó integridad todavía.</p>
-      </section>
+      <span style={{
+        background: '#fef2f2', color: '#991b1b', padding: '4px 10px', borderRadius: '999px',
+        fontSize: '0.78rem', fontWeight: 600, display: 'inline-block',
+      }}>❌ Rechazar</span>
     );
   }
-  // Use first candidate's dimensions as reference for the table structure
-  const refDims = integrityCands[0].integridad!.dimensions;
+  if (isFinalist) {
+    return (
+      <span style={{
+        background: '#dcfce7', color: '#166534', padding: '4px 10px', borderRadius: '999px',
+        fontSize: '0.78rem', fontWeight: 600, display: 'inline-block',
+      }}>✅ Llamar a entrevista</span>
+    );
+  }
+  if (isDuda) {
+    return (
+      <span style={{
+        background: '#fef3c7', color: '#92400e', padding: '4px 10px', borderRadius: '999px',
+        fontSize: '0.78rem', fontWeight: 600, display: 'inline-block',
+      }}>🟡 Duda CV</span>
+    );
+  }
   return (
-    <section className="comp-section">
-      <h2 className="comp-section-title">Integridad</h2>
-      <table className="comp-integridad-table">
-        <thead>
-          <tr>
-            <th>Dimensión</th>
-            {selected.map((a) => <th key={a.id}>{a.candidate_name.split(' ')[0]}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {refDims.map((dim) => (
-            <tr key={dim.name}>
-              <td>{dim.name}</td>
-              {selected.map((a) => {
-                const candDim = a.integridad?.dimensions.find((d) => d.name === dim.name);
-                if (!candDim || candDim.classification === null) return <td key={a.id} className="muted">—</td>;
-                return (
-                  <td key={a.id} className={`comp-int-${candDim.classification.toLowerCase()}`}>
-                    {candDim.classification} {candDim.score_pct != null ? `${candDim.score_pct}%` : ''}
-                  </td>
-                );
+    <span style={{
+      background: '#dbeafe', color: '#1e40af', padding: '4px 10px', borderRadius: '999px',
+      fontSize: '0.78rem', fontWeight: 600, display: 'inline-block',
+    }}>🔵 Avanzar</span>
+  );
+}
+
+export default function CandidateComparison() {
+  const { id: jobId } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const api = useApi();
+  const [candidates, setCandidates] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [jobTitle, setJobTitle] = useState<string>('');
+
+  const candidateIds = useMemo(() => {
+    const raw = searchParams.get('candidates') ?? '';
+    return raw.split(',').filter(Boolean).slice(0, MAX_CANDIDATES);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!config.useApi || candidateIds.length === 0) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    async function load() {
+      try {
+        // Cargar job para el título
+        if (jobId) {
+          try {
+            const jobRes = await api.jobs.get(jobId);
+            if (!cancelled) setJobTitle(`${jobRes.job.title} — ${jobRes.job.company}`);
+          } catch {
+            // No critical
+          }
+        }
+
+        // Cargar applications + scores en paralelo
+        const loaded: Application[] = [];
+        for (const id of candidateIds) {
+          try {
+            const appResp = await api.applications.get(id);
+            const a = appResp.application;
+            const [candResp, scoresResp, integrityResp] = await Promise.all([
+              api.candidates.get(a.candidate_id).catch(() => null),
+              api.applications.readScores(a.ROWID).catch(() => null),
+              api.applications.readIntegrity(a.ROWID).catch(() => null),
+            ]);
+            if (cancelled) return;
+            const adapted = adaptToMockApplication(
+              {
+                ROWID: a.ROWID,
+                assessment_id: a.assessment_id,
+                candidate_id: a.candidate_id,
+                pipeline_stage: a.pipeline_stage,
+                started_at: a.started_at,
+                completed_at: a.completed_at,
+              },
+              candResp ? {
+                name: candResp.candidate.name,
+                email: candResp.candidate.email,
+                phone: candResp.candidate.phone,
+                age: candResp.candidate.age ?? null,
+              } : undefined,
+              scoresResp?.scores ?? null,
+              (integrityResp?.integrity?.dimensions ?? []).map((d) => ({
+                dimension: d.dimension,
+                nivel: d.nivel,
+                pct: d.pct,
+              })),
+            );
+            loaded.push(adapted);
+          } catch (err) {
+            console.warn(`Failed to load candidate ${id}`, err);
+          }
+        }
+        if (!cancelled) {
+          setCandidates(loaded);
+          setLoading(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError((err as Error).message);
+          setLoading(false);
+        }
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [candidateIds, jobId, api]);
+
+  if (candidateIds.length === 0) {
+    return (
+      <div style={{ padding: '2rem' }}>
+        <h2>Comparar finalistas</h2>
+        <p style={{ color: '#64748b' }}>
+          Selecciona 2 a {MAX_CANDIDATES} candidatos para comparar. Usa la URL con
+          <code>?candidates=id1,id2,id3,id4</code>.
+        </p>
+        <Link to={`/jobs/${jobId}`}>← Volver al puesto</Link>
+      </div>
+    );
+  }
+
+  if (loading) return <p style={{ padding: '2rem' }}>Cargando candidatos...</p>;
+  if (error) return <p style={{ padding: '2rem', color: '#b91c1c' }}>Error: {error}</p>;
+  if (candidates.length === 0) {
+    return <p style={{ padding: '2rem' }}>No se pudieron cargar los candidatos.</p>;
+  }
+
+  // Estilos compartidos
+  const rowLabelStyle: React.CSSProperties = {
+    padding: '0.6rem 0.75rem',
+    fontSize: '0.78rem',
+    color: '#475569',
+    fontWeight: 600,
+    borderBottom: '1px solid #f1f5f9',
+    background: '#f8fafc',
+    minWidth: '180px',
+    verticalAlign: 'middle',
+  };
+  const cellStyle: React.CSSProperties = {
+    padding: '0.6rem 0.75rem',
+    fontSize: '0.9rem',
+    borderBottom: '1px solid #f1f5f9',
+    textAlign: 'center',
+    verticalAlign: 'middle',
+  };
+  const sectionHeaderStyle: React.CSSProperties = {
+    padding: '0.4rem 0.75rem',
+    fontSize: '0.72rem',
+    background: '#e2e8f0',
+    color: '#1f2937',
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  };
+
+  return (
+    <div style={{ padding: '1.5rem' }}>
+      <header style={{ marginBottom: '1.5rem' }}>
+        <Link to={`/jobs/${jobId}`} style={{ color: '#64748b', fontSize: '0.85rem' }}>← Volver al puesto</Link>
+        <h1 style={{ margin: '0.4rem 0', fontSize: '1.5rem' }}>Comparar {candidates.length} candidatos</h1>
+        <p style={{ margin: 0, color: '#64748b' }}>{jobTitle}</p>
+      </header>
+
+      <div style={{ overflowX: 'auto', background: 'white', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th style={{ ...rowLabelStyle, fontSize: '0.85rem', borderBottom: '2px solid #cbd5e1' }}>Candidato</th>
+              {candidates.map((c) => (
+                <th key={c.id} style={{ ...cellStyle, borderBottom: '2px solid #cbd5e1', background: '#f8fafc' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+                    <Link to={`/candidates/${c.id}`} style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem' }}>
+                      {c.candidate_name}
+                    </Link>
+                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{c.candidate_age} años</span>
+                    <PhaseRecommendation app={c} />
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {/* Salario */}
+            <tr>
+              <th style={rowLabelStyle}>Salario aspirado</th>
+              {candidates.map((c) => (
+                <td key={c.id} style={cellStyle}>
+                  {c.salary_aspiration_usd > 0
+                    ? <span style={{ fontWeight: 600 }}>${c.salary_aspiration_usd.toLocaleString()}/mes</span>
+                    : <span style={{ color: '#94a3b8' }}>—</span>}
+                </td>
+              ))}
+            </tr>
+
+            {/* Sección Técnica */}
+            <tr><td colSpan={candidates.length + 1} style={sectionHeaderStyle}>🔧 Técnica</td></tr>
+            <tr>
+              <th style={rowLabelStyle}>Puntaje técnico</th>
+              {candidates.map((c) => (
+                <td key={c.id} style={cellStyle}>
+                  <ScoreCell value={c.tecnica?.pct} thresholdGood={75} thresholdMid={60} />
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <th style={rowLabelStyle}><Term name="estilo profesional">Estilo situacional</Term></th>
+              {candidates.map((c) => {
+                const s = c.tecnica?.style_autonomy_consult;
+                if (s == null) return <td key={c.id} style={cellStyle}><span style={{ color: '#94a3b8' }}>—</span></td>;
+                const label = s >= 65 ? '⚡ Autonomía' : s <= 35 ? '🤝 Consulta' : '🔄 Balanceado';
+                return <td key={c.id} style={cellStyle}>{label}</td>;
               })}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-  );
-}
-
-// ============== Decisión por fase ==============
-
-function DecisionSection({ selected, phase }: { selected: Application[]; phase: 'conductual' | 'integridad' }) {
-  const buttons = phase === 'conductual'
-    ? [{ label: 'Siguiente etapa', kind: 'primary' }, { label: 'Duda — Revisar CV', kind: 'warn' }, { label: 'Rechazar', kind: 'danger' }]
-    : [{ label: 'Llamar a entrevista', kind: 'primary' }, { label: 'Rechazado', kind: 'danger' }];
-  const title = phase === 'conductual' ? 'Decisión — Evaluación Conductual (DISC)' : 'Decisión — Integridad';
-
-  return (
-    <section className="comp-section">
-      <h2 className="comp-section-title">{title}</h2>
-      <div className="comp-decision-list">
-        {selected.map((app) => (
-          <div key={app.id} className="comp-decision-row">
-            <div>
-              <div className="comp-decision-name">{app.candidate_name}</div>
-              <div className="muted small">{app.candidate_email}</div>
-            </div>
-            <div className="comp-decision-actions">
-              {buttons.map((b) => (
-                <button
-                  key={b.label}
-                  className={`comp-dec-btn comp-dec-${b.kind}`}
-                  onClick={() => alert(`Mock: ${app.candidate_name} → ${b.label} (${phase})`)}
-                >
-                  {b.label}
-                </button>
+            <tr>
+              <th style={rowLabelStyle}><Term name="match con jefe">Match con jefe</Term></th>
+              {candidates.map((c) => (
+                <td key={c.id} style={cellStyle}>
+                  <ScoreCell value={c.tecnica?.style_match_with_boss_pct} thresholdGood={75} thresholdMid={50} />
+                </td>
               ))}
-            </div>
-          </div>
-        ))}
+            </tr>
+            <tr>
+              <th style={rowLabelStyle}><Term name="validez situacional">Validez situacional</Term></th>
+              {candidates.map((c) => (
+                <td key={c.id} style={cellStyle}>
+                  <ScoreCell value={c.tecnica?.situational_validity_pct} thresholdGood={75} thresholdMid={50} />
+                </td>
+              ))}
+            </tr>
+
+            {/* Sección Conductual */}
+            <tr><td colSpan={candidates.length + 1} style={sectionHeaderStyle}>🧩 Conductual</td></tr>
+            <tr>
+              <th style={rowLabelStyle}><Term name="DISC">DISC</Term> <Term name="similitud">similitud</Term> vs ideal</th>
+              {candidates.map((c) => (
+                <td key={c.id} style={cellStyle}>
+                  <ScoreCell value={c.disc?.similitud_pct} thresholdGood={70} thresholdMid={50} />
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <th style={rowLabelStyle}>Perfil DISC dominante</th>
+              {candidates.map((c) => (
+                <td key={c.id} style={cellStyle}>
+                  <TextCell value={c.disc?.dominant_label} />
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <th style={rowLabelStyle}><Term name="VELNA">VELNA</Term> similitud vs ideal</th>
+              {candidates.map((c) => (
+                <td key={c.id} style={cellStyle}>
+                  <ScoreCell value={c.velna?.similitud_pct} thresholdGood={70} thresholdMid={50} />
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <th style={rowLabelStyle}><Term name="perfil emocional">Emocional</Term></th>
+              {candidates.map((c) => (
+                <td key={c.id} style={cellStyle}>
+                  <TextCell value={c.emocional?.label} />
+                </td>
+              ))}
+            </tr>
+
+            {/* Sección Plus (opcionales) */}
+            <tr><td colSpan={candidates.length + 1} style={sectionHeaderStyle}>✨ Plus (si el puesto los pidió)</td></tr>
+            <tr>
+              <th style={rowLabelStyle}>🇬🇧 Inglés</th>
+              {candidates.map((c) => {
+                const s = c.english_state;
+                if (s == null) return <td key={c.id} style={cellStyle}><span style={{ color: '#94a3b8' }}>No requerido</span></td>;
+                if (s === 'completado') return <td key={c.id} style={cellStyle}><TextCell value="✅ Aprobado" accent="good" /></td>;
+                if (s === 'fallo') return <td key={c.id} style={cellStyle}><TextCell value="❌ No pasó" accent="warn" /></td>;
+                return <td key={c.id} style={cellStyle}><TextCell value="⏳ En proceso" /></td>;
+              })}
+            </tr>
+            <tr>
+              <th style={rowLabelStyle}>🧠 <Term name="mindset">Mindset</Term></th>
+              {candidates.map((c) => {
+                const m = c.mindset_perfil;
+                if (m == null) return <td key={c.id} style={cellStyle}><span style={{ color: '#94a3b8' }}>No requerido</span></td>;
+                const label = m === 'adaptable' ? 'Adaptable'
+                  : m === 'mixto' ? 'Mixto'
+                  : m === 'rigido' ? 'Rígido'
+                  : 'En proceso';
+                return <td key={c.id} style={cellStyle}>{label}</td>;
+              })}
+            </tr>
+
+            {/* Sección Integridad */}
+            <tr><td colSpan={candidates.length + 1} style={sectionHeaderStyle}>🛡️ <Term name="integridad">Integridad</Term></td></tr>
+            <tr>
+              <th style={rowLabelStyle}>Resultado global</th>
+              {candidates.map((c) => {
+                if (!c.integridad) return <td key={c.id} style={cellStyle}><span style={{ color: '#94a3b8' }}>—</span></td>;
+                const obs = c.integridad.observations.length;
+                if (c.integridad_state === 'rechazado') {
+                  return <td key={c.id} style={cellStyle}><TextCell value="❌ Riesgos altos" accent="bad" /></td>;
+                }
+                if (obs === 0) return <td key={c.id} style={cellStyle}><TextCell value="✅ Sin alertas" accent="good" /></td>;
+                return <td key={c.id} style={cellStyle}><TextCell value={`⚠️ ${obs} observación${obs > 1 ? 'es' : ''}`} accent="warn" /></td>;
+              })}
+            </tr>
+
+            {/* Video */}
+            <tr><td colSpan={candidates.length + 1} style={sectionHeaderStyle}>🎥 Video</td></tr>
+            <tr>
+              <th style={rowLabelStyle}>Estado</th>
+              {candidates.map((c) => (
+                <td key={c.id} style={cellStyle}>
+                  {c.video_state === 'grabado'
+                    ? <TextCell value="✅ Grabado" accent="good" />
+                    : <TextCell value="⏳ Pendiente" />}
+                </td>
+              ))}
+            </tr>
+
+            {/* Acciones */}
+            <tr>
+              <th style={{ ...rowLabelStyle, background: '#f8fafc' }}>Acción</th>
+              {candidates.map((c) => (
+                <td key={c.id} style={cellStyle}>
+                  <Link
+                    to={`/candidates/${c.id}`}
+                    style={{
+                      background: '#1f2937',
+                      color: 'white',
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      textDecoration: 'none',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Ver ficha completa →
+                  </Link>
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <button className="btn-primary comp-decision-save" onClick={() => alert('Mock: guardar decisiones')}>
-        Guardar
-      </button>
-    </section>
+
+      <p style={{ marginTop: '1.5rem', color: '#64748b', fontSize: '0.85rem' }}>
+        💡 La recomendación rápida (avanzar / duda CV / rechazar) se calcula automáticamente según los datos. Tú decides al final.
+      </p>
+    </div>
   );
 }
-
-// ============== Helpers ==============
-
-function classifySim(pct: number): 'high' | 'mid' | 'low' {
-  if (pct >= 70) return 'high';
-  if (pct >= 50) return 'mid';
-  return 'low';
-}
-

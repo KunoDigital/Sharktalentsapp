@@ -100,6 +100,89 @@ const GLOSSARY: Record<string, React.ReactNode> = {
       entrevistar antes de decidir.
     </>
   ),
+  afinidad: (
+    <>
+      <strong>Afinidad</strong> = qué tanto encaja el candidato con el
+      perfil ideal que definimos para tu puesto. Promedia conducta,
+      cognición, técnica, integridad y manejo emocional. 70%+ = match
+      fuerte para entrevistar primero.
+    </>
+  ),
+  mindset: (
+    <>
+      <strong>Mindset</strong> mide cómo aborda situaciones cotidianas
+      (marco McKinsey Forward):
+      <ul>
+        <li><strong>Adaptable</strong>: aprende rápido, busca cambios</li>
+        <li><strong>Mixto</strong>: depende de la situación</li>
+        <li><strong>Rígido</strong>: cómodo en lo conocido, evita cambios</li>
+      </ul>
+      Útil para roles que viven en entornos cambiantes.
+    </>
+  ),
+  'estilo profesional': (
+    <>
+      <strong>Estilo profesional</strong> mide cómo decide en su día a día:
+      <ul>
+        <li><strong>Autonomía</strong>: decide solo y avanza</li>
+        <li><strong>Consulta</strong>: prefiere alinearse antes de decidir</li>
+      </ul>
+      No es bueno ni malo — depende de qué necesitas para el rol. Un jefe
+      ocupado quiere autonomía. Un rol regulado quiere consulta.
+    </>
+  ),
+  'match con jefe': (
+    <>
+      <strong>Match con el estilo del jefe</strong> = qué tanto el estilo
+      profesional del candidato encaja con el del jefe que lo va a
+      gestionar. 75%+ = alineado (poca fricción). Menos = posible roce
+      por ritmo de decisiones.
+    </>
+  ),
+  'validez situacional': (
+    <>
+      <strong>Validez situacional</strong> = en cuántas situaciones de
+      prueba el candidato eligió una opción profesionalmente cuestionable
+      (cortar atajos, evadir responsabilidad, mentir bajo presión). Bajo
+      75% sugiere revisar en entrevista — no es rechazo automático.
+    </>
+  ),
+  'perfil emocional': (
+    <>
+      <strong>Perfil emocional</strong> describe cómo el candidato
+      experimenta y procesa emociones bajo presión (calma, tensión,
+      proactividad emocional). Útil para roles con exposición a quejas,
+      conflictos o alta carga.
+    </>
+  ),
+  CEFR: (
+    <>
+      <strong>CEFR</strong> es el estándar europeo de nivel de inglés:
+      <ul>
+        <li><strong>A1-A2</strong>: básico</li>
+        <li><strong>B1-B2</strong>: intermedio (puede sostener una reunión)</li>
+        <li><strong>C1-C2</strong>: avanzado (puede negociar y presentar)</li>
+      </ul>
+      Combinamos comprensión escrita, audio y producción escrita.
+    </>
+  ),
+  'capacidad intelectual': (
+    <>
+      <strong>Capacidad intelectual</strong> = qué tan rápido procesa
+      información en distintas áreas (verbal, espacial, lógica, numérica
+      y abstracta). Es la base cognitiva, no la experiencia. Mide
+      <em> potencial</em>, no <em>conocimiento</em>.
+    </>
+  ),
+  'duda CV': (
+    <>
+      <strong>Duda CV</strong> = el candidato pasa el filtro automático
+      pero alguna respuesta sugiere revisar la entrevista con cuidado
+      (inglés bajo lo declarado, validez situacional baja, buena
+      impresión alta, etc.). No es rechazo — es señal de "preguntale
+      esto".
+    </>
+  ),
 };
 
 export function Term({ name, children }: { name: keyof typeof GLOSSARY | string; children: React.ReactNode }) {

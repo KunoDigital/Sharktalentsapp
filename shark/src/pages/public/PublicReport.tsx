@@ -8,6 +8,7 @@ import { config } from '../../config';
 import { publicApi, type BundleVideoAnalysis, type BundleMindset, type BundleEnglish } from '../../lib/publicApi';
 import { ApiError } from '../../lib/api';
 import { adaptBundleReport } from '../../lib/reportAdapter';
+import { Term } from '../../components/Tooltip';
 import { logger } from '../../lib/logger';
 import { PublicPortalFooter } from './PublicPortalFooter';
 import './public-report.css';
@@ -295,9 +296,9 @@ export default function PublicReport() {
               <li>{job.context.split('.')[0]}.</li>
             </ul>
             <div className="pr-disc-mini">
-              <div className="pr-disc-mini-title">Perfil A · DISC</div>
+              <div className="pr-disc-mini-title">Perfil A · <Term name="DISC">DISC</Term></div>
               <DiscMini d={job.disc_ideal_a.d} i={job.disc_ideal_a.i} s={job.disc_ideal_a.s} c={job.disc_ideal_a.c} />
-              <div className="pr-pk">{job.disc_ideal_a.pk_profile_code} — {job.disc_ideal_a.pk_profile_name}</div>
+              <div className="pr-pk"><Term name="PK">{job.disc_ideal_a.pk_profile_code}</Term> — {job.disc_ideal_a.pk_profile_name}</div>
             </div>
             {job.disc_ideal_b && (
               <div className="pr-disc-mini">
@@ -324,7 +325,7 @@ export default function PublicReport() {
           </div>
 
           <div className="pr-overview-card">
-            <div className="pr-overview-title">Capacidad intelectual</div>
+            <div className="pr-overview-title"><Term name="capacidad intelectual">Capacidad intelectual</Term> · <Term name="VELNA">VELNA</Term></div>
             <ul className="pr-overview-velna">
               {[
                 ['Verbal', job.velna_ideal.verbal],
@@ -351,12 +352,12 @@ export default function PublicReport() {
           </h2>
           <p className="pr-section-text">
             {candidates.length === 1
-              ? `${candidates[0].candidate_name} completó las evaluaciones disponibles en este reporte. Abajo encontrás el análisis detallado por dimensión. Las secciones que no fueron evaluadas en esta versión aparecen marcadas como "No disponible".`
+              ? `${candidates[0].candidate_name} completó las evaluaciones disponibles en este reporte. Abajo encuentras el análisis detallado por dimensión. Las secciones que no fueron evaluadas en esta versión aparecen marcadas como "No disponible".`
               : `Los ${candidates.length} candidatos completaron las evaluaciones conductual, cognitiva, emocional, integridad y técnica. Los ordenamos por afinidad con el perfil ideal para ayudarte a decidir a quién entrevistar primero.`}
           </p>
           <p className="pr-section-text pr-section-strong">
             {candidates.length === 1
-              ? 'Siguiente paso: revisá el análisis y decidí si avanzar con esta persona.'
+              ? 'Siguiente paso: revisa el análisis y decide si avanzar con esta persona.'
               : 'Siguiente paso: entrevista personal con el candidato de tu preferencia.'}
           </p>
         </section>
@@ -368,11 +369,11 @@ export default function PublicReport() {
             <thead>
               <tr>
                 <th>Candidato</th>
-                <th>Afinidad</th>
+                <th><Term name="afinidad">Afinidad</Term></th>
                 <th>Conductual</th>
                 <th>Cognitiva</th>
                 <th>Técnica</th>
-                <th>Integridad</th>
+                <th><Term name="integridad">Integridad</Term></th>
                 <th>Emoción</th>
               </tr>
             </thead>
@@ -559,7 +560,7 @@ function CandidateCard({
       </div>
 
       <div className="pr-emocional-block">
-        <div className="pr-emocional-label">Perfil emocional · {app.emocional?.label}</div>
+        <div className="pr-emocional-label"><Term name="perfil emocional">Perfil emocional</Term> · {app.emocional?.label}</div>
         <p>{narrative.perfil_emocional_text}</p>
       </div>
 
@@ -573,7 +574,7 @@ function CandidateCard({
           {typeof app.tecnica.style_autonomy_consult === 'number' && (
             <div style={{ marginTop: '0.75rem', padding: '0.6rem 0.75rem', background: 'rgba(99, 102, 241, 0.05)', border: '1px solid rgba(99, 102, 241, 0.2)', borderRadius: '6px' }}>
               <div style={{ fontSize: '0.85rem', color: '#1f2937', marginBottom: '0.4rem' }}>
-                <strong>Estilo profesional</strong>
+                <strong><Term name="estilo profesional">Estilo profesional</Term></strong>
                 <span style={{ fontWeight: 'normal', color: '#4b5563' }}> — cómo decide en situaciones del rol</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.78rem' }}>
@@ -601,7 +602,7 @@ function CandidateCard({
 
               {typeof app.tecnica.style_match_with_boss_pct === 'number' && (
                 <div style={{ marginTop: '0.5rem', fontSize: '0.82rem', color: '#1f2937' }}>
-                  Match con estilo del jefe: <strong>{app.tecnica.style_match_with_boss_pct}%</strong>
+                  <Term name="match con jefe">Match con estilo del jefe</Term>: <strong>{app.tecnica.style_match_with_boss_pct}%</strong>
                   {' '}
                   {app.tecnica.style_match_with_boss_pct >= 75 ? '✓ Alineado'
                     : app.tecnica.style_match_with_boss_pct >= 50 ? '~ Neutro'
@@ -613,7 +614,7 @@ function CandidateCard({
 
           {typeof app.tecnica.situational_validity_pct === 'number' && app.tecnica.situational_validity_pct < 75 && (
             <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '6px', fontSize: '0.8rem', color: '#1f2937' }}>
-              ⚠️ <strong>Validez situacional: {app.tecnica.situational_validity_pct}%</strong>
+              ⚠️ <strong><Term name="validez situacional">Validez situacional</Term>: {app.tecnica.situational_validity_pct}%</strong>
               <span style={{ color: '#4b5563' }}>
                 {' '}— en {Math.round((100 - app.tecnica.situational_validity_pct) / 100 * 13)} de 13 situaciones eligió una opción profesionalmente cuestionable. Revisar en entrevista.
               </span>
@@ -631,7 +632,7 @@ function CandidateCard({
       {mindset && mindset.adaptability_score_pct !== null ? (
         <div className="pr-mindset-block" style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(16, 185, 129, 0.04)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '8px' }}>
           <h4 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '0.95rem' }}>
-            🧠 Adaptabilidad y resiliencia
+            🧠 Adaptabilidad y resiliencia · <Term name="mindset">Mindset</Term>
           </h4>
           <div style={{ marginBottom: '0.5rem' }}>
             Patrón: <strong>{mindset.adaptability_pattern?.toUpperCase() ?? '—'}</strong>
@@ -654,7 +655,7 @@ function CandidateCard({
       {english && english.total_score_pct !== null ? (
         <div className="pr-english-block" style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(59, 130, 246, 0.04)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: '8px' }}>
           <h4 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '0.95rem' }}>
-            🇺🇸 Inglés ({english.level_required ?? 'CEFR'})
+            🇺🇸 Inglés (<Term name="CEFR">{english.level_required ?? 'CEFR'}</Term>)
           </h4>
           <div>
             Resultado: <strong>{english.passed ? '✓ Cumple' : '✗ No alcanza'}</strong>
