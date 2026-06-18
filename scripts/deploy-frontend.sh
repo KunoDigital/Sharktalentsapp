@@ -1,12 +1,13 @@
 #!/bin/bash
-# Build + zip del frontend para upload a Catalyst Web Client Hosting.
+# Build + deploy del frontend a Catalyst Web Client Hosting (siempre a DEV).
+# 2026-06-18: deploy automático con `catalyst deploy --only client`.
+#
 # Uso: scripts/deploy-frontend.sh
 #
-# El ZIP que genera tiene en su raíz:
-#   client-package.json   (config requerida por Catalyst)
-#   index.html            (entry del SPA)
-#   assets/               (JS + CSS bundles)
-#   ... resto del build de Vite
+# IMPORTANTE: este script despliega a DEV. Para promover a PROD (app.sharktalents.ai):
+#   Catalyst Console → Settings → Environments → Deployments → Create Deployment
+#   Source: Development → Target: Production → Generate Diff → Deploy
+# Ver docs/aprendizajes/17_DEV_PROD_ENVIRONMENTS.md
 
 set -e
 cd "$(dirname "$0")/../shark"
@@ -17,20 +18,23 @@ echo "▶ Building shark/ version $VERSION..."
 npm install
 npm run build
 
-# Copiamos client-package.json al dist/ antes de zip-ear
-# Catalyst busca este archivo en la raíz del ZIP para identificar la app
+# Catalyst busca client-package.json en el dist/ para identificar la app.
 cp client-package.json dist/
 
+# Mantenemos el ZIP también — útil como artifact / backup.
 cd dist
 ZIP="../sharktalents-frontend-${VERSION}.zip"
 rm -f "$ZIP"
 zip -rq "$ZIP" .
 cd ..
 
-# Limpiamos el copy del dist (no queremos que queda dentro de dist/ entre builds)
-rm -f dist/client-package.json
-
 echo "✓ ZIP listo: shark/sharktalents-frontend-${VERSION}.zip"
 echo ""
-echo "Siguiente paso:"
-echo "  Catalyst Console → Cloud Scale → Web Client Hosting → Upload del zip"
+echo "▶ Deploying client to Catalyst..."
+cd ..  # raíz del proyecto (donde está catalyst.json)
+catalyst deploy --only client
+
+# Cleanup
+rm -f shark/dist/client-package.json
+echo ""
+echo "✓ Deploy completo — el cliente ya está en producción"

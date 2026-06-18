@@ -1,10 +1,11 @@
 #!/bin/bash
-# Deploy del backend a Catalyst.
+# Deploy del backend a Catalyst (siempre a DEV).
 # Uso: scripts/deploy-backend.sh
 #
-# El environment activo (Development/Production) se controla desde la Catalyst Console
-# en cada proyecto. Este script asume que ya seleccionaste el env correcto en .catalystrc
-# o vía 'catalyst use:project'.
+# IMPORTANTE: Catalyst CLI solo despliega a Development. Para promover a Production,
+# pasos en Catalyst Console:
+#   Settings → Environments → Deployments → "Create Deployment" → Source: Development, Target: Production
+# Ver docs/aprendizajes/17_DEV_PROD_ENVIRONMENTS.md para flujo completo.
 
 set -e
 cd "$(dirname "$0")/.."
@@ -12,7 +13,14 @@ cd "$(dirname "$0")/.."
 echo "▶ Building TypeScript..."
 cd functions/api && npm run build && cd ../..
 
-echo "▶ Deploying to Catalyst..."
+echo "▶ Deploying to Catalyst Development..."
 catalyst deploy --only functions:api
 
-echo "✓ Deploy completo"
+echo ""
+echo "✓ Deploy completo en DEV"
+echo ""
+echo "  URL DEV: https://sharktalentsapp-883996440.development.catalystserverless.com/server/api/"
+echo ""
+echo "Para promover a PROD (app.sharktalents.ai):"
+echo "  Catalyst Console → Settings → Environments → Deployments → Create Deployment"
+echo "  Source: Development → Target: Production → Generate Diff → Deploy"

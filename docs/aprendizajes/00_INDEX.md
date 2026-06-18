@@ -33,6 +33,8 @@ Cada documento es **autocontenido**: podés leer uno suelto sin necesitar los ot
 | [12](12_ANTIPATTERNS.md) | Anti-patterns con ejemplos | Revisión de código |
 | [13](13_CASOS_DE_ESTUDIO.md) | Casos de estudio: bugs reales y lecciones | Al debuggear problemas parecidos |
 | [14](14_CHECKLIST_PROD.md) | Checklist antes de producción | Antes de cada release mayor |
+| [16](16_AGREGAR_TEST_CANDIDATO.md) | Cómo agregar una nueva prueba para candidato | Al sumar evaluación nueva |
+| [17](17_DEV_PROD_ENVIRONMENTS.md) | Entornos DEV y PROD en Catalyst — qué se separa, qué no, cómo promover | Al configurar o promover deploys |
 
 ---
 
