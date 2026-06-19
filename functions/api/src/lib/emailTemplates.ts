@@ -332,14 +332,12 @@ SharkTalents`,
 
 const MARKETING_LEAD_THANKS: Record<EmailLocale, EmailTemplate> = {
   es: {
-    subject: 'Tus 2 evaluaciones gratuitas están listas',
+    subject: 'Tus evaluaciones SharkTalents están listas',
     body_text: `SharkTalents
 
 Hola{{contact_name_prefix}},
 
-Acabas de dar el primer paso para contratar con datos, no con intuición.
-
-Estas dos evaluaciones te van a mostrar cómo piensa, cómo se comporta en equipo y qué tan confiable es la persona que evalúes — antes de que firme contigo.
+Estos son los dos diagnósticos que estructuran el primer filtro de nuestro proceso. Tu próxima contratación se va a definir con datos, no con intuición. Las pruebas miden cómo piensa la persona, cómo se comporta en equipo y qué tan confiable es — antes de que firme contigo.
 
 Evaluación conductual — DISC + capacidad cognitiva (~30-40 min):
 {{conductual_url}}
@@ -347,7 +345,7 @@ Evaluación conductual — DISC + capacidad cognitiva (~30-40 min):
 Evaluación de integridad (~20-30 min):
 {{integridad_url}}
 
-Puedes hacerlas tú mismo o reenviar este email a quien quieras evaluar. Cuando se completen las dos, el reporte llega automáticamente.
+Las puedes completar tú o reenviar este correo a la persona que vas a evaluar. Cuando se cierran las dos, el reporte completo llega directo a tu correo.
 
 —
 Equipo SharkTalents`,
@@ -367,10 +365,10 @@ Equipo SharkTalents`,
         <!-- BODY -->
         <tr>
           <td style="padding:36px 40px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:1.7; color:#1f2937;">
-            <h1 style="margin:0 0 20px 0; font-size:22px; font-weight:bold; color:#1f2937; line-height:1.3;">Tus 2 evaluaciones gratuitas están listas</h1>
+            <h1 style="margin:0 0 20px 0; font-size:22px; font-weight:bold; color:#1f2937; line-height:1.3;">Tus evaluaciones SharkTalents están listas</h1>
             <p style="margin:0 0 16px 0;">Hola{{contact_name_prefix}},</p>
-            <p style="margin:0 0 16px 0;">Acabas de dar el primer paso para contratar con datos, no con intuición.</p>
-            <p style="margin:0 0 28px 0;">Estas dos evaluaciones te van a mostrar cómo piensa, cómo se comporta en equipo y qué tan confiable es la persona que evalúes — antes de que firme contigo.</p>
+            <p style="margin:0 0 16px 0;">Estos son los dos diagnósticos que estructuran el primer filtro de nuestro proceso. Tu próxima contratación se va a definir con datos, no con intuición.</p>
+            <p style="margin:0 0 28px 0;">Las pruebas miden cómo piensa la persona, cómo se comporta en equipo y qué tan confiable es — antes de que firme contigo.</p>
 
             <!-- EVALUACIÓN 1 -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e5e7eb; border-radius:8px; margin-bottom:16px;">
@@ -412,7 +410,7 @@ Equipo SharkTalents`,
               </tr>
             </table>
 
-            <p style="margin:0;">Puedes hacerlas tú mismo o reenviar este email a quien quieras evaluar. Cuando se completen las dos, el reporte llega automáticamente.</p>
+            <p style="margin:0;">Las puedes completar tú o reenviar este correo a la persona que vas a evaluar. Cuando se cierran las dos, el reporte completo llega directo a tu correo.</p>
           </td>
         </tr>
 
@@ -421,7 +419,7 @@ Equipo SharkTalents`,
           <td style="background-color:#f9fafb; padding:20px 40px; border-top:1px solid #e5e7eb; text-align:center;">
             <div style="font-family:Arial,Helvetica,sans-serif; font-size:13px; color:#6b7280; line-height:1.6;">
               <strong style="color:#1f2937;">Equipo SharkTalents</strong><br/>
-              ¿Dudas? Responde este email — llega directo a nuestro equipo.
+              ¿Necesitas contexto adicional? Responde este correo y un consultor te contacta.
             </div>
           </td>
         </tr>
@@ -575,28 +573,22 @@ SharkTalents Team`,
   },
 };
 
-const CANDIDATE_APPLICATION_RECEIVED: Record<EmailLocale, EmailTemplate> = {
-  es: {
-    subject: 'Recibimos tu aplicación a {{job_title}}',
-    body_text: `Hola {{candidate_name}},
+/**
+ * 2026-06-18: Refactor de correos del candidato — 1 correo por fase del proceso.
+ *
+ * Antes: 1 correo al apply listando TODAS las pruebas → confundía al candidato.
+ * Ahora: 5 correos, uno por fase, disparado cuando avanza:
+ *   1. candidate_prefilter_start    (al apply)
+ *   2. candidate_tecnica_start      (al pasar prefilter)
+ *   3. candidate_conductual_start   (al pasar técnica)
+ *   4. candidate_integridad_start   (al pasar conductual)
+ *   5. candidate_video_start        (al pasar integridad sin riesgo alto)
+ *
+ * Cada correo tiene una sola CTA clara: la prueba que tiene que hacer ahora.
+ */
 
-Recibimos tu aplicación al puesto de {{job_title}} en {{company}}.
-
-El siguiente paso es completar una evaluación corta que combina:
-- Perfil conductual (DISC + capacidad cognitiva, ~25 min)
-- Integridad (~15 min)
-- Prueba técnica (varía según el rol)
-
-Podés hacer las pruebas en el orden que prefieras desde este link:
-{{test_url}}
-
-El link es personal y válido por 14 días. Si necesitas más tiempo o un link nuevo, responde este email.
-
-Cualquier duda, escríbenos a este correo.
-
-—
-Equipo SharkTalents`,
-    body_html: `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f3f4f6; margin:0; padding:0;">
+function shellHtml(opts: { tag: string; tagBg: string; tagColor: string; headline: string; bodyHtml: string; ctaText: string; ctaUrl: string; helpHtml?: string }): string {
+  return `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f3f4f6; margin:0; padding:0;">
   <tr><td align="center" style="padding:32px 16px;">
     <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:12px; overflow:hidden;">
       <tr><td style="background-color:#0e1218; padding:28px 40px; border-bottom:4px solid #dafd6f;">
@@ -604,22 +596,15 @@ Equipo SharkTalents`,
         <div style="font-family:Arial,Helvetica,sans-serif; font-size:13px; color:#8a93a3; margin-top:4px;">Una evaluación con criterio.</div>
       </td></tr>
       <tr><td style="padding:36px 40px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:1.7; color:#1f2937;">
-        <div style="display:inline-block; background-color:#dcfce7; color:#166534; font-size:12px; font-weight:bold; padding:4px 12px; border-radius:99px; margin-bottom:16px; letter-spacing:0.5px;">APLICACIÓN RECIBIDA</div>
-        <h1 style="margin:0 0 16px 0; font-size:22px; font-weight:bold; color:#1f2937; line-height:1.3;">Hola {{candidate_name}}, recibimos tu aplicación</h1>
-        <p style="margin:0 0 16px 0;">Aplicaste al puesto de <strong>{{job_title}}</strong> en <strong>{{company}}</strong>.</p>
-        <p style="margin:0 0 24px 0;">El siguiente paso es completar una evaluación corta que nos ayuda a entender tu perfil:</p>
-        <ul style="margin:0 0 24px 0; padding-left:20px; color:#374151;">
-          <li style="margin-bottom:6px;"><strong>Perfil conductual</strong> (DISC + capacidad cognitiva, ~25 min)</li>
-          <li style="margin-bottom:6px;"><strong>Integridad</strong> (~15 min)</li>
-          <li style="margin-bottom:6px;"><strong>Prueba técnica</strong> (varía según el rol)</li>
-        </ul>
-        <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px 0;">
+        <div style="display:inline-block; background-color:${opts.tagBg}; color:${opts.tagColor}; font-size:12px; font-weight:bold; padding:4px 12px; border-radius:99px; margin-bottom:16px; letter-spacing:0.5px;">${opts.tag}</div>
+        <h1 style="margin:0 0 16px 0; font-size:22px; font-weight:bold; color:#1f2937; line-height:1.3;">${opts.headline}</h1>
+        ${opts.bodyHtml}
+        <table cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 12px 0;">
           <tr><td align="center" style="background-color:#dafd6f; border-radius:6px; padding:14px 32px;">
-            <a href="{{test_url}}" style="font-family:Arial,Helvetica,sans-serif; font-size:15px; font-weight:bold; color:#1f2937; text-decoration:none; display:inline-block;">Empezar mis pruebas</a>
+            <a href="${opts.ctaUrl}" style="font-family:Arial,Helvetica,sans-serif; font-size:15px; font-weight:bold; color:#1f2937; text-decoration:none; display:inline-block;">${opts.ctaText}</a>
           </td></tr>
         </table>
-        <p style="margin:0 0 8px 0; font-size:13px; color:#6b7280;">El link es personal y válido por 14 días. Podés hacer las pruebas en el orden que prefieras.</p>
-        <p style="margin:24px 0 0 0; font-size:14px; color:#4b5563;">¿Algún problema? Respondé este email y te ayudamos.</p>
+        ${opts.helpHtml ?? '<p style="margin:24px 0 0 0; font-size:14px; color:#4b5563;">¿Tienes alguna duda? Responde este email y te ayudamos.</p>'}
       </td></tr>
       <tr><td style="background-color:#f9fafb; padding:20px 40px; border-top:1px solid #e5e7eb; text-align:center;">
         <div style="font-family:Arial,Helvetica,sans-serif; font-size:13px; color:#6b7280; line-height:1.6;">
@@ -628,7 +613,38 @@ Equipo SharkTalents`,
       </td></tr>
     </table>
   </td></tr>
-</table>`,
+</table>`;
+}
+
+// Fase 1 — Prefilter (se dispara al apply)
+const CANDIDATE_PREFILTER_START: Record<EmailLocale, EmailTemplate> = {
+  es: {
+    subject: 'Recibimos tu aplicación a {{job_title}}',
+    body_text: `Hola {{candidate_name}},
+
+Recibimos tu aplicación al puesto de {{job_title}} en {{company}}.
+
+El primer paso es un breve cuestionario inicial (~5 min). Sirve para confirmar requisitos básicos del puesto antes de continuar con las evaluaciones.
+
+Empieza tu cuestionario inicial:
+{{test_url}}
+
+El link es personal y válido por 14 días. Si necesitas un link nuevo, responde este email.
+
+—
+Equipo SharkTalents`,
+    body_html: shellHtml({
+      tag: 'PASO 1 DE 5 · CUESTIONARIO INICIAL',
+      tagBg: '#dcfce7', tagColor: '#166534',
+      headline: 'Hola {{candidate_name}}, recibimos tu aplicación',
+      bodyHtml: `<p style="margin:0 0 12px 0;">Aplicaste al puesto de <strong>{{job_title}}</strong> en <strong>{{company}}</strong>.</p>
+        <p style="margin:0 0 12px 0;">El primer paso es un <strong>breve cuestionario inicial</strong> (~5 min) para confirmar los requisitos básicos del puesto.</p>
+        <p style="margin:0 0 4px 0; font-size:13px; color:#6b7280;">Una vez que lo completes, te enviaremos por correo el siguiente paso.</p>`,
+      ctaText: 'Empezar cuestionario',
+      ctaUrl: '{{test_url}}',
+      helpHtml: `<p style="margin:0 0 8px 0; font-size:13px; color:#6b7280;">El link es personal y válido por 14 días.</p>
+        <p style="margin:24px 0 0 0; font-size:14px; color:#4b5563;">¿Tienes alguna duda? Responde este email y te ayudamos.</p>`,
+    }),
   },
   en: {
     subject: 'We received your application for {{job_title}}',
@@ -636,25 +652,232 @@ Equipo SharkTalents`,
 
 We received your application for {{job_title}} at {{company}}.
 
-Next step is a short evaluation that combines:
-- Behavioral profile (DISC + cognitive ability, ~25 min)
-- Integrity (~15 min)
-- Technical test (varies by role)
+The first step is a short initial questionnaire (~5 min) to confirm basic role requirements.
 
-Start your tests here (link valid 14 days):
+Start your questionnaire:
 {{test_url}}
 
-Reply to this email if you need a new link or more time.
+Link valid 14 days. Reply if you need a new one.
 
 Best,
 SharkTalents Team`,
     body_html: `<p>Hi {{candidate_name}},</p>
 <p>We received your application for <strong>{{job_title}}</strong> at <strong>{{company}}</strong>.</p>
-<p><a href="{{test_url}}" style="background:#dafd6f;color:#000;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:600;">Start my tests</a></p>
-<p style="color:#666;font-size:14px;">Link valid for 14 days.</p>
+<p>First step is a short initial questionnaire (~5 min).</p>
+<p><a href="{{test_url}}" style="background:#dafd6f;color:#000;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:600;">Start questionnaire</a></p>
+<p style="color:#666;font-size:14px;">Link valid 14 days.</p>
 <p>Best,<br/><em>SharkTalents Team</em></p>`,
   },
 };
+
+// Fase 2 — Técnica (Téc + Inglés + Mindset bloque continuo)
+const CANDIDATE_TECNICA_START: Record<EmailLocale, EmailTemplate> = {
+  es: {
+    subject: 'Siguiente paso: prueba técnica para {{job_title}}',
+    body_text: `Hola {{candidate_name}},
+
+¡Pasaste el cuestionario inicial!
+
+El siguiente paso es la prueba técnica del puesto {{job_title}}. Dura entre 20 y 30 minutos y combina:
+- Preguntas técnicas del rol
+- Situaciones reales de trabajo
+
+Si el puesto lo requiere, dentro del mismo bloque haces también las pruebas de inglés y mindset (cada una con su pausa opcional).
+
+Empieza tu prueba técnica:
+{{test_url}}
+
+Recomendación: hazla en un lugar tranquilo, sin interrupciones, en una sola sesión.
+
+—
+Equipo SharkTalents`,
+    body_html: shellHtml({
+      tag: 'PASO 2 DE 5 · PRUEBA TÉCNICA',
+      tagBg: '#fef3c7', tagColor: '#92400e',
+      headline: '¡Pasaste el cuestionario inicial!',
+      bodyHtml: `<p style="margin:0 0 12px 0;">El siguiente paso es la <strong>prueba técnica</strong> de <strong>{{job_title}}</strong>. Dura entre 20 y 30 minutos.</p>
+        <p style="margin:0 0 8px 0; font-size:14px; color:#4b5563;">Combina preguntas técnicas del rol + situaciones reales de trabajo. Si el puesto lo requiere, dentro del mismo bloque haces también las pruebas de inglés y mindset.</p>
+        <p style="margin:0 0 12px 0; font-size:13px; color:#6b7280;">Recomendación: hazla en un lugar tranquilo, sin interrupciones, en una sola sesión.</p>`,
+      ctaText: 'Empezar prueba técnica',
+      ctaUrl: '{{test_url}}',
+    }),
+  },
+  en: {
+    subject: 'Next step: technical test for {{job_title}}',
+    body_text: `Hi {{candidate_name}},
+
+You passed the initial questionnaire!
+
+Next step is the technical test for {{job_title}} (20-30 min). It combines role-specific questions + real work situations. If the role requires it, you'll also do the English and Mindset blocks in the same session.
+
+Start your technical test:
+{{test_url}}
+
+Best,
+SharkTalents Team`,
+    body_html: `<p>Hi {{candidate_name}},</p>
+<p>You passed the initial questionnaire. Next step is the technical test (20-30 min).</p>
+<p><a href="{{test_url}}" style="background:#dafd6f;color:#000;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:600;">Start technical test</a></p>
+<p>Best,<br/><em>SharkTalents Team</em></p>`,
+  },
+};
+
+// Fase 3 — Conductual (DISC + VELNA + Emoción)
+const CANDIDATE_CONDUCTUAL_START: Record<EmailLocale, EmailTemplate> = {
+  es: {
+    subject: 'Siguiente paso: evaluación conductual',
+    body_text: `Hola {{candidate_name}},
+
+¡Pasaste la prueba técnica!
+
+El siguiente paso es la evaluación conductual. Combina:
+- DISC (perfil de comportamiento)
+- Capacidad cognitiva (razonamiento verbal, lógico, numérico, espacial, abstracto)
+- Emoción
+
+Dura entre 15 y 20 minutos. No hay respuestas "correctas" — describe cómo eres y cómo reaccionas en situaciones reales.
+
+Empieza tu evaluación conductual:
+{{test_url}}
+
+—
+Equipo SharkTalents`,
+    body_html: shellHtml({
+      tag: 'PASO 3 DE 5 · EVALUACIÓN CONDUCTUAL',
+      tagBg: '#ede9fe', tagColor: '#5b21b6',
+      headline: '¡Pasaste la prueba técnica!',
+      bodyHtml: `<p style="margin:0 0 12px 0;">El siguiente paso es la <strong>evaluación conductual</strong>. Combina:</p>
+        <ul style="margin:0 0 16px 0; padding-left:20px; color:#374151;">
+          <li style="margin-bottom:6px;"><strong>DISC</strong> — perfil de comportamiento</li>
+          <li style="margin-bottom:6px;"><strong>Capacidad cognitiva</strong> — razonamiento verbal, lógico, numérico, espacial, abstracto</li>
+          <li style="margin-bottom:6px;"><strong>Emoción</strong></li>
+        </ul>
+        <p style="margin:0 0 12px 0; font-size:14px; color:#4b5563;">Dura 15-20 min. No hay respuestas "correctas" — describe cómo eres y cómo reaccionas en situaciones reales.</p>`,
+      ctaText: 'Empezar evaluación conductual',
+      ctaUrl: '{{test_url}}',
+    }),
+  },
+  en: {
+    subject: 'Next step: behavioral evaluation',
+    body_text: `Hi {{candidate_name}},
+
+You passed the technical test!
+
+Next is the behavioral evaluation (DISC + cognitive + emotion, 15-20 min). No right or wrong answers — describe how you really behave.
+
+Start here:
+{{test_url}}
+
+Best,
+SharkTalents Team`,
+    body_html: `<p>Hi {{candidate_name}},</p>
+<p>You passed the technical test. Next is the behavioral evaluation (15-20 min).</p>
+<p><a href="{{test_url}}" style="background:#dafd6f;color:#000;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:600;">Start behavioral evaluation</a></p>
+<p>Best,<br/><em>SharkTalents Team</em></p>`,
+  },
+};
+
+// Fase 4 — Integridad
+const CANDIDATE_INTEGRIDAD_START: Record<EmailLocale, EmailTemplate> = {
+  es: {
+    subject: 'Siguiente paso: prueba de integridad',
+    body_text: `Hola {{candidate_name}},
+
+¡Pasaste la evaluación conductual!
+
+Falta una prueba escrita más: integridad. Dura entre 10 y 15 minutos.
+
+La prueba evalúa rasgos de carácter en 13 dimensiones (honestidad, confiabilidad, dominio personal, etc.). Es importante que respondas con honestidad — el sistema detecta intentos de fingir.
+
+Empieza tu prueba de integridad:
+{{test_url}}
+
+—
+Equipo SharkTalents`,
+    body_html: shellHtml({
+      tag: 'PASO 4 DE 5 · INTEGRIDAD',
+      tagBg: '#fed7aa', tagColor: '#9a3412',
+      headline: '¡Pasaste la evaluación conductual!',
+      bodyHtml: `<p style="margin:0 0 12px 0;">Falta una prueba escrita más: <strong>integridad</strong>. Dura 10-15 minutos.</p>
+        <p style="margin:0 0 12px 0; font-size:14px; color:#4b5563;">Evalúa rasgos de carácter en 13 dimensiones (honestidad, confiabilidad, dominio personal, etc.). Es importante que respondas con honestidad — el sistema detecta intentos de fingir.</p>`,
+      ctaText: 'Empezar prueba de integridad',
+      ctaUrl: '{{test_url}}',
+    }),
+  },
+  en: {
+    subject: 'Next step: integrity test',
+    body_text: `Hi {{candidate_name}},
+
+You passed the behavioral evaluation!
+
+One more written test: integrity (10-15 min). Answer honestly — the system detects faking attempts.
+
+Start here:
+{{test_url}}
+
+Best,
+SharkTalents Team`,
+    body_html: `<p>Hi {{candidate_name}},</p>
+<p>You passed the behavioral evaluation. One more: integrity (10-15 min).</p>
+<p><a href="{{test_url}}" style="background:#dafd6f;color:#000;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:600;">Start integrity test</a></p>
+<p>Best,<br/><em>SharkTalents Team</em></p>`,
+  },
+};
+
+// Fase 5 — Video
+const CANDIDATE_VIDEO_START: Record<EmailLocale, EmailTemplate> = {
+  es: {
+    subject: 'Último paso: entrevista en video',
+    body_text: `Hola {{candidate_name}},
+
+¡Pasaste todas las pruebas escritas!
+
+El último paso es una breve entrevista en video con análisis de IA. Vas a responder algunas preguntas frente a la cámara, una por una, con tiempo limitado para cada respuesta.
+
+Duración total estimada: 10-15 minutos.
+
+Empieza tu entrevista en video:
+{{test_url}}
+
+Recomendación: usa una buena conexión a internet, audio claro y un fondo neutro. La primera pregunta es para presentarte.
+
+—
+Equipo SharkTalents`,
+    body_html: shellHtml({
+      tag: 'PASO 5 DE 5 · ENTREVISTA EN VIDEO',
+      tagBg: '#cffafe', tagColor: '#155e75',
+      headline: '¡Pasaste todas las pruebas escritas!',
+      bodyHtml: `<p style="margin:0 0 12px 0;">El último paso es una breve <strong>entrevista en video</strong> con análisis de IA. Vas a responder algunas preguntas frente a la cámara, una por una, con tiempo limitado.</p>
+        <p style="margin:0 0 12px 0; font-size:14px; color:#4b5563;">Duración total estimada: 10-15 minutos.</p>
+        <p style="margin:0 0 12px 0; font-size:13px; color:#6b7280;">Recomendación: usa una buena conexión a internet, audio claro y un fondo neutro. La primera pregunta es para presentarte.</p>`,
+      ctaText: 'Empezar entrevista en video',
+      ctaUrl: '{{test_url}}',
+    }),
+  },
+  en: {
+    subject: 'Final step: video interview',
+    body_text: `Hi {{candidate_name}},
+
+You passed all written tests!
+
+Final step is a short video interview with AI analysis (10-15 min). One question at a time, with a time limit per answer.
+
+Start here:
+{{test_url}}
+
+Tip: use good internet, clear audio, neutral background. First question is to introduce yourself.
+
+Best,
+SharkTalents Team`,
+    body_html: `<p>Hi {{candidate_name}},</p>
+<p>You passed all written tests! Final step: video interview (10-15 min).</p>
+<p><a href="{{test_url}}" style="background:#dafd6f;color:#000;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:600;">Start video interview</a></p>
+<p>Best,<br/><em>SharkTalents Team</em></p>`,
+  },
+};
+
+// Alias para compat: el código viejo usa 'candidate_application_received' → mapear al prefilter.
+const CANDIDATE_APPLICATION_RECEIVED = CANDIDATE_PREFILTER_START;
 
 const CLIENT_DRAFT_REVIEW: Record<EmailLocale, EmailTemplate> = {
   es: {
@@ -1501,7 +1724,12 @@ export const TEMPLATES = {
   recruiter_alert: RECRUITER_ALERT,
   // Candidato — único caso directo (reenvío de link bajo demanda; el resto via Recruit)
   recovery_link: RECOVERY_LINK,
-  candidate_application_received: CANDIDATE_APPLICATION_RECEIVED,
+  candidate_application_received: CANDIDATE_APPLICATION_RECEIVED, // alias legacy → prefilter
+  candidate_prefilter_start: CANDIDATE_PREFILTER_START,
+  candidate_tecnica_start: CANDIDATE_TECNICA_START,
+  candidate_conductual_start: CANDIDATE_CONDUCTUAL_START,
+  candidate_integridad_start: CANDIDATE_INTEGRIDAD_START,
+  candidate_video_start: CANDIDATE_VIDEO_START,
   // Marketing funnel
   marketing_deletion_request: MARKETING_DELETION_REQUEST,
   marketing_demo_test_link: MARKETING_DEMO_TEST_LINK,
