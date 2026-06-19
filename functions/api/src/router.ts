@@ -15,7 +15,7 @@ import { handleZohoCrmLeadCreated } from './features/zohoCrmWebhook';
 import { listPublicJobs, getPublicJob, applyToPublicJob } from './features/publicCareerSite';
 import { getDevLogByTraceId, listDevLogs } from './features/devLogs';
 import { handleWhatsAppWebhook } from './features/whatsappWebhook';
-import { verifyTables, listAllTenants, getAdminStats, anthropicPing, listAuditLog, issuePortalToken, listAntiCheatEvents, listEmailTemplates, getMetricsSnapshot, forceRecruitSync, diagInsertCandidate, adoptOrphanDrafts, diagLastDraft, diagCrmLayouts, diagCrmLead, diagCrmPush, diagTriggerTestFlow, diagGenerateDraft, diagPublishTestJobs, diagListDrafts, diagBackfillRecruitSlugs, diagRecentAlerts, diagGenerateQuestionsForJob, diagGetQuestionsForJob, diagListJobs, diagCreateTestCandidate, diagCleanupTestJobs, diagGetTestToken, diagGetScores, diagSendWhatsApp, diagWipeTestLeads, diagWipeAllTestData, redirectFromWhatsAppButton, diagListRecentLeads, diagBackfillLeadStatus } from './features/admin';
+import { verifyTables, listAllTenants, getAdminStats, anthropicPing, listAuditLog, issuePortalToken, listAntiCheatEvents, listEmailTemplates, getMetricsSnapshot, forceRecruitSync, diagInsertCandidate, adoptOrphanDrafts, diagLastDraft, diagCrmLayouts, diagCrmLead, diagCrmPush, diagTriggerTestFlow, diagGenerateDraft, diagPublishTestJobs, diagListDrafts, diagBackfillRecruitSlugs, diagRecentAlerts, diagGenerateQuestionsForJob, diagGetQuestionsForJob, diagListJobs, diagCreateE2eTestJob, diagCreateTestCandidate, diagCleanupTestJobs, diagGetTestToken, diagSetStage, diagGetScores, diagSendWhatsApp, diagWipeTestLeads, diagWipeAllTestData, redirectFromWhatsAppButton, diagListRecentLeads, diagBackfillLeadStatus } from './features/admin';
 import { processOutbox, listOutbox, processOutboxFromTenant, listOutboxFromTenant, searchOutboxByRecipient, resetStuckOutboxEvents } from './features/outbox';
 import { sendCandidateReminders } from './features/candidateReminders';
 import { listAlerts, acknowledgeAlert, resolveAlert } from './features/alerts';
@@ -42,6 +42,7 @@ import {
   getApplicationTransitions,
   getApplicationBotDecision,
   downloadApplicationCv,
+  getConductualAnalysis,
 } from './features/applications';
 import { writeScores, readScores } from './features/scores';
 import { writeIntegrity, readIntegrity } from './features/integrity';
@@ -103,7 +104,7 @@ import {
   submitPrefilterAnswers,
   listPrefilterAnswersForApplication,
 } from './features/prefilter';
-import { captureLead, requestEval, getLeadStatus, listMarketingLeads, requestLeadDeletion, confirmLeadDeletion, createManualLead, convertLeadToTenant, sendDemoToLead, sendContractToLead, getContractContext, registerDemoTest, diagnoseLead, resetLead, simulateCompletion, forceCrmSync, listCrmModules, linkMarketingTenant, whoami, resendReport, adminWipeLeads, patchLead, getLeadDemoStatus, forceGenerateLeadReport, inspectIntegrityDims, renameCandidate, testIntegrityDimsInsert, importLeadFromCrm, listImportableCrmLeads, dumpCrmLead, wipeTestLeads } from './features/marketing';
+import { captureLead, requestEval, exchangeMarketingToken, getLeadStatus, listMarketingLeads, requestLeadDeletion, confirmLeadDeletion, createManualLead, convertLeadToTenant, sendDemoToLead, sendContractToLead, getContractContext, registerDemoTest, diagnoseLead, resetLead, simulateCompletion, forceCrmSync, listCrmModules, linkMarketingTenant, whoami, resendReport, adminWipeLeads, patchLead, getLeadDemoStatus, forceGenerateLeadReport, inspectIntegrityDims, renameCandidate, testIntegrityDimsInsert, importLeadFromCrm, listImportableCrmLeads, dumpCrmLead, wipeTestLeads } from './features/marketing';
 import { getVideoConsent, postVideoConsent, withdrawVideoConsent } from './features/videoConsents';
 import { scheduleBriefing, listBriefings, uploadBriefingTranscript } from './features/briefings';
 import { trackPortalEvent, listJobTracking } from './features/jobTracking';
@@ -133,6 +134,7 @@ const routes: Route[] = [
   // Marketing funnel — landing externa (auth via X-Marketing-Site-Key, no Clerk)
   { method: 'POST', pattern: /^\/api\/marketing\/lead\/?$/, handler: captureLead, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/marketing\/eval-request\/?$/, handler: requestEval, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/marketing\/exchange-token\/?$/, handler: exchangeMarketingToken, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/marketing\/demo-test\/register\/?$/, handler: registerDemoTest, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/marketing\/_diagnose\/?$/, handler: diagnoseLead, auth: 'public' },
   // 2026-06-04 (audit fix #12): cambiados de 'public' → 'admin'. Eran endpoints de
@@ -176,9 +178,11 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/api\/admin\/_diag-backfill-lead-status\/?$/, handler: diagBackfillLeadStatus, auth: 'public' },
   { method: 'GET', pattern: /^\/r\/(?:[a-z]\/)?[^/?#]+\/?$/, handler: redirectFromWhatsAppButton, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/admin\/_diag-list-jobs\/?$/, handler: diagListJobs, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-create-e2e-test-job\/?$/, handler: diagCreateE2eTestJob, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/admin\/_diag-create-test-candidate\/?$/, handler: diagCreateTestCandidate, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/admin\/_diag-cleanup-test-jobs\/?$/, handler: diagCleanupTestJobs, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/admin\/_diag-get-test-token\/?$/, handler: diagGetTestToken, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-set-stage\/?$/, handler: diagSetStage, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/admin\/_adopt-orphan-drafts\/?$/, handler: adoptOrphanDrafts, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/marketing\/lead-status\/?$/, handler: getLeadStatus, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/marketing\/lead\/request-deletion\/?$/, handler: requestLeadDeletion, auth: 'public' },
@@ -319,6 +323,7 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/api\/applications\/?$/, handler: createApplication, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/transitions\/?$/, handler: getApplicationTransitions, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/cv-download\/?$/, handler: downloadApplicationCv, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/conductual-analysis\/?$/, handler: getConductualAnalysis, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/applications\/[^/]+\/transition\/?$/, handler: transitionApplication, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/applications\/_bulk-transition\/?$/, handler: bulkTransitionApplications, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/applications\/[^/]+\/bot-decision\/?$/, handler: getApplicationBotDecision, auth: 'tenant' },
