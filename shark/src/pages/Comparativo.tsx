@@ -174,7 +174,10 @@ export default function CandidateComparison() {
                 age: candResp.candidate.age ?? null,
               } : undefined,
               scoresResp?.scores ?? null,
-              (integrityResp?.integrity?.dimensions ?? []).map((d) => ({
+              // readScores ya trae integrity_dimensions; fallback a readIntegrity si vino vacío
+              ((scoresResp?.integrity_dimensions?.length
+                ? scoresResp.integrity_dimensions
+                : integrityResp?.integrity?.dimensions) ?? []).map((d) => ({
                 dimension: d.dimension,
                 nivel: d.nivel,
                 pct: d.pct,

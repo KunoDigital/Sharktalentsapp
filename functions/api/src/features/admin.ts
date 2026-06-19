@@ -1855,6 +1855,19 @@ export async function diagGetScores(ctx: RequestContext): Promise<void> {
       }
     }
 
+    // Cargar también las dimensiones de integridad para diagnosticar el Comparativo
+    let dimsRows: Record<string, unknown>[] = [];
+    try {
+      dimsRows = unwrapRows<Record<string, unknown>>(
+        (await zcql(ctx.req).executeZCQLQuery(
+          `SELECT dimension, nivel, pct FROM IntegrityDimensions WHERE result_id = '${escapeSql(applicationId)}' ORDER BY dimension ASC`,
+        )) as unknown[],
+        'IntegrityDimensions',
+      );
+    } catch (err) {
+      dimsRows = [{ error: (err as Error).message }];
+    }
+
     sendJson(ctx.res, 200, {
       application_id: applicationId,
       job_id: result.assessment_id,
@@ -1867,6 +1880,14 @@ export async function diagGetScores(ctx: RequestContext): Promise<void> {
       },
       ideal_profile: idealProfile,
       disc_calc_debug: discCalc,
+      integrity_dimensions: dimsRows,
+      integrity_dimensions_count: dimsRows.length,
+      // Campos PK del Scores raw — para confirmar si están vacíos
+      pk_debug: {
+        disc_perfil_dominante: scores?.disc_perfil_dominante ?? null,
+        disc_pk_profile_code: scores?.disc_pk_profile_code ?? null,
+        disc_pk_profile_name: scores?.disc_pk_profile_name ?? null,
+      },
     });
   } catch (err) {
     sendJson(ctx.res, 500, { error: (err as Error).message });

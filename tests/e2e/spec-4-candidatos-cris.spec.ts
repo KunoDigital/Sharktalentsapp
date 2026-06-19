@@ -255,8 +255,10 @@ test('Spec Cris: 4 candidatos con nombres reales', async ({ request }) => {
       continue;
     }
 
-    // Bueno → DISC balanceado + integridad limpia
-    const disc = { raw_d: 14, raw_i: 14, raw_s: 14, raw_c: 14, total_questions: 24 };
+    // Bueno → DISC con perfil D-dominante realista (suma D+I+S+C = total_questions=24)
+    // Antes mandábamos 14 en cada eje → backend normalizaba a 100/100/100/100 (cada axis dividido por max-per-axis=14).
+    // Ahora 12/4/4/4 → norm aproximadamente 86/29/29/29 = perfil D claro con baja similitud al ideal (50/60/50/50).
+    const disc = { raw_d: 12, raw_i: 4, raw_s: 4, raw_c: 4, total_questions: 24 };
     const velna = { verbal: 80, espacial: 78, logica: 82, numerica: 75, abstracta: 80, total: 80, max: 100 };
     const emotional = { score: 55 };
     const allDims = [
