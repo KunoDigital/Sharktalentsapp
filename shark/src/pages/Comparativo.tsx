@@ -34,7 +34,7 @@ type ScoreCellProps = {
 };
 
 function ScoreCell({ value, thresholdGood = 70, thresholdMid = 50, suffix = '%' }: ScoreCellProps) {
-  if (value == null) return <span style={{ color: '#94a3b8' }}>—</span>;
+  if (value == null) return <span style={{ color: '#6b7280' }}>—</span>;
   const color = value >= thresholdGood ? '#047857'
     : value >= thresholdMid ? '#1f2937'
     : '#b45309';
@@ -46,7 +46,7 @@ function ScoreCell({ value, thresholdGood = 70, thresholdMid = 50, suffix = '%' 
 }
 
 function TextCell({ value, accent }: { value: string | null | undefined; accent?: 'good' | 'warn' | 'bad' }) {
-  if (!value) return <span style={{ color: '#94a3b8' }}>—</span>;
+  if (!value) return <span style={{ color: '#6b7280' }}>—</span>;
   const color = accent === 'good' ? '#047857'
     : accent === 'warn' ? '#b45309'
     : accent === 'bad' ? '#b91c1c'
@@ -188,7 +188,7 @@ export default function CandidateComparison() {
     return (
       <div style={{ padding: '2rem' }}>
         <h2>Comparar finalistas</h2>
-        <p style={{ color: '#64748b' }}>
+        <p style={{ color: '#374151' }}>
           Selecciona 2 a {MAX_CANDIDATES} candidatos para comparar. Usa la URL con
           <code>?candidates=id1,id2,id3,id4</code>.
         </p>
@@ -206,18 +206,19 @@ export default function CandidateComparison() {
   // Estilos compartidos
   const rowLabelStyle: React.CSSProperties = {
     padding: '0.6rem 0.75rem',
-    fontSize: '0.78rem',
-    color: '#475569',
+    fontSize: '0.82rem',
+    color: '#1f2937',
     fontWeight: 600,
-    borderBottom: '1px solid #f1f5f9',
-    background: '#f8fafc',
+    borderBottom: '1px solid #e5e7eb',
+    background: '#f3f4f6',
     minWidth: '180px',
     verticalAlign: 'middle',
   };
   const cellStyle: React.CSSProperties = {
     padding: '0.6rem 0.75rem',
     fontSize: '0.9rem',
-    borderBottom: '1px solid #f1f5f9',
+    color: '#1f2937',
+    borderBottom: '1px solid #e5e7eb',
     textAlign: 'center',
     verticalAlign: 'middle',
   };
@@ -234,9 +235,9 @@ export default function CandidateComparison() {
   return (
     <div style={{ padding: '1.5rem' }}>
       <header style={{ marginBottom: '1.5rem' }}>
-        <Link to={`/jobs/${jobId}`} style={{ color: '#64748b', fontSize: '0.85rem' }}>← Volver al puesto</Link>
+        <Link to={`/jobs/${jobId}`} style={{ color: '#374151', fontSize: '0.85rem' }}>← Volver al puesto</Link>
         <h1 style={{ margin: '0.4rem 0', fontSize: '1.5rem' }}>Comparar {candidates.length} candidatos</h1>
-        <p style={{ margin: 0, color: '#64748b' }}>{jobTitle}</p>
+        <p style={{ margin: 0, color: '#374151' }}>{jobTitle}</p>
       </header>
 
       <div style={{ overflowX: 'auto', background: 'white', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
@@ -250,7 +251,7 @@ export default function CandidateComparison() {
                     <Link to={`/candidates/${c.id}`} style={{ color: '#1f2937', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem' }}>
                       {c.candidate_name}
                     </Link>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{c.candidate_age} años</span>
+                    <span style={{ fontSize: '0.75rem', color: '#374151' }}>{c.candidate_age} años</span>
                     <PhaseRecommendation app={c} />
                   </div>
                 </th>
@@ -265,7 +266,7 @@ export default function CandidateComparison() {
                 <td key={c.id} style={cellStyle}>
                   {c.salary_aspiration_usd > 0
                     ? <span style={{ fontWeight: 600 }}>${c.salary_aspiration_usd.toLocaleString()}/mes</span>
-                    : <span style={{ color: '#94a3b8' }}>—</span>}
+                    : <span style={{ color: '#6b7280' }}>—</span>}
                 </td>
               ))}
             </tr>
@@ -284,7 +285,7 @@ export default function CandidateComparison() {
               <th style={rowLabelStyle}><Term name="estilo profesional">Estilo situacional</Term></th>
               {candidates.map((c) => {
                 const s = c.tecnica?.style_autonomy_consult;
-                if (s == null) return <td key={c.id} style={cellStyle}><span style={{ color: '#94a3b8' }}>—</span></td>;
+                if (s == null) return <td key={c.id} style={cellStyle}><span style={{ color: '#6b7280' }}>—</span></td>;
                 const label = s >= 65 ? '⚡ Autonomía' : s <= 35 ? '🤝 Consulta' : '🔄 Balanceado';
                 return <td key={c.id} style={cellStyle}>{label}</td>;
               })}
@@ -347,7 +348,7 @@ export default function CandidateComparison() {
               <th style={rowLabelStyle}>🇬🇧 Inglés</th>
               {candidates.map((c) => {
                 const s = c.english_state;
-                if (s == null) return <td key={c.id} style={cellStyle}><span style={{ color: '#94a3b8' }}>No requerido</span></td>;
+                if (s == null) return <td key={c.id} style={cellStyle}><span style={{ color: '#6b7280' }}>No requerido</span></td>;
                 if (s === 'completado') return <td key={c.id} style={cellStyle}><TextCell value="✅ Aprobado" accent="good" /></td>;
                 if (s === 'fallo') return <td key={c.id} style={cellStyle}><TextCell value="❌ No pasó" accent="warn" /></td>;
                 return <td key={c.id} style={cellStyle}><TextCell value="⏳ En proceso" /></td>;
@@ -357,7 +358,7 @@ export default function CandidateComparison() {
               <th style={rowLabelStyle}>🧠 <Term name="mindset">Mindset</Term></th>
               {candidates.map((c) => {
                 const m = c.mindset_perfil;
-                if (m == null) return <td key={c.id} style={cellStyle}><span style={{ color: '#94a3b8' }}>No requerido</span></td>;
+                if (m == null) return <td key={c.id} style={cellStyle}><span style={{ color: '#6b7280' }}>No requerido</span></td>;
                 const label = m === 'adaptable' ? 'Adaptable'
                   : m === 'mixto' ? 'Mixto'
                   : m === 'rigido' ? 'Rígido'
@@ -371,7 +372,7 @@ export default function CandidateComparison() {
             <tr>
               <th style={rowLabelStyle}>Resultado global</th>
               {candidates.map((c) => {
-                if (!c.integridad) return <td key={c.id} style={cellStyle}><span style={{ color: '#94a3b8' }}>—</span></td>;
+                if (!c.integridad) return <td key={c.id} style={cellStyle}><span style={{ color: '#6b7280' }}>—</span></td>;
                 const obs = c.integridad.observations.length;
                 if (c.integridad_state === 'rechazado') {
                   return <td key={c.id} style={cellStyle}><TextCell value="❌ Riesgos altos" accent="bad" /></td>;
@@ -420,7 +421,7 @@ export default function CandidateComparison() {
         </table>
       </div>
 
-      <p style={{ marginTop: '1.5rem', color: '#64748b', fontSize: '0.85rem' }}>
+      <p style={{ marginTop: '1.5rem', color: '#374151', fontSize: '0.85rem' }}>
         💡 La recomendación rápida (avanzar / duda CV / rechazar) se calcula automáticamente según los datos. Tú decides al final.
       </p>
     </div>
