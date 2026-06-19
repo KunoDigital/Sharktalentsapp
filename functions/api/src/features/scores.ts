@@ -355,12 +355,15 @@ export async function readScores(ctx: RequestContext): Promise<void> {
     listIntegrityDims(ctx.req, resultId),
   ]);
 
-  // Computar DISC/VELNA similarity on-the-fly contra ideal_profile del Job (modelo V1).
-  // No persistimos — se recalcula cada read (igual que v1, sin columnas nuevas).
-  // calculateDiscSimilarity usa min/max ratio: funciona con cualquier escala per-axis.
+  // Computar DISC/VELNA similarity + PK profile on-the-fly contra ideal_profile del Job.
+  // También cargar salary_expectation del Candidate (lo persiste publicApply, lo necesita
+  // el Comparativo). No persistimos los derivados — se recalculan cada read.
   const enriched = row ? { ...row } as ScoresRow & {
     disc_similarity_pct?: number | null;
     velna_similarity_pct?: number | null;
+    disc_pk_profile_code?: string | null;
+    disc_pk_profile_name?: string | null;
+    salary_expectation_usd?: number | null;
   } : null;
 
   if (enriched) {
@@ -369,11 +372,20 @@ export async function readScores(ctx: RequestContext): Promise<void> {
       // Catalyst devuelve int como string ("83" no 83) — toFiniteNum tolera ambos.
       const dn = toFiniteNum(row?.disc_norm_d), di = toFiniteNum(row?.disc_norm_i);
       const ds = toFiniteNum(row?.disc_norm_s), dc = toFiniteNum(row?.disc_norm_c);
-      if (dn !== null && di !== null && ds !== null && dc !== null && ideal?.disc) {
-        enriched.disc_similarity_pct = calculateDiscSimilarity(
-          { d: dn, i: di, s: ds, c: dc },
-          ideal.disc,
-        );
+      if (dn !== null && di !== null && ds !== null && dc !== null) {
+        if (ideal?.disc) {
+          enriched.disc_similarity_pct = calculateDiscSimilarity(
+            { d: dn, i: di, s: ds, c: dc },
+            ideal.disc,
+          );
+        }
+        // Derivar arquetipo PK del catálogo (más cercano por distancia euclidiana)
+        const { derivePkProfile } = await import('../lib/pkProfiles.js');
+        const pk = derivePkProfile({ d: dn, i: di, s: ds, c: dc });
+        if (pk) {
+          enriched.disc_pk_profile_code = pk.code;
+          enriched.disc_pk_profile_name = pk.name;
+        }
       }
       const vv = toFiniteNum(row?.velna_verbal), ve = toFiniteNum(row?.velna_espacial);
       const vl = toFiniteNum(row?.velna_logica), vn = toFiniteNum(row?.velna_numerica);
@@ -385,7 +397,24 @@ export async function readScores(ctx: RequestContext): Promise<void> {
         );
       }
     } catch (err) {
-      log.warn('similarity calc failed (non-fatal)', { resultId, error: (err as Error).message });
+      log.warn('similarity/PK calc failed (non-fatal)', { resultId, error: (err as Error).message });
+    }
+
+    // Cargar salary_expectation del Candidate asociado al Result
+    try {
+      const candidateRows = unwrapRows<{ salary_expectation?: number | string | null }>(
+        (await zcql(ctx.req).executeZCQLQuery(
+          `SELECT c.salary_expectation FROM Candidates c, Results r
+           WHERE r.ROWID = '${escapeSql(resultId)}' AND r.candidate_id = c.ROWID LIMIT 1`,
+        )) as unknown[],
+        'Candidates',
+      );
+      const sal = toFiniteNum(candidateRows[0]?.salary_expectation);
+      if (sal !== null && sal > 0) {
+        enriched.salary_expectation_usd = sal;
+      }
+    } catch (err) {
+      log.warn('salary fetch failed (non-fatal)', { resultId, error: (err as Error).message });
     }
   }
 

@@ -41,6 +41,89 @@ function deriveAutoRejectedState(
   return stage;
 }
 
+// 2026-06-12: Derivadores de sub-estados por fase según las reglas confirmadas con Cris.
+// Ver memoria `project_reglas_pipeline_candidato.md`.
+
+/** Estados de Integridad con riesgo alto que disparan AUTO-RECHAZO. */
+const INTEGRITY_HARD_REJECT_DIMS = new Set([
+  'hurto', 'soborno', 'drogas', 'alcohol', 'confiabilidad',
+]);
+
+function deriveTecnicaState(
+  s: Record<string, unknown>,
+): 'registrado' | 'en_progreso' | 'completado' | 'siguiente_etapa' | 'rechazado' | 'duda_cv' {
+  if (!s.tec_completed_at) return 'registrado';
+  // Tec fallido → rechazo auto (la regla está en backend, acá reflejamos el estado)
+  if (s.tec_passed === false) return 'rechazado';
+  // Si inglés falló → Duda CV (Inglés es opcional pero levanta flag)
+  if (s.english_passed === false) return 'duda_cv';
+  // Si avanzó a conductual o más, ya pasó técnica
+  if (s.conductual_completed_at || s.int_completed_at) return 'siguiente_etapa';
+  return 'completado';
+}
+
+function deriveConductualState(
+  s: Record<string, unknown>,
+): 'registrado' | 'en_progreso' | 'completado' | 'siguiente_etapa' {
+  // Conductual NUNCA rechaza per regla Cris 2026-06-12
+  if (!s.conductual_completed_at && !s.disc_completed_at && !s.velna_completed_at) return 'registrado';
+  if (!s.conductual_completed_at) return 'en_progreso';
+  if (s.int_completed_at) return 'siguiente_etapa';
+  return 'completado';
+}
+
+function deriveIntegridadState(
+  s: Record<string, unknown>,
+  integrityDims: IntegrityDim[],
+): 'registrado' | 'en_progreso' | 'completado' | 'rechazado' | 'duda_cv' | 'llamar_entrevista' {
+  if (!s.int_completed_at) return 'registrado';
+  // Si alguna dim hard reject está en 'bajo' → rechazo auto
+  const hasHardReject = integrityDims.some(
+    (d) => d.nivel === 'bajo' && INTEGRITY_HARD_REJECT_DIMS.has(d.dimension),
+  );
+  if (hasHardReject) return 'rechazado';
+  // Si alguna dim NO hard reject está en 'bajo' → Duda CV
+  const hasReview = integrityDims.some(
+    (d) => d.nivel === 'bajo' && !INTEGRITY_HARD_REJECT_DIMS.has(d.dimension),
+  );
+  if (hasReview) return 'duda_cv';
+  return 'completado';
+}
+
+function deriveEnglishState(
+  s: Record<string, unknown>,
+): 'completado' | 'en_progreso' | 'fallo' | null {
+  // null = el puesto NO activó inglés
+  if (s.english_required !== true) return null;
+  if (s.english_passed === true) return 'completado';
+  if (s.english_passed === false) return 'fallo';
+  return 'en_progreso';
+}
+
+function deriveMindsetPerfil(
+  s: Record<string, unknown>,
+): 'adaptable' | 'mixto' | 'rigido' | 'en_progreso' | null {
+  // null = el puesto NO activó mindset
+  if (s.mindset_required !== true) return null;
+  if (typeof s.mindset_perfil === 'string') {
+    const p = s.mindset_perfil.toLowerCase();
+    if (p === 'adaptable' || p === 'mixto' || p === 'rigido') return p;
+  }
+  // Derivar del score de adaptabilidad si existe
+  if (hasNumericValue(s.mindset_adaptability_pct)) {
+    const pct = toNum(s.mindset_adaptability_pct);
+    if (pct >= 70) return 'adaptable';
+    if (pct >= 40) return 'mixto';
+    return 'rigido';
+  }
+  return 'en_progreso';
+}
+
+function deriveVideoState(s: Record<string, unknown>): 'pendiente' | 'grabado' {
+  if (s.video_completed_at) return 'grabado';
+  return 'pendiente';
+}
+
 type ApiApp = {
   ROWID: string;
   assessment_id: string;
@@ -81,11 +164,16 @@ export function adaptToMockApplication(
     // Aquí "manual" significa stages que NO sean prefiltro o tecnica_completed (estados auto).
     state: deriveAutoRejectedState(app.pipeline_stage, s.tec_completed_at, s.tec_passed) as Application['state'],
     applied_at: app.started_at,
-    salary_aspiration_usd: 0,
+    salary_aspiration_usd: hasNumericValue(s.salary_expectation_usd) ? toNum(s.salary_expectation_usd) : 0,
     disponibilidad: 'No declarado',
-    tecnica_state: 'completado',
-    conductual_state: 'completado',
-    integridad_state: 'completado',
+    // 2026-06-12: states derivados de la actividad real del candidato + reglas Cris.
+    // Antes hardcoded a 'completado' (Me7) — ahora reflejan el estado real.
+    tecnica_state: deriveTecnicaState(s),
+    conductual_state: deriveConductualState(s),
+    integridad_state: deriveIntegridadState(s, integrityDims),
+    english_state: deriveEnglishState(s),
+    mindset_perfil: deriveMindsetPerfil(s),
+    video_state: deriveVideoState(s),
     anti_cheat_events: [],
     ia_summary: '',
     timeline: [],
@@ -98,8 +186,8 @@ export function adaptToMockApplication(
       s: toNum(s.disc_norm_s),
       c: toNum(s.disc_norm_c),
       dominant_label: typeof s.disc_perfil_dominante === 'string' ? s.disc_perfil_dominante : '',
-      pk_profile_code: '',
-      pk_profile_name: '',
+      pk_profile_code: typeof s.disc_pk_profile_code === 'string' ? s.disc_pk_profile_code : '',
+      pk_profile_name: typeof s.disc_pk_profile_name === 'string' ? s.disc_pk_profile_name : '',
       similitud_pct: hasNumericValue(s.disc_similarity_pct) ? toNum(s.disc_similarity_pct) : 0,
     } : undefined,
     velna: s.velna_completed_at ? {
