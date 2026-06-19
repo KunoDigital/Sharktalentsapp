@@ -861,9 +861,123 @@ export default function CandidateComparison() {
         </table>
       </div>
 
+      {/* SECCIÓN DECISIÓN — EVALUACIÓN CONDUCTUAL (DISC) */}
+      <section style={{ ...cardStyle, marginTop: '1.5rem', marginBottom: '1.25rem' }}>
+        <div style={cardTitleStyle}>⚖️ Decisión — Evaluación conductual (DISC)</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          {candidates.map((c) => (
+            <DecisionRow
+              key={c.id}
+              candidate={c}
+              dimension="conductual"
+              onTransition={async (toStage, reason) => {
+                await api.applications.transition(c.id, toStage, reason);
+              }}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* SECCIÓN DECISIÓN — INTEGRIDAD */}
+      <section style={{ ...cardStyle, marginBottom: '1.25rem' }}>
+        <div style={cardTitleStyle}>🛡️ Decisión — Integridad</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          {candidates.map((c) => (
+            <DecisionRow
+              key={c.id}
+              candidate={c}
+              dimension="integridad"
+              onTransition={async (toStage, reason) => {
+                await api.applications.transition(c.id, toStage, reason);
+              }}
+            />
+          ))}
+        </div>
+      </section>
+
       <p style={{ marginTop: '1.5rem', color: '#374151', fontSize: '0.85rem' }}>
-        💡 La recomendación rápida (avanzar / duda CV / rechazar) se calcula automáticamente según los datos. Tú decides al final.
+        💡 La recomendación rápida (avanzar / duda CV / rechazar) se calcula automáticamente según los datos. Tú decides al final con los botones de arriba.
       </p>
+    </div>
+  );
+}
+
+// Tipo del transition handler — toStage es string para evitar import circular con PipelineStage
+type TransitionFn = (toStage: 'integridad_completed' | 'finalist' | 'rejected_by_admin', reason?: string) => Promise<void>;
+
+function DecisionRow({ candidate, dimension, onTransition }: {
+  candidate: Application;
+  dimension: 'conductual' | 'integridad';
+  onTransition: TransitionFn;
+}) {
+  const [saving, setSaving] = useState<string | null>(null);
+  const [savedAction, setSavedAction] = useState<string | null>(null);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+
+  async function handle(label: string, toStage: 'integridad_completed' | 'finalist' | 'rejected_by_admin', reason?: string) {
+    setSaving(label);
+    setErrMsg(null);
+    try {
+      await onTransition(toStage, reason);
+      setSavedAction(label);
+    } catch (err) {
+      setErrMsg((err as Error).message ?? 'Error');
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  const conductualButtons: Array<{ label: string; toStage: 'integridad_completed' | 'rejected_by_admin'; color: string; bg: string }> = [
+    { label: 'Siguiente etapa', toStage: 'integridad_completed', color: '#166534', bg: '#dcfce7' },
+    { label: 'Rechazar', toStage: 'rejected_by_admin', color: '#991b1b', bg: '#fee2e2' },
+  ];
+  const integridadButtons: Array<{ label: string; toStage: 'finalist' | 'rejected_by_admin'; color: string; bg: string }> = [
+    { label: 'Llamar a entrevista', toStage: 'finalist', color: '#166534', bg: '#dcfce7' },
+    { label: 'Rechazo total', toStage: 'rejected_by_admin', color: '#991b1b', bg: '#fee2e2' },
+  ];
+  const buttons = dimension === 'conductual' ? conductualButtons : integridadButtons;
+
+  return (
+    <div style={{
+      background: '#f9fafb',
+      borderRadius: '8px',
+      padding: '0.75rem 1rem',
+      border: '1px solid #e5e7eb',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: '1rem',
+      flexWrap: 'wrap',
+    }}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1f2937' }}>{candidate.candidate_name}</span>
+        <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>{candidate.candidate_email}</span>
+        {savedAction && <span style={{ fontSize: '0.75rem', color: '#166534', fontWeight: 600, marginTop: '4px' }}>✓ Guardado: {savedAction}</span>}
+        {errMsg && <span style={{ fontSize: '0.75rem', color: '#b91c1c', marginTop: '4px' }}>⚠️ {errMsg}</span>}
+      </div>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        {buttons.map((b) => (
+          <button
+            key={b.label}
+            type="button"
+            disabled={saving !== null}
+            onClick={() => handle(b.label, b.toStage)}
+            style={{
+              background: b.bg,
+              color: b.color,
+              border: `1px solid ${b.color}`,
+              padding: '6px 14px',
+              borderRadius: '6px',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              cursor: saving === null ? 'pointer' : 'wait',
+              opacity: saving === null ? 1 : 0.6,
+            }}
+          >
+            {saving === b.label ? '...' : b.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
