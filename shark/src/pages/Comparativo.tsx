@@ -70,6 +70,85 @@ function Bar({ value, max = 100 }: { value: number | null | undefined; max?: num
   );
 }
 
+// Barras verticales DISC con colores fijos por eje (réplica del Comparativo V1)
+const DISC_AXIS_COLOR: Record<'d' | 'i' | 's' | 'c', string> = {
+  d: '#ef4444', // rojo
+  i: '#f59e0b', // dorado
+  s: '#10b981', // verde
+  c: '#3b82f6', // azul
+};
+const DISC_AXIS_LABEL: Record<'d' | 'i' | 's' | 'c', string> = {
+  d: 'D',
+  i: 'I',
+  s: 'S',
+  c: 'C',
+};
+
+function DiscVerticalBars({ disc }: { disc: { d: number; i: number; s: number; c: number } | null | undefined }) {
+  if (!disc) return <span style={{ color: '#6b7280' }}>—</span>;
+  const axes: ('d' | 'i' | 's' | 'c')[] = ['d', 'i', 's', 'c'];
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.6rem', height: '100px', justifyContent: 'center' }}>
+      {axes.map((ax) => {
+        const val = disc[ax];
+        const h = Math.max(8, Math.min(100, val)) + '%';
+        return (
+          <div key={ax} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '0.72rem', color: '#1f2937', fontWeight: 600 }}>{val}</span>
+            <div style={{ width: '24px', height: '70px', background: '#f3f4f6', borderRadius: '4px', display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: h, background: DISC_AXIS_COLOR[ax], borderRadius: '4px' }} />
+            </div>
+            <span style={{ fontSize: '0.78rem', color: '#374151', fontWeight: 700 }}>{DISC_AXIS_LABEL[ax]}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function HorizontalBar({ value, label, max = 100 }: { value: number; label: string; max?: number }) {
+  const pct = Math.min(100, Math.max(0, (value / max) * 100));
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.82rem' }}>
+      <span style={{ minWidth: '80px', color: '#1f2937', fontWeight: 600 }}>{label}</span>
+      <div style={{ flex: 1, height: '8px', background: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #f59e0b, #3b82f6)', borderRadius: '4px' }} />
+      </div>
+      <span style={{ minWidth: '32px', textAlign: 'right', color: '#1f2937', fontVariantNumeric: 'tabular-nums' }}>{value}</span>
+    </div>
+  );
+}
+
+function EmotionalSlider({ value, name }: { value: number | null | undefined; name: string }) {
+  if (value == null) return null;
+  const pct = Math.min(100, Math.max(0, value));
+  return (
+    <div style={{ marginBottom: '0.75rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: '#374151', marginBottom: '4px' }}>
+        <span>Espontáneo</span>
+        <span>Reflexivo</span>
+      </div>
+      <div style={{ position: 'relative', height: '8px', background: 'linear-gradient(90deg, #f59e0b 0%, #d4d4d4 50%, #3b82f6 100%)', borderRadius: '4px' }}>
+        <div style={{
+          position: 'absolute',
+          left: `${pct}%`,
+          top: '-4px',
+          width: '16px',
+          height: '16px',
+          borderRadius: '50%',
+          background: '#1f2937',
+          border: '2px solid #fff',
+          transform: 'translateX(-50%)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+        }} />
+      </div>
+      <div style={{ marginTop: '4px', fontSize: '0.82rem', color: '#1f2937', fontWeight: 600 }}>
+        {name}: {value}/100
+      </div>
+    </div>
+  );
+}
+
 function PhaseRecommendation({ app }: { app: Application }) {
   // Recomendación rápida basada en estados del adapter
   const isRejected = app.state === 'auto_rejected_low_score'
@@ -114,6 +193,17 @@ function PhaseRecommendation({ app }: { app: Application }) {
   );
 }
 
+type IdealProfileDISC = { d: number; i: number; s: number; c: number; pk_code?: string; pk_name?: string; description?: string[] };
+type IdealProfileVELNA = { verbal: number; espacial: number; logica: number; numerica: number; abstracta: number };
+type IdealProfileCompetencia = { name: string; required_pct: number };
+type ParsedIdealProfile = {
+  disc?: IdealProfileDISC;
+  disc_b?: IdealProfileDISC;
+  velna?: IdealProfileVELNA;
+  competencias?: IdealProfileCompetencia[];
+  tecnica_minimo_pct?: number;
+};
+
 export default function CandidateComparison() {
   const { id: jobId } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -122,6 +212,7 @@ export default function CandidateComparison() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [jobTitle, setJobTitle] = useState<string>('');
+  const [idealProfile, setIdealProfile] = useState<ParsedIdealProfile | null>(null);
 
   const candidateIds = useMemo(() => {
     const raw = searchParams.get('candidates') ?? '';
@@ -136,11 +227,21 @@ export default function CandidateComparison() {
     let cancelled = false;
     async function load() {
       try {
-        // Cargar job para el título
+        // Cargar job para el título + ideal_profile
         if (jobId) {
           try {
             const jobRes = await api.jobs.get(jobId);
-            if (!cancelled) setJobTitle(`${jobRes.job.title} — ${jobRes.job.company}`);
+            if (!cancelled) {
+              setJobTitle(`${jobRes.job.title} — ${jobRes.job.company}`);
+              if (jobRes.job.ideal_profile) {
+                try {
+                  const parsed = JSON.parse(jobRes.job.ideal_profile) as ParsedIdealProfile;
+                  setIdealProfile(parsed);
+                } catch {
+                  // Sin perfil ideal, secciones nuevas no se muestran
+                }
+              }
+            }
           } catch {
             // No critical
           }
@@ -251,15 +352,188 @@ export default function CandidateComparison() {
     letterSpacing: '0.5px',
   };
 
+  // Estilos de card reutilizables para secciones nuevas (estilo V1)
+  const cardStyle: React.CSSProperties = {
+    background: '#ffffff',
+    borderRadius: '8px',
+    border: '1px solid #e5e7eb',
+    padding: '1rem 1.25rem',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+  };
+  const cardTitleStyle: React.CSSProperties = {
+    fontSize: '0.7rem',
+    fontWeight: 700,
+    color: '#374151',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    marginBottom: '0.75rem',
+  };
+
   return (
-    <div style={{ padding: '1.5rem' }}>
+    <div style={{ padding: '1.5rem', background: '#f9fafb' }}>
       <header style={{ marginBottom: '1.5rem' }}>
         <Link to={`/jobs/${jobId}`} style={{ color: '#374151', fontSize: '0.85rem' }}>← Volver al puesto</Link>
-        <h1 style={{ margin: '0.4rem 0', fontSize: '1.5rem' }}>Comparar {candidates.length} candidatos</h1>
-        <p style={{ margin: 0, color: '#374151' }}>{jobTitle}</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h1 style={{ margin: '0.4rem 0', fontSize: '1.5rem', color: '#1f2937' }}>Comparar candidatos — {jobTitle}</h1>
+            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+              {candidates.map((c) => {
+                const isRejected = c.state === 'auto_rejected_low_score' || c.state === 'rejected_by_admin'
+                  || c.integridad_state === 'rechazado' || c.tecnica_state === 'rechazado';
+                return (
+                  <span key={c.id} style={{
+                    background: isRejected ? '#fee2e2' : '#dcfce7',
+                    color: isRejected ? '#991b1b' : '#166534',
+                    padding: '4px 10px',
+                    borderRadius: '999px',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                  }}>
+                    {isRejected ? '❌' : '✅'} {c.candidate_name}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+          <button
+            type="button"
+            style={{
+              background: '#1f2937',
+              color: '#fff',
+              border: 'none',
+              padding: '10px 18px',
+              borderRadius: '8px',
+              fontSize: '0.88rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              const ids = candidates.map((c) => c.id).join(',');
+              window.location.href = `/app/#/jobs/${jobId}/reporte?candidates=${ids}`;
+            }}
+          >
+            📤 Preparar reporte para cliente ({candidates.length} candidatos)
+          </button>
+        </div>
       </header>
 
-      <div style={{ overflowX: 'auto', background: 'white', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+      {/* SECCIÓN DISC: Perfil Ideal A/B + tarjetas candidato */}
+      {idealProfile?.disc && (
+        <section style={{ ...cardStyle, marginBottom: '1.25rem' }}>
+          <div style={cardTitleStyle}>🧩 DISC — Perfil Ideal y Candidatos</div>
+          <div style={{ display: 'grid', gridTemplateColumns: idealProfile.disc_b ? '1fr 1fr' : '1fr', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '0.9rem', border: '1px solid #e5e7eb' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1f2937', marginBottom: '0.5rem' }}>Perfil Ideal A</div>
+              <DiscVerticalBars disc={idealProfile.disc} />
+              {(idealProfile.disc.pk_code || idealProfile.disc.pk_name) && (
+                <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#374151', textAlign: 'center' }}>
+                  <strong>{idealProfile.disc.pk_code}</strong> {idealProfile.disc.pk_name}
+                </div>
+              )}
+            </div>
+            {idealProfile.disc_b && (
+              <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '0.9rem', border: '1px solid #e5e7eb' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1f2937', marginBottom: '0.5rem' }}>Perfil Ideal B (alternativo)</div>
+                <DiscVerticalBars disc={idealProfile.disc_b} />
+                {(idealProfile.disc_b.pk_code || idealProfile.disc_b.pk_name) && (
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#374151', textAlign: 'center' }}>
+                    <strong>{idealProfile.disc_b.pk_code}</strong> {idealProfile.disc_b.pk_name}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(candidates.length, 4)}, 1fr)`, gap: '0.75rem' }}>
+            {candidates.map((c) => {
+              const sim = c.disc?.similitud_pct;
+              const simColor = sim == null ? '#6b7280' : sim >= 70 ? '#047857' : sim >= 50 ? '#1f2937' : '#b45309';
+              return (
+                <div key={c.id} style={{ background: '#f9fafb', borderRadius: '8px', padding: '0.8rem', border: '1px solid #e5e7eb' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.4rem' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1f2937' }}>{c.candidate_name}</span>
+                    {sim != null && <span style={{ fontSize: '1rem', fontWeight: 700, color: simColor }}>{sim}%</span>}
+                  </div>
+                  <DiscVerticalBars disc={c.disc ? { d: c.disc.d, i: c.disc.i, s: c.disc.s, c: c.disc.c } : null} />
+                  {c.disc?.pk_profile_code && (
+                    <div style={{ marginTop: '0.4rem', fontSize: '0.74rem', color: '#374151', textAlign: 'center' }}>
+                      {c.disc.pk_profile_code} {c.disc.pk_profile_name}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* SECCIÓN VELNA: Perfil Ideal + barras candidatos */}
+      {idealProfile?.velna && (
+        <section style={{ ...cardStyle, marginBottom: '1.25rem' }}>
+          <div style={cardTitleStyle}>🧠 Cognitiva VELNA</div>
+          <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '0.9rem', border: '1px solid #e5e7eb', marginBottom: '0.75rem' }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1f2937', marginBottom: '0.5rem' }}>Perfil Ideal</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+              <HorizontalBar value={idealProfile.velna.verbal} label="Verbal" />
+              <HorizontalBar value={idealProfile.velna.espacial} label="Espacial" />
+              <HorizontalBar value={idealProfile.velna.logica} label="Lógica" />
+              <HorizontalBar value={idealProfile.velna.numerica} label="Numérica" />
+              <HorizontalBar value={idealProfile.velna.abstracta} label="Abstracta" />
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(candidates.length, 4)}, 1fr)`, gap: '0.75rem' }}>
+            {candidates.map((c) => {
+              const sim = c.velna?.similitud_pct;
+              const simColor = sim == null ? '#6b7280' : sim >= 70 ? '#047857' : sim >= 50 ? '#1f2937' : '#b45309';
+              return (
+                <div key={c.id} style={{ background: '#f9fafb', borderRadius: '8px', padding: '0.8rem', border: '1px solid #e5e7eb' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1f2937' }}>{c.candidate_name}</span>
+                    {sim != null && <span style={{ fontSize: '0.92rem', fontWeight: 700, color: simColor }}>{sim}%</span>}
+                  </div>
+                  {c.velna && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <HorizontalBar value={c.velna.verbal} label="Verbal" />
+                      <HorizontalBar value={c.velna.espacial} label="Espacial" />
+                      <HorizontalBar value={c.velna.logica} label="Lógica" />
+                      <HorizontalBar value={c.velna.numerica} label="Numérica" />
+                      <HorizontalBar value={c.velna.abstracta} label="Abstracta" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* SECCIÓN EMOCIÓN: slider continuo por candidato */}
+      <section style={{ ...cardStyle, marginBottom: '1.25rem' }}>
+        <div style={cardTitleStyle}>😊 Emoción · Espontáneo ↔ Reflexivo</div>
+        {candidates.map((c) => (
+          <EmotionalSlider key={c.id} value={c.emocional?.value ?? null} name={c.candidate_name} />
+        ))}
+      </section>
+
+      {/* SECCIÓN ASPIRACIÓN SALARIAL */}
+      <section style={{ ...cardStyle, marginBottom: '1.25rem' }}>
+        <div style={cardTitleStyle}>💰 Aspiración salarial</div>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(candidates.length, 4)}, 1fr)`, gap: '0.75rem' }}>
+          {candidates.map((c) => (
+            <div key={c.id} style={{ background: '#f9fafb', borderRadius: '8px', padding: '0.8rem', border: '1px solid #e5e7eb', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#1f2937' }}>{c.candidate_name}</div>
+              {c.salary_aspiration_usd > 0 ? (
+                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#1f2937', marginTop: '0.3rem' }}>
+                  ${c.salary_aspiration_usd.toLocaleString()}
+                </div>
+              ) : (
+                <div style={{ fontSize: '0.82rem', color: '#6b7280', marginTop: '0.4rem' }}>No declarado</div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div style={{ overflowX: 'auto', background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
