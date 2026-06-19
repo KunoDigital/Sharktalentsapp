@@ -54,6 +54,22 @@ function TextCell({ value, accent }: { value: string | null | undefined; accent?
   return <span style={{ color, fontWeight: accent ? 600 : 400 }}>{value}</span>;
 }
 
+function Bar({ value, max = 100 }: { value: number | null | undefined; max?: number }) {
+  if (value == null) return <span style={{ color: '#6b7280' }}>—</span>;
+  const pct = Math.min(100, Math.max(0, (value / max) * 100));
+  const fillColor = pct >= 70 ? '#047857' : pct >= 50 ? '#1f2937' : '#b45309';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <div style={{ flex: 1, height: '8px', background: '#e5e7eb', borderRadius: '4px', overflow: 'hidden', minWidth: '60px' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: fillColor, borderRadius: '4px' }} />
+      </div>
+      <span style={{ color: '#1f2937', fontVariantNumeric: 'tabular-nums', fontSize: '0.78rem', minWidth: '32px', textAlign: 'right' }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
 function PhaseRecommendation({ app }: { app: Application }) {
   // Recomendación rápida basada en estados del adapter
   const isRejected = app.state === 'auto_rejected_low_score'
@@ -326,6 +342,36 @@ export default function CandidateComparison() {
               ))}
             </tr>
             <tr>
+              <th style={rowLabelStyle}><Term name="PK">Código PK</Term></th>
+              {candidates.map((c) => (
+                <td key={c.id} style={cellStyle}>
+                  <TextCell value={c.disc?.pk_profile_code} />
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <th style={rowLabelStyle}>Nombre PK</th>
+              {candidates.map((c) => (
+                <td key={c.id} style={{ ...cellStyle, fontSize: '0.82rem' }}>
+                  <TextCell value={c.disc?.pk_profile_name} />
+                </td>
+              ))}
+            </tr>
+            {/* DISC desglosado por eje — para ver el rango completo, no solo el dominante */}
+            {(['d', 'i', 's', 'c'] as const).map((axis) => {
+              const labels = { d: 'D · Dominante', i: 'I · Influyente', s: 'S · Sólido', c: 'C · Cumplidor' };
+              return (
+                <tr key={`disc-${axis}`}>
+                  <th style={{ ...rowLabelStyle, paddingLeft: '1.5rem', fontSize: '0.78rem' }}>{labels[axis]}</th>
+                  {candidates.map((c) => (
+                    <td key={c.id} style={cellStyle}>
+                      <Bar value={c.disc?.[axis] ?? null} max={100} />
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+            <tr>
               <th style={rowLabelStyle}><Term name="VELNA">VELNA</Term> similitud vs ideal</th>
               {candidates.map((c) => (
                 <td key={c.id} style={cellStyle}>
@@ -333,11 +379,33 @@ export default function CandidateComparison() {
                 </td>
               ))}
             </tr>
+            {/* VELNA desglosado por dimensión cognitiva */}
+            {(['verbal', 'espacial', 'logica', 'numerica', 'abstracta'] as const).map((dim) => {
+              const labels = { verbal: 'Verbal', espacial: 'Espacial', logica: 'Lógica', numerica: 'Numérica', abstracta: 'Abstracta' };
+              return (
+                <tr key={`velna-${dim}`}>
+                  <th style={{ ...rowLabelStyle, paddingLeft: '1.5rem', fontSize: '0.78rem' }}>{labels[dim]}</th>
+                  {candidates.map((c) => (
+                    <td key={c.id} style={cellStyle}>
+                      <Bar value={c.velna?.[dim] ?? null} max={100} />
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
             <tr>
               <th style={rowLabelStyle}><Term name="perfil emocional">Emocional</Term></th>
               {candidates.map((c) => (
                 <td key={c.id} style={cellStyle}>
                   <TextCell value={c.emocional?.label} />
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <th style={{ ...rowLabelStyle, paddingLeft: '1.5rem', fontSize: '0.78rem' }}>Score emocional (0-100)</th>
+              {candidates.map((c) => (
+                <td key={c.id} style={cellStyle}>
+                  <Bar value={c.emocional?.value ?? null} max={100} />
                 </td>
               ))}
             </tr>
@@ -381,6 +449,47 @@ export default function CandidateComparison() {
                 return <td key={c.id} style={cellStyle}><TextCell value={`⚠️ ${obs} observación${obs > 1 ? 'es' : ''}`} accent="warn" /></td>;
               })}
             </tr>
+            {/* Integridad desglosada por dimensión — orden: hard-rejects primero, después review dims */}
+            {([
+              { key: 'hurto', label: 'Hurto' },
+              { key: 'soborno', label: 'Soborno' },
+              { key: 'drogas', label: 'Drogas' },
+              { key: 'alcohol', label: 'Alcohol' },
+              { key: 'confiabilidad', label: 'Confiabilidad' },
+              { key: 'autenticidad', label: 'Autenticidad' },
+              { key: 'inteligencia_social', label: 'Inteligencia social' },
+              { key: 'imparcialidad', label: 'Imparcialidad' },
+              { key: 'sencillez', label: 'Sencillez' },
+              { key: 'dominio_personal', label: 'Dominio personal' },
+              { key: 'honestidad', label: 'Honestidad' },
+              { key: 'apuestas', label: 'Apuestas' },
+              { key: 'buena_impresion', label: 'Buena impresión (Lie scale)' },
+            ] as const).map(({ key, label }) => (
+              <tr key={`int-${key}`}>
+                <th style={{ ...rowLabelStyle, paddingLeft: '1.5rem', fontSize: '0.78rem' }}>
+                  {key === 'buena_impresion' ? <Term name="buena impresión">{label}</Term> : label}
+                </th>
+                {candidates.map((c) => {
+                  const dim = c.integridad?.dimensions.find((d) => d.name === key);
+                  if (!dim) return <td key={c.id} style={cellStyle}><span style={{ color: '#6b7280' }}>—</span></td>;
+                  const cls = dim.classification;
+                  const pct = dim.score_pct;
+                  // Color del nivel: para hard-rejects, "Alto" es malo. Para buena_impresion también "Alto" es malo (lie scale).
+                  // Para review dims (autenticidad, etc.), "Bajo" es lo malo.
+                  const isLieScaleOrHardReject = ['hurto', 'soborno', 'drogas', 'alcohol', 'confiabilidad', 'buena_impresion'].includes(key);
+                  const clsColor = cls == null ? '#6b7280'
+                    : isLieScaleOrHardReject
+                      ? (cls === 'Bajo' ? '#047857' : cls === 'Medio' ? '#b45309' : '#b91c1c')
+                      : (cls === 'Alto' ? '#047857' : cls === 'Medio' ? '#b45309' : '#b91c1c');
+                  return (
+                    <td key={c.id} style={cellStyle}>
+                      <span style={{ color: clsColor, fontWeight: 600, fontSize: '0.82rem' }}>{cls ?? '—'}</span>
+                      {pct != null && <span style={{ color: '#6b7280', marginLeft: '0.4rem', fontSize: '0.78rem' }}>{pct}%</span>}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
 
             {/* Video */}
             <tr><td colSpan={candidates.length + 1} style={sectionHeaderStyle}>🎥 Video</td></tr>
