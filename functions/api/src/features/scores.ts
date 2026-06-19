@@ -418,10 +418,29 @@ export async function readScores(ctx: RequestContext): Promise<void> {
     }
   }
 
+  // Cargar AntiCheatEvents agrupados por phase (para el Comparativo)
+  let antiCheatByPhase: Record<string, number> = {};
+  try {
+    const acRows = unwrapRows<{ phase?: string; event_type?: string }>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT phase, event_type FROM AntiCheatEvents WHERE result_id = '${escapeSql(resultId)}'`,
+      )) as unknown[],
+      'AntiCheatEvents',
+    );
+    for (const r of acRows) {
+      const phase = (r.phase ?? 'unknown').trim() || 'unknown';
+      antiCheatByPhase[phase] = (antiCheatByPhase[phase] ?? 0) + 1;
+    }
+  } catch (err) {
+    log.debug('anti-cheat events fetch failed (non-fatal)', { resultId, error: (err as Error).message });
+    antiCheatByPhase = {};
+  }
+
   sendJson(ctx.res, 200, {
     result_id: resultId,
     scores: enriched,
     integrity_dimensions: dims,
+    anti_cheat_by_phase: antiCheatByPhase,
   });
 }
 

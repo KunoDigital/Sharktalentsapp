@@ -119,6 +119,27 @@ function HorizontalBar({ value, label, max = 100 }: { value: number; label: stri
   );
 }
 
+function PhaseAlertRow({ label, count }: { label: string; count: number }) {
+  const isAlert = count > 0;
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      fontSize: '0.8rem',
+      padding: '4px 8px',
+      borderRadius: '4px',
+      background: isAlert ? '#fef3c7' : 'transparent',
+      color: isAlert ? '#92400e' : '#374151',
+    }}>
+      <span>{label}</span>
+      <span style={{ fontWeight: 700 }}>
+        {isAlert ? `${count} alerta${count > 1 ? 's' : ''}` : '0 alertas'}
+      </span>
+    </div>
+  );
+}
+
 function EmotionalSlider({ value, name }: { value: number | null | undefined; name: string }) {
   if (value == null) return null;
   const pct = Math.min(100, Math.max(0, value));
@@ -213,6 +234,8 @@ export default function CandidateComparison() {
   const [error, setError] = useState<string | null>(null);
   const [jobTitle, setJobTitle] = useState<string>('');
   const [idealProfile, setIdealProfile] = useState<ParsedIdealProfile | null>(null);
+  // Anti-cheat events agrupados por (candidateId → phase → count). Cargado desde readScores.
+  const [antiCheatMap, setAntiCheatMap] = useState<Record<string, Record<string, number>>>({});
 
   const candidateIds = useMemo(() => {
     const raw = searchParams.get('candidates') ?? '';
@@ -258,6 +281,10 @@ export default function CandidateComparison() {
               api.applications.readScores(a.ROWID).catch(() => null),
               api.applications.readIntegrity(a.ROWID).catch(() => null),
             ]);
+            // Acumular anti-cheat events por candidato → fase
+            if (scoresResp?.anti_cheat_by_phase) {
+              setAntiCheatMap((prev) => ({ ...prev, [a.ROWID]: scoresResp.anti_cheat_by_phase! }));
+            }
             if (cancelled) return;
             const adapted = adaptToMockApplication(
               {
@@ -512,6 +539,33 @@ export default function CandidateComparison() {
         {candidates.map((c) => (
           <EmotionalSlider key={c.id} value={c.emocional?.value ?? null} name={c.candidate_name} />
         ))}
+      </section>
+
+      {/* SECCIÓN ANTI-TRAMPA: alertas por fase */}
+      <section style={{ ...cardStyle, marginBottom: '1.25rem' }}>
+        <div style={cardTitleStyle}>🚨 Monitoreo anti-trampa</div>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(candidates.length, 4)}, 1fr)`, gap: '0.75rem' }}>
+          {candidates.map((c) => {
+            const phases = antiCheatMap[c.id] ?? {};
+            const tecnica = phases['tecnica'] ?? 0;
+            const conductual = phases['disc'] ?? phases['conductual'] ?? 0;
+            const integridad = phases['integridad'] ?? 0;
+            const total = tecnica + conductual + integridad;
+            return (
+              <div key={c.id} style={{ background: '#f9fafb', borderRadius: '8px', padding: '0.8rem', border: '1px solid #e5e7eb' }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1f2937', marginBottom: '0.6rem' }}>
+                  {c.candidate_name}
+                  {total === 0 && <span style={{ marginLeft: '0.4rem', color: '#047857', fontSize: '0.75rem' }}>✅ Limpio</span>}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                  <PhaseAlertRow label="Técnica" count={tecnica} />
+                  <PhaseAlertRow label="Conductual" count={conductual} />
+                  <PhaseAlertRow label="Integridad" count={integridad} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* SECCIÓN ASPIRACIÓN SALARIAL */}

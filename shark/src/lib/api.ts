@@ -857,6 +857,24 @@ function buildClient(getToken: GetToken) {
         }
         return res.blob();
       },
+      // 2026-06-12: Capa 4 — análisis IA contextual del Conductual.
+      getConductualAnalysis: (id: string) =>
+        request<{
+          application_id: string;
+          candidate_name: string;
+          job_title: string;
+          conductual_completed: boolean;
+          analysis: {
+            veredicto: 'encaja' | 'encaja_con_reservas' | 'no_encaja';
+            razones_a_favor: string[];
+            razones_en_contra: string[];
+            recomendacion: 'avanzar_a_entrevista' | 'duda_cv_revisar_manual' | 'considerar_perfil_alternativo' | 'no_avanzar';
+            alertas_especificas: string[];
+            resumen_ejecutivo: string;
+          };
+        }>(
+          getToken, 'GET', `/api/applications/${encodeURIComponent(id)}/conductual-analysis`,
+        ),
       create: (input: { assessment_id: string; candidate_id: string; idempotency_key?: string }) =>
         request<{ application: ApiApplication }>(getToken, 'POST', '/api/applications', input),
       listNotes: (id: string) =>
@@ -927,6 +945,7 @@ function buildClient(getToken: GetToken) {
           result_id: string;
           scores: ApiScores | null;
           integrity_dimensions: ApiIntegrityDimension[];
+          anti_cheat_by_phase?: Record<string, number>;
         }>(getToken, 'GET', `/api/applications/${encodeURIComponent(id)}/scores`),
       writeIntegrity: (id: string, payload: IntegrityPayload) =>
         request<{ integrity: { header: ApiScores; dimensions: ApiIntegrityDimension[] } }>(
