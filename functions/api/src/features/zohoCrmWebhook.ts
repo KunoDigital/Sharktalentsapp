@@ -185,9 +185,33 @@ export async function handleZohoCrmLeadCreated(ctx: RequestContext): Promise<voi
     }
   }
 
-  // 3. (Futuro) WhatsApp — pendiente configurar Twilio. Por ahora solo loggeamos.
-  if (isNew && phone) {
-    log.info('TODO: send WhatsApp welcome (pending Twilio setup)', { leadId, phone_masked: phone.slice(-4) });
+  // 3. Alerta WhatsApp a Cris (speed-to-lead < 5 min). Solo si es lead nuevo de Meta
+  // y OPS_ALERT_PHONE está configurado. 2026-06-19: funciona mientras el join al
+  // Sandbox Twilio esté activo (72h); cuando WABA esté aprobado se vuelve robusto.
+  if (isNew && e.OPS_ALERT_PHONE) {
+    const leadPhoneClean = (phone ?? '').replace(/[^\d]/g, '');
+    const waLink = leadPhoneClean ? `https://wa.me/${leadPhoneClean}` : '(sin WhatsApp)';
+    const alertBody = [
+      `🦈 Lead nuevo en SharkTalents`,
+      ``,
+      `👤 ${contactName || 'sin nombre'}`,
+      `📧 ${email}`,
+      `📱 ${waLink}`,
+      `🎯 Fuente: ${leadSource || 'Meta'}`,
+      ``,
+      `Speed-to-lead: < 5 min recomendado.`,
+    ].join('\n');
+    try {
+      const { sendText } = await import('../lib/whatsappDispatcher.js');
+      const waRes = await sendText({ to_phone: e.OPS_ALERT_PHONE, body: alertBody }, ctx.traceId);
+      log.info('ops alert whatsapp result', {
+        leadId,
+        ok: waRes.ok,
+        error: waRes.ok ? undefined : waRes.error,
+      });
+    } catch (err) {
+      log.warn('ops alert whatsapp failed', { leadId, error: (err as Error).message });
+    }
   }
 
   sendJson(ctx.res, 200, {

@@ -78,6 +78,9 @@ type EnvShape = {
   ZOHO_SIGN_CONTRACT_TEMPLATE_ID: string;
   // Zia / Whisper webhook (transcripción entrante)
   ZIA_WEBHOOK_SECRET: string;
+  // Número de WhatsApp del ops manager (Cris) para alertas internas tipo "lead nuevo".
+  // Formato E.164: '+50763333870'. Si vacío, las alertas WhatsApp no se mandan.
+  OPS_ALERT_PHONE: string;
   // WhatsApp — provider switch (default 'twilio')
   WHATSAPP_PROVIDER: 'twilio' | 'meta_cloud';
   // WhatsApp via Twilio (default). Setear en Catalyst Console.
@@ -196,6 +199,9 @@ export function env(): EnvShape {
     ZOHO_SIGN_WEBHOOK_SECRET: optional('ZOHO_SIGN_WEBHOOK_SECRET', ''),
     ZOHO_SIGN_CONTRACT_TEMPLATE_ID: optional('ZOHO_SIGN_CONTRACT_TEMPLATE_ID', ''),
     ZIA_WEBHOOK_SECRET: optional('ZIA_WEBHOOK_SECRET', ''),
+    // Default: número de Cris (la ops manager). Si en el futuro cambia o querés
+    // que reciba otra persona, seteá OPS_ALERT_PHONE en Catalyst Console y overridea.
+    OPS_ALERT_PHONE: optional('OPS_ALERT_PHONE', '+50763333870'),
     WHATSAPP_PROVIDER: optional('WHATSAPP_PROVIDER', 'twilio') as EnvShape['WHATSAPP_PROVIDER'],
     TWILIO_ACCOUNT_SID: optional('TWILIO_ACCOUNT_SID', ''),
     TWILIO_AUTH_TOKEN: optional('TWILIO_AUTH_TOKEN', ''),

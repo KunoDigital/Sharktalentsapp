@@ -338,6 +338,44 @@ export async function captureLead(ctx: RequestContext): Promise<void> {
     error: emailResult.error,
   });
 
+  // Alerta WhatsApp a Cris (speed-to-lead): cuando entra un lead, le llega WhatsApp
+  // con nombre + número del cliente para que responda en < 5 min desde su WhatsApp
+  // personal. Solo se manda si OPS_ALERT_PHONE está configurado.
+  // 2026-06-19: solo funciona mientras el join al Sandbox Twilio esté activo (72h).
+  // Cuando se apruebe el WABA, esto se vuelve robusto sin depender del Sandbox.
+  if (isNewLead && env().OPS_ALERT_PHONE) {
+    const opsPhone = env().OPS_ALERT_PHONE;
+    const leadPhoneClean = (payload.whatsapp ?? '').replace(/[^\d]/g, '');
+    const waLink = leadPhoneClean ? `https://wa.me/${leadPhoneClean}` : '(sin WhatsApp)';
+    const leadName = payload.contact_name?.trim() || 'sin nombre';
+    const leadCompany = payload.company?.trim() || 'sin empresa';
+    const alertBody = [
+      `🦈 Lead nuevo en SharkTalents`,
+      ``,
+      `👤 ${leadName}`,
+      `🏢 ${leadCompany}`,
+      `📱 ${waLink}`,
+      `💼 Busca: ${quizData.puesto_tipo}`,
+      `💰 Salario: $${quizData.salario_target}`,
+      `⚡ Urgencia: ${quizData.urgencia}`,
+      `📊 Score calidad: ${score}/100`,
+      ``,
+      `Speed-to-lead: < 5 min recomendado.`,
+    ].join('\n');
+    try {
+      const { sendText } = await import('../lib/whatsappDispatcher.js');
+      const waRes = await sendText({ to_phone: opsPhone, body: alertBody }, ctx.traceId);
+      log.info('ops alert whatsapp result', {
+        traceId: ctx.traceId,
+        leadId,
+        ok: waRes.ok,
+        error: waRes.ok ? undefined : waRes.error,
+      });
+    } catch (err) {
+      log.warn('ops alert whatsapp failed', { traceId: ctx.traceId, leadId, error: (err as Error).message });
+    }
+  }
+
   sendJson(ctx.res, isNewLead ? 201 : 200, {
     lead_id: leadId,
     message: isNewLead ? 'Lead capturado correctamente' : 'Lead actualizado + email reenviado',
@@ -458,6 +496,16 @@ export async function requestEval(ctx: RequestContext): Promise<void> {
   const testUrl = `${env().APP_BASE_URL.replace(/\/$/, '')}/app/index.html#/test/${testToken}`;
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
+  // Opción B (exchange-token): firmamos un session_token corto (5 min, multi-use) que
+  // referencia al Result. La página post-submit lo guarda en sessionStorage y, al clicar
+  // "Comenzar test", lo cambia por el JWT real via POST /api/marketing/exchange-token.
+  // Esto evita que el JWT del test (7 días) quede en HTML/cache/historial del navegador.
+  const sessionToken = signToken({
+    kind: 'exchange',
+    ref: resultId,
+    exp: expiresIn(EXCHANGE_TOKEN_TTL_SEC),
+  });
+
   // Actualizar lead → status='eval_requested' + linkear el result_id
   await datastore(ctx.req).table(TABLE_LEADS).updateRow({
     ROWID: lead.ROWID,
@@ -494,6 +542,114 @@ export async function requestEval(ctx: RequestContext): Promise<void> {
     message: 'Evaluación enviada al colaborador',
     estimated_time_minutes: 20,
     test_expires_at: expiresAt.toISOString(),
+    // Opción A — JWT directo en el response para botón en página post-submit.
+    // Sigue disponible por compat; el frontend debe migrar a session_token (Opción B).
+    // Mitigaciones obligatorias en la página post-submit: Cache-Control: no-store,
+    // Robots: noindex, data-hj-suppress en el link.
+    test_start_url: testUrl,
+    // Opción B (exchange-token) — recomendado. La página post-submit guarda este
+    // session_token en sessionStorage y, al clicar el CTA, llama
+    // POST /api/marketing/exchange-token para obtener el test_start_url real.
+    // TTL corto (5 min), multi-use dentro del TTL.
+    session_token: sessionToken,
+    session_expires_in_seconds: EXCHANGE_TOKEN_TTL_SEC,
+  });
+}
+
+// TTL del session_token de exchange (Opción B). 5 minutos cubre el tiempo razonable
+// que un usuario tarda en clicar "Comenzar test" tras submitir el formulario.
+const EXCHANGE_TOKEN_TTL_SEC = 5 * 60;
+
+/**
+ * Lógica pura del exchange: valida session_token y devuelve un JWT del test (7 días)
+ * envuelto en `test_start_url`. Separada del handler HTTP para poder testearla sin mocks.
+ *
+ * Errores que puede lanzar:
+ *   - ValidationError si el token está vacío/malformado o tiene kind != 'exchange'
+ *   - AppError(410) si el token expiró
+ *   - UnauthorizedError(401) si la firma es inválida
+ */
+export async function _verifyExchangeAndBuildTestUrl(
+  sessionToken: string,
+  opts: { secret?: string; appBaseUrl?: string } = {},
+): Promise<{ test_start_url: string; expires_at: string; result_id: string }> {
+  if (!sessionToken || typeof sessionToken !== 'string') {
+    throw new ValidationError('session_token required');
+  }
+
+  const { signToken, verifyToken, TokenError, expiresIn, WEEK_SEC } = await import('../lib/urlSigning.js');
+
+  let claims: { ref: string };
+  try {
+    claims = verifyToken(sessionToken, 'exchange', opts.secret);
+  } catch (err) {
+    if (err instanceof TokenError) {
+      if (err.reason === 'expired') {
+        throw new AppError(410, 'session_expired', 'Sesión expirada, por favor vuelve a llenar el formulario');
+      }
+      // malformed | invalid_signature | wrong_kind → 401
+      throw new AppError(401, 'invalid_session_token', 'Token de sesión inválido');
+    }
+    throw err;
+  }
+
+  const resultId = claims.ref;
+  if (!resultId || typeof resultId !== 'string') {
+    throw new AppError(401, 'invalid_session_token', 'Token de sesión inválido (ref vacío)');
+  }
+
+  const testToken = signToken(
+    { kind: 'test', ref: resultId, exp: expiresIn(WEEK_SEC) },
+    opts.secret,
+  );
+  const base = (opts.appBaseUrl ?? env().APP_BASE_URL).replace(/\/$/, '');
+  const testUrl = `${base}/app/index.html#/test/${testToken}`;
+  const expiresAt = new Date(Date.now() + WEEK_SEC * 1000);
+
+  return {
+    test_start_url: testUrl,
+    expires_at: expiresAt.toISOString(),
+    result_id: resultId,
+  };
+}
+
+/**
+ * POST /api/marketing/exchange-token
+ *
+ * Cambia un session_token corto (5 min, kind='exchange') por el JWT real del test
+ * (7 días, kind='test') envuelto en `test_start_url`. Multi-use dentro del TTL para
+ * permitir refresh de página o múltiples pestañas.
+ *
+ * No requiere captcha — el session_token actúa como auth (sólo el backend puede
+ * firmarlo). Sí requiere X-Marketing-Site-Key para consistencia con el resto de
+ * endpoints públicos del funnel.
+ *
+ * Respuestas:
+ *   200 → { test_start_url, expires_at }
+ *   400 → session_token faltante
+ *   401 → firma inválida, kind incorrecto, payload malformado
+ *   410 → session_token expirado (TTL 5 min vencido)
+ */
+export async function exchangeMarketingToken(ctx: RequestContext): Promise<void> {
+  verifySiteKey(ctx);
+  const body = (await readJsonBody(ctx.req)) as Record<string, unknown>;
+  const sessionToken = typeof body.session_token === 'string' ? body.session_token : '';
+
+  const out = await _verifyExchangeAndBuildTestUrl(sessionToken);
+
+  // Log con fragmento del token (primeros 6 + últimos 4) — nunca el token completo.
+  const masked = sessionToken.length >= 10
+    ? `${sessionToken.slice(0, 6)}...${sessionToken.slice(-4)}`
+    : '***';
+  log.info('exchange-token success', {
+    traceId: ctx.traceId,
+    session_token_masked: masked,
+    result_id: out.result_id,
+  });
+
+  sendJson(ctx.res, 200, {
+    test_start_url: out.test_start_url,
+    expires_at: out.expires_at,
   });
 }
 
