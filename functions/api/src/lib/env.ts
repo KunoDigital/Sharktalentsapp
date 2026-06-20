@@ -66,6 +66,11 @@ type EnvShape = {
   // Whisper / Zia (transcripción)
   WHISPER_API_URL: string;
   WHISPER_API_KEY: string;
+  // OpenAI (Whisper API para video module)
+  OPENAI_API_KEY: string;
+  OPENAI_WHISPER_MODEL: string;
+  OPENAI_WHISPER_TIMEOUT_MS: number;
+  OPENAI_WHISPER_MAX_RETRIES: number;
   // Zoho Sign (firma electrónica)
   ZOHO_SIGN_API_URL: string;
   ZOHO_SIGN_OAUTH_TOKEN: string;
@@ -73,7 +78,13 @@ type EnvShape = {
   ZOHO_SIGN_CONTRACT_TEMPLATE_ID: string;
   // Zia / Whisper webhook (transcripción entrante)
   ZIA_WEBHOOK_SECRET: string;
-  // WhatsApp Business
+  // WhatsApp — provider switch (default 'twilio')
+  WHATSAPP_PROVIDER: 'twilio' | 'meta_cloud';
+  // WhatsApp via Twilio (default). Setear en Catalyst Console.
+  TWILIO_ACCOUNT_SID: string;       // "AC..."
+  TWILIO_AUTH_TOKEN: string;        // secret
+  TWILIO_WHATSAPP_FROM: string;     // "whatsapp:+14155238886" (sandbox) o número propio
+  // WhatsApp via Meta Cloud API (alternativo, fallback histórico)
   WHATSAPP_API_URL: string;
   WHATSAPP_ACCESS_TOKEN: string;
   WHATSAPP_PHONE_NUMBER_ID: string;
@@ -173,11 +184,22 @@ export function env(): EnvShape {
     ZOHO_BOOKINGS_BRIEFING_SERVICE_ID: optional('ZOHO_BOOKINGS_BRIEFING_SERVICE_ID', ''),
     WHISPER_API_URL: optional('WHISPER_API_URL', 'https://api.openai.com/v1/audio/transcriptions'),
     WHISPER_API_KEY: optional('WHISPER_API_KEY', ''),
+    OPENAI_API_KEY: optional('OPENAI_API_KEY', ''),
+    OPENAI_WHISPER_MODEL: optional('OPENAI_WHISPER_MODEL', 'whisper-1'),
+    // Audio puede ser largo (60-90s grabación + upload + transcripción). Default 60s.
+    // Catalyst handler mata a 30s — para llamadas que estén dentro de un endpoint HTTP
+    // hay que orquestar async (job + webhook). Para llamadas batch/cron, 60s va.
+    OPENAI_WHISPER_TIMEOUT_MS: asNumber('OPENAI_WHISPER_TIMEOUT_MS', 60_000),
+    OPENAI_WHISPER_MAX_RETRIES: asNumber('OPENAI_WHISPER_MAX_RETRIES', 1),
     ZOHO_SIGN_API_URL: optional('ZOHO_SIGN_API_URL', 'https://sign.zoho.com/api/v1'),
     ZOHO_SIGN_OAUTH_TOKEN: optional('ZOHO_SIGN_OAUTH_TOKEN', ''),
     ZOHO_SIGN_WEBHOOK_SECRET: optional('ZOHO_SIGN_WEBHOOK_SECRET', ''),
     ZOHO_SIGN_CONTRACT_TEMPLATE_ID: optional('ZOHO_SIGN_CONTRACT_TEMPLATE_ID', ''),
     ZIA_WEBHOOK_SECRET: optional('ZIA_WEBHOOK_SECRET', ''),
+    WHATSAPP_PROVIDER: optional('WHATSAPP_PROVIDER', 'twilio') as EnvShape['WHATSAPP_PROVIDER'],
+    TWILIO_ACCOUNT_SID: optional('TWILIO_ACCOUNT_SID', ''),
+    TWILIO_AUTH_TOKEN: optional('TWILIO_AUTH_TOKEN', ''),
+    TWILIO_WHATSAPP_FROM: optional('TWILIO_WHATSAPP_FROM', ''),
     WHATSAPP_API_URL: optional('WHATSAPP_API_URL', 'https://graph.facebook.com/v21.0'),
     WHATSAPP_ACCESS_TOKEN: optional('WHATSAPP_ACCESS_TOKEN', ''),
     WHATSAPP_PHONE_NUMBER_ID: optional('WHATSAPP_PHONE_NUMBER_ID', ''),
