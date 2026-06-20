@@ -1537,24 +1537,19 @@ SharkTalents`,
 
 const META_LEAD_WELCOME: Record<EmailLocale, EmailTemplate> = {
   es: {
-    subject: 'Gracias por tu interés en SharkTalents',
+    subject: 'Cris te contacta hoy — SharkTalents',
     body_text: `Hola {{contact_name}},
 
-Recibimos tus datos y queremos contarte cómo funcionamos.
+Recibimos tus datos.
 
-SharkTalents te ayuda a contratar mejor:
-- Evaluamos candidatos con DISC + competencias + integridad
-- Una sola plataforma, todo automático
-- Tú solo decides al final
+Cris (la fundadora) te escribe HOY por WhatsApp con los detalles
+y te manda acceso a una evaluación real para que la uses con un
+candidato esta semana — sin compromiso.
 
-Para arrancar agenda una llamada de 30 minutos:
+Si quieres adelantar la conversación, agenda una llamada acá:
 {{bookings_url}}
 
-Te explicamos el proceso, calificamos juntos qué buscas y, si te encaja, te mostramos el demo.
-
-Cualquier consulta, responde a este email.
-
-Chris Palma
+Cris Palma
 SharkTalents`,
     body_html: `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f3f4f6; margin:0; padding:0;">
   <tr><td align="center" style="padding:32px 16px;">
@@ -1564,50 +1559,41 @@ SharkTalents`,
       </td></tr>
       <tr><td style="padding:32px;">
         <p style="margin:0 0 16px 0; font-size:16px; color:#1f2937; line-height:1.6;">Hola <strong>{{contact_name}}</strong>,</p>
-        <p style="margin:0 0 16px 0; font-size:16px; color:#1f2937; line-height:1.6;">Recibimos tus datos y queremos contarte cómo funcionamos.</p>
-        <p style="margin:0 0 8px 0; font-size:16px; color:#1f2937; line-height:1.6;">SharkTalents te ayuda a contratar mejor:</p>
-        <ul style="margin:0 0 20px 24px; padding:0; font-size:15px; color:#374151; line-height:1.7;">
-          <li>Evaluamos candidatos con DISC + competencias + integridad</li>
-          <li>Una sola plataforma, todo automático</li>
-          <li>Tú solo decides al final</li>
-        </ul>
-        <p style="margin:0 0 20px 0; font-size:16px; color:#1f2937; line-height:1.6;">Para arrancar agenda una llamada de 30 minutos:</p>
+        <p style="margin:0 0 16px 0; font-size:16px; color:#1f2937; line-height:1.6;">Recibimos tus datos.</p>
+        <p style="margin:0 0 20px 0; font-size:16px; color:#1f2937; line-height:1.6;">
+          Cris (la fundadora) te escribe <strong>HOY por WhatsApp</strong> con los detalles
+          y te manda acceso a una evaluación real para que la uses con un candidato
+          esta semana — sin compromiso.
+        </p>
+        <p style="margin:0 0 12px 0; font-size:15px; color:#374151; line-height:1.6;">¿Prefieres adelantar la conversación? Agenda una llamada:</p>
         <p style="margin:0 0 28px 0;">
           <a href="{{bookings_url}}" style="background:#dafd6f;color:#0e1218;padding:14px 28px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:700;font-size:16px;">Agendar llamada</a>
         </p>
-        <p style="margin:0 0 16px 0; font-size:15px; color:#374151; line-height:1.6;">Te explicamos el proceso, calificamos juntos qué buscas y, si te encaja, te mostramos el demo.</p>
-        <p style="margin:0 0 24px 0; font-size:14px; color:#6b7280;">Cualquier consulta, responde a este email.</p>
-        <p style="margin:0; font-size:15px; color:#1f2937; line-height:1.5;">Chris Palma<br/><strong style="color:#0e1218;">SharkTalents</strong></p>
+        <p style="margin:0; font-size:15px; color:#1f2937; line-height:1.5;">Cris Palma<br/><strong style="color:#0e1218;">SharkTalents</strong></p>
       </td></tr>
     </table>
   </td></tr>
 </table>`,
   },
   en: {
-    subject: 'Thanks for your interest in SharkTalents',
+    subject: 'Cris contacts you today — SharkTalents',
     body_text: `Hi {{contact_name}},
 
-We received your info and want to share how we work.
+We received your info.
 
-SharkTalents helps you hire better:
-- We evaluate candidates with DISC + competencies + integrity
-- One platform, fully automated
-- You only decide at the end
+Cris (the founder) is reaching out TODAY via WhatsApp with details
+and sending you access to a real evaluation to use with a candidate
+this week — no strings attached.
 
-To get started, book a 30-min call:
+Want to skip ahead? Book a call:
 {{bookings_url}}
 
-We'll explain the process, qualify together what you need, and show you the demo if it fits.
-
-Any questions, reply to this email.
-
-Chris Palma
+Cris Palma
 SharkTalents`,
     body_html: `<p>Hi <strong>{{contact_name}}</strong>,</p>
-<p>We received your info and want to share how we work.</p>
-<p>SharkTalents helps you hire better: DISC + competencies + integrity, all automated, you decide at the end.</p>
-<p><a href="{{bookings_url}}" style="background:#dafd6f;color:#0e1218;padding:14px 28px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:700;font-size:16px;">Book a call</a></p>
-<p>Chris Palma<br/>SharkTalents</p>`,
+<p>We received your info. Cris (the founder) is reaching out <strong>TODAY via WhatsApp</strong> with details and access to a real evaluation to use this week — no strings attached.</p>
+<p>Want to skip ahead? <a href="{{bookings_url}}" style="background:#dafd6f;color:#0e1218;padding:14px 28px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:700;font-size:16px;">Book a call</a></p>
+<p>Cris Palma<br/>SharkTalents</p>`,
   },
 };
 

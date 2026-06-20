@@ -3097,6 +3097,7 @@ export async function diagCrmPush(ctx: RequestContext): Promise<void> {
       city?: string;
       state?: string;
       country?: string;
+      lead_source?: string;
     }>(ctx.req);
     if (!body.email) {
       sendJson(ctx.res, 400, { error: 'email required' });
@@ -3115,6 +3116,7 @@ export async function diagCrmPush(ctx: RequestContext): Promise<void> {
       last_name: body.last_name,
       company: body.company,
       phone: body.phone,
+      lead_source: body.lead_source,
       custom_fields: Object.keys(customFields).length > 0 ? customFields : undefined,
     }, ctx.traceId ?? 'admin-diag');
     sendJson(ctx.res, result.ok ? 200 : 502, {
