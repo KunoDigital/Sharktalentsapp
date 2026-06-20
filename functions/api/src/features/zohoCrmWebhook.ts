@@ -29,17 +29,6 @@ import { escapeSql, unwrapRows, unwrapRow } from '../lib/dbHelpers';
 
 const log = logger('ZOHO_CRM_WEBHOOK');
 
-type IncomingLead = {
-  email?: string;
-  contact_name?: string;
-  first_name?: string;
-  last_name?: string;
-  company?: string;
-  phone?: string;
-  lead_source?: string;
-  lead_id?: string;
-};
-
 async function readRawBody(req: RequestContext['req']): Promise<string> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
@@ -82,17 +71,37 @@ export async function handleZohoCrmLeadCreated(ctx: RequestContext): Promise<voi
 
   const rawBody = await readRawBody(ctx.req);
   const contentType = typeof ctx.req.headers['content-type'] === 'string' ? ctx.req.headers['content-type'] : '';
-  const body = parseBody(rawBody, contentType) as IncomingLead;
+  const bodyRaw = parseBody(rawBody, contentType) as Record<string, unknown>;
 
-  const email = (body.email ?? '').trim().toLowerCase();
+  // Log keys del body para diagnosticar mapping de campos cuando Zoho cambia nombres.
+  log.info('webhook body keys', { keys: Object.keys(bodyRaw) });
+
+  // Helper: lee el primer field que tenga valor entre varias variantes (case-insensitive).
+  const pickField = (...names: string[]): string => {
+    for (const name of names) {
+      // Match exacto
+      const direct = bodyRaw[name];
+      if (typeof direct === 'string' && direct.trim()) return direct.trim();
+      // Match case-insensitive
+      const key = Object.keys(bodyRaw).find((k) => k.toLowerCase() === name.toLowerCase());
+      if (key) {
+        const val = bodyRaw[key];
+        if (typeof val === 'string' && val.trim()) return val.trim();
+      }
+    }
+    return '';
+  };
+
+  const email = pickField('email', 'Email').toLowerCase();
   // Aceptamos nombre completo o nombre+apellido por separado (Meta lo manda separado).
-  const firstName = (body.first_name ?? '').trim();
-  const lastName = (body.last_name ?? '').trim();
-  const contactName = (body.contact_name ?? '').trim()
+  const firstName = pickField('first_name', 'First_Name');
+  const lastName = pickField('last_name', 'Last_Name');
+  const contactName = pickField('contact_name', 'Contact_Name', 'name', 'Name')
     || [firstName, lastName].filter(Boolean).join(' ').trim();
-  const company = (body.company ?? '').trim();
-  const phone = (body.phone ?? '').trim();
-  const leadSource = (body.lead_source ?? '').trim();
+  const company = pickField('company', 'Company');
+  // Zoho puede mandar Mobile, Phone, mobile, phone, WhatsApp, Whatsapp...
+  const phone = pickField('mobile', 'Mobile', 'phone', 'Phone', 'whatsapp', 'WhatsApp', 'Whatsapp');
+  const leadSource = pickField('lead_source', 'Lead_Source');
 
   if (!email) {
     sendJson(ctx.res, 400, { error: 'email required' });
