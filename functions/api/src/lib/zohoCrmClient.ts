@@ -160,7 +160,12 @@ export async function createLead(input: CreateLeadInput, traceId: string): Promi
   };
   if (input.first_name) data.First_Name = input.first_name;
   if (input.company) data.Company = input.company;
-  if (input.phone) data.Phone = input.phone;
+  // Setea Phone y Mobile con el mismo número — Zoho los tiene como campos separados
+  // y el workflow de Cris mapea Móvil (Mobile) para mandar a SharkTalents.
+  if (input.phone) {
+    data.Phone = input.phone;
+    data.Mobile = input.phone;
+  }
   if (input.utm_campaign) data.Campaign_Source = input.utm_campaign;
   if (input.description) data.Description = input.description.slice(0, 32000);
 
