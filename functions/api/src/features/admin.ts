@@ -3175,6 +3175,7 @@ export async function diagCrmLead(ctx: RequestContext): Promise<void> {
         Last_Name: lead.Last_Name,
         Company: lead.Company,
         Phone: lead.Phone,
+        Mobile: lead.Mobile,
         Lead_Source: lead.Lead_Source,
         Lead_Status: lead.Lead_Status,
       },
@@ -3186,6 +3187,7 @@ export async function diagCrmLead(ctx: RequestContext): Promise<void> {
         Zip_Code: lead.Zip_Code,
         Country: lead.Country,
       },
+      created_at: lead.Created_Time,
       modified_at: lead.Modified_Time,
       all_field_keys: Object.keys(lead).sort(),
     });

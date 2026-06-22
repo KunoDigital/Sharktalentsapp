@@ -102,6 +102,14 @@ export async function handleZohoCrmLeadCreated(ctx: RequestContext): Promise<voi
   // Zoho puede mandar Mobile, Phone, mobile, phone, WhatsApp, Whatsapp...
   const phone = pickField('mobile', 'Mobile', 'phone', 'Phone', 'whatsapp', 'WhatsApp', 'Whatsapp');
   const leadSource = pickField('lead_source', 'Lead_Source');
+  // 2026-06-22: campos nuevos del formulario Meta (4 preguntas calificadoras).
+  // dolor = Q3 (desafío principal: alta rotación / candidatos no rinden / proceso lento / presupuesto)
+  // role = Q4 (rol del lead: dueño/CEO / Director RRHH / gerente de área / Otro)
+  const dolor = pickField('dolor', 'Dolor', 'pain_point', 'pain', 'desafio', 'Desafio');
+  const role = pickField('role', 'puesto', 'Puesto', 'rol', 'Rol', 'role_in_hiring');
+  // Q1 y Q2 son booleanos sí/no — opcionales para humanización del mensaje
+  const hasVacancy = pickField('vacancy', 'Vacancy', 'vacante', 'Vacante');
+  const hadBadHire = pickField('bad_hire', 'mala_contratacion', 'BadHire');
 
   if (!email) {
     sendJson(ctx.res, 400, { error: 'email required' });
@@ -144,8 +152,20 @@ export async function handleZohoCrmLeadCreated(ctx: RequestContext): Promise<voi
     if (contactName) updates.contact_name = contactName.slice(0, 255);
     if (company) updates.company = company.slice(0, 255);
     if (phone) updates.whatsapp = phone.slice(0, 50);
+    if (dolor) updates.dolor = dolor.slice(0, 255);
+    if (role) updates.puesto = role.slice(0, 100);
     if (Object.keys(updates).length > 2) {
-      await datastore(ctx.req).table('MarketingLeads').updateRow(updates as { ROWID: string });
+      // Try/catch tolera columnas nuevas inexistentes (Cris las crea en Console post-deploy)
+      try {
+        await datastore(ctx.req).table('MarketingLeads').updateRow(updates as { ROWID: string });
+      } catch (err) {
+        log.warn('MarketingLeads update with new fields failed (columnas no creadas?), retrying core fields only', { error: (err as Error).message });
+        const coreUpdates: Record<string, unknown> = { ROWID: leadId, updated_at: now() };
+        if (contactName) coreUpdates.contact_name = contactName.slice(0, 255);
+        if (company) coreUpdates.company = company.slice(0, 255);
+        if (phone) coreUpdates.whatsapp = phone.slice(0, 50);
+        await datastore(ctx.req).table('MarketingLeads').updateRow(coreUpdates as { ROWID: string });
+      }
     }
     log.info('crm lead exists — updated', { leadId, email_masked: email.slice(0, 3) + '***' });
   } else {
@@ -160,8 +180,30 @@ export async function handleZohoCrmLeadCreated(ctx: RequestContext): Promise<voi
       status: 'new',
       created_at: now(),
       updated_at: now(),
+      // 2026-06-22: dolor (Q3) y puesto (Q4) del formulario Meta.
+      // Las columnas existen en MarketingLeads. Q1 (vacancy) y Q2 (bad_hire) no se persisten
+      // por decisión de Cris — entran al webhook pero se ignoran a nivel storage.
+      dolor: dolor ? dolor.slice(0, 255) : null,
+      puesto: role ? role.slice(0, 100) : null,
     };
-    const inserted = await datastore(ctx.req).table('MarketingLeads').insertRow(insertPayload);
+    let inserted: unknown;
+    try {
+      inserted = await datastore(ctx.req).table('MarketingLeads').insertRow(insertPayload);
+    } catch (err) {
+      log.warn('MarketingLeads insert con campos nuevos falló (columnas no creadas?), reintentando solo core', { error: (err as Error).message });
+      // Fallback: insertar solo los campos core para no perder el lead
+      const corePayload = {
+        email,
+        contact_name: contactName.slice(0, 255) || null,
+        company: company.slice(0, 255) || null,
+        whatsapp: phone.slice(0, 50) || null,
+        source: leadSource.slice(0, 50) || 'crm_webhook',
+        status: 'new',
+        created_at: now(),
+        updated_at: now(),
+      };
+      inserted = await datastore(ctx.req).table('MarketingLeads').insertRow(corePayload);
+    }
     const row = unwrapRow<{ ROWID: string }>(inserted, 'MarketingLeads');
     if (!row) {
       throw new Error('MarketingLeads insert returned null');
@@ -200,16 +242,21 @@ export async function handleZohoCrmLeadCreated(ctx: RequestContext): Promise<voi
   if (isNew && e.OPS_ALERT_PHONE) {
     const leadPhoneClean = (phone ?? '').replace(/[^\d]/g, '');
     const waLink = leadPhoneClean ? `https://wa.me/${leadPhoneClean}` : '(sin WhatsApp)';
-    const alertBody = [
+    const alertLines = [
       `🦈 Lead nuevo en SharkTalents`,
       ``,
       `👤 ${contactName || 'sin nombre'}`,
       `📧 ${email}`,
       `📱 ${waLink}`,
       `🎯 Fuente: ${leadSource || 'Meta'}`,
-      ``,
-      `Speed-to-lead: < 5 min recomendado.`,
-    ].join('\n');
+    ];
+    // Campos nuevos del formulario Meta (Q3 + Q4 + Q1 + Q2). Solo se muestran si vinieron.
+    if (dolor) alertLines.push(`💥 Dolor: ${dolor}`);
+    if (role) alertLines.push(`💼 Rol: ${role}`);
+    if (hasVacancy) alertLines.push(`📋 Vacante este trimestre: ${hasVacancy}`);
+    if (hadBadHire) alertLines.push(`⚠️ Mala contratación previa: ${hadBadHire}`);
+    alertLines.push(``, `Speed-to-lead: < 5 min recomendado.`);
+    const alertBody = alertLines.join('\n');
     try {
       const { sendText } = await import('../lib/whatsappDispatcher.js');
       const waRes = await sendText({ to_phone: e.OPS_ALERT_PHONE, body: alertBody }, ctx.traceId);

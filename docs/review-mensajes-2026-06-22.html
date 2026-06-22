@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review de 36 mensajes WhatsApp — SharkTalents</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-2: #273448;
+    --fg: #f1f5f9;
+    --fg-muted: #cbd5e1;
+    --fg-dim: #94a3b8;
+    --accent: #dafd6f;
+    --green: #22c55e;
+    --red: #ef4444;
+    --orange: #f59e0b;
+    --border: #334155;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #0e1218 0%, #1e293b 100%);
+    border-bottom: 4px solid var(--accent);
+    padding: 24px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+  }
+  header .sub {
+    margin-top: 6px;
+    color: var(--fg-muted);
+    font-size: 14px;
+  }
+  .summary {
+    margin-top: 14px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .pill {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+  }
+  .pill.green { color: var(--green); border-color: rgba(34, 197, 94, 0.4); }
+  .pill.red { color: var(--red); border-color: rgba(239, 68, 68, 0.4); }
+  .pill.orange { color: var(--orange); border-color: rgba(245, 158, 11, 0.4); }
+  .pill.muted { color: var(--fg-muted); }
+  .btn {
+    background: var(--accent);
+    color: #0e1218;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--fg-muted);
+    border: 1px solid var(--border);
+  }
+  main {
+    padding: 24px 32px 80px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .group {
+    margin-bottom: 36px;
+  }
+  .group h2 {
+    color: var(--accent);
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+  }
+  .pain {
+    margin: 18px 0;
+  }
+  .pain-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .message-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 10px;
+    transition: border 0.15s;
+  }
+  .message-card.approved { border-left: 4px solid var(--green); }
+  .message-card.rejected { border-left: 4px solid var(--red); opacity: 0.7; }
+  .message-card.pending { border-left: 4px solid var(--orange); }
+  .message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .message-id {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 14px;
+  }
+  .message-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    background: var(--card-2);
+    color: var(--fg-muted);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .message-text {
+    background: var(--card-2);
+    padding: 14px 16px;
+    border-radius: 8px;
+    color: var(--fg);
+    font-size: 14px;
+    margin-bottom: 12px;
+    border-left: 3px solid var(--accent);
+    white-space: pre-wrap;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    line-height: 1.65;
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--fg-muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .action-btn:hover { background: var(--card-2); }
+  .action-btn.active.approve {
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--green);
+    border-color: var(--green);
+  }
+  .action-btn.active.reject {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--red);
+    border-color: var(--red);
+  }
+  .action-btn.active.pending {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--orange);
+    border-color: var(--orange);
+  }
+  textarea {
+    width: 100%;
+    background: var(--card-2);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 40px;
+  }
+  textarea::placeholder {
+    color: var(--fg-dim);
+  }
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .footer-actions {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: var(--card);
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    z-index: 100;
+  }
+  .footer-actions .count {
+    font-size: 13px;
+    color: var(--fg-muted);
+    margin-right: 8px;
+  }
+  @media (max-width: 700px) {
+    header, main { padding-left: 16px; padding-right: 16px; }
+    .footer-actions { left: 8px; right: 8px; flex-wrap: wrap; }
+    .btn { margin-left: 0; flex: 1; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🦈 Review de 36 mensajes WhatsApp — SharkTalents</h1>
+  <div class="sub">3 dolores × 4 roles × 3 variantes (V1 Dolor declarado / V2 Empatía + dato / V3 Pregunta de discriminación) · Marca cada uno + comentarios opcionales · Descarga JSON al final</div>
+  <div class="summary" id="summary">
+    <span class="pill green" id="count-approved">✓ 0 aprobados</span>
+    <span class="pill red" id="count-rejected">✗ 0 rechazados</span>
+    <span class="pill orange" id="count-pending">⏳ 36 pendientes</span>
+    <button class="btn" id="btn-download">⬇️ Descargar JSON</button>
+    <button class="btn btn-ghost" id="btn-reset">Reset</button>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<div class="footer-actions">
+  <span class="count" id="count-mini">0/36</span>
+  <button class="btn" id="btn-download-2">⬇️ JSON</button>
+</div>
+
+<script>
+const MESSAGES = [
+  // DUEÑO/CEO
+  { id: 1, rol: 'Dueño/CEO', dolor: 'Alta rotación', variante: 'V1', texto: 'marcos, los nuevos no duran y se van. has medido cuánto te cuesta esa rotación entre sueldos pagados y capacitación tirada? Cuéntame.' },
+  { id: 2, rol: 'Dueño/CEO', dolor: 'Alta rotación', variante: 'V2', texto: 'marcos. la rotación tiene un costo invisible: cada salida son 3-6 meses de sueldo perdido. cuántas salidas ya tuviste este año? Cuéntame.' },
+  { id: 3, rol: 'Dueño/CEO', dolor: 'Candidato no rinde', variante: 'V1', texto: 'ana, el candidato estrella que después no rindió es el dolor más caro. cuánta plata invertiste en alguien que tuviste que sacar? Cuéntame.' },
+  { id: 4, rol: 'Dueño/CEO', dolor: 'Candidato no rinde', variante: 'V2', texto: 'ana. contrataste pensando que era el bueno y no resultó. cuántos meses perdiste antes de darte cuenta? Cuéntame.' },
+  { id: 5, rol: 'Dueño/CEO', dolor: 'Proceso lento', variante: 'V1', texto: 'javier, mientras buscas candidato la operación pierde plata cada día. cuánto te costó la última vacante que tomó más de 60 días? Cuéntame.' },
+  { id: 6, rol: 'Dueño/CEO', dolor: 'Proceso lento', variante: 'V2', texto: 'javier. cada semana sin cubrir esa vacante es plata por el desagüe. cuántas semanas llevas con el último puesto abierto? Cuéntame.' },
+
+  // RRHH
+  { id: 7, rol: 'Director/Gerente RRHH', dolor: 'Alta rotación', variante: 'V1', texto: 'lucia, la rotación alta se la atribuyen a RRHH siempre. cuántas salidas tuviste en los últimos 6 meses y cómo te midieron por eso? Cuéntame.' },
+  { id: 8, rol: 'Director/Gerente RRHH', dolor: 'Alta rotación', variante: 'V2', texto: 'lucia. cuando los nuevos no duran, la pregunta del CEO va para ti. te están midiendo la tasa de retención de los primeros 90 días? Cuéntame.' },
+  { id: 9, rol: 'Director/Gerente RRHH', dolor: 'Candidato no rinde', variante: 'V1', texto: 'pablo, cuando un candidato no rinde te tocan la puerta a ti. cuántas veces este año te llegó el reclamo de "ese que contrataron no sirve"? Cuéntame.' },
+  { id: 10, rol: 'Director/Gerente RRHH', dolor: 'Candidato no rinde', variante: 'V2', texto: 'pablo. el candidato que no rinde te quema doble: en la selección y cuando lo tienes que sacar. te midieron por eso este año? Cuéntame.' },
+  { id: 11, rol: 'Director/Gerente RRHH', dolor: 'Proceso lento', variante: 'V1', texto: 'carolina, los procesos largos los pagas tú en visibilidad ejecutiva. cuántos días promedio te están tomando los cierres y qué te dijo el CEO? Cuéntame.' },
+  { id: 12, rol: 'Director/Gerente RRHH', dolor: 'Proceso lento', variante: 'V2', texto: 'carolina. el time-to-fill alto es el KPI más visible del CEO. en cuántos puestos te están pidiendo cuentas por demora? Cuéntame.' },
+
+  // GERENTE DE ÁREA
+  { id: 13, rol: 'Gerente de área', dolor: 'Alta rotación', variante: 'V1', texto: 'ricardo, cuando los del equipo se van al mes te toca empezar de cero. te reclamaron por la rotación en el último review? Cuéntame.' },
+  { id: 14, rol: 'Gerente de área', dolor: 'Alta rotación', variante: 'V2', texto: 'ricardo. cada salida es entrenamiento perdido y resultados que se atrasan. cuántas salidas llevas este trimestre? Cuéntame.' },
+  { id: 15, rol: 'Gerente de área', dolor: 'Candidato no rinde', variante: 'V1', texto: 'sandra, el candidato que te mandó RRHH no rinde y la meta sigue igual. te reclamaron por los números mientras manejabas a alguien que no encajaba? Cuéntame.' },
+  { id: 16, rol: 'Gerente de área', dolor: 'Candidato no rinde', variante: 'V2', texto: 'sandra. la persona en el puesto no rinde y tú tienes que defender los resultados igual. te están pidiendo cuentas por algo que tú no decidiste? Cuéntame.' },
+  { id: 17, rol: 'Gerente de área', dolor: 'Proceso lento', variante: 'V1', texto: 'diego, mientras esperas un candidato el equipo se desgasta cubriendo el hueco. te reclamaron por sobrecarga al resto del equipo? Cuéntame.' },
+  { id: 18, rol: 'Gerente de área', dolor: 'Proceso lento', variante: 'V2', texto: 'diego. cuando RRHH demora la búsqueda, el resultado lo pagas tú con horas extras del equipo. cuántas semanas llevas esperando? Cuéntame.' },
+
+  // OTRO
+  { id: 19, rol: 'Otro', dolor: 'Alta rotación', variante: 'V1', texto: 'natalia, la rotación alta no se fixea contratando más rápido, se fixea contratando al que sí encaja. has medido qué tienen en común los que se van? Cuéntame.' },
+  { id: 20, rol: 'Otro', dolor: 'Alta rotación', variante: 'V2', texto: 'natalia. cuando los nuevos no duran el problema no es el sueldo, suele ser el match. cómo evalúas hoy si va a encajar antes de contratar? Cuéntame.' },
+  { id: 21, rol: 'Otro', dolor: 'Candidato no rinde', variante: 'V1', texto: 'fernando, candidato que brilla en entrevista y después no rinde es señal de proceso, no de la persona. qué mides hoy en la entrevista? Cuéntame.' },
+  { id: 22, rol: 'Otro', dolor: 'Candidato no rinde', variante: 'V2', texto: 'fernando. el candidato que no rinde es el dolor más caro del reclutamiento. cómo verificas hoy si tiene las competencias antes de contratar? Cuéntame.' },
+  { id: 23, rol: 'Otro', dolor: 'Proceso lento', variante: 'V1', texto: 'patricia, los procesos largos vienen de filtrar mal al inicio, no de buscar más. cuántos candidatos terminas entrevistando para llenar 1 vacante? Cuéntame.' },
+  { id: 24, rol: 'Otro', dolor: 'Proceso lento', variante: 'V2', texto: 'patricia. cuando el proceso se alarga, el costo se duplica: pierdes operación y pierdes al candidato bueno que aceptó otra oferta. te pasó este año? Cuéntame.' },
+
+  // V3 — Pregunta de discriminación (filosofía: ancla mínima al dolor + pregunta cerrada con 2 opciones)
+  // DUEÑO/CEO
+  { id: 25, rol: 'Dueño/CEO', dolor: 'Alta rotación', variante: 'V3', texto: 'marcos, para los que han salido del equipo al poco tiempo, qué te urge más: alguien que se quede 3-5 años o alguien que produzca máximo en 6 meses? Cuéntame.' },
+  { id: 26, rol: 'Dueño/CEO', dolor: 'Candidato no rinde', variante: 'V3', texto: 'ana, para reemplazar al último que no rindió, qué te urge más: alguien que resuelva solo y libere tu tiempo, o alguien al que puedas formar de cero? Cuéntame.' },
+  { id: 27, rol: 'Dueño/CEO', dolor: 'Proceso lento', variante: 'V3', texto: 'javier, para esa vacante que llevas semanas sin cubrir, qué te urge más: alguien que arranque rápido o alguien que encaje mejor con tu equipo aunque tome más? Cuéntame.' },
+
+  // RRHH
+  { id: 28, rol: 'Director/Gerente RRHH', dolor: 'Alta rotación', variante: 'V3', texto: 'lucia, para frenar la rotación, qué te están pidiendo más arriba: gente que dure 3+ años o gente que aprenda rápido y se adapte? Cuéntame.' },
+  { id: 29, rol: 'Director/Gerente RRHH', dolor: 'Candidato no rinde', variante: 'V3', texto: 'pablo, para reemplazar al último que no rindió, qué te está pidiendo el CEO: alguien que resuelva solo o alguien que se forme en el rol? Cuéntame.' },
+  { id: 30, rol: 'Director/Gerente RRHH', dolor: 'Proceso lento', variante: 'V3', texto: 'carolina, para los cierres que están demorando, qué te urge más del lado del CEO: velocidad de entrega o calidad del match? Cuéntame.' },
+
+  // GERENTE DE ÁREA
+  { id: 31, rol: 'Gerente de área', dolor: 'Alta rotación', variante: 'V3', texto: 'ricardo, para frenar las salidas del equipo, qué te urge más: alguien que se quede por más tiempo o alguien que se adapte rápido al ritmo? Cuéntame.' },
+  { id: 32, rol: 'Gerente de área', dolor: 'Candidato no rinde', variante: 'V3', texto: 'sandra, para reemplazar al último que no rindió en tu equipo, qué te urge más: alguien que resuelva solo o alguien que aprenda el rol rápido? Cuéntame.' },
+  { id: 33, rol: 'Gerente de área', dolor: 'Proceso lento', variante: 'V3', texto: 'diego, para esa vacante del equipo que llevas semanas esperando, qué te urge más: alguien que arranque ya o alguien que encaje mejor aunque tome más tiempo? Cuéntame.' },
+
+  // OTRO
+  { id: 34, rol: 'Otro', dolor: 'Alta rotación', variante: 'V3', texto: 'natalia, para los que no se quedan, qué crees que tu equipo necesita: alguien con compromiso largo o alguien adaptable que aporte mientras esté? Cuéntame.' },
+  { id: 35, rol: 'Otro', dolor: 'Candidato no rinde', variante: 'V3', texto: 'fernando, para reemplazar al último que no rindió, qué crees que falla más: el perfil técnico o el match con tu cultura? Cuéntame.' },
+  { id: 36, rol: 'Otro', dolor: 'Proceso lento', variante: 'V3', texto: 'patricia, para acortar el proceso, qué te urge más: filtrar mejor antes de entrevistar o entrevistar menos pero candidatos mejor evaluados? Cuéntame.' },
+];
+
+const STORAGE_KEY = 'sharktalents-review-messages-2026-06-22';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch { return {}; }
+}
+
+function saveState(state) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (err) {
+    console.warn('localStorage save failed', err);
+  }
+}
+
+let state = loadState();
+
+function getMsgState(id) {
+  return state[id] ?? { estado: 'pending', comentario: '' };
+}
+
+function setMsgState(id, patch) {
+  state[id] = { ...getMsgState(id), ...patch };
+  saveState(state);
+  renderSummary();
+  renderCard(id);
+}
+
+function renderSummary() {
+  const total = MESSAGES.length;
+  const approved = Object.values(state).filter(s => s.estado === 'approved').length;
+  const rejected = Object.values(state).filter(s => s.estado === 'rejected').length;
+  const pending = total - approved - rejected;
+  document.getElementById('count-approved').textContent = `✓ ${approved} aprobados`;
+  document.getElementById('count-rejected').textContent = `✗ ${rejected} rechazados`;
+  document.getElementById('count-pending').textContent = `⏳ ${pending} pendientes`;
+  document.getElementById('count-mini').textContent = `${approved + rejected}/${total} decididos`;
+}
+
+function renderCard(id) {
+  const card = document.querySelector(`[data-card-id="${id}"]`);
+  if (!card) return;
+  const s = getMsgState(id);
+  card.className = `message-card ${s.estado}`;
+  card.querySelectorAll('.action-btn').forEach(btn => {
+    const action = btn.dataset.action;
+    if (action === s.estado.replace('approved','approve').replace('rejected','reject').replace('pending','pending')) {
+      btn.classList.add('active', action);
+    } else {
+      btn.classList.remove('active', 'approve', 'reject', 'pending');
+    }
+  });
+}
+
+function makeCard(msg) {
+  const s = getMsgState(msg.id);
+  const card = document.createElement('div');
+  card.className = `message-card ${s.estado}`;
+  card.dataset.cardId = msg.id;
+  card.innerHTML = `
+    <div class="message-header">
+      <span class="message-id">Mensaje #${msg.id} · ${msg.variante}</span>
+      <div class="message-tags">
+        <span class="tag">${msg.rol}</span>
+        <span class="tag">${msg.dolor}</span>
+      </div>
+    </div>
+    <div class="message-text">${msg.texto.replace(/</g, '&lt;')}</div>
+    <div class="actions">
+      <button class="action-btn ${s.estado === 'approved' ? 'active approve' : ''}" data-action="approve" data-id="${msg.id}">✓ Aprobar</button>
+      <button class="action-btn ${s.estado === 'rejected' ? 'active reject' : ''}" data-action="reject" data-id="${msg.id}">✗ Rechazar</button>
+      <button class="action-btn ${s.estado === 'pending' ? 'active pending' : ''}" data-action="pending" data-id="${msg.id}">⏳ Pendiente</button>
+    </div>
+    <textarea placeholder="Comentarios de Cristian (qué cambiar, qué falla, etc.)" data-id="${msg.id}">${(s.comentario || '').replace(/</g, '&lt;')}</textarea>
+  `;
+  // Event listeners
+  card.querySelectorAll('.action-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const map = { approve: 'approved', reject: 'rejected', pending: 'pending' };
+      setMsgState(msg.id, { estado: map[btn.dataset.action] });
+    });
+  });
+  card.querySelector('textarea').addEventListener('input', (e) => {
+    setMsgState(msg.id, { comentario: e.target.value });
+  });
+  return card;
+}
+
+function render() {
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+  const groups = {};
+  MESSAGES.forEach(msg => {
+    if (!groups[msg.rol]) groups[msg.rol] = {};
+    if (!groups[msg.rol][msg.dolor]) groups[msg.rol][msg.dolor] = [];
+    groups[msg.rol][msg.dolor].push(msg);
+  });
+  Object.entries(groups).forEach(([rol, pains]) => {
+    const groupDiv = document.createElement('section');
+    groupDiv.className = 'group';
+    groupDiv.innerHTML = `<h2>👤 ${rol}</h2>`;
+    Object.entries(pains).forEach(([pain, msgs]) => {
+      const painDiv = document.createElement('div');
+      painDiv.className = 'pain';
+      painDiv.innerHTML = `<div class="pain-title">💥 ${pain}</div>`;
+      msgs.forEach(m => painDiv.appendChild(makeCard(m)));
+      groupDiv.appendChild(painDiv);
+    });
+    main.appendChild(groupDiv);
+  });
+  renderSummary();
+}
+
+function downloadJSON() {
+  const fullResult = MESSAGES.map(m => ({
+    id: m.id,
+    rol: m.rol,
+    dolor: m.dolor,
+    variante: m.variante,
+    texto: m.texto,
+    estado: getMsgState(m.id).estado,
+    comentario: getMsgState(m.id).comentario || '',
+  }));
+  const approved = fullResult.filter(r => r.estado === 'approved').length;
+  const rejected = fullResult.filter(r => r.estado === 'rejected').length;
+  const pending = fullResult.filter(r => r.estado === 'pending').length;
+  const blob = new Blob([JSON.stringify({
+    fecha_revision: new Date().toISOString(),
+    revisado_por: 'Cristian',
+    total: fullResult.length,
+    aprobados: approved,
+    rechazados: rejected,
+    pendientes: pending,
+    mensajes: fullResult,
+  }, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const ts = new Date().toISOString().slice(0, 10);
+  a.download = `review-mensajes-${ts}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (!confirm('¿Borrar todas las decisiones y comentarios? Esto no se puede deshacer.')) return;
+  state = {};
+  saveState(state);
+  render();
+}
+
+document.getElementById('btn-download').addEventListener('click', downloadJSON);
+document.getElementById('btn-download-2').addEventListener('click', downloadJSON);
+document.getElementById('btn-reset').addEventListener('click', resetAll);
+
+render();
+</script>
+
+</body>
+</html>
