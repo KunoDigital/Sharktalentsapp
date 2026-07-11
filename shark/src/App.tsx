@@ -4,6 +4,15 @@ import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react';
 import ErrorBoundary from './components/ErrorBoundary';
 import AdminLayout from './layouts/AdminLayout';
 import JobsList from './pages/JobsList';  // eager: primera página al loggear
+import RequireRole, { useUserRole } from './components/RequireRole';
+import FreelanceLayout from './layouts/FreelanceLayout';
+
+// Freelance CRM — lazy loaded
+const FreelanceHome = lazy(() => import('./pages/freelance/FreelanceHome'));
+const FreelanceLeadsKanban = lazy(() => import('./pages/freelance/FreelanceLeadsKanban'));
+const FreelanceClientesKanban = lazy(() => import('./pages/freelance/FreelanceClientesKanban'));
+const FreelancePerfil = lazy(() => import('./pages/freelance/FreelancePerfil'));
+const AdminFreelanceVendedores = lazy(() => import('./pages/AdminFreelanceVendedores'));
 
 // Admin pages — lazy loaded
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -111,6 +120,39 @@ function SignedOutLanding() {
   );
 }
 
+/**
+ * Si el usuario logueado tiene rol 'freelance', debe operar en /freelance
+ * (no en el ATS). Este componente redirige antes de renderizar el AdminLayout.
+ */
+function AdminOrFreelanceRedirect({ children }: { children: React.ReactNode }) {
+  const role = useUserRole();
+  if (role === 'freelance') return <Navigate to="/freelance" replace />;
+  return <>{children}</>;
+}
+
+function ProtectedFreelance() {
+  return (
+    <>
+      <SignedOut>
+        <SignedOutLanding />
+      </SignedOut>
+      <SignedIn>
+        <RequireRole role="freelance" fallback="/">
+          <Routes>
+            <Route path="/" element={<FreelanceLayout />}>
+              <Route index element={lazyRoute(<FreelanceHome />, 'freelance-home')} />
+              <Route path="leads" element={lazyRoute(<FreelanceLeadsKanban />, 'freelance-leads')} />
+              <Route path="clientes" element={lazyRoute(<FreelanceClientesKanban />, 'freelance-clientes')} />
+              <Route path="perfil" element={lazyRoute(<FreelancePerfil />, 'freelance-perfil')} />
+              <Route path="*" element={<Navigate to="/freelance" replace />} />
+            </Route>
+          </Routes>
+        </RequireRole>
+      </SignedIn>
+    </>
+  );
+}
+
 function ProtectedAdmin() {
   return (
     <>
@@ -118,6 +160,7 @@ function ProtectedAdmin() {
         <SignedOutLanding />
       </SignedOut>
       <SignedIn>
+        <AdminOrFreelanceRedirect>
         <Routes>
           <Route path="/" element={<AdminLayout />}>
             <Route index element={lazyRoute(<Dashboard />, 'dashboard', <LoadingPage />)} />
@@ -139,6 +182,7 @@ function ProtectedAdmin() {
             <Route path="emails" element={lazyRoute(<EmailTemplateEditor />, 'emails-editor')} />
             <Route path="emails/preview" element={lazyRoute(<EmailPreviews />, 'emails-preview')} />
             <Route path="marketing/leads" element={lazyRoute(<MarketingLeads />, 'marketing-leads')} />
+            <Route path="team/freelance" element={lazyRoute(<AdminFreelanceVendedores />, 'admin-freelance-vendedores')} />
             <Route path="alerts" element={lazyRoute(<AlertsPage />, 'alerts')} />
             <Route path="operations/expenses" element={lazyRoute(<ExpensesPage />, 'expenses')} />
             <Route path="health" element={lazyRoute(<HealthPage />, 'health')} />
@@ -151,6 +195,7 @@ function ProtectedAdmin() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
+        </AdminOrFreelanceRedirect>
       </SignedIn>
     </>
   );
@@ -183,6 +228,7 @@ export default function App() {
         <Route path="/apply/:tenantSlug/:jobSlug/recover" element={lazyRoute(<CandidateRecovery />, 'candidate-recovery')} />
         <Route path="/recovery" element={lazyRoute(<CandidateRecoveryByEmail />, 'candidate-recovery-email')} />
         <Route path="/test/:token/done" element={lazyRoute(<CandidateTestDone />, 'candidate-done')} />
+        <Route path="/freelance/*" element={<ErrorBoundary context="freelance-app"><ProtectedFreelance /></ErrorBoundary>} />
         <Route path="/*" element={<ErrorBoundary context="admin-app"><ProtectedAdmin /></ErrorBoundary>} />
       </Routes>
     </HashRouter>

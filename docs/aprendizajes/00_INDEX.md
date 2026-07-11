@@ -35,6 +35,8 @@ Cada documento es **autocontenido**: podés leer uno suelto sin necesitar los ot
 | [14](14_CHECKLIST_PROD.md) | Checklist antes de producción | Antes de cada release mayor |
 | [16](16_AGREGAR_TEST_CANDIDATO.md) | Cómo agregar una nueva prueba para candidato | Al sumar evaluación nueva |
 | [17](17_DEV_PROD_ENVIRONMENTS.md) | Entornos DEV y PROD en Catalyst — qué se separa, qué no, cómo promover | Al configurar o promover deploys |
+| [18](18_INVENTARIO_KEYS.md) | Inventario de API keys — qué existe, dónde, cómo rotar (sin valores) | Al crear/rotar credenciales |
+| [19](19_SESION_2026-07-10_CRM_FREELANCE.md) | Sesión CRM Freelance + integración Zoho CRM real de Kuno — decisiones y aprendizajes | Al retomar Fase 2/3 del CRM freelance o tocar sync Zoho |
 
 ---
 

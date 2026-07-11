@@ -15,7 +15,7 @@ import { handleZohoCrmLeadCreated } from './features/zohoCrmWebhook';
 import { listPublicJobs, getPublicJob, applyToPublicJob } from './features/publicCareerSite';
 import { getDevLogByTraceId, listDevLogs } from './features/devLogs';
 import { handleWhatsAppWebhook } from './features/whatsappWebhook';
-import { verifyTables, listAllTenants, getAdminStats, anthropicPing, listAuditLog, issuePortalToken, listAntiCheatEvents, listEmailTemplates, getMetricsSnapshot, forceRecruitSync, diagInsertCandidate, adoptOrphanDrafts, diagLastDraft, diagCrmLayouts, diagCrmLead, diagCrmPush, diagTriggerTestFlow, diagGenerateDraft, diagPublishTestJobs, diagListDrafts, diagBackfillRecruitSlugs, diagRecentAlerts, diagGenerateQuestionsForJob, diagGetQuestionsForJob, diagListJobs, diagCreateE2eTestJob, diagCreateTestCandidate, diagCleanupTestJobs, diagGetTestToken, diagSetStage, diagGetScores, diagSendWhatsApp, diagWipeTestLeads, diagWipeAllTestData, redirectFromWhatsAppButton, diagListRecentLeads, diagBackfillLeadStatus } from './features/admin';
+import { verifyTables, listAllTenants, getAdminStats, anthropicPing, listAuditLog, issuePortalToken, listAntiCheatEvents, listEmailTemplates, getMetricsSnapshot, forceRecruitSync, diagInsertCandidate, adoptOrphanDrafts, diagLastDraft, diagCrmLayouts, diagCrmLead, diagCrmPush, diagTriggerTestFlow, diagGenerateDraft, diagPublishTestJobs, diagListDrafts, diagBackfillRecruitSlugs, diagRecentAlerts, diagGenerateQuestionsForJob, diagGetQuestionsForJob, diagListJobs, diagCreateE2eTestJob, diagCreateTestCandidate, diagCleanupTestJobs, diagGetTestToken, diagSetStage, diagGetScores, diagSendWhatsApp, diagWipeTestLeads, diagWipeAllTestData, redirectFromWhatsAppButton, diagListRecentLeads, diagBackfillLeadStatus, diagGenerateVideosForApp } from './features/admin';
 import { processOutbox, listOutbox, processOutboxFromTenant, listOutboxFromTenant, searchOutboxByRecipient, resetStuckOutboxEvents } from './features/outbox';
 import { sendCandidateReminders } from './features/candidateReminders';
 import { listAlerts, acknowledgeAlert, resolveAlert } from './features/alerts';
@@ -110,6 +110,23 @@ import { scheduleBriefing, listBriefings, uploadBriefingTranscript } from './fea
 import { trackPortalEvent, listJobTracking } from './features/jobTracking';
 import { sendOfferForSignature } from './features/contracts';
 import { checkRateLimit } from './lib/rateLimiter';
+import {
+  createFreelanceUser,
+  listFreelanceUsers,
+  getFreelanceUser,
+  patchFreelanceUser,
+  deleteFreelanceUser,
+  getFreelanceMe,
+  patchFreelanceMe,
+  getFreelanceMeStats,
+  listMyLeads,
+  patchMyLead,
+  convertLeadToClient,
+  listMyClients,
+  patchMyClientStage,
+  sendEvalToLead,
+  sendQuoteToLead,
+} from './features/freelance';
 
 const log = logger('ROUTER');
 
@@ -123,7 +140,7 @@ type Handler = (ctx: RequestContext) => Promise<void>;
  * - 'webhook' → Auth en el handler (svix), rate-limit por IP, NO normal rate-limit
  *               (los webhooks se reintentan, no podemos limitarles bursts)
  */
-type AuthMode = 'public' | 'tenant' | 'admin' | 'webhook';
+type AuthMode = 'public' | 'tenant' | 'admin' | 'webhook' | 'freelance';
 
 type Route = { method: string; pattern: RegExp; handler: Handler; auth: AuthMode };
 
@@ -182,6 +199,7 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/api\/admin\/_diag-create-test-candidate\/?$/, handler: diagCreateTestCandidate, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/admin\/_diag-cleanup-test-jobs\/?$/, handler: diagCleanupTestJobs, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/admin\/_diag-get-test-token\/?$/, handler: diagGetTestToken, auth: 'public' },
+  { method: 'POST', pattern: /^\/api\/admin\/_diag-generate-videos-for-app\/?$/, handler: diagGenerateVideosForApp, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/admin\/_diag-set-stage\/?$/, handler: diagSetStage, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/admin\/_adopt-orphan-drafts\/?$/, handler: adoptOrphanDrafts, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/marketing\/lead-status\/?$/, handler: getLeadStatus, auth: 'public' },
@@ -451,6 +469,29 @@ const routes: Route[] = [
   // resuelve recruit_id + recruit_job_id, crea/encuentra Application en SharkTalents
   // y redirige al test correspondiente. Público porque viene de email.
   { method: 'GET', pattern: /^\/api\/recruit\/test-link\/?$/, handler: handleRecruitTestLink, auth: 'public' },
+
+  // ==========================================================================
+  // CRM interno freelance (2026-07-09)
+  // ==========================================================================
+
+  // Admin — gestión de vendedores (auth: 'tenant' — Cris/RRHH loggeados en el panel)
+  { method: 'POST', pattern: /^\/api\/tenant\/freelance-users\/?$/, handler: createFreelanceUser, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/tenant\/freelance-users\/?$/, handler: listFreelanceUsers, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/tenant\/freelance-users\/[^/]+\/?$/, handler: getFreelanceUser, auth: 'tenant' },
+  { method: 'PATCH', pattern: /^\/api\/tenant\/freelance-users\/[^/]+\/?$/, handler: patchFreelanceUser, auth: 'tenant' },
+  { method: 'DELETE', pattern: /^\/api\/tenant\/freelance-users\/[^/]+\/?$/, handler: deleteFreelanceUser, auth: 'tenant' },
+
+  // Freelance — perfil propio (auth: 'freelance' — Clerk JWT con publicMetadata.role='freelance')
+  { method: 'GET', pattern: /^\/api\/freelance\/me\/?$/, handler: getFreelanceMe, auth: 'freelance' },
+  { method: 'PATCH', pattern: /^\/api\/freelance\/me\/?$/, handler: patchFreelanceMe, auth: 'freelance' },
+  { method: 'GET', pattern: /^\/api\/freelance\/me\/stats\/?$/, handler: getFreelanceMeStats, auth: 'freelance' },
+  { method: 'GET', pattern: /^\/api\/freelance\/me\/leads\/?$/, handler: listMyLeads, auth: 'freelance' },
+  { method: 'PATCH', pattern: /^\/api\/freelance\/me\/leads\/[^/]+\/?$/, handler: patchMyLead, auth: 'freelance' },
+  { method: 'POST', pattern: /^\/api\/freelance\/me\/leads\/[^/]+\/convert\/?$/, handler: convertLeadToClient, auth: 'freelance' },
+  { method: 'POST', pattern: /^\/api\/freelance\/me\/leads\/[^/]+\/send-eval\/?$/, handler: sendEvalToLead, auth: 'freelance' },
+  { method: 'POST', pattern: /^\/api\/freelance\/me\/leads\/[^/]+\/send-quote\/?$/, handler: sendQuoteToLead, auth: 'freelance' },
+  { method: 'GET', pattern: /^\/api\/freelance\/me\/clients\/?$/, handler: listMyClients, auth: 'freelance' },
+  { method: 'PATCH', pattern: /^\/api\/freelance\/me\/clients\/[^/]+\/stage\/?$/, handler: patchMyClientStage, auth: 'freelance' },
 ];
 
 function getClientIp(ctx: RequestContext): string {
@@ -522,9 +563,21 @@ async function routeInner(ctx: RequestContext): Promise<void> {
 
     if (matched.auth === 'tenant') {
       await requireAuth(ctx);
+      // Rechazo defensivo: usuarios con role distinto (ej. freelance) NO deben
+      // pasar a endpoints tenant aunque tengan org activa. Esto evita que un
+      // freelance con org acceda por descuido al ATS.
+      const { rejectNonTenantRoles } = await import('./lib/auth.js');
+      rejectNonTenantRoles(ctx);
       await requireTenant(ctx);
       // Ahora ctx.tenantId está poblado → rate-limit per-tenant
       checkRateLimit({ tenantId: ctx.tenantId, ip });
+    } else if (matched.auth === 'freelance') {
+      // Freelance: user con publicMetadata.role='freelance'. NO requiere org/tenant.
+      // Aislamiento de datos por assigned_to = ctx.user.id en cada handler.
+      await requireAuth(ctx);
+      const { requireUserRole } = await import('./lib/auth.js');
+      requireUserRole(ctx, 'freelance');
+      checkRateLimit({ tenantId: null, ip });
     } else if (matched.auth === 'admin') {
       // Admin: la verificación de X-Internal-Key vive en cada handler.
       // El rate-limit es por IP (admin no tiene tenant).

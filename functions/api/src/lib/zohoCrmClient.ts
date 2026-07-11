@@ -400,4 +400,123 @@ export async function updateLeadStatus(leadId: string, newStatus: string, traceI
   );
 }
 
+// ============================================================================
+// Accounts + Contacts + Deals — usado por el CRM freelance al "convertir cliente"
+// ============================================================================
+
+export type ZohoAccountInput = {
+  account_name: string;
+  phone?: string;
+  ruc?: string;
+  owner_id?: string;
+};
+
+export type ZohoContactInput = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  mobile?: string;
+  account_id?: string;
+  owner_id?: string;
+};
+
+export type ZohoDealInput = {
+  deal_name: string;
+  amount: number;
+  stage: string;
+  closing_date: string;
+  account_id?: string;
+  contact_id?: string;
+  owner_id?: string;
+  lead_source?: string;
+  posibles_productos?: string[];
+  description?: string;
+};
+
+export type ZohoCreateResponse = {
+  data?: Array<{
+    code: string;
+    details: { id: string };
+    message: string;
+    status: string;
+  }>;
+};
+
+function firstIdFromCreate(res: ZohoCreateResponse): string | null {
+  const first = res.data?.[0];
+  if (first?.status !== 'success') return null;
+  return first.details?.id ?? null;
+}
+
+export async function createAccount(input: ZohoAccountInput, traceId: string): Promise<CrmResult<{ id: string }>> {
+  const record: Record<string, unknown> = { Account_Name: input.account_name };
+  if (input.phone) record.Phone = input.phone;
+  if (input.ruc) record.RUC_NIT = input.ruc;
+  if (input.owner_id) record.Owner = { id: input.owner_id };
+
+  const res = await callCrm<ZohoCreateResponse>(
+    '/Accounts',
+    { method: 'POST', body: { data: [record] } },
+    traceId,
+  );
+  if (!res.ok) return res;
+  const id = firstIdFromCreate(res.data);
+  if (!id) return { ok: false, error: `Account create returned no id: ${JSON.stringify(res.data).slice(0, 200)}` };
+  return { ok: true, data: { id } };
+}
+
+export async function createContact(input: ZohoContactInput, traceId: string): Promise<CrmResult<{ id: string }>> {
+  const record: Record<string, unknown> = {
+    First_Name: input.first_name,
+    Last_Name: input.last_name || input.first_name,
+    Email: input.email,
+  };
+  if (input.mobile) record.Mobile = input.mobile;
+  if (input.account_id) record.Account_Name = { id: input.account_id };
+  if (input.owner_id) record.Owner = { id: input.owner_id };
+
+  const res = await callCrm<ZohoCreateResponse>(
+    '/Contacts',
+    { method: 'POST', body: { data: [record] } },
+    traceId,
+  );
+  if (!res.ok) return res;
+  const id = firstIdFromCreate(res.data);
+  if (!id) return { ok: false, error: `Contact create returned no id: ${JSON.stringify(res.data).slice(0, 200)}` };
+  return { ok: true, data: { id } };
+}
+
+export async function createDeal(input: ZohoDealInput, traceId: string): Promise<CrmResult<{ id: string }>> {
+  const record: Record<string, unknown> = {
+    Deal_Name: input.deal_name,
+    Amount: input.amount,
+    Stage: input.stage,
+    Closing_Date: input.closing_date,
+  };
+  if (input.account_id) record.Account_Name = { id: input.account_id };
+  if (input.contact_id) record.Contact_Name = { id: input.contact_id };
+  if (input.owner_id) record.Owner = { id: input.owner_id };
+  if (input.lead_source) record.Lead_Source = input.lead_source;
+  if (input.posibles_productos?.length) record.Posibles_productos = input.posibles_productos;
+  if (input.description) record.Description = input.description;
+
+  const res = await callCrm<ZohoCreateResponse>(
+    '/Deals',
+    { method: 'POST', body: { data: [record] } },
+    traceId,
+  );
+  if (!res.ok) return res;
+  const id = firstIdFromCreate(res.data);
+  if (!id) return { ok: false, error: `Deal create returned no id: ${JSON.stringify(res.data).slice(0, 200)}` };
+  return { ok: true, data: { id } };
+}
+
+export async function updateDealStage(dealId: string, newStage: string, traceId: string): Promise<CrmResult<unknown>> {
+  return callCrm<unknown>(
+    `/Deals/${encodeURIComponent(dealId)}`,
+    { method: 'PUT', body: { data: [{ Stage: newStage }] } },
+    traceId,
+  );
+}
+
 export const _internal = { isConfigured, splitName };

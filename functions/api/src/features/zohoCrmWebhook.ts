@@ -211,60 +211,126 @@ export async function handleZohoCrmLeadCreated(ctx: RequestContext): Promise<voi
     leadId = row.ROWID;
     isNew = true;
     log.info('crm lead created — new MarketingLead', { leadId, source: leadSource });
-  }
 
-  // 2. Disparar email de bienvenida (solo si es nuevo, para no spammear).
-  if (isNew) {
+    // Auto-asignar a freelance con menos leads (round-robin básico).
+    // Solo para leads nuevos — los existing ya tienen assigned_to del primer paso.
     try {
-      const { publishAndProcessEvent } = await import('./outbox.js');
-      const bookingsUrl = e.CRM_BOOKINGS_URL || 'https://zbooking.us/vde72';
-      await publishAndProcessEvent(ctx.req, 'email.send_pending', {
-        to: email,
-        template: 'meta_lead_welcome',
-        locale: 'es',
-        vars: {
-          contact_name: contactName || 'equipo',
-          bookings_url: bookingsUrl,
-        },
-      });
-      log.info('crm lead welcome email queued', { leadId });
+      const { autoAssignLead } = await import('./freelance.js');
+      const assignedTo = await autoAssignLead(ctx.req, leadId);
+      log.info('crm webhook auto-assign result', { leadId, assignedTo: assignedTo ?? 'none' });
     } catch (err) {
-      log.warn('failed to queue welcome email — lead created OK, email retry on cron', {
-        leadId,
-        error: (err as Error).message,
-      });
+      log.warn('crm webhook auto-assign failed', { leadId, error: (err as Error).message });
     }
   }
 
+  // 2. Email de bienvenida — DESHABILITADO (2026-07-10).
+  //
+  // Antes se disparaba automáticamente al recibir un lead desde Zoho CRM. Ahora
+  // el vendedor freelance decide cuándo enviarlo desde el botón "📧 Enviar
+  // evaluación" en el kanban. Motivo: el flujo consultivo requiere que el
+  // vendedor califique al lead antes de mandarle links de evaluación.
+  //
+  // Si el lead vino de la landing "prueba gratis" (auto-servicio), el endpoint
+  // /api/marketing/lead sí manda email — pero esa es una entrada distinta.
+
   // 3. Alerta WhatsApp a Cris (speed-to-lead < 5 min). Solo si es lead nuevo de Meta
-  // y OPS_ALERT_PHONE está configurado. 2026-06-19: funciona mientras el join al
-  // Sandbox Twilio esté activo (72h); cuando WABA esté aprobado se vuelve robusto.
+  // y OPS_ALERT_PHONE está configurado.
+  //
+  // 2026-06-29: switch a template `lead_alerta_cris` aprobado por Meta. Si
+  // TWILIO_TPL_LEAD_ALERTA está configurado, manda template (6 variables,
+  // formato fijo). Sino, fallback a sendText (sandbox / 24h window).
+  //
+  // Template body (las 6 variables son posicionales):
+  //   👤 {{1}}  → nombre
+  //   📧 {{2}}  → email
+  //   📱 {{3}}  → wa.me link
+  //   💼 Rol: {{4}}
+  //   💥 Dolor: {{5}}
+  //   Mensaje sugerido: {{6}}
   if (isNew && e.OPS_ALERT_PHONE) {
     const leadPhoneClean = (phone ?? '').replace(/[^\d]/g, '');
     const waLink = leadPhoneClean ? `https://wa.me/${leadPhoneClean}` : '(sin WhatsApp)';
-    const alertLines = [
-      `🦈 Lead nuevo en SharkTalents`,
-      ``,
-      `👤 ${contactName || 'sin nombre'}`,
-      `📧 ${email}`,
-      `📱 ${waLink}`,
-      `🎯 Fuente: ${leadSource || 'Meta'}`,
-    ];
-    // Campos nuevos del formulario Meta (Q3 + Q4 + Q1 + Q2). Solo se muestran si vinieron.
-    if (dolor) alertLines.push(`💥 Dolor: ${dolor}`);
-    if (role) alertLines.push(`💼 Rol: ${role}`);
-    if (hasVacancy) alertLines.push(`📋 Vacante este trimestre: ${hasVacancy}`);
-    if (hadBadHire) alertLines.push(`⚠️ Mala contratación previa: ${hadBadHire}`);
-    alertLines.push(``, `Speed-to-lead: < 5 min recomendado.`);
-    const alertBody = alertLines.join('\n');
+
+    // Mensaje sugerido (Claude Haiku + 9 ejemplos aprobados por Cristian).
+    // Falla silenciosa: si Claude no responde, la sugerencia queda como placeholder.
+    let sugerido = '(no generado — revisa logs si esto se repite)';
     try {
-      const { sendText } = await import('../lib/whatsappDispatcher.js');
-      const waRes = await sendText({ to_phone: e.OPS_ALERT_PHONE, body: alertBody }, ctx.traceId);
-      log.info('ops alert whatsapp result', {
-        leadId,
-        ok: waRes.ok,
-        error: waRes.ok ? undefined : waRes.error,
-      });
+      const { generateLeadSuggestedMessage } = await import('../lib/leadMessageGenerator.js');
+      const generated = await generateLeadSuggestedMessage(
+        { nombre: contactName, rol: role, dolor },
+        ctx.traceId,
+      );
+      if (generated) sugerido = generated;
+    } catch (err) {
+      log.debug('suggested message generation skipped', { error: (err as Error).message });
+    }
+
+    // TWILIO_TPL_LEAD_ALERTA: leer de tabla Config (env vars del proyecto llegaron al cap).
+    let templateSid = '';
+    try {
+      const { getSecret } = await import('../lib/secretsCache.js');
+      templateSid = await getSecret('TWILIO_TPL_LEAD_ALERTA', ctx.req);
+    } catch (err) {
+      log.debug('TWILIO_TPL_LEAD_ALERTA read failed', { error: (err as Error).message });
+    }
+    try {
+      if (templateSid) {
+        // Path producción: template aprobado por Meta. 6 variables posicionales.
+        const { sendTemplate } = await import('../lib/whatsappDispatcher.js');
+        const waRes = await sendTemplate(
+          {
+            to_phone: e.OPS_ALERT_PHONE,
+            template_name: templateSid,
+            components: [
+              {
+                type: 'body',
+                parameters: [
+                  { type: 'text', text: contactName || 'sin nombre' },
+                  { type: 'text', text: email || 'sin email' },
+                  { type: 'text', text: waLink },
+                  { type: 'text', text: role || 'sin rol' },
+                  { type: 'text', text: dolor || 'sin dolor' },
+                  { type: 'text', text: sugerido },
+                ],
+              },
+            ],
+          },
+          ctx.traceId,
+        );
+        log.info('ops alert whatsapp template result', {
+          leadId,
+          ok: waRes.ok,
+          error: waRes.ok ? undefined : waRes.error,
+        });
+      } else {
+        // Fallback: sendText (sandbox / 24h window) con el cuerpo formado.
+        const alertLines = [
+          `🦈 Lead nuevo en SharkTalents`,
+          ``,
+          `👤 ${contactName || 'sin nombre'}`,
+          `📧 ${email}`,
+          `📱 ${waLink}`,
+          `🎯 Fuente: ${leadSource || 'Meta'}`,
+        ];
+        if (role) alertLines.push(`💼 Rol: ${role}`);
+        if (dolor) alertLines.push(`💥 Dolor: ${dolor}`);
+        if (hasVacancy) alertLines.push(`📋 Vacante este trimestre: ${hasVacancy}`);
+        if (hadBadHire) alertLines.push(`⚠️ Mala contratación previa: ${hadBadHire}`);
+        if (sugerido && !sugerido.startsWith('(no generado')) {
+          alertLines.push(``, `💡 Sugerido:`, sugerido);
+        }
+        alertLines.push(``, `Speed-to-lead: < 5 min recomendado.`);
+        const { sendText } = await import('../lib/whatsappDispatcher.js');
+        const waRes = await sendText(
+          { to_phone: e.OPS_ALERT_PHONE, body: alertLines.join('\n') },
+          ctx.traceId,
+        );
+        log.info('ops alert whatsapp text fallback result', {
+          leadId,
+          ok: waRes.ok,
+          error: waRes.ok ? undefined : waRes.error,
+        });
+      }
     } catch (err) {
       log.warn('ops alert whatsapp failed', { leadId, error: (err as Error).message });
     }

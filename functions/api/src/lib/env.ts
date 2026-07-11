@@ -67,6 +67,11 @@ type EnvShape = {
   WHISPER_API_URL: string;
   WHISPER_API_KEY: string;
   // OpenAI (Whisper API para video module)
+  // 2026-06-24: OpenAI project keys (sk-proj-...) miden ~165 chars y SUPERAN el cap
+  // de Catalyst Console env vars (límite no documentado, <55 chars verificado en testing).
+  // Workaround: guardar la key en Catalyst Cache (segment 'secrets', cap 16,000 chars).
+  // Lectura via lib/secretsCache.ts (lazy, cacheado en memoria del lambda).
+  // env.OPENAI_API_KEY queda vacío en runtime — los consumers deben usar getOpenAIKey().
   OPENAI_API_KEY: string;
   OPENAI_WHISPER_MODEL: string;
   OPENAI_WHISPER_TIMEOUT_MS: number;
@@ -87,6 +92,10 @@ type EnvShape = {
   TWILIO_ACCOUNT_SID: string;       // "AC..."
   TWILIO_AUTH_TOKEN: string;        // secret
   TWILIO_WHATSAPP_FROM: string;     // "whatsapp:+14155238886" (sandbox) o número propio
+  // Content SID del template aprobado por Meta NO se guarda en env vars (proyecto llegó
+  // al cap de cantidad/tamaño total de env vars el 2026-06-29 — Catalyst no permite
+  // crear nuevas). Se guarda en tabla Config con config_key='TWILIO_TPL_LEAD_ALERTA'.
+  // Backend lee con getSecret('TWILIO_TPL_LEAD_ALERTA', req) de lib/secretsCache.ts.
   // WhatsApp via Meta Cloud API (alternativo, fallback histórico)
   WHATSAPP_API_URL: string;
   WHATSAPP_ACCESS_TOKEN: string;
@@ -97,6 +106,9 @@ type EnvShape = {
   ZOHO_CRM_API_URL: string;
   ZOHO_CRM_LEADS_MODULE: string;
   ZOHO_CRM_LEAD_LAYOUT_ID: string;
+  // ID del User de Zoho CRM que queda como Owner de los Deals/Accounts/Contacts
+  // creados por el flujo freelance. Sin esto, Zoho pone al dueño del refresh_token.
+  ZOHO_CRM_DEFAULT_OWNER_ID: string;
   // ZeptoMail (Zoho transactional email — incluido en Zoho One)
   ZEPTOMAIL_API_TOKEN: string;
   ZEPTOMAIL_FROM_EMAIL: string;
@@ -187,6 +199,9 @@ export function env(): EnvShape {
     ZOHO_BOOKINGS_BRIEFING_SERVICE_ID: optional('ZOHO_BOOKINGS_BRIEFING_SERVICE_ID', ''),
     WHISPER_API_URL: optional('WHISPER_API_URL', 'https://api.openai.com/v1/audio/transcriptions'),
     WHISPER_API_KEY: optional('WHISPER_API_KEY', ''),
+    // OpenAI key: si está como env var legacy (key corta), usar; sino vacío.
+    // En runtime, consumers deben usar getOpenAIKey() de lib/secretsCache.ts
+    // que lee desde Catalyst Cache (segment 'secrets'). Ver doc en env.ts.
     OPENAI_API_KEY: optional('OPENAI_API_KEY', ''),
     OPENAI_WHISPER_MODEL: optional('OPENAI_WHISPER_MODEL', 'whisper-1'),
     // Audio puede ser largo (60-90s grabación + upload + transcripción). Default 60s.
@@ -214,6 +229,7 @@ export function env(): EnvShape {
     ZOHO_CRM_API_URL: optional('ZOHO_CRM_API_URL', ''),
     ZOHO_CRM_LEADS_MODULE: optional('ZOHO_CRM_LEADS_MODULE', 'Leads'),
     ZOHO_CRM_LEAD_LAYOUT_ID: optional('ZOHO_CRM_LEAD_LAYOUT_ID', ''),
+    ZOHO_CRM_DEFAULT_OWNER_ID: optional('ZOHO_CRM_DEFAULT_OWNER_ID', ''),
     ZEPTOMAIL_API_TOKEN: optional('ZEPTOMAIL_API_TOKEN', ''),
     ZEPTOMAIL_FROM_EMAIL: optional('ZEPTOMAIL_FROM_EMAIL', 'reportes@sharktalents.ai'),
     ZEPTOMAIL_FROM_NAME: optional('ZEPTOMAIL_FROM_NAME', 'SharkTalents'),

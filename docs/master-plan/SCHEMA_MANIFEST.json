@@ -3184,6 +3184,239 @@
           "search_index_enabled": "false"
         }
       ]
+    },
+    {
+      "name": "FreelanceUsers",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "max_length": 100,
+          "search_index_enabled": "true"
+        },
+        {
+          "column_name": "clerk_user_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "max_length": 255,
+          "is_unique": "true",
+          "search_index_enabled": "true"
+        },
+        {
+          "column_name": "nombre",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "email",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "max_length": 255,
+          "search_index_enabled": "true"
+        },
+        {
+          "column_name": "phone",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "max_length": 20
+        },
+        {
+          "column_name": "activo",
+          "data_type": "boolean",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "default_value": "true"
+        },
+        {
+          "column_name": "leads_asignados",
+          "data_type": "bigint",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "default_value": "0"
+        },
+        {
+          "column_name": "leads_confirmados",
+          "data_type": "bigint",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "default_value": "0"
+        },
+        {
+          "column_name": "leads_cerrados",
+          "data_type": "bigint",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "default_value": "0"
+        },
+        {
+          "column_name": "comision_acumulada_usd",
+          "data_type": "double",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "default_value": "0"
+        },
+        {
+          "column_name": "onboarded_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "notes_internal",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "max_length": 10000
+        }
+      ]
+    },
+    {
+      "name": "SalesClients",
+      "table_scope": "GLOBAL",
+      "columns": [
+        {
+          "column_name": "tenant_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "max_length": 100,
+          "search_index_enabled": "true"
+        },
+        {
+          "column_name": "lead_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "max_length": 50,
+          "search_index_enabled": "true"
+        },
+        {
+          "column_name": "freelance_user_id",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "max_length": 50,
+          "search_index_enabled": "true"
+        },
+        {
+          "column_name": "empresa_nombre",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "contacto_nombre",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "contacto_email",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "max_length": 255
+        },
+        {
+          "column_name": "contacto_phone",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "max_length": 20
+        },
+        {
+          "column_name": "salario_mensual_usd",
+          "data_type": "double",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "monto_deal_usd",
+          "data_type": "double",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "comision_freelance_usd",
+          "data_type": "double",
+          "is_mandatory": "true",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "closing_date_est",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "pipeline_stage",
+          "data_type": "varchar",
+          "is_mandatory": "true",
+          "audit_consent": "false",
+          "max_length": 50,
+          "default_value": "cotizacion_contrato",
+          "search_index_enabled": "true"
+        },
+        {
+          "column_name": "zoho_account_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "max_length": 50
+        },
+        {
+          "column_name": "zoho_contact_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "max_length": 50
+        },
+        {
+          "column_name": "zoho_deal_id",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "max_length": 50
+        },
+        {
+          "column_name": "zoho_sync_status",
+          "data_type": "varchar",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "max_length": 30,
+          "default_value": "pending"
+        },
+        {
+          "column_name": "zoho_synced_at",
+          "data_type": "datetime",
+          "is_mandatory": "false",
+          "audit_consent": "false"
+        },
+        {
+          "column_name": "zoho_sync_error",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "max_length": 5000
+        },
+        {
+          "column_name": "notes",
+          "data_type": "text",
+          "is_mandatory": "false",
+          "audit_consent": "false",
+          "max_length": 10000
+        }
+      ]
     }
   ]
 }

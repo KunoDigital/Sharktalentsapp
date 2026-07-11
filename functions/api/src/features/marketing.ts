@@ -228,6 +228,15 @@ export async function captureLead(ctx: RequestContext): Promise<void> {
     leadId = row?.ROWID ?? '';
     isNewLead = true;
     log.info('lead captured', { traceId: ctx.traceId, leadId, email_masked: email.slice(0, 2) + '***', score });
+
+    // Auto-asignar a freelance con menos leads (best-effort — no bloquear si falla).
+    try {
+      const { autoAssignLead } = await import('./freelance.js');
+      const assignedTo = await autoAssignLead(ctx.req, leadId);
+      log.info('lead auto-assign result', { traceId: ctx.traceId, leadId, assignedTo: assignedTo ?? 'none' });
+    } catch (err) {
+      log.warn('auto-assign import/call failed', { traceId: ctx.traceId, leadId, error: (err as Error).message });
+    }
   }
 
   // Si el lead ya completó la evaluación previa, no reenviar links (ya recibió reporte)
@@ -319,55 +328,101 @@ export async function captureLead(ctx: RequestContext): Promise<void> {
     );
   }
 
-  // Email thank-you al lead con los 2 links de prueba — sincrónico, siempre se manda
-  // (también cuando es re-submit del form, porque la persona puede haber perdido el email)
-  const emailResult = await publishAndProcessEvent(ctx.req, 'email.send_pending', {
-    to: email,
-    template: 'marketing_lead_thanks',
-    locale: 'es',
-    vars: {
-      contact_name_prefix: payload.contact_name ? ` ${payload.contact_name.split(/\s+/)[0]}` : '',
-      conductual_url: conductualUrl,
-      integridad_url: integridadUrl,
-    },
-  });
-  log.info('lead email send result', {
-    traceId: ctx.traceId,
-    leadId,
-    ok: emailResult.ok,
-    error: emailResult.error,
-  });
+  // Email thank-you al lead con los 2 links de prueba.
+  //
+  // 2026-07-10: sólo se dispara si el body trae `send_evaluation_email: true`.
+  // La landing "prueba gratis" lo setea explícitamente. Los leads de Meta Ads
+  // NO lo mandan — el vendedor freelance decide cuándo enviar la evaluación
+  // desde el botón "📧 Enviar evaluación" en el kanban.
+  const shouldSendEmail = body.send_evaluation_email === true;
+  if (shouldSendEmail) {
+    const emailResult = await publishAndProcessEvent(ctx.req, 'email.send_pending', {
+      to: email,
+      template: 'marketing_lead_thanks',
+      locale: 'es',
+      vars: {
+        contact_name_prefix: payload.contact_name ? ` ${payload.contact_name.split(/\s+/)[0]}` : '',
+        conductual_url: conductualUrl,
+        integridad_url: integridadUrl,
+      },
+    });
+    log.info('lead email send result', {
+      traceId: ctx.traceId,
+      leadId,
+      ok: emailResult.ok,
+      error: emailResult.error,
+    });
+  } else {
+    log.info('lead email skipped (send_evaluation_email not true)', { traceId: ctx.traceId, leadId, source: payload.source });
+  }
 
   // Alerta WhatsApp a Cris (speed-to-lead): cuando entra un lead, le llega WhatsApp
-  // con nombre + número del cliente para que responda en < 5 min desde su WhatsApp
-  // personal. Solo se manda si OPS_ALERT_PHONE está configurado.
-  // 2026-06-19: solo funciona mientras el join al Sandbox Twilio esté activo (72h).
-  // Cuando se apruebe el WABA, esto se vuelve robusto sin depender del Sandbox.
+  // con datos del lead para responder en < 5 min desde su WhatsApp personal.
+  //
+  // 2026-06-29: usa template `lead_alerta_cris` (6 variables) si está configurado.
+  // Fallback sendText para sandbox / desarrollo. Mapeo del template:
+  //   {{1}} nombre, {{2}} email, {{3}} wa.me link, {{4}} rol, {{5}} dolor/contexto, {{6}} extras
   if (isNewLead && env().OPS_ALERT_PHONE) {
     const opsPhone = env().OPS_ALERT_PHONE;
     const leadPhoneClean = (payload.whatsapp ?? '').replace(/[^\d]/g, '');
     const waLink = leadPhoneClean ? `https://wa.me/${leadPhoneClean}` : '(sin WhatsApp)';
     const leadName = payload.contact_name?.trim() || 'sin nombre';
     const leadCompany = payload.company?.trim() || 'sin empresa';
-    const alertBody = [
-      `🦈 Lead nuevo en SharkTalents`,
-      ``,
-      `👤 ${leadName}`,
-      `🏢 ${leadCompany}`,
-      `📱 ${waLink}`,
-      `💼 Busca: ${quizData.puesto_tipo}`,
-      `💰 Salario: $${quizData.salario_target}`,
-      `⚡ Urgencia: ${quizData.urgencia}`,
-      `📊 Score calidad: ${score}/100`,
-      ``,
-      `Speed-to-lead: < 5 min recomendado.`,
-    ].join('\n');
+    // TWILIO_TPL_LEAD_ALERTA: leer de tabla Config (env vars del proyecto al cap).
+    let templateSid = '';
     try {
-      const { sendText } = await import('../lib/whatsappDispatcher.js');
-      const waRes = await sendText({ to_phone: opsPhone, body: alertBody }, ctx.traceId);
+      const { getSecret } = await import('../lib/secretsCache.js');
+      templateSid = await getSecret('TWILIO_TPL_LEAD_ALERTA', ctx.req);
+    } catch (err) {
+      log.debug('TWILIO_TPL_LEAD_ALERTA read failed', { error: (err as Error).message });
+    }
+
+    try {
+      const { sendTemplate, sendText } = await import('../lib/whatsappDispatcher.js');
+      const waRes = templateSid
+        ? await sendTemplate(
+            {
+              to_phone: opsPhone,
+              template_name: templateSid,
+              components: [
+                {
+                  type: 'body',
+                  parameters: [
+                    { type: 'text', text: leadName },
+                    { type: 'text', text: payload.email || 'sin email' },
+                    { type: 'text', text: waLink },
+                    { type: 'text', text: `${quizData.puesto_tipo} (urg: ${quizData.urgencia})` },
+                    { type: 'text', text: `Score ${score}/100 · ${leadCompany}` },
+                    { type: 'text', text: `Salario target: $${quizData.salario_target}` },
+                  ],
+                },
+              ],
+            },
+            ctx.traceId,
+          )
+        : await sendText(
+            {
+              to_phone: opsPhone,
+              body: [
+                `🦈 Lead nuevo en SharkTalents`,
+                ``,
+                `👤 ${leadName}`,
+                `🏢 ${leadCompany}`,
+                `📱 ${waLink}`,
+                `💼 Busca: ${quizData.puesto_tipo}`,
+                `💰 Salario: $${quizData.salario_target}`,
+                `⚡ Urgencia: ${quizData.urgencia}`,
+                `📊 Score calidad: ${score}/100`,
+                ``,
+                `Speed-to-lead: < 5 min recomendado.`,
+              ].join('\n'),
+            },
+            ctx.traceId,
+          );
       log.info('ops alert whatsapp result', {
         traceId: ctx.traceId,
         leadId,
+        mode: templateSid ? 'template' : 'text',
         ok: waRes.ok,
         error: waRes.ok ? undefined : waRes.error,
       });

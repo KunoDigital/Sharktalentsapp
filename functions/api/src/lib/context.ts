@@ -6,6 +6,9 @@ export type AuthUser = {
   clerk_org_id: string | null;
   clerk_org_role: string | null;
   email: string | null;
+  // Rol a nivel usuario (independiente de org). Se lee de Clerk publicMetadata.role.
+  // Valores esperados hoy: 'freelance' | null. Se usa para separar freelance del ATS.
+  role: string | null;
 };
 
 export type TenantSummary = {

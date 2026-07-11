@@ -8,6 +8,25 @@ const log = logger('AUTH');
 
 let cachedClient: ReturnType<typeof createClerkClient> | null = null;
 
+const roleCache = new Map<string, { role: string | null; expiresAt: number }>();
+const ROLE_CACHE_TTL_MS = 60_000;
+
+async function fetchUserRoleCached(sub: string): Promise<string | null> {
+  const now = Date.now();
+  const hit = roleCache.get(sub);
+  if (hit && hit.expiresAt > now) return hit.role;
+  try {
+    const user = await clerk().users.getUser(sub);
+    const meta = (user.publicMetadata ?? {}) as { role?: string };
+    const role = typeof meta.role === 'string' && meta.role.length > 0 ? meta.role : null;
+    roleCache.set(sub, { role, expiresAt: now + ROLE_CACHE_TTL_MS });
+    return role;
+  } catch (err) {
+    log.warn('fetchUserRole failed', { sub, error: (err as Error).message });
+    return null;
+  }
+}
+
 export function clerk() {
   if (cachedClient) return cachedClient;
   cachedClient = createClerkClient({
@@ -48,6 +67,7 @@ export async function requireAuth(ctx: RequestContext): Promise<void> {
       clerk_org_id: process.env.E2E_TEST_CLERK_ORG_ID || null,
       clerk_org_role: 'admin',
       email: 'e2e@kunodigital.com',
+      role: process.env.E2E_TEST_ROLE || null,
     };
     log.info('e2e test auth granted', { traceId: ctx.traceId, path: ctx.req.url });
     return;
@@ -97,12 +117,28 @@ export async function requireAuth(ctx: RequestContext): Promise<void> {
     const orgIdV1 = (payload as { org_id?: string }).org_id;
     const orgRoleV1 = (payload as { org_role?: string }).org_role;
 
+    // Rol a nivel usuario (independiente de organización). Vive en
+    // Clerk publicMetadata.role. Se setea manualmente por el admin desde el
+    // dashboard de Clerk (Users → publicMetadata → { "role": "freelance" }).
+    //
+    // Clerk por default NO incluye publicMetadata en el JWT. Dos caminos:
+    //   1) Si el admin configuró un JWT template con {{user.public_metadata}},
+    //      el rol viene en el token → lo leemos y salimos.
+    //   2) Si NO, hacemos fetch al Backend API de Clerk para leerlo del user.
+    // Cacheamos la respuesta 60s por sub para evitar 1 fetch por request.
+    const publicMetadata = (payload as { public_metadata?: { role?: string } }).public_metadata;
+    let userRole: string | null = publicMetadata?.role ?? null;
+    if (!userRole) {
+      userRole = await fetchUserRoleCached(sub);
+    }
+
     ctx.user = {
       id: sub,
       clerk_user_id: sub,
       clerk_org_id: orgV2?.id ?? orgIdV1 ?? null,
       clerk_org_role: orgV2?.rol ?? orgRoleV1 ?? null,
       email: (payload as { email?: string }).email ?? null,
+      role: userRole,
     };
   } catch (err) {
     log.warn('token verification failed', { error: (err as Error).message });
@@ -121,4 +157,36 @@ export function requireOrgRole(ctx: RequestContext, allowedRoles: string[]): voi
 
 export function requireAdmin(ctx: RequestContext): void {
   requireOrgRole(ctx, ['admin', 'org:admin']);
+}
+
+/**
+ * Gatea endpoints por rol a nivel usuario (publicMetadata.role).
+ * Distinto a requireOrgRole (que gatea por rol dentro de una organización).
+ *
+ * Uso principal: separar el CRM interno del freelance del ATS del tenant.
+ * Ejemplo:
+ *   requireUserRole(ctx, 'freelance');  // solo pasa si ctx.user.role === 'freelance'
+ *
+ * IMPORTANTE: en endpoints `auth: 'tenant'` NO se llama esto — el rechazo del
+ * freelance en esos endpoints se maneja en el router para evitar que un freelance
+ * acceda por descuido a rutas ATS (donde el gating es implícito).
+ */
+export function requireUserRole(ctx: RequestContext, requiredRole: string): void {
+  if (!ctx.user) throw new UnauthorizedError('Authentication required');
+  if (ctx.user.role !== requiredRole) {
+    throw new ForbiddenError(`Role "${requiredRole}" required`);
+  }
+}
+
+/**
+ * Rechazo defensivo: en endpoints `auth: 'tenant'`, un usuario con rol
+ * distinto de null (freelance u otro rol futuro) NO debería pasar aunque
+ * tenga org activa. Evita que un freelance con org accedente por error
+ * al ATS actual.
+ */
+export function rejectNonTenantRoles(ctx: RequestContext): void {
+  if (!ctx.user) return;
+  if (ctx.user.role !== null) {
+    throw new ForbiddenError(`Role "${ctx.user.role}" cannot access tenant endpoints`);
+  }
 }
