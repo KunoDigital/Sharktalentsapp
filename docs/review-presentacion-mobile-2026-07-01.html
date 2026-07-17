@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review presentación móvil · SharkTalents</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1f2937;
+    --text-muted: #64748b;
+    --primary: #1B2438;
+    --lima: #D6F26B;
+    --green: #16a34a;
+    --red: #dc2626;
+    --amber: #d97706;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  header.top {
+    background: var(--primary);
+    color: white;
+    padding: 24px 32px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  header.top h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  header.top .stats {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    font-size: 14px;
+  }
+  header.top .stats span strong { color: var(--lima); font-weight: 700; }
+  header.top button {
+    background: var(--lima);
+    color: var(--primary);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  header.top button:hover { background: #c4e260; }
+
+  .instructions {
+    background: #fef3c7;
+    border-left: 4px solid #d97706;
+    padding: 16px 20px;
+    border-radius: 6px;
+    margin-bottom: 32px;
+    font-size: 14px;
+  }
+  .instructions strong { color: #78350f; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(560px, 1fr));
+    gap: 24px;
+  }
+
+  .slide-review {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.15s;
+  }
+  .slide-review:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .slide-review.approved { border-color: var(--green); }
+  .slide-review.rejected { border-color: var(--red); opacity: 0.75; }
+  .slide-review.pending { border-color: var(--amber); }
+
+  .slide-header {
+    padding: 12px 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .slide-header .num {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .slide-header .status-tag {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .status-tag.tag-approved { background: #dcfce7; color: var(--green); }
+  .status-tag.tag-rejected { background: #fee2e2; color: var(--red); }
+  .status-tag.tag-pending { background: #fef3c7; color: var(--amber); }
+
+  .slide-body {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 16px;
+    padding: 20px;
+    align-items: flex-start;
+  }
+  .slide-preview {
+    width: 280px;
+    height: 500px;
+    border: 2px solid #1f2937;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    position: relative;
+  }
+  .slide-preview iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .slide-controls { display: flex; flex-direction: column; gap: 12px; }
+
+  .slide-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .slide-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .btn-row { display: flex; gap: 8px; }
+  .btn-row button {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-row button:hover { background: #f1f5f9; }
+  .btn-approve.active { background: var(--green); color: white; border-color: var(--green); }
+  .btn-reject.active { background: var(--red); color: white; border-color: var(--red); }
+  .btn-pending.active { background: var(--amber); color: white; border-color: var(--amber); }
+
+  textarea.comment {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    resize: vertical;
+  }
+  textarea.comment:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: -1px;
+  }
+  .comment-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .save-status {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+
+  footer.bottom {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  @media (max-width: 900px) {
+    .slide-body { grid-template-columns: 1fr; }
+    .slide-preview { width: 100%; max-width: 280px; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header class="top">
+    <div>
+      <h1>🦈 Review presentación móvil · SharkTalents</h1>
+      <div style="opacity: 0.7; font-size: 13px; margin-top: 4px;">2026-07-01 · 15 slides · Formato historia IG (9:16)</div>
+    </div>
+    <div class="stats">
+      <span>✅ <strong id="stat-approved">0</strong> aprobadas</span>
+      <span>❌ <strong id="stat-rejected">0</strong> rechazadas</span>
+      <span>🟡 <strong id="stat-pending">0</strong> pendientes</span>
+      <button onclick="downloadJson()">📥 Descargar JSON</button>
+    </div>
+  </header>
+
+  <div class="instructions">
+    <strong>Instrucciones:</strong> mirá cada slide y agregá el comentario de Cristian (o el tuyo) en el cuadro correspondiente. Marcá cada una como <strong>Aprobada / Rechazada / Pendiente</strong>. Todo se guarda automáticamente en localStorage — podés cerrar y volver. Cuando termines, click "Descargar JSON" y mandámelo.
+  </div>
+
+  <div class="grid" id="slidesGrid"></div>
+
+  <footer class="bottom">
+    Hecho para el review con Cristian · 2026-07-01
+  </footer>
+</div>
+
+<script>
+  const SLIDES = [
+    { id: 1, pretitle: '(Cover)', desc: 'El candidato brilla en la entrevista. Después no rinde en el puesto. Tagline: Aquí dejas de adivinar.' },
+    { id: 2, pretitle: 'Lo que te garantizamos', desc: 'Sin humo. Lo que realmente cumplimos. 4 garantías: 3-4 finalistas, 15-21 días, rebúsqueda gratis, perfil estructurado.' },
+    { id: 3, pretitle: 'El fit es el corazón', desc: 'Un candidato excelente puede fracasar bajo el líder equivocado. Fit con jefe + Fit con rol.' },
+    { id: 4, pretitle: 'El costo silencioso', desc: 'Frase de impacto: "Mientras buscas candidato, la operación pierde plata cada día."' },
+    { id: 5, pretitle: 'Lo que medimos', desc: 'Las 6 dimensiones (Conducta, Cognición, Técnica, Integridad, Mentalidad, Emoción) + Inglés opcional.' },
+    { id: 6, pretitle: 'Para quién', desc: 'Roles que mueven una operación. Dueños/CEO, Responsables de contratación, Gerentes de área.' },
+    { id: 7, pretitle: 'Tu camino con nosotros', desc: 'Del primer contacto a los finalistas. 7 pasos: Demo → Reunión → Perfil → Contrato → Pago 50% → Búsqueda → Finalistas.' },
+    { id: 8, pretitle: 'El error en silencio', desc: 'Frase impacto: "El candidato que no rinde te quema dos veces. Cuando lo eliges y cuando lo tienes que sacar."' },
+    { id: 9, pretitle: 'Qué pasa con cada candidato', desc: 'Por estos filtros antes de llegar a ti. 8 pasos del pipeline de candidato.' },
+    { id: 10, pretitle: 'DISC en la vida real', desc: 'El personaje que ya conoces. 4 personajes: Miranda Bailey (D), Harvey Specter (I), Hagrid (S), Sheldon Cooper (C).' },
+    { id: 11, pretitle: 'La presión de arriba', desc: 'Frase impacto: "Cuando los nuevos no duran, la pregunta del CEO va para ti."' },
+    { id: 12, pretitle: 'El reporte que recibes', desc: 'Tus 3 o 4 finalistas, uno al lado del otro. Tabla comparativa con Fit / Cognitiva / Integridad / Técnica / Estilo.' },
+    { id: 13, pretitle: 'Inversión', desc: 'El precio no lo escondemos. 1.2x el salario mensual del puesto. Forma de pago 50/50.' },
+    { id: 14, pretitle: 'Quienes ya nos confiaron', desc: 'Empresas que decidieron con datos. Logos: Alpha Trading, Maxi Gold, Importadora Panamá, Latam Vaping, Grupo 19 (Kava + Aria).' },
+    { id: 15, pretitle: '(CTA final)', desc: 'Tu próxima contratación puede ser una apuesta o una decisión. Tú eliges.' },
+  ];
+
+  const STORAGE_KEY = 'shark_review_mobile_2026_07_01';
+
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    } catch { return {}; }
+  }
+
+  function saveState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    updateStats();
+  }
+
+  function updateStats() {
+    const state = loadState();
+    let approved = 0, rejected = 0, pending = 0;
+    for (const s of SLIDES) {
+      const item = state[s.id];
+      if (item?.status === 'approved') approved++;
+      else if (item?.status === 'rejected') rejected++;
+      else if (item?.status === 'pending') pending++;
+    }
+    document.getElementById('stat-approved').textContent = approved;
+    document.getElementById('stat-rejected').textContent = rejected;
+    document.getElementById('stat-pending').textContent = pending;
+  }
+
+  function setStatus(slideId, status) {
+    const state = loadState();
+    state[slideId] = state[slideId] || {};
+    state[slideId].status = status;
+    state[slideId].updated_at = new Date().toISOString();
+    saveState(state);
+    renderCard(slideId);
+  }
+
+  function setComment(slideId, comment) {
+    const state = loadState();
+    state[slideId] = state[slideId] || {};
+    state[slideId].comment = comment;
+    state[slideId].updated_at = new Date().toISOString();
+    saveState(state);
+    // Actualizar el status-tag/class sin re-renderizar el textarea (perdería foco)
+    const card = document.getElementById(`slide-${slideId}`);
+    if (!card) return;
+  }
+
+  function renderCard(slideId) {
+    const state = loadState();
+    const item = state[slideId] || {};
+    const slide = SLIDES.find(s => s.id === slideId);
+    if (!slide) return;
+
+    const card = document.getElementById(`slide-${slideId}`);
+    if (!card) return;
+
+    // Actualizar clase de la card
+    card.classList.remove('approved', 'rejected', 'pending');
+    if (item.status) card.classList.add(item.status);
+
+    // Actualizar tag
+    const tag = card.querySelector('.status-tag');
+    tag.className = 'status-tag';
+    tag.textContent = '';
+    if (item.status === 'approved') { tag.classList.add('tag-approved'); tag.textContent = '✅ Aprobada'; }
+    else if (item.status === 'rejected') { tag.classList.add('tag-rejected'); tag.textContent = '❌ Rechazada'; }
+    else if (item.status === 'pending') { tag.classList.add('tag-pending'); tag.textContent = '🟡 Pendiente'; }
+
+    // Actualizar botones activos
+    const btnA = card.querySelector('.btn-approve');
+    const btnR = card.querySelector('.btn-reject');
+    const btnP = card.querySelector('.btn-pending');
+    btnA.classList.toggle('active', item.status === 'approved');
+    btnR.classList.toggle('active', item.status === 'rejected');
+    btnP.classList.toggle('active', item.status === 'pending');
+  }
+
+  function renderAll() {
+    const grid = document.getElementById('slidesGrid');
+    const state = loadState();
+    grid.innerHTML = '';
+    for (const s of SLIDES) {
+      const item = state[s.id] || {};
+      const card = document.createElement('div');
+      card.className = 'slide-review';
+      if (item.status) card.classList.add(item.status);
+      card.id = `slide-${s.id}`;
+
+      let tagHtml = '';
+      if (item.status === 'approved') tagHtml = '<span class="status-tag tag-approved">✅ Aprobada</span>';
+      else if (item.status === 'rejected') tagHtml = '<span class="status-tag tag-rejected">❌ Rechazada</span>';
+      else if (item.status === 'pending') tagHtml = '<span class="status-tag tag-pending">🟡 Pendiente</span>';
+      else tagHtml = '<span class="status-tag"></span>';
+
+      card.innerHTML = `
+        <div class="slide-header">
+          <span class="num">Slide ${s.id} / 15</span>
+          ${tagHtml}
+        </div>
+        <div class="slide-body">
+          <div class="slide-preview">
+            <iframe src="presentacion-cliente-mobile.html#slide-${s.id}" loading="lazy" title="Slide ${s.id}"></iframe>
+          </div>
+          <div class="slide-controls">
+            <div class="slide-title">${s.pretitle}</div>
+            <div class="slide-desc">${s.desc}</div>
+            <div class="btn-row">
+              <button class="btn-approve ${item.status === 'approved' ? 'active' : ''}" onclick="setStatus(${s.id}, 'approved')">✅ Aprobar</button>
+              <button class="btn-reject ${item.status === 'rejected' ? 'active' : ''}" onclick="setStatus(${s.id}, 'rejected')">❌ Rechazar</button>
+              <button class="btn-pending ${item.status === 'pending' ? 'active' : ''}" onclick="setStatus(${s.id}, 'pending')">🟡 Pendiente</button>
+            </div>
+            <div>
+              <div class="comment-label">Comentario de Cristian (o tuyo)</div>
+              <textarea class="comment" placeholder="Pegá acá el feedback: qué cambiar del copy, del layout, del color, del tono. Todo va al JSON." oninput="setComment(${s.id}, this.value)">${(item.comment || '').replace(/</g, '&lt;')}</textarea>
+            </div>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    }
+    updateStats();
+  }
+
+  function downloadJson() {
+    const state = loadState();
+    const total = SLIDES.length;
+    let approved = 0, rejected = 0, pending = 0;
+    const items = SLIDES.map(s => {
+      const item = state[s.id] || {};
+      if (item.status === 'approved') approved++;
+      else if (item.status === 'rejected') rejected++;
+      else if (item.status === 'pending') pending++;
+      return {
+        slide_id: s.id,
+        pretitle: s.pretitle,
+        desc: s.desc,
+        status: item.status || null,
+        comment: item.comment || null,
+        updated_at: item.updated_at || null,
+      };
+    });
+
+    const payload = {
+      version: 'shark-mobile-review-2026-07-01',
+      exported_at: new Date().toISOString(),
+      total,
+      approved,
+      rejected,
+      pending,
+      untouched: total - approved - rejected - pending,
+      slides: items,
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `review-presentacion-mobile-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Init
+  renderAll();
+</script>
+
+</body>
+</html>

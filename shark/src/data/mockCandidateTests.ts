@@ -121,7 +121,7 @@ export const TECNICA_QUESTIONS: Record<string, TecnicaQuestion[]> = {
       id: 't4',
       type: 'situational',
       area: 'Toma de decisiones técnicas',
-      question: 'Tenés que elegir entre dos librerías. La opción A es popular pero el equipo no la conoce. La opción B es menos popular pero el equipo ya tiene experiencia. El tiempo es ajustado. ¿Qué hacés?',
+      question: 'Tienes que elegir entre dos librerías. La opción A es popular pero el equipo no la conoce. La opción B es menos popular pero el equipo ya tiene experiencia. El tiempo es ajustado. ¿Qué haces?',
       options: [
         { id: 'a', text: 'Voy con A porque es la industry standard y vale la pena aprender' },
         { id: 'b', text: 'Voy con B porque ahorramos tiempo y el equipo ejecuta más rápido' },
@@ -134,7 +134,7 @@ export const TECNICA_QUESTIONS: Record<string, TecnicaQuestion[]> = {
       id: 't5',
       type: 'open_ended',
       area: 'Arquitectura',
-      question: 'Describí en 3-4 líneas cómo diseñarías el endpoint para que un usuario pueda ver "todos sus pedidos del último mes" en una app de e-commerce con 1M de usuarios.',
+      question: 'Describe en 3-4 líneas cómo diseñarías el endpoint para que un usuario pueda ver "todos sus pedidos del último mes" en una app de e-commerce con 1M de usuarios.',
     },
     {
       id: 't6',
@@ -192,9 +192,9 @@ export const VELNA_SUBTESTS: VelnaSubtest[] = [
     description: 'Razonamiento con formas, rotación y distancias.',
     duration_sec: 300,
     questions: [
-      { id: 'e1', question: 'Si rotás un cuadrado 90° en sentido horario, ¿qué obtenés?', options: [{ id: 'a', text: 'Un cuadrado (igual)' }, { id: 'b', text: 'Un círculo' }, { id: 'c', text: 'Un triángulo' }, { id: 'd', text: 'Un rectángulo' }], correct_option_id: 'a' },
-      { id: 'e2', question: 'Imaginá un cubo. ¿Cuántas caras tiene?', options: [{ id: 'a', text: '4' }, { id: 'b', text: '6' }, { id: 'c', text: '8' }, { id: 'd', text: '12' }], correct_option_id: 'b' },
-      { id: 'e3', question: 'Si caminás 100m al norte, después 50m al este, después 100m al sur, ¿a qué distancia estás del punto de partida?', options: [{ id: 'a', text: '0m' }, { id: 'b', text: '50m' }, { id: 'c', text: '150m' }, { id: 'd', text: '250m' }], correct_option_id: 'b' },
+      { id: 'e1', question: 'Si rotas un cuadrado 90° en sentido horario, ¿qué obtienes?', options: [{ id: 'a', text: 'Un cuadrado (igual)' }, { id: 'b', text: 'Un círculo' }, { id: 'c', text: 'Un triángulo' }, { id: 'd', text: 'Un rectángulo' }], correct_option_id: 'a' },
+      { id: 'e2', question: 'Imagina un cubo. ¿Cuántas caras tiene?', options: [{ id: 'a', text: '4' }, { id: 'b', text: '6' }, { id: 'c', text: '8' }, { id: 'd', text: '12' }], correct_option_id: 'b' },
+      { id: 'e3', question: 'Si caminas 100m al norte, después 50m al este, después 100m al sur, ¿a qué distancia estás del punto de partida?', options: [{ id: 'a', text: '0m' }, { id: 'b', text: '50m' }, { id: 'c', text: '150m' }, { id: 'd', text: '250m' }], correct_option_id: 'b' },
     ],
   },
   {
@@ -255,8 +255,8 @@ export const VIDEO_QUESTIONS: VideoQuestion[] = [
     order: 1,
     category: 'technical',
     category_label: 'Técnica',
-    question: 'Contame de un proyecto donde tuviste que tomar decisiones de arquitectura. ¿Cuál fue el trade-off más difícil y cómo lo resolviste?',
-    context_hint: 'Tu prueba técnica salió alta. Queremos ver cómo razonás en problemas reales.',
+    question: 'Cuéntame de un proyecto donde tuviste que tomar decisiones de arquitectura. ¿Cuál fue el trade-off más difícil y cómo lo resolviste?',
+    context_hint: 'Tu prueba técnica salió alta. Queremos ver cómo razonas en problemas reales.',
     max_seconds: 90,
   },
   {
@@ -264,7 +264,7 @@ export const VIDEO_QUESTIONS: VideoQuestion[] = [
     order: 2,
     category: 'weakness_followup',
     category_label: 'Profundización',
-    question: 'En tu evaluación cognitiva, la sub-prueba de Numérica salió debajo del promedio. Contanos cómo manejás situaciones donde tenés que tomar decisiones con datos numéricos.',
+    question: 'En tu evaluación cognitiva, la sub-prueba de Numérica salió debajo del promedio. Cuéntanos cómo manejas situaciones donde tienes que tomar decisiones con datos numéricos.',
     context_hint: 'No te preocupes, es una pregunta abierta. Queremos entender, no juzgar.',
     max_seconds: 90,
   },
@@ -273,7 +273,7 @@ export const VIDEO_QUESTIONS: VideoQuestion[] = [
     order: 3,
     category: 'situational',
     category_label: 'Situacional',
-    question: 'Imaginá: tu jefe te pide que hagas algo que vos creés que no es la mejor decisión técnica. ¿Cómo lo manejarías?',
+    question: 'Imagina: tu jefe te pide que hagas algo que tú crees que no es la mejor decisión técnica. ¿Cómo lo manejarías?',
     max_seconds: 90,
   },
   {
@@ -281,8 +281,8 @@ export const VIDEO_QUESTIONS: VideoQuestion[] = [
     order: 4,
     category: 'cv_claim_check',
     category_label: 'Verificación CV',
-    question: 'En tu CV decís que lideraste un equipo de 5 personas en tu rol anterior. Contame del proyecto más complejo que dirigiste y cómo manejaste los conflictos del equipo.',
-    context_hint: 'Esta pregunta valida lo que pusiste en tu CV — no necesitás citar al pie de la letra.',
+    question: 'En tu CV dices que lideraste un equipo de 5 personas en tu rol anterior. Cuéntame del proyecto más complejo que dirigiste y cómo manejaste los conflictos del equipo.',
+    context_hint: 'Esta pregunta valida lo que pusiste en tu CV — no necesitas citar al pie de la letra.',
     max_seconds: 90,
   },
   {
@@ -290,8 +290,8 @@ export const VIDEO_QUESTIONS: VideoQuestion[] = [
     order: 5,
     category: 'integrity_check',
     category_label: 'Coherencia',
-    question: 'En la prueba de integridad respondiste que "siempre dirías la verdad sin importar las consecuencias". Contame de una vez en que la verdad te trajo una consecuencia incómoda en el trabajo.',
-    context_hint: 'Profundizamos para ver consistencia entre lo que decís y lo que hacés.',
+    question: 'En la prueba de integridad respondiste que "siempre dirías la verdad sin importar las consecuencias". Cuéntame de una vez en que la verdad te trajo una consecuencia incómoda en el trabajo.',
+    context_hint: 'Profundizamos para ver consistencia entre lo que dices y lo que haces.',
     max_seconds: 90,
   },
   {
@@ -308,7 +308,7 @@ export const VIDEO_QUESTIONS: VideoQuestion[] = [
     category: 'english_check',
     category_label: 'Inglés',
     question: 'Tell us briefly, in English, why you would be a good fit for this role.',
-    context_hint: 'El puesto requiere inglés. Hablanos brevemente en inglés.',
+    context_hint: 'El puesto requiere inglés. Háblanos brevemente en inglés.',
     max_seconds: 60,
   },
 ];

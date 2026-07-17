@@ -4,23 +4,32 @@
  * Tanto la IA cuando arma un draft del puesto como el admin cuando edita un perfil
  * ideal deben elegir IDs de esta lista — NO inventar nombres custom. Ver
  * memory/project_competencias_catalogo_cerrado.md.
+ *
+ * --- Aliases (2026-06-16) ---
+ * El manual Kudert tiene varios pares casi-clones con factores idénticos. Para
+ * evitar diluir la elección manteniendo retro-compat con drafts/reportes históricos,
+ * los IDs duplicados se marcan como `alias_of` apuntando al canónico. Cualquier lectura
+ * del catálogo debe pasar por `resolveCompetenciaId()` para mapear alias → canónico.
+ * Los IDs viejos NO se eliminan — siguen siendo válidos como entrada.
  */
 export interface Competencia {
   id: string;
   nombre: string;
+  /** Si está presente, este ID es un alias deprecado del ID indicado. */
+  alias_of?: string;
 }
 
 export const COMPETENCIAS: Competencia[] = [
   { id: 'comunicacion_digital', nombre: 'Comunicación digital' },
-  { id: 'colaboracion', nombre: 'Colaboración' },
+  { id: 'colaboracion', nombre: 'Colaboración', alias_of: 'trabajo_equipo' },
   { id: 'adaptabilidad', nombre: 'Adaptabilidad' },
   { id: 'iniciativa', nombre: 'Iniciativa' },
   { id: 'planificacion', nombre: 'Planificación' },
-  { id: 'manejo_ambiguedad', nombre: 'Manejo de la ambigüedad' },
+  { id: 'manejo_ambiguedad', nombre: 'Manejo de la ambigüedad', alias_of: 'orientacion_cliente' },
   { id: 'trabajo_equipo', nombre: 'Trabajo en equipo y colaboración' },
   { id: 'retroalimentacion', nombre: 'Retroalimentación y monitoreo' },
   { id: 'orientacion_cliente', nombre: 'Orientación al cliente' },
-  { id: 'aprendizaje_vuelo', nombre: 'Aprendizaje al vuelo' },
+  { id: 'aprendizaje_vuelo', nombre: 'Aprendizaje al vuelo', alias_of: 'aprendizaje_activo' },
   { id: 'resolucion_problemas', nombre: 'Resolución de problemas complejos' },
   { id: 'inteligencia_emocional', nombre: 'Inteligencia emocional' },
   { id: 'creatividad_innovacion', nombre: 'Creatividad e innovación' },
@@ -39,7 +48,7 @@ export const COMPETENCIAS: Competencia[] = [
   { id: 'direccion_personas', nombre: 'Dirección de personas' },
   { id: 'asertividad', nombre: 'Asertividad' },
   { id: 'dinamismo_energia', nombre: 'Dinamismo y energía' },
-  { id: 'habilidad_analitica', nombre: 'Habilidad analítica' },
+  { id: 'habilidad_analitica', nombre: 'Habilidad analítica', alias_of: 'pensamiento_critico' },
   { id: 'perseverancia', nombre: 'Perseverancia' },
   { id: 'orientacion_accion', nombre: 'Orientación a la acción' },
   { id: 'habilidades_mando', nombre: 'Habilidades de mando' },
@@ -65,5 +74,36 @@ export const COMPETENCIAS: Competencia[] = [
   { id: 'pensamiento_critico', nombre: 'Pensamiento crítico y análisis' },
   { id: 'creatividad_originalidad_iniciativa', nombre: 'Creatividad, originalidad e iniciativa' },
   { id: 'liderazgo_influencia_social', nombre: 'Liderazgo e influencia social' },
-  { id: 'resiliencia', nombre: 'Resiliencia, tolerancia al estrés y flexibilidad' },
+  { id: 'resiliencia', nombre: 'Resiliencia, tolerancia al estrés y flexibilidad', alias_of: 'adaptabilidad' },
 ];
+
+/**
+ * Mapa de aliases: ID viejo (deprecado) → ID canónico (oficial).
+ *
+ * Derivado de los entries del catálogo con `alias_of`. Mantener este mapa para
+ * lookups O(1) sin necesidad de iterar COMPETENCIAS.
+ *
+ * Los IDs viejos siguen siendo válidos como entrada (no se rechazan en
+ * validación). Cualquier consumidor que necesite "el ID definitivo" debe pasar
+ * el valor por `resolveCompetenciaId()`.
+ *
+ * Nota sobre 'resolucion_problemas': el manual Kudert lo lista dos veces, pero
+ * en código siempre hubo un solo entry. No hay alias que crear.
+ */
+export const COMPETENCIA_ALIASES: Readonly<Record<string, string>> = Object.freeze(
+  COMPETENCIAS.reduce<Record<string, string>>((acc, c) => {
+    if (c.alias_of) acc[c.id] = c.alias_of;
+    return acc;
+  }, {}),
+);
+
+/**
+ * Resuelve un ID al canónico. Si no está en aliases, lo devuelve tal cual.
+ * Idempotente: resolveCompetenciaId(resolveCompetenciaId(x)) === resolveCompetenciaId(x).
+ */
+export function resolveCompetenciaId(id: string): string {
+  return COMPETENCIA_ALIASES[id] ?? id;
+}
+
+/** Lista de IDs canónicos (sin aliases). Útil para UI de selección. */
+export const COMPETENCIAS_CANONICAS: Competencia[] = COMPETENCIAS.filter((c) => !c.alias_of);

@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SharkTalents · Presentación móvil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1B2438;
+    --beige: #F0F0EC;
+    --lima: #D6F26B;
+    --crema: #F0F0EC;
+    --gris: #8B8E9C;
+    --gris-dark: #4A4D58;
+    --score-good: #047857;
+    --score-mid: #b45309;
+    --score-low: #991b1b;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    color: var(--crema);
+    font-family: "Ubuntu", -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.4;
+    overflow-x: hidden;
+  }
+
+  /* ===================== Layout: simula vista móvil en desktop ===================== */
+  .stories-wrapper {
+    max-width: 420px;
+    margin: 0 auto;
+    background: var(--navy);
+    position: relative;
+    box-shadow: 0 0 60px rgba(0,0,0,0.5);
+  }
+  @media (max-width: 420px) {
+    .stories-wrapper { max-width: 100%; box-shadow: none; }
+  }
+
+  /* ===================== Story progress bar ===================== */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px 8px;
+    z-index: 100;
+    background: linear-gradient(180deg, rgba(0,0,0,0.4), transparent);
+  }
+  .progress-segment {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-segment.active {
+    background: var(--lima);
+  }
+  .progress-segment.viewed {
+    background: rgba(255,255,255,0.6);
+  }
+
+  /* ===================== Tap zones ===================== */
+  .tap-zones {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 420px;
+    height: 100vh;
+    display: flex;
+    z-index: 50;
+    pointer-events: none;
+  }
+  .tap-zone {
+    flex: 1;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  /* ===================== Story slide base ===================== */
+  .story {
+    width: 100%;
+    height: 100vh;
+    min-height: 600px;
+    padding: 60px 28px 60px;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow-y: auto;
+  }
+  .story.active {
+    display: flex;
+  }
+  .story.navy {
+    background: var(--navy);
+    color: var(--crema);
+  }
+  .story.beige {
+    background: var(--beige);
+    color: var(--navy);
+  }
+
+  /* Pretítulos */
+  .pretitle {
+    font-family: "Oswald", sans-serif;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 11px;
+    color: var(--gris);
+    margin-bottom: 14px;
+  }
+  .story.beige .pretitle { color: var(--gris-dark); }
+
+  h1 {
+    font-family: "Ubuntu", sans-serif;
+    font-weight: 700;
+    font-size: 34px;
+    line-height: 1.1;
+    margin: 0 0 16px 0;
+    letter-spacing: -0.5px;
+  }
+  h2 {
+    font-family: "Ubuntu", sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    line-height: 1.15;
+    margin: 0 0 16px 0;
+    letter-spacing: -0.3px;
+  }
+
+  .accent { color: var(--lima); }
+  .story.beige .accent {
+    color: var(--navy);
+    border-bottom: 3px solid var(--lima);
+    padding-bottom: 1px;
+  }
+
+  p { font-size: 15px; line-height: 1.55; margin: 0 0 14px 0; }
+
+  /* Línea divisora */
+  .divider {
+    width: 48px;
+    height: 3px;
+    background: var(--lima);
+    margin: 16px 0;
+  }
+  .story.beige .divider { background: var(--navy); }
+
+  /* Footer */
+  .footer-brand {
+    position: absolute;
+    bottom: 18px;
+    left: 28px;
+    font-family: "Oswald", sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gris);
+    text-transform: uppercase;
+  }
+  .story.beige .footer-brand { color: var(--gris-dark); }
+
+  /* Counter */
+  .story-counter {
+    position: absolute;
+    top: 28px;
+    right: 22px;
+    font-family: "Oswald", sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--gris);
+    z-index: 10;
+  }
+
+  /* ===================== Story 1 — Cover ===================== */
+  .cover .logo-mark {
+    font-family: "Oswald", sans-serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: var(--lima);
+    margin-bottom: 60px;
+    text-transform: uppercase;
+  }
+  .cover h1 { font-size: 38px; line-height: 1.05; }
+  .cover .tagline {
+    font-family: "Oswald", sans-serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--lima);
+    margin-top: 24px;
+  }
+
+  /* ===================== Dimensiones (6 cards) ===================== */
+  .dim-list-m {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .dim-card-m {
+    background: rgba(240, 240, 236, 0.06);
+    border: 1px solid rgba(240, 240, 236, 0.15);
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .dim-card-m .num {
+    font-family: "Oswald", sans-serif;
+    color: var(--lima);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+  .dim-card-m .name {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .dim-card-m .what {
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--gris);
+  }
+  .dim-opcional-m {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-left: 3px solid var(--lima);
+    background: rgba(214, 242, 107, 0.08);
+    font-size: 12px;
+    color: var(--gris);
+  }
+
+  /* ===================== Garantía cards ===================== */
+  .garantia-list-m {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .garantia-card-m {
+    background: rgba(27, 36, 56, 0.06);
+    border-left: 3px solid var(--navy);
+    padding: 10px 14px;
+    border-radius: 3px;
+  }
+  .garantia-card-m .icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .garantia-card-m .title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .garantia-card-m .desc {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--gris-dark);
+  }
+
+  /* ===================== Fit cards ===================== */
+  .fit-list-m {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 20px;
+  }
+  .fit-card-m {
+    background: rgba(240, 240, 236, 0.06);
+    border: 1px solid rgba(240, 240, 236, 0.15);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .fit-card-m .label {
+    font-family: "Oswald", sans-serif;
+    color: var(--lima);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 10px;
+    margin-bottom: 8px;
+  }
+  .fit-card-m .title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .fit-card-m p { font-size: 13px; margin: 0; }
+
+  /* ===================== Frases impacto ===================== */
+  .impacto h1 {
+    font-size: 36px;
+    line-height: 1.1;
+  }
+
+  /* ===================== Big text dimensiones ===================== */
+  .big-text {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 14px;
+  }
+  .credenciales-m {
+    margin-top: 30px;
+  }
+  .credenciales-m .num {
+    font-size: 38px;
+    font-weight: 700;
+    color: var(--lima);
+    line-height: 1;
+  }
+  .credenciales-m .label {
+    font-family: "Oswald", sans-serif;
+    color: var(--gris);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ===================== Segmentación ===================== */
+  .segmento-list-m {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .segmento-card-m {
+    border-top: 3px solid var(--navy);
+    padding: 12px 0;
+  }
+  .segmento-card-m .num {
+    font-family: "Oswald", sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--gris-dark);
+    margin-bottom: 4px;
+  }
+  .segmento-card-m .who {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .segmento-card-m .dolor {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  /* ===================== Flow vertical (proceso) ===================== */
+  .flow-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .flow-step-m {
+    background: rgba(240, 240, 236, 0.06);
+    border: 1px solid rgba(240, 240, 236, 0.15);
+    border-radius: 6px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .story.beige .flow-step-m {
+    background: rgba(27, 36, 56, 0.05);
+    border-color: rgba(27, 36, 56, 0.15);
+  }
+  .flow-step-m.accent {
+    border-color: var(--lima);
+    background: rgba(214, 242, 107, 0.12);
+  }
+  .story.beige .flow-step-m.accent {
+    border-color: var(--navy);
+    background: rgba(27, 36, 56, 0.08);
+  }
+  .flow-step-m.optional {
+    opacity: 0.55;
+    border-style: dashed;
+  }
+  .flow-step-m .num {
+    font-family: "Oswald", sans-serif;
+    color: var(--lima);
+    font-size: 11px;
+    letter-spacing: 1px;
+    min-width: 22px;
+  }
+  .story.beige .flow-step-m .num { color: var(--gris-dark); }
+  .flow-step-m .info { flex: 1; }
+  .flow-step-m .name {
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .flow-step-m .tag {
+    font-size: 11px;
+    color: var(--gris);
+  }
+
+  /* ===================== DISC vertical ===================== */
+  .disc-list-m {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .disc-card-m {
+    background: rgba(27, 36, 56, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .story.navy .disc-card-m {
+    background: rgba(240, 240, 236, 0.06);
+  }
+  .disc-photo-m {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .disc-photo-m img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .disc-info { flex: 1; }
+  .disc-info .letter {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--lima);
+    line-height: 1;
+    display: inline;
+  }
+  .story.beige .disc-info .letter { color: var(--navy); }
+  .disc-info .name {
+    font-family: "Oswald", sans-serif;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gris);
+    margin-left: 6px;
+  }
+  .disc-info .job {
+    font-size: 12px;
+    font-weight: 700;
+    margin: 4px 0;
+  }
+  .disc-info .desc {
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--gris-dark);
+  }
+  .story.navy .disc-info .desc { color: var(--gris); }
+
+  /* ===================== VELNA list ===================== */
+  .velna-list-m {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .velna-card-m {
+    background: rgba(240, 240, 236, 0.06);
+    border: 1px solid rgba(240, 240, 236, 0.15);
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .velna-card-m .letter {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--lima);
+    line-height: 1;
+    min-width: 22px;
+  }
+  .velna-card-m .body { flex: 1; }
+  .velna-card-m .dim {
+    font-family: "Oswald", sans-serif;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gris);
+  }
+  .velna-card-m .what {
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  /* ===================== Report mock ===================== */
+  .report-m {
+    background: rgba(240, 240, 236, 0.05);
+    border: 1px solid rgba(240, 240, 236, 0.15);
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 16px;
+    font-size: 11px;
+  }
+  .report-m .row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(240, 240, 236, 0.1);
+  }
+  .report-m .row:last-child { border-bottom: none; }
+  .report-m .row.head {
+    font-family: "Oswald", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 9px;
+    color: var(--gris);
+    margin-bottom: 4px;
+    border-bottom: 1px solid rgba(240, 240, 236, 0.2);
+  }
+  .report-m .candidato {
+    color: var(--lima);
+    font-weight: 700;
+  }
+  .report-m .g { color: var(--score-good); font-weight: 700; }
+  .report-m .m { color: var(--score-mid); font-weight: 700; }
+  .report-m .l { color: var(--score-low); font-weight: 700; }
+
+  /* ===================== Precio ===================== */
+  .precio-hero-m {
+    text-align: left;
+    margin: 22px 0 16px;
+  }
+  .precio-num-m {
+    font-size: 92px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--navy);
+    letter-spacing: -3px;
+  }
+  .precio-x-m {
+    font-size: 18px;
+    color: var(--gris-dark);
+    margin-top: 6px;
+  }
+  .precio-detail-m {
+    background: var(--navy);
+    color: var(--crema);
+    padding: 16px 18px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.6;
+    margin-top: 18px;
+  }
+  .precio-detail-m .label {
+    font-family: "Oswald", sans-serif;
+    color: var(--lima);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 10px;
+    margin-bottom: 6px;
+  }
+  .precio-final-m {
+    margin-top: 16px;
+    font-family: "Oswald", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 11px;
+    color: var(--gris-dark);
+  }
+
+  /* ===================== Logos ===================== */
+  .logos-grid-m {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .logo-card-m {
+    background: var(--beige);
+    border-radius: 6px;
+    padding: 14px 12px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo-card-m img {
+    max-width: 100%;
+    max-height: 65px;
+    object-fit: contain;
+  }
+  .logo-card-m.alpha-card {
+    padding: 4px;
+  }
+  .logo-card-m.alpha-card img {
+    max-height: 85px;
+    max-width: 95%;
+  }
+
+  /* ===================== CTA ===================== */
+  .cta .cta-headline {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.05;
+    margin-bottom: 24px;
+    letter-spacing: -0.5px;
+  }
+  .cta .cta-question {
+    font-family: "Oswald", sans-serif;
+    font-size: 14px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gris-dark);
+    margin-bottom: 40px;
+  }
+
+  /* ===================== Hint mobile ===================== */
+  .swipe-hint {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: "Oswald", sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gris);
+    opacity: 0.5;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+  }
+
+  /* ===================== PRINT / PDF ===================== */
+  @media print {
+    @page {
+      size: 108mm 192mm; /* 9:16 vertical */
+      margin: 0;
+    }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html, body {
+      background: var(--navy);
+    }
+    .stories-wrapper {
+      max-width: 108mm !important;
+      box-shadow: none !important;
+    }
+    .progress-bar, .tap-zones, .swipe-hint { display: none !important; }
+    .story {
+      display: flex !important;
+      width: 108mm !important;
+      height: 192mm !important;
+      min-height: 192mm !important;
+      max-height: 192mm !important;
+      padding: 24px 22px 30px !important;
+      overflow: hidden !important;
+      page-break-after: always;
+      break-after: page;
+    }
+    .story:last-child { page-break-after: auto; }
+    .story-counter { top: 16px; right: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stories-wrapper">
+
+<!-- Progress bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Tap zones -->
+<div class="tap-zones">
+  <div class="tap-zone" onclick="prevStory()"></div>
+  <div class="tap-zone" onclick="nextStory()"></div>
+</div>
+
+<!-- ============ STORY 1 — Cover (NAVY) ============ -->
+<section class="story navy cover active" id="st1">
+  <div class="story-counter">01 / 15</div>
+  <div class="logo-mark">SHARKTALENTS</div>
+  <h1>El candidato brilla en la entrevista.<br><span class="accent">Después no rinde en el puesto.</span></h1>
+  <div class="tagline">Aquí dejas de adivinar.</div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+  <div class="swipe-hint">Tocá para avanzar →</div>
+</section>
+
+<!-- ============ STORY 2 — Garantía (BEIGE) ============ -->
+<section class="story beige" id="st2">
+  <div class="story-counter">02 / 15</div>
+  <div class="pretitle">Lo que te garantizamos</div>
+  <h2>Sin humo.<br>Lo que realmente <span class="accent">cumplimos</span>.</h2>
+  <div class="divider"></div>
+  <div class="garantia-list-m">
+    <div class="garantia-card-m">
+      <span class="icon">📋</span>
+      <div class="title">3 a 4 candidatos finalistas</div>
+      <div class="desc">Filtrados por las dimensiones del perfil.</div>
+    </div>
+    <div class="garantia-card-m">
+      <span class="icon">⏱️</span>
+      <div class="title">15 a 21 días hábiles</div>
+      <div class="desc">Desde el primer pago.</div>
+    </div>
+    <div class="garantia-card-m">
+      <span class="icon">🔄</span>
+      <div class="title">Rebúsqueda si no cumplen</div>
+      <div class="desc">Sin costo extra.</div>
+    </div>
+    <div class="garantia-card-m">
+      <span class="icon">📐</span>
+      <div class="title">Perfil de cargo estructurado</div>
+      <div class="desc">Tiempo real antes de empezar.</div>
+    </div>
+  </div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 3 — Fit (NAVY) ============ -->
+<section class="story navy" id="st3">
+  <div class="story-counter">03 / 15</div>
+  <div class="pretitle">El fit es el corazón</div>
+  <h2>Un candidato excelente puede fracasar bajo el <span class="accent">líder equivocado</span>.</h2>
+  <div class="divider"></div>
+  <p>Evaluamos las dos partes: el candidato y el estilo de quien lo va a dirigir.</p>
+  <div class="fit-list-m">
+    <div class="fit-card-m">
+      <div class="label">Fit con el jefe</div>
+      <div class="title">Cómo decide y comunica.</div>
+      <p>Un líder de urgencia necesita un ejecutor. Un planificador, otro perfil.</p>
+    </div>
+    <div class="fit-card-m">
+      <div class="label">Fit con el rol</div>
+      <div class="title">El resultado a entregar.</div>
+      <p>No el mejor en abstracto. El que calza con tu rol específico.</p>
+    </div>
+  </div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 4 — Impacto 1 (BEIGE) ============ -->
+<section class="story beige impacto" id="st4">
+  <div class="story-counter">04 / 15</div>
+  <div class="pretitle">El costo silencioso</div>
+  <h1>Mientras buscas candidato,<br>la operación <span class="accent">pierde plata</span><br>cada día.</h1>
+  <div class="divider"></div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 5 — Las 6 dimensiones (NAVY) ============ -->
+<section class="story navy" id="st5">
+  <div class="story-counter">05 / 15</div>
+  <div class="pretitle">Lo que medimos</div>
+  <h2>Las <span class="accent">6 dimensiones</span><br>de cada candidato.</h2>
+  <div class="dim-list-m">
+    <div class="dim-card-m"><div class="num">01</div><div class="name">Conducta</div><div class="what">Cómo se comporta bajo presión y en equipo.</div></div>
+    <div class="dim-card-m"><div class="num">02</div><div class="name">Cognición</div><div class="what">Cómo piensa, razona y resuelve.</div></div>
+    <div class="dim-card-m"><div class="num">03</div><div class="name">Técnica</div><div class="what">Conocimiento específico del rol.</div></div>
+    <div class="dim-card-m"><div class="num">04</div><div class="name">Integridad</div><div class="what">Riesgo y valores en situaciones reales.</div></div>
+    <div class="dim-card-m"><div class="num">05</div><div class="name">Mentalidad</div><div class="what">Mindset, motivación y disposición.</div></div>
+    <div class="dim-card-m"><div class="num">06</div><div class="name">Emoción</div><div class="what">Regulación bajo presión y conflicto.</div></div>
+  </div>
+  <div class="dim-opcional-m">Y si tu rol lo requiere, también evaluamos <strong>inglés</strong>.</div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 6 — Segmentación (BEIGE) ============ -->
+<section class="story beige" id="st6">
+  <div class="story-counter">06 / 15</div>
+  <div class="pretitle">Para quién</div>
+  <h2>Roles que <span class="accent">mueven</span> una operación.</h2>
+  <div class="divider"></div>
+  <p style="font-size: 13px;">C-level, directores, gerentes. Ventas, operaciones, finanzas.</p>
+  <div class="segmento-list-m">
+    <div class="segmento-card-m">
+      <div class="num">01</div>
+      <div class="who">Dueños y CEOs</div>
+      <div class="dolor">Defendiste la contratación. A los 6 meses renunció. Quedaste de vuelta en cero.</div>
+    </div>
+    <div class="segmento-card-m">
+      <div class="num">02</div>
+      <div class="who">Responsables de contratación</div>
+      <div class="dolor">Cuando no rinde, dicen tu nombre. Necesitas presentar datos.</div>
+    </div>
+    <div class="segmento-card-m">
+      <div class="num">03</div>
+      <div class="who">Gerentes de área</div>
+      <div class="dolor">Tu meta depende de una pieza que te falta. Cada semana sin ella es una reunión más.</div>
+    </div>
+  </div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 7 — Proceso cliente (NAVY) ============ -->
+<section class="story navy" id="st7">
+  <div class="story-counter">07 / 15</div>
+  <div class="pretitle">Tu camino con nosotros</div>
+  <h2>Del primer contacto<br>a los <span class="accent">finalistas</span>.</h2>
+  <div class="flow-vertical">
+    <div class="flow-step-m optional"><div class="num">01</div><div class="info"><div class="name">Demo</div><div class="tag">Opcional</div></div></div>
+    <div class="flow-step-m"><div class="num">02</div><div class="info"><div class="name">Reunión inicial</div><div class="tag">Briefing</div></div></div>
+    <div class="flow-step-m"><div class="num">03</div><div class="info"><div class="name">Perfil de cargo</div><div class="tag">Tu aprobación</div></div></div>
+    <div class="flow-step-m"><div class="num">04</div><div class="info"><div class="name">Contrato</div><div class="tag">Firma digital</div></div></div>
+    <div class="flow-step-m accent"><div class="num">05</div><div class="info"><div class="name">Pago 50%</div><div class="tag">Empieza la búsqueda</div></div></div>
+    <div class="flow-step-m"><div class="num">06</div><div class="info"><div class="name">Búsqueda activa</div><div class="tag">15 a 21 días</div></div></div>
+    <div class="flow-step-m accent"><div class="num">07</div><div class="info"><div class="name">Finalistas</div><div class="tag">+ Pago 50%</div></div></div>
+  </div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 8 — Impacto 2 (BEIGE) ============ -->
+<section class="story beige impacto" id="st8">
+  <div class="story-counter">08 / 15</div>
+  <div class="pretitle">El error en silencio</div>
+  <h1>El candidato que no rinde<br>te quema <span class="accent">dos veces</span>.<br>Cuando lo eliges y cuando lo tienes que sacar.</h1>
+  <div class="divider"></div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 9 — Proceso candidato (NAVY) ============ -->
+<section class="story navy" id="st9">
+  <div class="story-counter">09 / 15</div>
+  <div class="pretitle">Qué pasa con cada candidato</div>
+  <h2>Por estos filtros<br>antes de llegar a ti.</h2>
+  <div class="flow-vertical">
+    <div class="flow-step-m"><div class="num">01</div><div class="info"><div class="name">Aplicar</div><div class="tag">Career Site</div></div></div>
+    <div class="flow-step-m accent"><div class="num">02</div><div class="info"><div class="name">Prefiltro</div><div class="tag">Custom por puesto</div></div></div>
+    <div class="flow-step-m"><div class="num">03</div><div class="info"><div class="name">Técnica</div><div class="tag">Conocimiento del rol</div></div></div>
+    <div class="flow-step-m"><div class="num">04</div><div class="info"><div class="name">Conductual</div><div class="tag">DISC + VELNA</div></div></div>
+    <div class="flow-step-m"><div class="num">05</div><div class="info"><div class="name">Integridad</div><div class="tag">Riesgo y valores</div></div></div>
+    <div class="flow-step-m optional"><div class="num">06</div><div class="info"><div class="name">Inglés / Mindset</div><div class="tag">Opcionales</div></div></div>
+    <div class="flow-step-m"><div class="num">07</div><div class="info"><div class="name">Entrevista video</div><div class="tag">Análisis IA</div></div></div>
+    <div class="flow-step-m accent"><div class="num">08</div><div class="info"><div class="name">Finalistas</div><div class="tag">Tu decisión</div></div></div>
+  </div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 10 — DISC personajes (BEIGE) ============ -->
+<section class="story beige" id="st10">
+  <div class="story-counter">10 / 15</div>
+  <div class="pretitle">DISC en la vida real</div>
+  <h2>El personaje<br>que ya <span class="accent">conoces</span>.</h2>
+  <div class="disc-list-m">
+    <div class="disc-card-m">
+      <div class="disc-photo-m"><img src="img/disc-d.jpeg" alt="Dominancia"></div>
+      <div class="disc-info"><span class="letter">D</span><span class="name">Dominancia</span><div class="job">CEO · Director comercial</div><div class="desc">Resultados. Decisión rápida.</div></div>
+    </div>
+    <div class="disc-card-m">
+      <div class="disc-photo-m"><img src="img/disc-i.jpg" alt="Influencia"></div>
+      <div class="disc-info"><span class="letter">I</span><span class="name">Influencia</span><div class="job">Vendedor · Marketing · BD</div><div class="desc">Carisma. Persuade. Conecta.</div></div>
+    </div>
+    <div class="disc-card-m">
+      <div class="disc-photo-m"><img src="img/disc-s.webp" alt="Solidez"></div>
+      <div class="disc-info"><span class="letter">S</span><span class="name">Solidez</span><div class="job">RRHH · Customer success · Soporte</div><div class="desc">Paciente. Sostiene al equipo.</div></div>
+    </div>
+    <div class="disc-card-m">
+      <div class="disc-photo-m"><img src="img/disc-c.webp" alt="Cumplimiento"></div>
+      <div class="disc-info"><span class="letter">C</span><span class="name">Cumplimiento</span><div class="job">Operaciones · Ingeniero · QA</div><div class="desc">Precisión. Cuida los detalles.</div></div>
+    </div>
+  </div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 11 — Impacto 3 (BEIGE) ============ -->
+<section class="story beige impacto" id="st11">
+  <div class="story-counter">11 / 15</div>
+  <div class="pretitle">La presión de arriba</div>
+  <h1>Cuando los nuevos no duran,<br>la pregunta del CEO<br><span class="accent">va para ti</span>.</h1>
+  <div class="divider"></div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 13 — Reporte (NAVY) ============ -->
+<section class="story navy" id="st12">
+  <div class="story-counter">12 / 15</div>
+  <div class="pretitle">El reporte que recibes</div>
+  <h2>Tus 3 o 4 finalistas,<br>uno al lado del otro.</h2>
+  <div class="report-m">
+    <div class="row head"><div>Dimensión</div><div class="candidato">María</div><div class="candidato">Juan</div><div class="candidato">Carla</div></div>
+    <div class="row"><div>Fit con el jefe</div><div class="g">92%</div><div class="m">71%</div><div class="g">88%</div></div>
+    <div class="row"><div>Cognitiva</div><div class="g">85%</div><div class="g">90%</div><div class="m">68%</div></div>
+    <div class="row"><div>Integridad</div><div class="g">OK</div><div class="g">OK</div><div class="m">1 obs.</div></div>
+    <div class="row"><div>Técnica</div><div class="g">88%</div><div class="g">100%</div><div class="g">95%</div></div>
+    <div class="row"><div>Estilo</div><div>Autónoma</div><div>Consultivo</div><div>Balanceado</div></div>
+  </div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 14 — Precio (BEIGE) ============ -->
+<section class="story beige" id="st13">
+  <div class="story-counter">13 / 15</div>
+  <div class="pretitle">Inversión</div>
+  <h2>El precio<br>no lo escondemos.</h2>
+  <div class="divider"></div>
+  <div class="precio-hero-m">
+    <div class="precio-num-m">1.2x</div>
+    <div class="precio-x-m">el salario mensual del puesto a contratar</div>
+  </div>
+  <div class="precio-detail-m">
+    <div class="label">Forma de pago</div>
+    50% al firmar contrato. La búsqueda activa empieza ese mismo día.<br>
+    50% al entregar tus 3 o 4 finalistas con reporte completo.
+  </div>
+  <div class="precio-final-m">No negociamos el precio. Negociamos qué buscas.</div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 15 — Logos (NAVY) ============ -->
+<section class="story navy" id="st14">
+  <div class="story-counter">14 / 15</div>
+  <div class="pretitle">Quienes ya nos confiaron</div>
+  <h2>Empresas que <span class="accent">decidieron</span> con datos.</h2>
+  <div class="divider"></div>
+  <p style="color: var(--gris); font-size: 13px;">Alpha Trading, Maxi Gold, Importadora Panamá, Latam Vaping y Grupo 19 (Kava + Aria), entre otros.</p>
+  <div class="logos-grid-m">
+    <div class="logo-card-m alpha-card"><img src="img/clientes/alpha.png" alt="Alpha Trading"></div>
+    <div class="logo-card-m"><img src="img/clientes/aria.png" alt="Aria"></div>
+    <div class="logo-card-m"><img src="img/clientes/maxigold.png" alt="Maxi Gold"></div>
+    <div class="logo-card-m"><img src="img/clientes/importadora-panama.png" alt="Importadora Panamá"></div>
+    <div class="logo-card-m"><img src="img/clientes/kava.png" alt="Kava"></div>
+    <div class="logo-card-m"><img src="img/clientes/latam-vaping.avif" alt="Latam Vaping"></div>
+  </div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ STORY 16 — CTA (BEIGE) ============ -->
+<section class="story beige cta" id="st15">
+  <div class="story-counter">15 / 15</div>
+  <div class="pretitle">Tu próxima decisión</div>
+  <div class="cta-headline">Tu próxima contratación<br>puede ser una apuesta<br>o una <span class="accent">decisión</span>.</div>
+  <div class="cta-question">Tú eliges.</div>
+  <div class="footer-brand">SHARKTALENTS.AI</div>
+</section>
+
+</div>
+
+<script>
+  const stories = document.querySelectorAll('.story');
+  const progressBar = document.getElementById('progressBar');
+  let current = 0;
+  const total = stories.length;
+
+  // Build progress segments
+  for (let i = 0; i < total; i++) {
+    const seg = document.createElement('div');
+    seg.className = 'progress-segment';
+    progressBar.appendChild(seg);
+  }
+  const segments = progressBar.querySelectorAll('.progress-segment');
+
+  function updateProgress() {
+    segments.forEach((seg, idx) => {
+      seg.classList.remove('active', 'viewed');
+      if (idx < current) seg.classList.add('viewed');
+      else if (idx === current) seg.classList.add('active');
+    });
+  }
+
+  function showStory(idx) {
+    if (idx < 0 || idx >= total) return;
+    stories[current].classList.remove('active');
+    current = idx;
+    stories[current].classList.add('active');
+    window.scrollTo(0, 0);
+    updateProgress();
+  }
+
+  function nextStory() {
+    if (current < total - 1) showStory(current + 1);
+  }
+  function prevStory() {
+    if (current > 0) showStory(current - 1);
+  }
+
+  // Keyboard navigation (for desktop preview)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault(); nextStory();
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault(); prevStory();
+    }
+  });
+
+  // Swipe support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  });
+  document.addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].screenX;
+    const diff = touchEndX - touchStartX;
+    if (Math.abs(diff) > 50) {
+      if (diff < 0) nextStory();
+      else prevStory();
+    }
+  });
+
+  // Support: navegar a slide específica vía URL hash (#slide-N)
+  // Usado por review-presentacion-mobile-*.html para embeder cada slide en iframes.
+  function goToFromHash() {
+    const m = window.location.hash.match(/^#slide-(\d+)/);
+    if (m) {
+      const idx = parseInt(m[1], 10) - 1;
+      if (idx >= 0 && idx < total) showStory(idx);
+    }
+  }
+  window.addEventListener('hashchange', goToFromHash);
+  goToFromHash();
+
+  updateProgress();
+</script>
+
+</body>
+</html>

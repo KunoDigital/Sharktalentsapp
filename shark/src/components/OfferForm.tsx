@@ -20,7 +20,7 @@ export default function OfferForm({ applicationId, candidateName, jobTitle, onSe
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState(`Oferta laboral${jobTitle ? ` — ${jobTitle}` : ''}`);
   const [message, setMessage] = useState(
-    `Hola ${candidateName},\n\nNos complace ofrecerte la posición. Por favor revisá y firmá el contrato adjunto.\n\nSaludos.`,
+    `Hola ${candidateName},\n\nNos complace ofrecerte la posición. Por favor revisa y firma el contrato adjunto.\n\nSaludos.`,
   );
   const [documentUrl, setDocumentUrl] = useState('');
   const [templateId, setTemplateId] = useState('');

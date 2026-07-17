@@ -16,7 +16,7 @@ export default function LegalTerminos() {
       <main className="legal-main">
         <h1>Términos de uso</h1>
         <p className="legal-lead">
-          Al usar SharkTalents (web, portal del cliente, links del candidato) aceptás estos
+          Al usar SharkTalents (web, portal del cliente, links del candidato) aceptas estos
           términos. Si no estás de acuerdo, no uses la plataforma.
         </p>
 

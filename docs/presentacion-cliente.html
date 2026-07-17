@@ -3,17 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <title>SharkTalents · Presentación para reunión con cliente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0e1218;
-    --bg-soft: #161a23;
-    --fg: #f3f4f6;
-    --fg-dim: #94a3b8;
-    --accent: #dafd6f;
-    --accent-soft: rgba(218, 253, 111, 0.12);
-    --border: #1f2937;
-    --warn: #fbbf24;
-    --warn-soft: rgba(251, 191, 36, 0.12);
+    --navy: #1B2438;
+    --beige: #F0F0EC;
+    --lima: #D6F26B;
+    --crema: #F0F0EC;
+    --gris: #8B8E9C;
+    --gris-dark: #4A4D58;
+    --score-good: #047857;
+    --score-mid: #b45309;
+    --score-low: #991b1b;
   }
 
   * { box-sizing: border-box; }
@@ -21,9 +24,9 @@
   html, body {
     margin: 0;
     padding: 0;
-    background: var(--bg);
-    color: var(--fg);
-    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    background: var(--navy);
+    color: var(--crema);
+    font-family: "Ubuntu", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
     line-height: 1.5;
   }
@@ -33,9 +36,9 @@
     position: fixed;
     top: 0; left: 0; right: 0;
     height: 48px;
-    background: rgba(14, 18, 24, 0.85);
+    background: rgba(27, 36, 56, 0.92);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid rgba(214, 242, 107, 0.2);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -44,9 +47,11 @@
     font-size: 14px;
   }
   .topbar .brand {
-    color: var(--accent);
+    color: var(--lima);
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    font-family: "Oswald", sans-serif;
+    text-transform: uppercase;
   }
   .topbar .nav {
     display: flex;
@@ -54,34 +59,27 @@
     align-items: center;
   }
   .topbar button {
-    background: var(--bg-soft);
-    color: var(--fg);
-    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--crema);
+    border: 1px solid rgba(240, 240, 236, 0.2);
     border-radius: 6px;
     padding: 6px 14px;
     cursor: pointer;
     font-size: 13px;
+    font-family: "Ubuntu", sans-serif;
     transition: all 0.15s;
   }
   .topbar button:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  .topbar .pdf-btn {
-    background: var(--accent);
-    color: #0e1218;
-    font-weight: 600;
-    border: none;
-  }
-  .topbar .pdf-btn:hover {
-    background: #c4e84d;
-    color: #0e1218;
+    border-color: var(--lima);
+    color: var(--lima);
   }
   .topbar .counter {
-    color: var(--fg-dim);
+    color: var(--gris);
     font-size: 13px;
     min-width: 60px;
     text-align: center;
+    font-family: "Oswald", sans-serif;
+    letter-spacing: 1px;
   }
 
   /* ===================== Slide base ===================== */
@@ -92,787 +90,894 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    border-bottom: 1px solid var(--border);
     page-break-after: always;
     break-after: page;
+    position: relative;
+  }
+
+  /* Alternancia navy / beige */
+  .slide.navy {
+    background: var(--navy);
+    color: var(--crema);
+  }
+  .slide.beige {
+    background: var(--beige);
+    color: var(--navy);
   }
 
   .slide-number {
     position: absolute;
-    top: 80px;
+    top: 70px;
     right: 8%;
-    color: var(--fg-dim);
-    font-size: 14px;
+    font-family: "Oswald", sans-serif;
+    font-size: 13px;
     letter-spacing: 2px;
+    color: var(--gris);
+    text-transform: uppercase;
   }
 
-  .slide h1 {
-    font-size: 64px;
-    font-weight: 800;
+  /* Pretítulos */
+  .pretitle {
+    font-family: "Oswald", sans-serif;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 13px;
+    color: var(--gris);
+    margin-bottom: 16px;
+  }
+  .slide.beige .pretitle {
+    color: var(--gris-dark);
+  }
+
+  /* Línea divisora — lima en navy, navy en beige (contraste) */
+  .divider {
+    width: 60px;
+    height: 4px;
+    background: var(--lima);
+    margin: 24px 0;
+  }
+  .slide.beige .divider {
+    background: var(--navy);
+  }
+
+  h1 {
+    font-family: "Ubuntu", sans-serif;
+    font-weight: 700;
+    font-size: 56px;
     line-height: 1.1;
-    margin: 0 0 28px;
+    margin: 0 0 20px 0;
     letter-spacing: -1px;
   }
-
-  .slide h2 {
-    font-size: 48px;
+  h2 {
+    font-family: "Ubuntu", sans-serif;
     font-weight: 700;
+    font-size: 42px;
     line-height: 1.15;
-    margin: 0 0 32px;
+    margin: 0 0 24px 0;
     letter-spacing: -0.5px;
   }
+  h3 {
+    font-family: "Ubuntu", sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    margin: 0 0 16px 0;
+  }
 
-  .slide h3 {
-    font-size: 24px;
-    font-weight: 600;
-    margin: 0 0 16px;
-    color: var(--accent);
-    letter-spacing: 1px;
+  .accent { color: var(--lima); }
+  .slide.beige .accent { color: var(--navy); border-bottom: 4px solid var(--lima); padding-bottom: 2px; }
+
+  p { font-size: 18px; line-height: 1.6; max-width: 900px; }
+
+  /* Footer común */
+  .footer {
+    position: absolute;
+    bottom: 30px;
+    left: 8%;
+    font-family: "Oswald", sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gris);
     text-transform: uppercase;
   }
 
-  .slide p {
-    font-size: 22px;
-    line-height: 1.55;
-    color: var(--fg-dim);
-    margin: 0 0 16px;
+  /* Círculo lima decorativo */
+  .lima-dot {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--lima);
   }
 
-  .slide .big-text {
-    font-size: 56px;
-    line-height: 1.2;
+  /* ===================== Slide 1 — Cover ===================== */
+  .cover .logo-mark {
+    font-family: "Oswald", sans-serif;
+    font-size: 18px;
+    letter-spacing: 6px;
+    color: var(--lima);
+    margin-bottom: 80px;
+    text-transform: uppercase;
+  }
+  .cover h1 {
+    font-size: 72px;
+    max-width: 1100px;
+    line-height: 1.05;
+  }
+  .cover .tagline {
+    font-family: "Oswald", sans-serif;
+    font-size: 16px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--lima);
+    margin-top: 32px;
+  }
+  .cover .author {
+    position: absolute;
+    bottom: 60px;
+    left: 8%;
+    font-size: 14px;
+    color: var(--gris);
+  }
+  .cover .author .name {
+    color: var(--crema);
     font-weight: 700;
-    color: var(--fg);
-    margin: 0 0 24px;
+    font-size: 16px;
   }
 
-  .slide .accent {
-    color: var(--accent);
+  /* ===================== Slide tipo "frase de impacto sola" ===================== */
+  .impacto h1 {
+    font-size: 64px;
+    max-width: 1100px;
+    line-height: 1.1;
+  }
+  .impacto .firma {
+    position: absolute;
+    bottom: 60px;
+    left: 8%;
+    font-family: "Oswald", sans-serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gris);
   }
 
-  /* ===================== Slide 1 - Cover ===================== */
-  .slide.cover {
-    background: linear-gradient(135deg, #0e1218 0%, #161a23 100%);
-    align-items: flex-start;
-    justify-content: center;
+  /* ===================== Garantía ===================== */
+  .garantia-box {
+    background: rgba(214, 242, 107, 0.08);
+    border-left: 4px solid var(--lima);
+    padding: 28px 32px;
+    margin: 32px 0;
+    max-width: 900px;
   }
-  .slide.cover .logo {
-    color: var(--accent);
-    font-size: 32px;
-    font-weight: 800;
-    letter-spacing: 4px;
-    margin-bottom: 60px;
+  .slide.beige .garantia-box {
+    background: rgba(27, 36, 56, 0.06);
+    border-left-color: var(--navy);
   }
-  .slide.cover h1 {
-    font-size: 88px;
+  .garantia-box .check {
+    color: var(--lima);
+    font-weight: 700;
+    margin-bottom: 12px;
+    font-family: "Oswald", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 13px;
+  }
+  .slide.beige .garantia-box .check {
+    color: var(--navy);
+  }
+  .garantia-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 32px;
+    max-width: 900px;
+  }
+  .garantia-list .si {
+    border-left: 3px solid var(--lima);
+    padding: 12px 18px;
+  }
+  .garantia-list .no {
+    border-left: 3px solid var(--gris);
+    padding: 12px 18px;
+    opacity: 0.7;
+  }
+
+  /* ===================== Dimensiones (6 cards) ===================== */
+  .dimensiones-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 28px;
+    max-width: 1100px;
+  }
+  .dim-card {
+    background: rgba(240, 240, 236, 0.06);
+    border: 1px solid rgba(240, 240, 236, 0.15);
+    border-radius: 8px;
+    padding: 22px 20px;
+  }
+  .slide.beige .dim-card {
+    background: rgba(27, 36, 56, 0.05);
+    border-color: rgba(27, 36, 56, 0.15);
+  }
+  .dim-card .num {
+    font-family: "Oswald", sans-serif;
+    color: var(--lima);
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .slide.beige .dim-card .num { color: var(--gris-dark); }
+  .dim-card .name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-family: "Ubuntu", sans-serif;
+  }
+  .dim-card .what {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--gris);
+  }
+  .slide.beige .dim-card .what { color: var(--gris-dark); }
+  .dim-opcional {
+    margin-top: 24px;
+    padding: 16px 20px;
+    border-left: 3px solid var(--lima);
+    background: rgba(214, 242, 107, 0.08);
+    font-size: 14px;
+    color: var(--gris);
+    max-width: 700px;
+  }
+  .slide.beige .dim-opcional {
+    background: rgba(27, 36, 56, 0.05);
+    border-left-color: var(--navy);
+    color: var(--gris-dark);
+  }
+
+  /* ===================== Garantías (4 cards) ===================== */
+  .garantia-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 32px;
     max-width: 1000px;
   }
-  .slide.cover .tagline {
-    font-size: 28px;
-    color: var(--fg-dim);
-    max-width: 700px;
-    margin-top: 32px;
+  .garantia-card {
+    background: rgba(27, 36, 56, 0.05);
+    border-left: 4px solid var(--navy);
+    padding: 24px 28px;
+    border-radius: 4px;
   }
-  .slide.cover .author {
-    margin-top: 80px;
-    padding-top: 32px;
-    border-top: 2px solid var(--accent);
-    width: 280px;
+  .slide.navy .garantia-card {
+    background: rgba(240, 240, 236, 0.06);
+    border-left-color: var(--lima);
   }
-  .slide.cover .author .name {
+  .garantia-card .icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .garantia-card .title {
+    font-family: "Ubuntu", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .garantia-card .desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--gris-dark);
+  }
+  .slide.navy .garantia-card .desc {
+    color: var(--gris);
+  }
+
+  /* ===================== Fit ===================== */
+  .fit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 40px;
+    max-width: 1100px;
+  }
+  .fit-card {
+    background: rgba(240, 240, 236, 0.05);
+    border: 1px solid rgba(240, 240, 236, 0.15);
+    border-radius: 8px;
+    padding: 28px;
+  }
+  .slide.beige .fit-card {
+    background: rgba(27, 36, 56, 0.05);
+    border-color: rgba(27, 36, 56, 0.15);
+  }
+  .fit-card .label {
+    font-family: "Oswald", sans-serif;
+    color: var(--lima);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .slide.beige .fit-card .label {
+    color: var(--gris-dark);
+  }
+  .fit-card .title {
     font-size: 24px;
     font-weight: 700;
-    color: var(--fg);
+    margin-bottom: 12px;
   }
-  .slide.cover .author .role {
-    font-size: 16px;
-    color: var(--fg-dim);
-    margin-top: 4px;
+  .fit-card p { font-size: 16px; margin: 0; }
+
+  /* ===================== Segmentación ===================== */
+  .segmento-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    margin-top: 32px;
+    max-width: 1200px;
   }
-  .slide.cover .author .cert {
+  .segmento-card {
+    border-top: 4px solid var(--lima);
+    padding: 24px 4px;
+  }
+  .segmento-card .num {
+    font-family: "Oswald", sans-serif;
     font-size: 14px;
-    color: var(--accent);
-    margin-top: 6px;
-    letter-spacing: 0.5px;
+    letter-spacing: 2px;
+    color: var(--gris);
+    margin-bottom: 8px;
+  }
+  .segmento-card .who {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .segmento-card .dolor {
+    font-size: 15px;
+    line-height: 1.6;
   }
 
-  /* ===================== Slide 2 - Problema ===================== */
-  .problema-stat {
-    display: flex;
-    gap: 60px;
-    margin-top: 40px;
-    flex-wrap: wrap;
-  }
-  .problema-stat .stat-block {
-    flex: 1 1 280px;
-  }
-  .problema-stat .stat-num {
-    font-size: 72px;
-    font-weight: 800;
-    color: var(--accent);
-    line-height: 1;
-    letter-spacing: -2px;
-  }
-  .problema-stat .stat-desc {
-    font-size: 18px;
-    color: var(--fg-dim);
-    margin-top: 12px;
-    line-height: 1.4;
-  }
-
-  /* ===================== Diagrama proceso ===================== */
+  /* ===================== Flow steps (proceso) ===================== */
   .flow {
     display: flex;
-    gap: 16px;
-    margin-top: 40px;
+    align-items: center;
     flex-wrap: wrap;
-    align-items: stretch;
+    gap: 12px;
+    margin-top: 32px;
+    max-width: 1200px;
   }
   .flow-step {
-    flex: 1 1 140px;
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px 16px;
-    text-align: center;
-    position: relative;
-    transition: all 0.2s;
+    background: rgba(240, 240, 236, 0.06);
+    border: 1px solid rgba(240, 240, 236, 0.15);
+    border-radius: 8px;
+    padding: 18px 16px;
+    min-width: 130px;
+    flex: 1;
+  }
+  .slide.beige .flow-step {
+    background: rgba(27, 36, 56, 0.05);
+    border-color: rgba(27, 36, 56, 0.15);
   }
   .flow-step.accent {
-    border-color: var(--accent);
-    background: var(--accent-soft);
+    border-color: var(--lima);
+    background: rgba(214, 242, 107, 0.12);
+  }
+  .slide.beige .flow-step.accent {
+    border-color: var(--navy);
+    background: rgba(27, 36, 56, 0.08);
   }
   .flow-step.optional {
+    opacity: 0.6;
     border-style: dashed;
-    opacity: 0.85;
   }
-  .flow-step .step-num {
-    color: var(--accent);
+  .step-num {
+    font-family: "Oswald", sans-serif;
+    color: var(--lima);
     font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     margin-bottom: 8px;
   }
-  .flow-step .step-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--fg);
-    line-height: 1.3;
+  .slide.beige .step-num { color: var(--gris-dark); }
+  .step-name {
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 15px;
   }
-  .flow-step .step-tag {
-    font-size: 11px;
-    color: var(--fg-dim);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-top: 6px;
+  .step-tag {
+    font-size: 12px;
+    color: var(--gris);
   }
   .flow-arrow {
-    align-self: center;
-    color: var(--accent);
-    font-size: 24px;
+    color: var(--lima);
+    font-size: 20px;
     font-weight: 700;
   }
 
-  /* ===================== Slide 6 - Prefiltro ejemplos ===================== */
-  .ejemplo-card {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--accent);
-    border-radius: 12px;
-    padding: 28px 32px;
-    margin-bottom: 24px;
-  }
-  .ejemplo-card .cliente {
-    font-size: 14px;
-    color: var(--accent);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-  }
-  .ejemplo-card .pedido {
-    font-size: 22px;
-    color: var(--fg);
-    font-style: italic;
-    margin-bottom: 16px;
-    line-height: 1.4;
-  }
-  .ejemplo-card .pregunta {
-    font-size: 16px;
-    color: var(--fg-dim);
-    background: rgba(218, 253, 111, 0.05);
-    border-radius: 8px;
-    padding: 12px 16px;
-    border-left: 2px solid var(--accent);
-  }
-  .ejemplo-card .pregunta strong {
-    color: var(--accent);
-  }
-
-  /* ===================== Slide 7 - DISC círculo grande ===================== */
-  .disc-wheel-wrap {
-    position: relative;
-    width: 100%;
-    max-width: 720px;
-    margin: 32px auto 24px;
-    aspect-ratio: 1.4 / 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .disc-axis-top, .disc-axis-bottom, .disc-axis-left, .disc-axis-right {
-    position: absolute;
-    color: var(--accent);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    text-align: center;
-    line-height: 1.3;
-  }
-  .disc-axis-top { top: 0; left: 50%; transform: translateX(-50%); }
-  .disc-axis-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
-  .disc-axis-left { left: 0; top: 50%; transform: translateY(-50%); max-width: 100px; }
-  .disc-axis-right { right: 0; top: 50%; transform: translateY(-50%); max-width: 100px; }
-
-  .disc-wheel {
-    position: relative;
-    width: 340px;
-    height: 340px;
-    border-radius: 50%;
-    overflow: hidden;
-    box-shadow: 0 0 60px rgba(218, 253, 111, 0.15);
-  }
-  .quadrant {
-    position: absolute;
-    width: 50%;
-    height: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .quadrant span {
-    font-size: 64px;
-    font-weight: 900;
-    color: white;
-    line-height: 1;
-  }
-  .quadrant.q-D { top: 0; left: 0; background: #ef4444; }
-  .quadrant.q-I { top: 0; right: 0; background: #fbbf24; }
-  .quadrant.q-C { bottom: 0; left: 0; background: #2563eb; }
-  .quadrant.q-S { bottom: 0; right: 0; background: #f97316; }
-
-  .disc-wheel::after {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 2px; height: 100%;
-    background: rgba(255,255,255,0.4);
-    transform: translateX(-50%);
-  }
-  .disc-wheel::before {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 100%; height: 2px;
-    background: rgba(255,255,255,0.4);
-    transform: translateY(-50%);
-    z-index: 1;
-  }
-
-  .disc-legend {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px 32px;
-    margin-top: 20px;
-    max-width: 800px;
-  }
-  .disc-legend > div {
-    font-size: 16px;
-    color: var(--fg-dim);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .disc-legend strong { color: var(--fg); }
-  .disc-legend .dot {
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    display: inline-block;
-    flex-shrink: 0;
-  }
-  .disc-legend .dot-D { background: #ef4444; }
-  .disc-legend .dot-I { background: #fbbf24; }
-  .disc-legend .dot-S { background: #f97316; }
-  .disc-legend .dot-C { background: #2563eb; }
-
-  /* ===================== Slide 8 - DISC personajes + puestos ===================== */
+  /* ===================== DISC personajes ===================== */
   .disc-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
     margin-top: 32px;
+    max-width: 1100px;
   }
   .disc-card {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
+    background: rgba(27, 36, 56, 0.05);
     border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-  }
-  .disc-card .disc-photo {
-    flex: 0 0 110px;
-    width: 110px;
-    height: 110px;
-    background-size: cover;
-    background-position: center top;
-    background-color: var(--border);
-    border-radius: 10px;
-    border: 2px solid var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--fg-dim);
-    font-size: 11px;
-    text-align: center;
-    padding: 0;
     overflow: hidden;
+    display: flex;
+    border: 1px solid rgba(27, 36, 56, 0.15);
   }
-  .disc-card .disc-content {
-    flex: 1;
-    min-width: 0;
+  .slide.navy .disc-card {
+    background: rgba(240, 240, 236, 0.06);
+    border-color: rgba(240, 240, 236, 0.15);
   }
-  .disc-card .disc-letter {
-    font-size: 32px;
-    font-weight: 800;
+  .disc-photo {
+    width: 130px;
+    flex-shrink: 0;
+    background-size: cover;
+    background-position: center;
+  }
+  .disc-content { padding: 20px; flex: 1; }
+  .disc-letter {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--lima);
     line-height: 1;
+    font-family: "Ubuntu", sans-serif;
   }
-  .disc-card.D .disc-letter { color: #ef4444; }
-  .disc-card.I .disc-letter { color: #fbbf24; }
-  .disc-card.S .disc-letter { color: #34d399; }
-  .disc-card.C .disc-letter { color: #60a5fa; }
-  .disc-card .disc-name {
-    font-size: 18px;
-    color: var(--fg);
-    font-weight: 700;
-    margin: 4px 0 8px;
-  }
-  .disc-card .disc-job {
-    font-size: 12px;
-    color: var(--accent);
-    font-weight: 600;
-    margin-bottom: 10px;
-    line-height: 1.3;
+  .slide.beige .disc-letter { color: var(--navy); }
+  .disc-name {
+    font-family: "Oswald", sans-serif;
+    font-size: 14px;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: var(--gris);
+    margin: 4px 0 10px;
   }
-  .disc-card .disc-desc {
-    font-size: 12px;
-    color: var(--fg-dim);
-    line-height: 1.5;
-  }
-  .disc-card .disc-character {
-    font-size: 11px;
-    color: var(--fg-dim);
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid var(--border);
-    line-height: 1.3;
-  }
-  .disc-card .disc-character strong {
-    color: var(--accent);
+  .disc-job {
+    font-size: 14px;
     font-weight: 700;
+    margin-bottom: 10px;
   }
-  .disc-card .bien, .disc-card .cuesta {
+  .disc-desc { font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
+  .disc-character {
     font-size: 12px;
-    margin-bottom: 6px;
-    color: var(--fg-dim);
-    line-height: 1.4;
-  }
-  .disc-card .bien strong {
-    color: #34d399;
-  }
-  .disc-card .cuesta strong {
-    color: #f87171;
+    color: var(--gris);
+    font-style: italic;
   }
 
-  /* ===================== Slide 8 - VELNA ===================== */
+  /* ===================== VELNA grid ===================== */
   .velna-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
+    gap: 16px;
     margin-top: 32px;
+    max-width: 1200px;
   }
   .velna-card {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-top: 4px solid var(--accent);
-    border-radius: 10px;
-    padding: 18px 14px;
+    background: rgba(240, 240, 236, 0.06);
+    border: 1px solid rgba(240, 240, 236, 0.15);
+    border-radius: 8px;
+    padding: 18px;
+  }
+  .slide.beige .velna-card {
+    background: rgba(27, 36, 56, 0.05);
+    border-color: rgba(27, 36, 56, 0.15);
   }
   .velna-card .letter {
-    font-size: 36px;
-    font-weight: 800;
-    color: var(--accent);
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--lima);
     line-height: 1;
   }
+  .slide.beige .velna-card .letter { color: var(--navy); }
   .velna-card .dim {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--fg);
-    margin-top: 8px;
-  }
-  .velna-card .what {
+    font-family: "Oswald", sans-serif;
     font-size: 12px;
-    color: var(--fg-dim);
-    margin-top: 8px;
-    line-height: 1.4;
-    min-height: 50px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gris);
+    margin: 8px 0 10px;
   }
-  .velna-card .use {
-    font-size: 11px;
-    color: var(--accent);
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-    line-height: 1.3;
-  }
+  .velna-card .what { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .velna-card .use { font-size: 12px; color: var(--gris); line-height: 1.5; }
 
-  /* ===================== Slide 9 - Reporte mockup ===================== */
+  /* ===================== Report mock ===================== */
   .report-mock {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: 16px;
+    background: rgba(240, 240, 236, 0.05);
+    border: 1px solid rgba(240, 240, 236, 0.15);
+    border-radius: 12px;
     padding: 28px;
     margin-top: 32px;
-    overflow: hidden;
+    max-width: 1100px;
+  }
+  .slide.beige .report-mock {
+    background: white;
+    border-color: rgba(27, 36, 56, 0.15);
   }
   .report-mock .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
     margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(240, 240, 236, 0.15);
   }
-  .report-mock .header .title {
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: 1px;
+  .slide.beige .report-mock .header { border-color: rgba(27, 36, 56, 0.15); }
+  .report-mock .title {
+    font-family: "Oswald", sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
   }
-  .report-mock .header .subtitle {
-    color: var(--fg-dim);
+  .report-mock .subtitle {
     font-size: 13px;
+    color: var(--gris);
+    margin-top: 4px;
   }
   .report-mock-grid {
     display: grid;
-    grid-template-columns: 200px repeat(4, 1fr);
-    gap: 14px;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr;
+    gap: 12px 16px;
     font-size: 13px;
   }
   .report-mock-grid .h {
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 12px;
+    font-family: "Oswald", sans-serif;
     letter-spacing: 1px;
     text-transform: uppercase;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--gris);
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(240, 240, 236, 0.15);
   }
-  .report-mock-grid .c {
-    color: var(--fg-dim);
-    padding: 8px 0;
-  }
+  .slide.beige .report-mock-grid .h { border-color: rgba(27, 36, 56, 0.15); }
   .report-mock-grid .candidato-name {
-    color: var(--fg);
+    color: var(--lima);
     font-weight: 700;
-    text-align: center;
-  }
-  .report-mock-grid .score-good {
-    color: #34d399;
-    font-weight: 700;
-    text-align: center;
-  }
-  .report-mock-grid .score-mid {
-    color: #fbbf24;
-    font-weight: 700;
-    text-align: center;
-  }
-  .report-mock-grid .score-low {
-    color: #f87171;
-    font-weight: 700;
-    text-align: center;
-  }
-
-  /* ===================== Slide 10 - Garantías ===================== */
-  .garantia-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-    margin-top: 32px;
-  }
-  .garantia-card {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 32px;
-  }
-  .garantia-card .icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-  }
-  .garantia-card .title {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--accent);
-    margin-bottom: 12px;
-  }
-  .garantia-card .desc {
-    font-size: 17px;
-    color: var(--fg-dim);
-    line-height: 1.5;
-  }
-
-  /* ===================== Slide 11 - Pago + Plus ===================== */
-  .pago-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
-    margin-top: 32px;
-  }
-  .pago-card {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px;
-  }
-  .pago-card.tract-1 {
-    border-left: 4px solid var(--accent);
-  }
-  .pago-card.tract-2 {
-    border-left: 4px solid #60a5fa;
-  }
-  .pago-card .tract {
-    font-size: 14px;
-    color: var(--accent);
-    font-weight: 700;
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-  }
-  .pago-card .pct {
-    font-size: 56px;
-    font-weight: 800;
-    color: var(--fg);
-    line-height: 1;
-  }
-  .pago-card .desc {
-    font-size: 16px;
-    color: var(--fg-dim);
-    margin-top: 12px;
-  }
-  .plus-box {
-    margin-top: 36px;
-    background: var(--accent-soft);
-    border: 1px solid var(--accent);
-    border-radius: 12px;
-    padding: 24px 28px;
-  }
-  .plus-box .plus-title {
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 18px;
-    margin-bottom: 8px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  .plus-box .plus-text {
-    font-size: 20px;
-    color: var(--fg);
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
-  .plus-box .plus-note {
-    font-size: 15px;
-    color: var(--fg-dim);
-    line-height: 1.4;
-  }
-  .warn-line {
-    margin-top: 16px;
-    background: var(--warn-soft);
-    border-left: 3px solid var(--warn);
-    padding: 12px 16px;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #fde68a;
-  }
-
-  /* ===================== Slide 12 - CTA ===================== */
-  .slide.cta {
-    background: linear-gradient(135deg, #0e1218 0%, #1a2030 100%);
-    align-items: center;
-    text-align: center;
-  }
-  .slide.cta .cta-headline {
-    font-size: 64px;
-    font-weight: 800;
-    line-height: 1.15;
-    max-width: 1000px;
-    margin: 0 auto 24px;
-  }
-  .slide.cta .cta-question {
-    font-size: 36px;
-    color: var(--accent);
-    font-weight: 600;
-    max-width: 900px;
-    margin: 24px auto 60px;
-  }
-  .slide.cta .cta-sub {
-    color: var(--fg-dim);
-    font-size: 18px;
-    margin-top: 40px;
-  }
-
-  /* ===================== Credenciales / clientes ===================== */
-  .credenciales {
-    margin-top: 40px;
-  }
-  .credenciales .label {
     font-size: 13px;
-    color: var(--accent);
+  }
+  .slide.beige .report-mock-grid .candidato-name { color: var(--navy); }
+  .report-mock-grid .c { padding: 4px 0; }
+  .score-good { color: var(--score-good); font-weight: 700; }
+  .score-mid { color: var(--score-mid); font-weight: 700; }
+  .score-low { color: var(--score-low); font-weight: 700; }
+
+  /* ===================== Precio ===================== */
+  .precio-hero {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin: 40px 0 24px;
+  }
+  .precio-num {
+    font-size: 140px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--navy);
+    letter-spacing: -4px;
+  }
+  .precio-x {
+    font-size: 40px;
+    color: var(--gris-dark);
+    font-weight: 400;
+  }
+  .precio-desc {
+    font-size: 20px;
+    max-width: 700px;
+    margin-bottom: 32px;
+  }
+  .precio-detail {
+    background: var(--navy);
+    color: var(--crema);
+    padding: 24px 28px;
+    border-radius: 8px;
+    max-width: 700px;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .precio-detail .label {
+    font-family: "Oswald", sans-serif;
+    color: var(--lima);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .precio-final {
+    margin-top: 24px;
+    font-family: "Oswald", sans-serif;
     text-transform: uppercase;
     letter-spacing: 2px;
-    margin-bottom: 12px;
-  }
-  .credenciales .list {
-    font-size: 18px;
-    color: var(--fg);
-    font-weight: 600;
-    line-height: 1.6;
-  }
-  .credenciales .num {
-    font-size: 56px;
-    font-weight: 800;
-    color: var(--accent);
-    line-height: 1;
-    margin: 8px 0;
+    font-size: 14px;
+    color: var(--gris-dark);
   }
 
-  /* ===================== Print stylesheet ===================== */
+  /* ===================== Logos clientes ===================== */
+  .logos-intro {
+    font-size: 18px;
+    max-width: 800px;
+    margin-bottom: 48px;
+    color: var(--gris);
+  }
+  .logos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1000px;
+  }
+  .logo-card {
+    background: var(--beige);
+    border-radius: 8px;
+    padding: 20px 24px;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+  }
+  .logo-card:hover {
+    transform: translateY(-4px);
+  }
+  .logo-card img {
+    max-width: 100%;
+    max-height: 120px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+  .logo-card.alpha-card {
+    padding: 8px;
+  }
+  .logo-card.alpha-card img {
+    max-height: 150px;
+    max-width: 95%;
+  }
+
+  /* ===================== CTA final ===================== */
+  .cta .cta-headline {
+    font-size: 72px;
+    font-weight: 700;
+    line-height: 1.05;
+    max-width: 1100px;
+    margin-bottom: 32px;
+    letter-spacing: -1px;
+  }
+  .cta .cta-question {
+    font-family: "Oswald", sans-serif;
+    font-size: 18px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gris-dark);
+    margin-bottom: 60px;
+  }
+  .cta .cta-sub {
+    font-size: 14px;
+    color: var(--gris-dark);
+    font-family: "Oswald", sans-serif;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* ===================== Big text ===================== */
+  .big-text {
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1.2;
+    max-width: 1100px;
+    margin-bottom: 24px;
+  }
+
+  /* ===================== PRINT / PDF ===================== */
   @media print {
-    .topbar { display: none; }
-    body { background: white; color: #0e1218; }
+    @page {
+      size: 297mm 167mm; /* 16:9 landscape */
+      margin: 0;
+    }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html, body {
+      background: var(--navy);
+    }
+    .topbar { display: none !important; }
     .slide {
-      min-height: 100vh;
+      width: 297mm;
+      height: 167mm;
+      min-height: 167mm;
+      max-height: 167mm;
+      padding: 30px 8% 30px;
+      overflow: hidden;
       page-break-after: always;
       break-after: page;
-      padding: 40px 60px;
-      background: white !important;
-      color: #0e1218 !important;
     }
-    .slide.cover, .slide.cta {
-      background: white !important;
-    }
-    .slide h1, .slide h2, .slide .big-text {
-      color: #0e1218 !important;
-    }
-    .slide p, .slide .stat-desc, .slide .desc {
-      color: #4b5563 !important;
-    }
-    .accent, .slide h3 { color: #6b9c00 !important; }
-    .flow-step, .ejemplo-card, .disc-card, .velna-card,
-    .garantia-card, .pago-card, .report-mock {
-      background: white !important;
-      border-color: #d1d5db !important;
-    }
+    .slide:last-child { page-break-after: auto; }
+    .slide-number { top: 24px; }
+    .footer { bottom: 18px; }
+    .cover h1 { font-size: 60px; }
+    h1 { font-size: 48px; }
+    h2 { font-size: 36px; }
+    .precio-num { font-size: 110px; }
   }
 
   /* ===================== Responsive ===================== */
   @media (max-width: 900px) {
-    .slide h1 { font-size: 44px; }
-    .slide h2 { font-size: 36px; }
-    .slide.cover h1 { font-size: 56px; }
-    .slide .big-text { font-size: 36px; }
-    .disc-grid, .pago-row, .garantia-grid { grid-template-columns: 1fr; }
+    .slide { padding: 80px 6% 60px; }
+    h1 { font-size: 40px; }
+    h2 { font-size: 32px; }
+    .cover h1 { font-size: 48px; }
+    .impacto h1 { font-size: 44px; }
+    .cta .cta-headline { font-size: 48px; }
+    .precio-num { font-size: 100px; }
+    .disc-grid, .fit-grid, .segmento-grid, .logos-grid { grid-template-columns: 1fr; }
     .velna-grid { grid-template-columns: 1fr 1fr; }
     .report-mock-grid { grid-template-columns: 1fr; }
+    .flow { flex-direction: column; align-items: stretch; }
+    .flow-arrow { display: none; }
   }
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <div class="brand">🦈 SHARKTALENTS</div>
+  <div class="brand">SHARKTALENTS</div>
   <div class="nav">
     <button onclick="goPrev()">← Anterior</button>
-    <span class="counter" id="counter">1 / 13</span>
+    <span class="counter" id="counter">1 / 15</span>
     <button onclick="goNext()">Siguiente →</button>
-    <button class="pdf-btn" onclick="window.print()">📄 Descargar PDF</button>
   </div>
 </div>
 
-<!-- ============ SLIDE 1 — Cover ============ -->
-<section class="slide cover" id="s1">
-  <div class="slide-number">01 / 13</div>
-  <div class="logo">SHARKTALENTS</div>
-  <h1>Evalúa con datos.<br>Decide con criterio.</h1>
-  <p class="tagline">Análisis de talento basado en metodología comprobada para que tu próxima contratación funcione.</p>
-  <div class="author">
-    <div class="name">Chris Palma</div>
-    <div class="role">Fundadora · SharkTalents</div>
-    <div class="cert">Certificación en Habilidades Blandas y Talento Humano</div>
-  </div>
+<!-- ============ SLIDE 1 — Cover (NAVY) ============ -->
+<section class="slide navy cover" id="s1">
+  <div class="slide-number">01 / 15</div>
+  <div class="logo-mark">SHARKTALENTS</div>
+  <h1>El candidato brilla<br>en la entrevista.<br><span class="accent">Después no rinde<br>en el puesto.</span></h1>
+  <div class="tagline">Aquí dejas de adivinar.</div>
+  <div class="footer">SHARKTALENTS.AI</div>
 </section>
 
-<!-- ============ SLIDE 2 — El problema ============ -->
-<section class="slide" id="s2">
-  <div class="slide-number">02 / 13</div>
-  <h3>El problema</h3>
-  <h1>Una mala contratación<br>cuesta caro.</h1>
-  <div class="problema-stat">
-    <div class="stat-block">
-      <div class="stat-num">3 meses</div>
-      <div class="stat-desc">de salario perdido en promedio<br>cuando una persona no encaja</div>
+<!-- ============ SLIDE 2 — Garantía (BEIGE) ============ -->
+<section class="slide beige" id="s2">
+  <div class="slide-number">02 / 15</div>
+  <div class="pretitle">Lo que te garantizamos</div>
+  <h2>Sin humo.<br>Lo que realmente <span class="accent">cumplimos</span>.</h2>
+  <div class="divider"></div>
+  <div class="garantia-grid">
+    <div class="garantia-card">
+      <span class="icon">📋</span>
+      <div class="title">3 a 4 candidatos finalistas</div>
+      <div class="desc">Filtrados por las dimensiones que definimos contigo en el perfil del puesto. Los que llegan a tu mesa cumplen lo que pediste.</div>
     </div>
-    <div class="stat-block">
-      <div class="stat-num">+ tiempo</div>
-      <div class="stat-desc">del equipo dedicado a entrevistar,<br>capacitar y volver a empezar</div>
+    <div class="garantia-card">
+      <span class="icon">⏱️</span>
+      <div class="title">15 a 21 días hábiles</div>
+      <div class="desc">Tiempo de búsqueda y evaluación contado desde el primer pago. Los puestos más difíciles tienden al límite superior.</div>
     </div>
-    <div class="stat-block">
-      <div class="stat-num">- moral</div>
-      <div class="stat-desc">del equipo que carga con la rotación<br>y ve cómo se reparte el trabajo</div>
+    <div class="garantia-card">
+      <span class="icon">🔄</span>
+      <div class="title">Rebúsqueda si no cumplen</div>
+      <div class="desc">Si los finalistas no cumplen lo definido al inicio — idioma, años de experiencia, dominio técnico — repetimos la búsqueda sin costo extra.</div>
+    </div>
+    <div class="garantia-card">
+      <span class="icon">📐</span>
+      <div class="title">Perfil de cargo estructurado</div>
+      <div class="desc">Dedicamos tiempo real a armar el perfil antes de empezar. Si está claro lo que necesitas, la búsqueda funciona bien desde el primer intento.</div>
     </div>
   </div>
+  <div class="footer">SHARKTALENTS.AI</div>
 </section>
 
-<!-- ============ SLIDE 3 — Cómo lo resolvemos ============ -->
-<section class="slide" id="s3">
-  <div class="slide-number">03 / 13</div>
-  <h3>Lo que hacemos</h3>
-  <div class="big-text">
-    Analizamos a cada candidato en <span class="accent">5 dimensiones</span> antes de que llegue a tu entrevista.
-  </div>
-  <p style="margin-top: 24px; max-width: 800px;">
-    Pasa por filtros que validan lo que tú definas: experiencia, valores, idioma, perfil conductual,
-    integridad y dominio técnico. Solo los que cumplen llegan a tu mesa.
-  </p>
-  <div class="credenciales">
-    <div class="label">Quienes ya trabajaron con nosotros</div>
-    <div class="list">
-      Alpha Trading · Joyerías y retail en Zona Libre · Empresas B2B · Grupos de restaurantes en Panamá
+<!-- ============ SLIDE 3 — Fit (NAVY) ============ -->
+<section class="slide navy" id="s3">
+  <div class="slide-number">03 / 15</div>
+  <div class="pretitle">El fit es el corazón</div>
+  <h2>Un candidato excelente<br>puede fracasar bajo<br>el <span class="accent">líder equivocado</span>.</h2>
+  <div class="divider"></div>
+  <p>Evaluamos las dos partes: el candidato y el estilo de quien lo va a dirigir. Ahí vive el fit. La mayoría no lo mide porque es más trabajo.</p>
+  <div class="fit-grid">
+    <div class="fit-card">
+      <div class="label">Fit con el jefe</div>
+      <div class="title">Cómo decide y comunica.</div>
+      <p>Un líder de urgencia necesita un ejecutor. Un planificador necesita un perfil distinto. Lo medimos.</p>
     </div>
-    <div class="num">+ miles</div>
-    <div style="color: var(--fg-dim); font-size: 16px;">de candidatos evaluados con nuestra metodología</div>
+    <div class="fit-card">
+      <div class="label">Fit con el rol</div>
+      <div class="title">El resultado que hay que entregar.</div>
+      <p>No buscamos al mejor candidato en abstracto. Buscamos al que calza con lo que tu rol exige.</p>
+    </div>
   </div>
+  <div class="footer">SHARKTALENTS.AI</div>
 </section>
 
-<!-- ============ SLIDE 4 — Proceso (cliente) ============ -->
-<section class="slide" id="s4">
-  <div class="slide-number">04 / 13</div>
-  <h3>Tu camino con nosotros</h3>
-  <h2>Del primer contacto a los finalistas.</h2>
+<!-- ============ SLIDE 4 — Frase de impacto 1 (BEIGE) ============ -->
+<section class="slide beige impacto" id="s4">
+  <div class="slide-number">04 / 15</div>
+  <div class="pretitle">El costo silencioso</div>
+  <h1>Mientras buscas candidato,<br>la operación <span class="accent">pierde plata</span><br>cada día.</h1>
+  <div class="divider"></div>
+  <div class="firma">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ SLIDE 5 — Las 6 dimensiones (NAVY) ============ -->
+<section class="slide navy" id="s5">
+  <div class="slide-number">05 / 15</div>
+  <div class="pretitle">Lo que medimos</div>
+  <h2>Las <span class="accent">6 dimensiones</span><br>de cada candidato.</h2>
+  <div class="divider"></div>
+  <div class="dimensiones-grid">
+    <div class="dim-card">
+      <div class="num">01</div>
+      <div class="name">Conducta</div>
+      <div class="what">Cómo se comporta bajo presión y en equipo. Estilo de liderazgo y comunicación.</div>
+    </div>
+    <div class="dim-card">
+      <div class="num">02</div>
+      <div class="name">Cognición</div>
+      <div class="what">Cómo piensa, razona y resuelve problemas. Capacidad verbal, lógica, numérica y abstracta.</div>
+    </div>
+    <div class="dim-card">
+      <div class="num">03</div>
+      <div class="name">Técnica</div>
+      <div class="what">Conocimiento específico del rol. Dominio práctico de lo que se le va a pedir.</div>
+    </div>
+    <div class="dim-card">
+      <div class="num">04</div>
+      <div class="name">Integridad</div>
+      <div class="what">Riesgo y valores. Patrones de comportamiento ético en situaciones reales.</div>
+    </div>
+    <div class="dim-card">
+      <div class="num">05</div>
+      <div class="name">Mentalidad</div>
+      <div class="what">Mindset, motivación y disposición. Cómo entiende su rol y por qué lo busca.</div>
+    </div>
+    <div class="dim-card">
+      <div class="num">06</div>
+      <div class="name">Emoción</div>
+      <div class="what">Regulación emocional bajo presión. Cómo gestiona frustración, conflicto y decisión.</div>
+    </div>
+  </div>
+  <div class="dim-opcional">
+    Y si tu rol lo requiere, también evaluamos <strong>inglés</strong> con prueba de comprensión auditiva y escrita.
+  </div>
+  <div class="footer">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ SLIDE 6 — Segmentación (BEIGE) ============ -->
+<section class="slide beige" id="s6">
+  <div class="slide-number">06 / 15</div>
+  <div class="pretitle">Para quién</div>
+  <h2>Roles que <span class="accent">mueven</span><br>una operación.</h2>
+  <div class="divider"></div>
+  <p>C-level, directores, gerentes y mandos medios-altos. Ventas, operaciones, finanzas, proyectos. Los puestos donde una mala contratación se siente en el negocio entero.</p>
+  <div class="segmento-grid">
+    <div class="segmento-card">
+      <div class="num">01</div>
+      <div class="who">Dueños y CEOs</div>
+      <div class="dolor">Defendiste la contratación frente a tu mesa. A los 6 meses renunció. Quedaste de vuelta en cero, con tu criterio en duda.</div>
+    </div>
+    <div class="segmento-card">
+      <div class="num">02</div>
+      <div class="who">Responsables de contratación</div>
+      <div class="dolor">Cuando el contratado no rinde, nadie dice "falló el método": dicen tu nombre. Necesitas presentar datos, no gente.</div>
+    </div>
+    <div class="segmento-card">
+      <div class="num">03</div>
+      <div class="who">Gerentes de área</div>
+      <div class="dolor">Tu meta depende de una pieza que te falta. Cada semana sin ella es una reunión más explicando por qué no avanza.</div>
+    </div>
+  </div>
+  <div class="footer">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ SLIDE 7 — Proceso cliente (NAVY) ============ -->
+<section class="slide navy" id="s7">
+  <div class="slide-number">07 / 15</div>
+  <div class="pretitle">Tu camino con nosotros</div>
+  <h2>Del primer contacto<br>a los <span class="accent">finalistas</span>.</h2>
   <div class="flow">
     <div class="flow-step optional">
       <div class="step-num">01</div>
@@ -901,12 +1006,12 @@
     <div class="flow-step accent">
       <div class="step-num">05</div>
       <div class="step-name">Pago 50%</div>
-      <div class="step-tag">Empiezan los días</div>
+      <div class="step-tag">Empieza la búsqueda</div>
     </div>
     <div class="flow-arrow">→</div>
     <div class="flow-step">
       <div class="step-num">06</div>
-      <div class="step-name">Búsqueda + evaluación</div>
+      <div class="step-name">Búsqueda activa</div>
       <div class="step-tag">15 a 21 días</div>
     </div>
     <div class="flow-arrow">→</div>
@@ -916,12 +1021,22 @@
       <div class="step-tag">+ Pago 50%</div>
     </div>
   </div>
+  <div class="footer">SHARKTALENTS.AI</div>
 </section>
 
-<!-- ============ SLIDE 5 — Viaje del candidato ============ -->
-<section class="slide" id="s5">
-  <div class="slide-number">05 / 13</div>
-  <h3>Qué pasa con cada candidato</h3>
+<!-- ============ SLIDE 8 — Frase de impacto 2 (BEIGE) ============ -->
+<section class="slide beige impacto" id="s8">
+  <div class="slide-number">08 / 15</div>
+  <div class="pretitle">El error en silencio</div>
+  <h1>El candidato que no rinde<br>te quema dos veces.<br><span class="accent">En la selección y cuando<br>lo tienes que sacar.</span></h1>
+  <div class="divider"></div>
+  <div class="firma">SHARKTALENTS.AI</div>
+</section>
+
+<!-- ============ SLIDE 9 — Proceso candidato (NAVY) ============ -->
+<section class="slide navy" id="s9">
+  <div class="slide-number">09 / 15</div>
+  <div class="pretitle">Qué pasa con cada candidato</div>
   <h2>Por estos filtros<br>antes de llegar a ti.</h2>
   <div class="flow">
     <div class="flow-step">
@@ -962,8 +1077,8 @@
     <div class="flow-arrow">→</div>
     <div class="flow-step">
       <div class="step-num">07</div>
-      <div class="step-name">Entrevista en video</div>
-      <div class="step-tag">Análisis con IA</div>
+      <div class="step-name">Entrevista video</div>
+      <div class="step-tag">Análisis IA</div>
     </div>
     <div class="flow-arrow">→</div>
     <div class="flow-step accent">
@@ -972,166 +1087,87 @@
       <div class="step-tag">Tu decisión</div>
     </div>
   </div>
+  <div class="footer">SHARKTALENTS.AI</div>
 </section>
 
-<!-- ============ SLIDE 6 — Prefiltro custom ============ -->
-<section class="slide" id="s6">
-  <div class="slide-number">06 / 13</div>
-  <h3>Prefiltro a tu medida</h3>
-  <h2>Descartamos lo que no te sirve<br>desde el primer minuto.</h2>
-  <p style="margin-bottom: 32px;">Definimos contigo qué preguntas filtran al candidato antes de invertir tiempo evaluándolo.</p>
-
-  <div class="ejemplo-card">
-    <div class="cliente">Cliente real · Aryan</div>
-    <div class="pedido">"Para nosotros es importante que la persona que se integre al equipo tenga bases o valores cristianos, católicos o evangélicos."</div>
-    <div class="pregunta">→ Pregunta de prefiltro: <strong>"¿Practicas alguna religión cristiana (católica, evangélica u otra)?"</strong></div>
-  </div>
-
-  <div class="ejemplo-card">
-    <div class="cliente">Cliente real · Empresa en Zona Libre</div>
-    <div class="pedido">"Necesitamos saber desde el inicio si el candidato está de acuerdo con el salario y con viajar a Colón de lunes a viernes."</div>
-    <div class="pregunta">→ Preguntas de prefiltro: <strong>"¿Aceptas un salario de USD X mensuales?"</strong> y <strong>"¿Estás dispuesto a desplazarte a Colón de lunes a viernes?"</strong></div>
-  </div>
-</section>
-
-<!-- ============ SLIDE 7 — DISC círculo grande ============ -->
-<section class="slide" id="s7">
-  <div class="slide-number">07 / 13</div>
-  <h3>Perfil conductual · DISC</h3>
-  <h2>Cómo se comporta<br>bajo presión y en equipo.</h2>
-
-  <div class="disc-wheel-wrap">
-    <div class="disc-axis-top">PROACTIVIDAD</div>
-    <div class="disc-axis-bottom">RECEPTIVIDAD</div>
-    <div class="disc-axis-left">REALIZACIÓN<br>DE TAREAS</div>
-    <div class="disc-axis-right">RELACIÓN CON<br>LAS PERSONAS</div>
-
-    <div class="disc-wheel">
-      <div class="quadrant q-D"><span>D</span></div>
-      <div class="quadrant q-I"><span>I</span></div>
-      <div class="quadrant q-C"><span>C</span></div>
-      <div class="quadrant q-S"><span>S</span></div>
-    </div>
-  </div>
-
-  <div class="disc-legend">
-    <div><span class="dot dot-D"></span> <strong>D</strong> · Dominancia · Resultados, decisión rápida</div>
-    <div><span class="dot dot-I"></span> <strong>I</strong> · Influencia · Carisma, optimismo, gente</div>
-    <div><span class="dot dot-S"></span> <strong>S</strong> · Solidez · Paciencia, lealtad, equipo</div>
-    <div><span class="dot dot-C"></span> <strong>C</strong> · Cumplimiento · Precisión, datos, análisis</div>
-  </div>
-</section>
-
-<!-- ============ SLIDE 8 — DISC personajes + puestos ============ -->
-<section class="slide" id="s8">
-  <div class="slide-number">08 / 13</div>
-  <h3>DISC en la vida real</h3>
-  <h2>El puesto que buscas + el personaje que ya conoces.</h2>
-
+<!-- ============ SLIDE 10 — DISC personajes (BEIGE) ============ -->
+<section class="slide beige" id="s10">
+  <div class="slide-number">10 / 15</div>
+  <div class="pretitle">DISC en la vida real</div>
+  <h2>El personaje<br>que ya <span class="accent">conoces</span>.</h2>
+  <div class="divider"></div>
   <div class="disc-grid">
 
-    <div class="disc-card D">
+    <div class="disc-card">
       <div class="disc-photo" style="background-image: url('img/disc-d.jpeg');"></div>
       <div class="disc-content">
         <div class="disc-letter">D</div>
         <div class="disc-name">Dominancia</div>
         <div class="disc-job">CEO · Director comercial · Líder · Emprendedor</div>
-        <div class="disc-desc">Enfoque en resultados. Decisión rápida. Comunicación directa y frontal. Compite y empuja al equipo a lograrlo.</div>
+        <div class="disc-desc">Enfoque en resultados. Decisión rápida. Comunicación directa.</div>
         <div class="disc-character">Como <strong>Miranda Bailey</strong> en Grey's Anatomy</div>
       </div>
     </div>
 
-    <div class="disc-card I">
+    <div class="disc-card">
       <div class="disc-photo" style="background-image: url('img/disc-i.jpg');"></div>
       <div class="disc-content">
         <div class="disc-letter">I</div>
         <div class="disc-name">Influencia</div>
         <div class="disc-job">Vendedor · Marketing · Atención al cliente · BD</div>
-        <div class="disc-desc">Carisma y optimismo. Persuade y motiva. Comunicación informal y vendedora. Construye relaciones que abren puertas.</div>
+        <div class="disc-desc">Carisma y optimismo. Persuade y motiva. Construye relaciones.</div>
         <div class="disc-character">Como <strong>Harvey Specter</strong> en Suits</div>
       </div>
     </div>
 
-    <div class="disc-card S">
+    <div class="disc-card">
       <div class="disc-photo" style="background-image: url('img/disc-s.webp');"></div>
       <div class="disc-content">
         <div class="disc-letter">S</div>
         <div class="disc-name">Solidez</div>
-        <div class="disc-job">RRHH · Customer success · Operaciones · Soporte</div>
-        <div class="disc-desc">Paciente, leal y constante. Trabajo en equipo. Comunicación calmada. Adapta al ambiente y sostiene al grupo en momentos difíciles.</div>
+        <div class="disc-job">RRHH · Customer success · Soporte · Counselor</div>
+        <div class="disc-desc">Paciente y leal. Trabajo en equipo. Sostiene al grupo en momentos difíciles.</div>
         <div class="disc-character">Como <strong>Hagrid</strong> en Harry Potter</div>
       </div>
     </div>
 
-    <div class="disc-card C">
+    <div class="disc-card">
       <div class="disc-photo" style="background-image: url('img/disc-c.webp');"></div>
       <div class="disc-content">
         <div class="disc-letter">C</div>
         <div class="disc-name">Cumplimiento</div>
-        <div class="disc-job">Contador · Ingeniero · Analista · QA</div>
-        <div class="disc-desc">Precisión y datos. Analiza antes de decidir. Comunicación basada en hechos. Cumple estándares y cuida los detalles.</div>
-        <div class="disc-character">Como <strong>Sheldon Cooper</strong> en The Big Bang Theory</div>
+        <div class="disc-job">Operaciones · Contador · Ingeniero · QA</div>
+        <div class="disc-desc">Precisión y procesos. Analiza antes de decidir. Cuida los detalles.</div>
+        <div class="disc-character">Como <strong>Sheldon Cooper</strong> en Big Bang</div>
       </div>
     </div>
 
   </div>
+  <div class="footer">SHARKTALENTS.AI</div>
 </section>
 
-<!-- ============ SLIDE 9 — VELNA ============ -->
-<section class="slide" id="s9">
-  <div class="slide-number">09 / 13</div>
-  <h3>Capacidad cognitiva · VELNA</h3>
-  <h2>Cómo piensa, razona y resuelve.</h2>
-
-  <div class="velna-grid">
-    <div class="velna-card">
-      <div class="letter">V</div>
-      <div class="dim">Verbal</div>
-      <div class="what">Comprensión y uso del lenguaje.</div>
-      <div class="use">Útil para: comunicación, ventas, atención al cliente.</div>
-    </div>
-    <div class="velna-card">
-      <div class="letter">E</div>
-      <div class="dim">Espacial</div>
-      <div class="what">Manejo de formas, espacios y relaciones visuales.</div>
-      <div class="use">Útil para: diseño, ingeniería, arquitectura, operaciones físicas.</div>
-    </div>
-    <div class="velna-card">
-      <div class="letter">L</div>
-      <div class="dim">Lógica</div>
-      <div class="what">Razonamiento estructurado y solución de problemas.</div>
-      <div class="use">Útil para: programación, análisis, planificación.</div>
-    </div>
-    <div class="velna-card">
-      <div class="letter">N</div>
-      <div class="dim">Numérica</div>
-      <div class="what">Manejo de números, cálculo y datos cuantitativos.</div>
-      <div class="use">Útil para: finanzas, contabilidad, control de gestión.</div>
-    </div>
-    <div class="velna-card">
-      <div class="letter">A</div>
-      <div class="dim">Abstracta</div>
-      <div class="what">Reconocer patrones y resolver problemas nuevos.</div>
-      <div class="use">Útil para: estrategia, innovación, roles de liderazgo.</div>
-    </div>
-  </div>
+<!-- ============ SLIDE 11 — Frase de impacto 3 (BEIGE) ============ -->
+<section class="slide beige impacto" id="s11">
+  <div class="slide-number">11 / 15</div>
+  <div class="pretitle">La presión de arriba</div>
+  <h1>Cuando los nuevos<br>no duran, la pregunta<br>del CEO <span class="accent">va para ti</span>.</h1>
+  <div class="divider"></div>
+  <div class="firma">SHARKTALENTS.AI</div>
 </section>
 
-<!-- ============ SLIDE 10 — Reporte multi-candidato ============ -->
-<section class="slide" id="s10">
-  <div class="slide-number">10 / 13</div>
-  <h3>El reporte que recibes</h3>
+<!-- ============ SLIDE 13 — Reporte finalistas (NAVY) ============ -->
+<section class="slide navy" id="s12">
+  <div class="slide-number">12 / 15</div>
+  <div class="pretitle">El reporte que recibes</div>
   <h2>Tus 3 o 4 finalistas,<br>uno al lado del otro.</h2>
-
   <div class="report-mock">
     <div class="header">
       <div>
-        <div class="title">REPORTE DE FINALISTAS</div>
+        <div class="title">Reporte de finalistas</div>
         <div class="subtitle">Comparativo de candidatos · puesto: [tu puesto]</div>
       </div>
-      <div style="color: var(--fg-dim); font-size: 12px;">Powered by SharkTalents</div>
+      <div style="color: var(--gris); font-size: 11px; font-family: 'Oswald', sans-serif; letter-spacing: 2px;">SHARKTALENTS</div>
     </div>
-
     <div class="report-mock-grid">
       <div class="h">Dimensión</div>
       <div class="h candidato-name">María</div>
@@ -1139,7 +1175,7 @@
       <div class="h candidato-name">Carla</div>
       <div class="h candidato-name">Diego</div>
 
-      <div class="c">Match DISC con jefe</div>
+      <div class="c">Fit con el jefe</div>
       <div class="score-good">92%</div>
       <div class="score-mid">71%</div>
       <div class="score-good">88%</div>
@@ -1168,90 +1204,58 @@
       <div class="c">Consultivo</div>
       <div class="c">Balanceado</div>
       <div class="c">Autónomo</div>
-
-      <div class="c">Resumen ejecutivo</div>
-      <div class="c" style="grid-column: span 4; padding-top: 16px; border-top: 1px solid var(--border);">
-        Análisis cualitativo de cada candidato escrito por nuestro equipo + IA, con fortalezas, áreas a explorar en entrevista y recomendación final.
-      </div>
     </div>
   </div>
+  <div class="footer">SHARKTALENTS.AI</div>
 </section>
 
-<!-- ============ SLIDE 11 — Garantías reales ============ -->
-<section class="slide" id="s11">
-  <div class="slide-number">11 / 13</div>
-  <h3>Lo que te garantizamos</h3>
-  <h2>Sin humo. Lo que realmente cumplimos.</h2>
-
-  <div class="garantia-grid">
-    <div class="garantia-card">
-      <div class="icon">📋</div>
-      <div class="title">3 a 4 candidatos finalistas</div>
-      <div class="desc">Todos filtrados por las dimensiones que definimos contigo en el perfil del puesto. Los que llegan a tu mesa cumplen lo que pediste.</div>
-    </div>
-
-    <div class="garantia-card">
-      <div class="icon">⏱️</div>
-      <div class="title">15 a 21 días hábiles</div>
-      <div class="desc">Tiempo de búsqueda y evaluación contado desde que recibimos el primer pago. Los puestos más difíciles tienden al límite superior.</div>
-    </div>
-
-    <div class="garantia-card">
-      <div class="icon">🔄</div>
-      <div class="title">Rebúsqueda si no cumplen</div>
-      <div class="desc">Si los finalistas no cumplen lo definido al inicio — idioma, años de experiencia, dominio técnico — repetimos la búsqueda sin costo extra.</div>
-    </div>
-
-    <div class="garantia-card">
-      <div class="icon">📐</div>
-      <div class="title">Perfil de cargo estructurado</div>
-      <div class="desc">Dedicamos tiempo real a armar el perfil antes de empezar. Si está claro lo que necesitas, la búsqueda funciona bien desde el primer intento.</div>
-    </div>
+<!-- ============ SLIDE 14 — Precio (BEIGE) ============ -->
+<section class="slide beige" id="s13">
+  <div class="slide-number">13 / 15</div>
+  <div class="pretitle">Inversión</div>
+  <h2>El precio<br>no lo escondemos.</h2>
+  <div class="divider"></div>
+  <div class="precio-hero">
+    <div class="precio-num">1.2x</div>
+    <div class="precio-x">el salario mensual<br>del puesto a contratar</div>
   </div>
+  <div class="precio-detail">
+    <div class="label">Forma de pago</div>
+    50% al firmar contrato. La búsqueda activa empieza ese mismo día.<br>
+    50% al entregar tus 3 o 4 finalistas con reporte completo.
+  </div>
+  <div class="precio-final">No negociamos el precio. Negociamos qué buscas.</div>
+  <div class="footer">SHARKTALENTS.AI</div>
 </section>
 
-<!-- ============ SLIDE 12 — Modelo de pago + Plus ============ -->
-<section class="slide" id="s12">
-  <div class="slide-number">12 / 13</div>
-  <h3>Modelo de pago</h3>
-  <h2>Simple. Dos tractos.</h2>
-
-  <div class="pago-row">
-    <div class="pago-card tract-1">
-      <div class="tract">PRIMER TRACTO</div>
-      <div class="pct">50%</div>
-      <div class="desc">Al firmar el contrato te enviamos un link de pago. Pagas y arrancan los 15 a 21 días de búsqueda.</div>
-    </div>
-    <div class="pago-card tract-2">
-      <div class="tract">SEGUNDO TRACTO</div>
-      <div class="pct">50%</div>
-      <div class="desc">Al entregarte el reporte con tus finalistas. Mismo flujo: link, monto claro, pago directo.</div>
-    </div>
+<!-- ============ SLIDE 15 — Logos clientes (NAVY) ============ -->
+<section class="slide navy" id="s14">
+  <div class="slide-number">14 / 15</div>
+  <div class="pretitle">Quienes ya nos confiaron</div>
+  <h2>Empresas que <span class="accent">decidieron</span><br>con datos.</h2>
+  <div class="divider"></div>
+  <p class="logos-intro">Alpha Trading, Maxi Gold, Importadora Panamá, Latam Vaping y Grupo 19 (Kava + Aria), entre otros. Cada búsqueda con resultados que defendieron en su junta.</p>
+  <div class="logos-grid">
+    <div class="logo-card alpha-card"><img src="img/clientes/alpha.png" alt="Alpha Trading"></div>
+    <div class="logo-card"><img src="img/clientes/aria.png" alt="Aria"></div>
+    <div class="logo-card"><img src="img/clientes/maxigold.png" alt="Maxi Gold"></div>
+    <div class="logo-card"><img src="img/clientes/importadora-panama.png" alt="Importadora Panamá"></div>
+    <div class="logo-card"><img src="img/clientes/kava.png" alt="Kava"></div>
+    <div class="logo-card"><img src="img/clientes/latam-vaping.avif" alt="Latam Vaping"></div>
   </div>
-
-  <div class="plus-box">
-    <div class="plus-title">✨ Plus sin costo adicional</div>
-    <div class="plus-text">Inglés y Mindset incluidos si los activamos al armar el perfil de cargo.</div>
-    <div class="plus-note">Suman 2 capas extra de filtrado sin costo, siempre que se definan al inicio. Las dos evaluaciones se aplican a todos los candidatos del proceso.</div>
-  </div>
-
-  <div class="warn-line">
-    Importante · Cambiar el perfil de cargo a mitad del proceso implica perder el primer tracto, ya que la búsqueda se rehace desde cero.
-  </div>
+  <div class="footer">SHARKTALENTS.AI</div>
 </section>
 
-<!-- ============ SLIDE 13 — CTA ============ -->
-<section class="slide cta" id="s13">
-  <div class="slide-number">13 / 13</div>
-  <div class="cta-headline">Decide con información,<br>no con intuición.</div>
-  <div class="cta-question">¿Cuál es el primer puesto<br>que cerramos juntos?</div>
-  <div class="cta-sub">
-    Chris Palma · SharkTalents
-  </div>
+<!-- ============ SLIDE 16 — CTA Final (BEIGE) ============ -->
+<section class="slide beige cta" id="s15">
+  <div class="slide-number">15 / 15</div>
+  <div class="pretitle">Tu próxima decisión</div>
+  <div class="cta-headline">Tu próxima contratación<br>puede ser una apuesta<br>o una <span class="accent">decisión</span>.</div>
+  <div class="cta-question">Tú eliges.</div>
+  <div class="footer">SHARKTALENTS.AI</div>
 </section>
 
 <script>
-  // Slide navigation
   const slides = document.querySelectorAll('.slide');
   const counter = document.getElementById('counter');
   let current = 0;
@@ -1284,7 +1288,6 @@
     }
   });
 
-  // Update counter as user scrolls manually
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting && entry.intersectionRatio > 0.5) {

@@ -1307,10 +1307,15 @@ export async function diagCreateTestCandidate(ctx: RequestContext): Promise<void
     const { env } = await import('../lib/env.js');
 
     // 1. Buscar el Job para sacar tenant_id.
+    // ROWID en Catalyst es bigint — comparar como número, no como string con quotes.
     type JobRow = { ROWID: string; tenant_id: string; title: string };
+    if (!/^\d+$/.test(body.job_id)) {
+      sendJson(ctx.res, 400, { error: 'job_id debe ser numérico (ROWID)' });
+      return;
+    }
     const jobs = unwrapRows<JobRow>(
       (await zcql(ctx.req).executeZCQLQuery(
-        `SELECT ROWID, tenant_id, title FROM Jobs WHERE ROWID = '${escapeSql(body.job_id)}' LIMIT 1`,
+        `SELECT ROWID, tenant_id, title FROM Jobs WHERE ROWID = ${escapeSql(body.job_id)} LIMIT 1`,
       )) as unknown[],
       'Jobs',
     );
@@ -3597,5 +3602,93 @@ export async function diagCleanupTestJobs(ctx: RequestContext): Promise<void> {
     });
   } catch (err) {
     sendJson(ctx.res, 500, { error: (err as Error).message });
+  }
+}
+
+/**
+ * Diag: dispara generación de preguntas video para una Application existente, SIN auth tenant.
+ * Lo mismo que POST /api/applications/:id/videos/generate pero accesible con INTERNAL_API_KEY
+ * para testing E2E sin login Clerk.
+ *
+ * Uso:
+ *   curl -X POST $URL/api/admin/_diag-generate-videos-for-app \
+ *     -H "X-Internal-Key: $K" \
+ *     -d '{"application_id":"<rowid>"}'
+ */
+export async function diagGenerateVideosForApp(ctx: RequestContext): Promise<void> {
+  requireInternalKey(ctx);
+  try {
+    const body = await readJsonBody<{ application_id: string }>(ctx.req);
+    if (!body.application_id) throw new ValidationError('application_id required');
+    const appId = body.application_id;
+    if (!/^\d+$/.test(appId)) {
+      sendJson(ctx.res, 400, { error: 'application_id debe ser numérico (ROWID)' });
+      return;
+    }
+
+    const { escapeSql } = await import('../lib/dbHelpers.js');
+
+    const results = unwrapRows<{ ROWID: string; candidate_id: string; assessment_id: string; pipeline_stage: string }>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT ROWID, candidate_id, assessment_id, pipeline_stage FROM Results WHERE ROWID = ${escapeSql(appId)} LIMIT 1`,
+      )) as unknown[],
+      'Results',
+    );
+    const result = results[0];
+    if (!result) {
+      sendJson(ctx.res, 404, { error: 'Application not found' });
+      return;
+    }
+
+    const jobs = unwrapRows<{ ROWID: string; title: string; company: string; cognitive_level: string; company_context: string }>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT ROWID, title, company, cognitive_level, company_context FROM Jobs WHERE ROWID = ${escapeSql(result.assessment_id)} LIMIT 1`,
+      )) as unknown[],
+      'Jobs',
+    );
+    const job = jobs[0];
+
+    const cands = unwrapRows<{ name: string }>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT name FROM Candidates WHERE ROWID = ${escapeSql(result.candidate_id)} LIMIT 1`,
+      )) as unknown[],
+      'Candidates',
+    );
+    const candidate = cands[0];
+
+    const { generateVideoQuestions } = await import('../lib/videoQuestionsGenerator.js');
+    const questions = await generateVideoQuestions({
+      jobTitle: job?.title ?? '',
+      jobCompany: job?.company ?? '',
+      jobContext: job?.company_context ?? '',
+      cognitiveLevel: (job?.cognitive_level as 'basic' | 'mid' | 'senior') ?? 'mid',
+      requiresEnglish: false,
+      candidateName: candidate?.name ?? 'Candidato',
+      scores: {},
+      integrityDimensions: [],
+      weaknesses: [],
+      traceId: ctx.traceId,
+    });
+
+    const { persistVideoQuestions } = await import('../lib/videoPersistence.js');
+    const persistResult = await persistVideoQuestions(ctx.req, appId, questions);
+
+    sendJson(ctx.res, 200, {
+      application_id: appId,
+      job: job ? { id: job.ROWID, title: job.title, company: job.company } : null,
+      candidate: candidate ? { name: candidate.name } : null,
+      generated: questions.length,
+      persisted: persistResult.persisted,
+      table_missing: persistResult.tableMissing,
+      pipeline_stage: result.pipeline_stage,
+    });
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      sendJson(ctx.res, 400, { error: err.message });
+      return;
+    }
+    const e = err as Error;
+    log.error('diag-generate-videos-for-app: ERROR', { message: e.message, stack: e.stack?.slice(0, 500) });
+    sendJson(ctx.res, 500, { error: e.message });
   }
 }

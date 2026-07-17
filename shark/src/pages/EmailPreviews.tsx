@@ -47,7 +47,7 @@ Hacela en un lugar tranquilo, sin interrupciones — no salgas de la pestaña ni
 
 El siguiente paso es la evaluación conductual: DISC + cognitiva (VELNA) + emoción. Tarda 15-20 minutos.
 
-Tip: hacela cuando estés tranquila/o. Las respuestas espontáneas son las que reflejan mejor tu perfil.`,
+Tip: hazla cuando estés tranquila/o. Las respuestas espontáneas son las que reflejan mejor tu perfil.`,
     cta: 'Empezar evaluación conductual',
     channels: ['email', 'whatsapp'],
   },
@@ -75,7 +75,7 @@ Tu información queda en nuestra base. Si surge un puesto que matchee mejor con 
 
 Después de nuestra reunión, nuestra IA armó un borrador del perfil del puesto basándose en lo que conversamos.
 
-Lo podés revisar acá. Si está bien, lo aprobás y empezamos a buscar candidatos. Si querés ajustar algo, dejá comentarios y lo actualizamos.
+Lo puedes revisar aquí. Si está bien, lo apruebas y empezamos a buscar candidatos. Si quieres ajustar algo, deja comentarios y lo actualizamos.
 
 Tarda 5 minutos revisarlo.`,
     cta: 'Revisar y aprobar perfil',
@@ -92,7 +92,7 @@ Te vamos a avisar cuando:
 • Lleguen los primeros 5-10 candidatos al funnel
 • Tengamos finalistas listos para entrevista (3 candidatos top)
 
-Mientras tanto, podés ver el avance en tiempo real en tu portal.`,
+Mientras tanto, puedes ver el avance en tiempo real en tu portal.`,
     cta: 'Ver avance del puesto',
     channels: ['email'],
   },
@@ -105,7 +105,7 @@ Mientras tanto, podés ver el avance en tiempo real en tu portal.`,
 
 {{finalists.count}} candidatos pasaron todas las pruebas (técnica, conductual, integridad y videos cortos). Te preparamos un reporte con análisis IA por candidato, comparativo, riesgos y recomendación final.
 
-Click abajo, lo revisás en 5 min, y nos decís a quién querés entrevistar.`,
+Click abajo, lo revisas en 5 min, y nos dices a quién quieres entrevistar.`,
     cta: 'Ver reporte de finalistas',
     channels: ['email', 'whatsapp'],
   },
@@ -121,7 +121,7 @@ Click abajo, lo revisás en 5 min, y nos decís a quién querés entrevistar.`,
 • {{funnel.conductual_done}} completaron la conductual
 • ETA finalistas: {{funnel.eta}}
 
-No tenés que hacer nada. Te avisamos cuando estén los finalistas.`,
+No tienes que hacer nada. Te avisamos cuando estén los finalistas.`,
     cta: 'Ver detalle del funnel',
     channels: ['email'],
   },
@@ -258,7 +258,7 @@ export default function EmailPreviews() {
               <div className="email-body">{t.body}</div>
               <button className="email-cta-btn">{t.cta}</button>
               <div className="email-footer">
-                Powered by <span className="email-brand">SharkTalents.AI</span> · Si no querés recibir estos emails, <a>desuscribirte acá</a>
+                Powered by <span className="email-brand">SharkTalents.AI</span> · Si no quieres recibir estos emails, <a>desuscribirte aquí</a>
               </div>
             </div>
             <div className="email-vars-hint">

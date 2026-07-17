@@ -122,11 +122,11 @@ export async function buildVelnaSubtestsFromReal(level: CognitiveLevel): Promise
  * al formato que la UI mock actual espera. La UI mock usa `most_axis/least_axis`.
  *
  * IMPORTANTE: el v1 NO usa most/least — es single-select. Esta función adapta para
- * que la UI tipo "elegí más como yo / menos como yo" siga funcionando, mapeando:
+ * que la UI tipo "elige más como yo / menos como yo" siga funcionando, mapeando:
  *   most = la opción que el candidato eligió (es la dim que aporta +1)
  *   least = se calcula automáticamente como la opción opuesta (NO se pregunta)
  *
- * Si querés migrar la UI a single-select puro, ese es otro refactor de pantallas.
+ * Si quieres migrar la UI a single-select puro, ese es otro refactor de pantallas.
  */
 export type RealDiscQuestion = DiscQuestionV2;
 

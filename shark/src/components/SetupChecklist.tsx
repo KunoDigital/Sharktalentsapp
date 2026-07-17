@@ -53,14 +53,14 @@ export default function SetupChecklist() {
     {
       id: 'team',
       title: 'Invitar a tu equipo',
-      desc: 'Sumá colaboradores con roles (admin / recruiter / cliente). Opcional si trabajás solo.',
+      desc: 'Suma colaboradores con roles (admin / recruiter / cliente). Opcional si trabajas solo.',
       cta: { label: 'Invitar', to: '/settings' },
       isDone: () => false,
     },
     {
       id: 'first_client',
       title: 'Atender tu primer cliente',
-      desc: 'Cuando un cliente agenda discovery call → la IA arma un draft → vos revisás → publicás el puesto.',
+      desc: 'Cuando un cliente agenda discovery call → la IA arma un draft → tú revisas → publicas el puesto.',
       cta: { label: 'Ver drafts', to: '/drafts' },
       isDone: () => false,
     },

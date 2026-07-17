@@ -312,7 +312,7 @@ function DraftApproval({ draft, token, draftId }: { draft: PortalDraftPayload; t
     if (!draftId) {
       // Fallback: si no tenemos draftId (modo demo/mock), avisar al cliente
       // que use el link específico del email del draft.
-      setSubmitError('Para aprobar el perfil del puesto, usá el link que te llegó por email.');
+      setSubmitError('Para aprobar el perfil del puesto, usa el link que te llegó por email.');
       return;
     }
     setSubmitting(true);
@@ -323,7 +323,7 @@ function DraftApproval({ draft, token, draftId }: { draft: PortalDraftPayload; t
         if (!res || !res.ok) throw new Error('No se pudo aprobar');
       } else if (decision === 'request_changes') {
         if (!comment.trim()) {
-          setSubmitError('Antes de pedir cambios, escribí qué necesitás ajustar.');
+          setSubmitError('Antes de pedir cambios, escribe qué necesitas ajustar.');
           setSubmitting(false);
           return;
         }
@@ -343,7 +343,7 @@ function DraftApproval({ draft, token, draftId }: { draft: PortalDraftPayload; t
     return (
       <section className="cp-section cp-draft-thanks">
         <h2 className="cp-section-title">✓ Recibimos tu respuesta</h2>
-        <p>Te avisamos por email cuando tengamos novedades. Mientras tanto, podés cerrar esta pestaña tranquila.</p>
+        <p>Te avisamos por email cuando tengamos novedades. Mientras tanto, puedes cerrar esta pestaña tranquila.</p>
       </section>
     );
   }
@@ -426,7 +426,7 @@ function DraftApproval({ draft, token, draftId }: { draft: PortalDraftPayload; t
       </details>
 
       <div className="cp-draft-decision">
-        <div className="cp-draft-decision-title">¿Cómo querés seguir?</div>
+        <div className="cp-draft-decision-title">¿Cómo quieres seguir?</div>
         <button
           className={`cp-dec-btn cp-dec-approve ${decision === 'approve' ? 'is-selected' : ''}`}
           onClick={() => setDecision(decision === 'approve' ? null : 'approve')}
@@ -486,7 +486,7 @@ function DraftApproval({ draft, token, draftId }: { draft: PortalDraftPayload; t
         {decision === 'request_changes' && (
           <textarea
             className="cp-draft-comment"
-            placeholder="Contanos qué cambiarías. Ej: 'el rango salarial debería ser más alto' o 'agreguen experiencia en SAP como requisito'."
+            placeholder="Cuéntanos qué cambiarías. Ej: 'el rango salarial debería ser más alto' o 'agreguen experiencia en SAP como requisito'."
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             rows={4}
@@ -496,7 +496,7 @@ function DraftApproval({ draft, token, draftId }: { draft: PortalDraftPayload; t
         {decision === 'approve' && (
           <textarea
             className="cp-draft-comment"
-            placeholder="Comentario opcional (algo que querés que recordemos)..."
+            placeholder="Comentario opcional (algo que quieres que recordemos)..."
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             rows={2}
@@ -505,7 +505,7 @@ function DraftApproval({ draft, token, draftId }: { draft: PortalDraftPayload; t
 
         {decision === 'talk' && (
           <p className="cp-draft-hint">
-            Te vamos a llamar dentro de las próximas 24h para coordinar. Si querés que sea antes, escribime a{' '}
+            Te vamos a llamar dentro de las próximas 24h para coordinar. Si quieres que sea antes, escríbeme a{' '}
             <a className="cp-help-link" href="mailto:cris@kunodigital.com">cris@kunodigital.com</a>.
           </p>
         )}

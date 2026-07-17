@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Plan de trabajo SharkTalents — 2026-06-04</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #fafafa;
+      color: #1f2937;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    h1 { margin-top: 0; }
+    h2 { margin-top: 32px; padding-bottom: 8px; border-bottom: 2px solid #e5e7eb; }
+    h3 { color: #1f2937; margin-top: 24px; }
+    .updated { color: #6b7280; font-size: 14px; margin-top: -8px; }
+
+    .legend {
+      display: inline-flex;
+      gap: 16px;
+      padding: 8px 16px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .summary {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 24px;
+    }
+    .summary table { width: 100%; border-collapse: collapse; }
+    .summary th, .summary td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    .summary th { background: #f9fafb; font-weight: 600; }
+
+    .markmap-container {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .markmap { width: 100%; height: 600px; }
+
+    .phase {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 16px;
+    }
+    .phase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .phase-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .phase-tag.now { background: #dcfce7; color: #15803d; }
+    .phase-tag.next { background: #fef3c7; color: #92400e; }
+    .phase-tag.decide { background: #ede9fe; color: #6d28d9; }
+
+    .severity-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .severity-critical { background: #fee2e2; color: #991b1b; }
+    .severity-high { background: #fed7aa; color: #9a3412; }
+    .severity-medium { background: #fef3c7; color: #92400e; }
+
+    .method-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      background: #fff;
+    }
+    .method-table th, .method-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border: 1px solid #e5e7eb;
+      vertical-align: top;
+      font-size: 13px;
+    }
+    .method-table th {
+      background: #f9fafb;
+      font-weight: 600;
+      width: 18%;
+    }
+    .method-table td code {
+      background: #f3f4f6;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    .risk-bar {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .risk-bajo { background: #dcfce7; color: #15803d; }
+    .risk-medio { background: #fef3c7; color: #92400e; }
+    .risk-alto { background: #fee2e2; color: #991b1b; }
+
+    .analogy {
+      background: #f0f9ff;
+      border-left: 4px solid #0284c7;
+      padding: 10px 14px;
+      margin: 10px 0;
+      font-size: 13px;
+      color: #075985;
+    }
+    .analogy::before { content: "🔍 "; }
+
+    .decision-box {
+      background: #faf5ff;
+      border: 2px dashed #a855f7;
+      padding: 14px 16px;
+      border-radius: 8px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .decision-box::before { content: "🎯 "; font-weight: 700; }
+
+    .help {
+      padding: 12px 16px;
+      background: #fef9c3;
+      border-radius: 6px;
+      color: #713f12;
+      font-size: 14px;
+      margin-top: 16px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+    .tab-buttons button {
+      padding: 10px 18px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 6px 6px 0 0;
+      border-bottom: none;
+    }
+    .tab-buttons button.active {
+      background: #1f2937;
+      color: #fff;
+      border-color: #1f2937;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body>
+  <h1>📋 Plan de trabajo — 4 de junio 2026</h1>
+  <p class="updated">Auditoría backend (27) + organización archivos grandes (3) + webhook Recruit registro candidato (NUEVO) + presupuesto 20% por puesto · Actualizado con decisiones de Cris</p>
+
+  <div class="legend">
+    <span>🔴 Crítico</span>
+    <span>🟠 Alto</span>
+    <span>🟡 Medio</span>
+    <span>🟢 Listo</span>
+  </div>
+
+  <h2>Resumen ejecutivo</h2>
+
+  <div class="summary">
+    <table>
+      <thead>
+        <tr><th>Tema</th><th>🔴 Crítico</th><th>🟠 Alto</th><th>🟡 Medio</th><th>Total</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Auditoría de seguridad backend</td><td>6</td><td>15</td><td>6</td><td>27</td></tr>
+        <tr><td>Organización de archivos grandes (File Store)</td><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+        <tr><td>Webhook Recruit → SharkTalents (registro candidato) <strong style="color:#7c3aed;">NUEVO</strong></td><td>0</td><td>1</td><td>0</td><td>1</td></tr>
+        <tr><td>Presupuesto 20% por puesto (= crítico #5 expandido)</td><td>1</td><td>0</td><td>0</td><td>1</td></tr>
+        <tr style="font-weight:bold; background:#f9fafb;"><td>TOTAL</td><td>7</td><td>17</td><td>8</td><td>32</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top: 16px;">
+      <strong>Riesgo más urgente:</strong> Puerta trasera de Playwright en login + Posible secuestro del tenant SharkTalents (los dos críticos #1 y #2).
+    </p>
+    <p style="margin: 8px 0 0 0; color: #6b7280; font-size: 14px;">
+      Auditoría hecha con 4 agentes paralelos + verificación adversarial de 3 lentes por hallazgo. 96 votos de revisores; 27 problemas pasaron el umbral de "real". 5 findings descartados como falsos positivos.
+    </p>
+  </div>
+
+  <h2>Vista general — Mind map</h2>
+
+  <div class="markmap-container">
+    <div class="markmap">
+# Plan 2026-06-04
+
+## 🔥 Fase 1 — HOY (~30 min)
+### 🔴 #1 Puerta trasera de Playwright
+- Archivo: lib/auth.ts
+- Riesgo: BAJO
+- 10 min
+### 🔴 #4 Cron manda emails duplicados
+- Archivo: features/outbox.ts
+- Riesgo: BAJO
+- 15 min
+### 🔴 #3 Recruit sync sin chequeo de cliente
+- Archivo: features/admin.ts
+- Riesgo: BAJO
+- 15 min
+
+## ⚠️ Fase 2 — PRÓXIMA (~45 min)
+### 🔴 #2 Secuestro del tenant SharkTalents
+- Archivo: features/marketing.ts
+- Riesgo: MEDIO
+- Necesita investigación previa
+
+## 🎯 Fase 3 — Decisiones cerradas + implementar
+### 🔴 #5 Presupuesto 20% del fee
+- ✅ Campo fee_usd en Jobs (cargas manual)
+- ✅ LinkedIn manual (max histórico $80)
+- ✅ Alerta al 80% y 100% (NO bloquear)
+- Post-mortem si se pasa
+### 🔴 #6 Borradores de Zia huérfanos
+- ¿Salvamos los existentes?
+
+## 🆕 Fase 3.5 — Webhook Recruit registro
+### Pedido de Cristian
+- Candidato se registra en Recruit
+- Recruit → webhook → SharkTalents
+- SharkTalents crea Application
+- SharkTalents toma todos los mensajes
+### Estado
+- Webhook EXISTE pero solo escucha cambios de estado
+- Falta evento candidate.created
+- Falta config workflow rule en Recruit
+
+## 📦 Fase 4 — Archivos grandes (File Store)
+### Confirmar UI de pegado
+- 20 min
+### Decisión de esquema de carpetas
+- Opción A: 5 folders por tipo
+- Opción B: 1 folder + naming rico
+- Opción C: combinación (sugerido)
+### Cobertura a otros 5 campos
+- 1.5-2 hs
+
+## 🔁 Fase 5 — 21 no-críticos
+### 🟠 15 altos
+### 🟡 6 medios
+- Atacar en bloques entre go-live y fin mayo
+    </div>
+  </div>
+
+  <h2>Análisis de los 6 críticos — Metodología problema por problema</h2>
+
+  <div class="tab-buttons">
+    <button class="active" onclick="showTab(this, 1)">#1 Backdoor Playwright</button>
+    <button onclick="showTab(this, 2)">#2 Secuestro tenant</button>
+    <button onclick="showTab(this, 3)">#3 Recruit cross-tenant</button>
+    <button onclick="showTab(this, 4)">#4 Emails duplicados</button>
+    <button onclick="showTab(this, 5)">#5 Costo Anthropic</button>
+    <button onclick="showTab(this, 6)">#6 Drafts huérfanos</button>
+  </div>
+
+  <!-- ============ #1 ============ -->
+  <div class="tab-content active" id="tab-1">
+    <div class="phase">
+      <div class="phase-header">
+        <div>
+          <span class="severity-badge severity-critical">CRÍTICO #1</span>
+          <strong style="margin-left: 8px;">Puerta trasera de Playwright en el login</strong>
+        </div>
+        <span class="phase-tag now">Fase 1 — HOY</span>
+      </div>
+
+      <div class="analogy">
+        Es como dejar la llave maestra del depósito en el felpudo de la entrada. Cualquiera que pase y conozca el felpudo, entra.
+      </div>
+
+      <table class="method-table">
+        <tr><th>Síntoma</th><td>Si en Catalyst Console queda activa la variable <code>E2E_TEST_KEY</code> (la llave que usa Playwright para los tests), cualquiera que mande un header con esa llave pasa el login como si fuera vos.</td></tr>
+        <tr><th>Causa</th><td>El código de login lee esa variable en cada request sin chequear si está en producción. Está pensada solo para tests locales.</td></tr>
+        <tr><th>Archivo</th><td><code>functions/api/src/lib/auth.ts:20-38</code></td></tr>
+        <tr><th>Fix</th><td>Agregar 1 línea al inicio: si <code>CATALYST_ENVIRONMENT === 'Production'</code> ignorar la llave de tests. ~5 líneas en total.</td></tr>
+        <tr><th>Qué más toca</th><td>Casi todos los endpoints usan esta función para autenticar. <strong>El cambio NO toca el flujo normal</strong> — solo agrega un candado en producción. Usuarios logueados con Clerk siguen funcionando igual.</td></tr>
+        <tr><th>Validación ANTES</th><td>Abrir Catalyst Console → Functions → api → Environment Variables → verificar si <code>E2E_TEST_KEY</code> está seteada. Si está, hay riesgo activo ahora mismo.</td></tr>
+        <tr><th>Validación DESPUÉS</th><td>1) Tu login normal con Clerk sigue andando — abrís la app, login → OK. 2) Tests de Playwright contra prod fallan (esperado y deseado). 3) Tests locales (apuntando a localhost) siguen andando.</td></tr>
+        <tr><th>Riesgo de romper</th><td><span class="risk-bar risk-bajo">BAJO</span> Solo agrega un check, no remueve lógica existente.</td></tr>
+        <tr><th>Cómo deshago si rompe</th><td>Revertir el commit del archivo <code>auth.ts</code>. Cambio quirúrgico, fácil de revertir.</td></tr>
+        <tr><th>Estimación</th><td>10 min código + 5 min prueba</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ #2 ============ -->
+  <div class="tab-content" id="tab-2">
+    <div class="phase">
+      <div class="phase-header">
+        <div>
+          <span class="severity-badge severity-critical">CRÍTICO #2</span>
+          <strong style="margin-left: 8px;">Cualquiera puede secuestrar el tenant SharkTalents</strong>
+        </div>
+        <span class="phase-tag next">Fase 2 — PRÓXIMA</span>
+      </div>
+
+      <div class="analogy">
+        Es como tener un formulario "transferir mi empresa" protegido solo por una contraseña que está impresa en el cartel de afuera de la oficina.
+      </div>
+
+      <table class="method-table">
+        <tr><th>Síntoma</th><td>Hay un endpoint público (<code>linkMarketingTenant</code>) que sirve para vincular un lead a un tenant nuevo en Clerk. Está protegido por una "site key" que viaja en el JavaScript del browser — pública por diseño. Cualquiera la copia y secuestra el tenant.</td></tr>
+        <tr><th>Causa</th><td>El endpoint está marcado <code>auth:'public'</code> + verifica solo la site key, que es pública.</td></tr>
+        <tr><th>Archivo</th><td><code>functions/api/src/features/marketing.ts:2715-2761</code></td></tr>
+        <tr><th>Fix</th><td>Opción A: borrar la ruta, hacer linking vía script local con creds. Opción B: cambiar auth a <code>tenant</code> (requiere usuario logueado). <strong>Depende de cómo se usa hoy.</strong></td></tr>
+        <tr><th>Qué más toca</th><td>⚠️ <strong>Requiere investigación previa.</strong> ¿El botón "Convertir a Tenant" del Kanban llama a este endpoint o a otro? ¿Hay un flujo automático que dependa de esto?</td></tr>
+        <tr><th>Validación ANTES</th><td>1) Grep en código backend: <code>linkMarketingTenant</code>. 2) Grep en frontend: <code>_link_marketing_tenant</code>. 3) Probar el flujo "convertir lead a tenant" con un lead de prueba.</td></tr>
+        <tr><th>Validación DESPUÉS</th><td>1) El mismo flujo del admin sigue funcionando. 2) Desde curl con la site key extraída → debe devolver 401/403.</td></tr>
+        <tr><th>Riesgo de romper</th><td><span class="risk-bar risk-medio">MEDIO</span> Alto si hay flujo automático. Por eso lo dejo en Fase 2 — investigo antes.</td></tr>
+        <tr><th>Cómo deshago si rompe</th><td>Revertir router.ts + marketing.ts. Vuelve al estado vulnerable pero funcional.</td></tr>
+        <tr><th>Estimación</th><td>15 min investigación + 10 min código + 10 min prueba = ~35 min</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ #3 ============ -->
+  <div class="tab-content" id="tab-3">
+    <div class="phase">
+      <div class="phase-header">
+        <div>
+          <span class="severity-badge severity-critical">CRÍTICO #3</span>
+          <strong style="margin-left: 8px;">Endpoint de Recruit no chequea de qué cliente es el candidato</strong>
+        </div>
+        <span class="phase-tag now">Fase 1 — HOY</span>
+      </div>
+
+      <div class="analogy">
+        Una secretaria atiende llamadas y cualquier persona que llame diciendo "soy de empresa X, muévanme el legajo Y" recibe el cambio sin que la secretaria verifique que efectivamente sea de X.
+      </div>
+
+      <table class="method-table">
+        <tr><th>Síntoma</th><td>El endpoint <code>forceRecruitSync</code> sirve para forzar sync con Zoho Recruit. Hoy chequea que estés logueada pero NO que el candidato sea de tu cliente. Si yo soy cliente B y obtengo un ID de candidato de A, puedo cambiar su estado.</td></tr>
+        <tr><th>Causa</th><td>Hace <code>requireAuth</code> pero no <code>requireTenant</code> ni chequea el tenant del candidato.</td></tr>
+        <tr><th>Archivo</th><td><code>functions/api/src/features/admin.ts:967-1082</code></td></tr>
+        <tr><th>Fix</th><td>Antes de procesar: consultar "este resultId que me pasaron, ¿pertenece a un Job de mi tenant?". Si no → 404. 3 líneas.</td></tr>
+        <tr><th>Qué más toca</th><td>Si hay botón "Forzar sync con Recruit" en JobDetail o CandidateDetail, sigue funcionando porque vos siempre pasás candidatos de TU tenant. El check solo bloquea el caso malicioso.</td></tr>
+        <tr><th>Validación ANTES</th><td>⚠️ <strong>Importante:</strong> correr query <code>SELECT COUNT(*) FROM Results WHERE tenant_id IS NULL</code>. Si > 0, hay candidatos viejos sin tenant que el fix los bloquearía. Rellenar primero.</td></tr>
+        <tr><th>Validación DESPUÉS</th><td>1) El botón legítimo sigue funcionando. 2) Con un candidate_id falso (simulable en curl) → debe devolver 404.</td></tr>
+        <tr><th>Riesgo de romper</th><td><span class="risk-bar risk-bajo">BAJO</span> si todos los Results tienen tenant_id. <span class="risk-bar risk-medio">MEDIO</span> si hay huérfanos.</td></tr>
+        <tr><th>Cómo deshago si rompe</th><td>Revertir admin.ts. Vuelve al comportamiento actual (vulnerable pero funcional para casos normales).</td></tr>
+        <tr><th>Estimación</th><td>10 min código + 10 min chequeo huérfanos + 5 min prueba</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ #4 ============ -->
+  <div class="tab-content" id="tab-4">
+    <div class="phase">
+      <div class="phase-header">
+        <div>
+          <span class="severity-badge severity-critical">CRÍTICO #4</span>
+          <strong style="margin-left: 8px;">El cron de emails puede mandar el mismo email dos veces</strong>
+        </div>
+        <span class="phase-tag now">Fase 1 — HOY</span>
+      </div>
+
+      <div class="analogy">
+        Dos personas en la oficina agarran la misma carta del buzón sin avisarse, ambas la mandan. El destinatario recibe el mismo correo certificado dos veces.
+      </div>
+
+      <table class="method-table">
+        <tr><th>Síntoma</th><td>El cron del outbox (cada 5 min) puede agarrar los mismos eventos que vos clickeaste "Procesar ahora" en Settings al mismo segundo. El cliente recibe el mismo email dos veces (ej: "Tus finalistas están listos" duplicado).</td></tr>
+        <tr><th>Causa</th><td>Cuando el cron agarra eventos NO los marca como <code>processing</code>. La función gemela (procesamiento desde tenant) SÍ lo hace bien. Solo falta copiar ese patrón.</td></tr>
+        <tr><th>Archivo</th><td><code>functions/api/src/features/outbox.ts:202-272</code> · patrón correcto en línea 169</td></tr>
+        <tr><th>Fix</th><td>Antes de despachar, marcar como <code>processing</code>. Si OK → <code>sent</code>. Si falla → <code>pending</code> + razón.</td></tr>
+        <tr><th>Qué más toca</th><td>El dashboard "Outbox" verá un estado nuevo <code>processing</code> brevemente mientras el evento está en vuelo. Visual mejor que el actual que salta de pending a sent.</td></tr>
+        <tr><th>Validación ANTES</th><td>1) Abrir Settings → Outbox. 2) Si hay un evento <code>pending</code> tipo email-cliente, mandártelo a vos misma como test.</td></tr>
+        <tr><th>Validación DESPUÉS</th><td>1) Arrancar cron Y clickear "Procesar ahora" simultáneamente. 2) Esperar 30 seg. 3) Debe llegar 1 solo email a tu bandeja, no 2. 4) En Outbox debe haber 1 evento <code>sent</code>, no 2.</td></tr>
+        <tr><th>Riesgo de romper</th><td><span class="risk-bar risk-bajo">BAJO</span> El patrón ya está probado en la función gemela del mismo archivo.</td></tr>
+        <tr><th>Cómo deshago si rompe</th><td>Revertir outbox.ts. Vuelve al comportamiento actual (los duplicados son raros, requieren coincidencia al segundo).</td></tr>
+        <tr><th>Estimación</th><td>15 min código + 10 min prueba</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ #5 ============ -->
+  <div class="tab-content" id="tab-5">
+    <div class="phase">
+      <div class="phase-header">
+        <div>
+          <span class="severity-badge severity-critical">CRÍTICO #5</span>
+          <strong style="margin-left: 8px;">Presupuesto de costos por puesto = 20% del precio cobrado</strong>
+        </div>
+        <span class="phase-tag decide">Fase 3 — DECISIÓN TUYA</span>
+      </div>
+
+      <div class="analogy">
+        Es como darle un sobre con dinero a cada puesto para gastar (publicidad, IA, mensajes). El sobre tiene un techo: el 20% de lo que el cliente paga. Cuando se acaba, no se gasta más sin tu OK.
+      </div>
+
+      <table class="method-table">
+        <tr><th>Síntoma (sin fix)</th><td>Si un bug pone una llamada de IA en loop de reintentos (60/h × 24h × 30 días × $0.05 ≈ <strong>$2.160 USD silenciosos</strong>), o si la pauta de LinkedIn se va de mambo, los costos se comen el margen sin alarma.</td></tr>
+        <tr><th>Regla de negocio</th><td>
+          <strong>Costos totales del puesto ≤ 20% del precio cobrado al cliente.</strong><br>
+          Ejemplo: cobrás $1.500 → presupuesto total = $300 para repartir entre Anthropic + ZeptoMail + Twilio + pauta LinkedIn + storage.
+        </td></tr>
+        <tr><th>Causa</th><td>El código mide y registra costos DESPUÉS de cada llamada (en <code>JobCostEvents</code>). Antes de llamar no consulta el acumulado del puesto vs el presupuesto. Y además: <strong>el precio cobrado no está modelado en la base</strong> (la tabla Jobs no tiene campo <code>fee_usd</code>).</td></tr>
+        <tr><th>Archivos</th><td>
+          • Tabla <code>Jobs</code> (agregar columna <code>fee_usd</code>)<br>
+          • Frontend JobForm (input para cargar el precio al crear puesto)<br>
+          • Frontend JobDetail (input "agregar gasto LinkedIn ads")<br>
+          • <code>functions/api/src/lib/costTracking.ts</code> (agregar tipo "ads")<br>
+          • <code>functions/api/src/lib/budgetWatch.ts</code> (NUEVO — calcula % consumido + dispara alertas)<br>
+          • Cron/trigger que evalúa cada N min si algún puesto pasó el umbral
+        </td></tr>
+        <tr><th>Fix</th><td>
+          <strong>1.</strong> Agregar campo <code>fee_usd</code> en Jobs.<br>
+          <strong>2.</strong> Vos cargás el precio cuando creás el puesto + gastos de LinkedIn cuando hagas pauta.<br>
+          <strong>3.</strong> Después de cada gasto registrado en <code>JobCostEvents</code>: sumar acumulado del puesto, comparar contra <code>fee_usd × 0.20</code>.<br>
+          <strong>4.</strong> Alertas escalonadas:<br>
+          &nbsp;&nbsp;• 80% → alerta tipo "warning" (email a vos).<br>
+          &nbsp;&nbsp;• 100% → alerta "critical" + genera <strong>post-mortem automático</strong> en el JobDetail: "se gastaron $X (Y% del fee) — desglose: Anthropic $A, email $E, WhatsApp $W, ads $L. Lo más alto: [tipo]. Sugerencias: [análisis IA opcional]".<br>
+          <strong>5.</strong> NUNCA bloquea ningún flujo. El sistema avisa, registra, aprende.
+        </td></tr>
+        <tr><th>Qué más toca</th><td>
+          • Dashboard del JobDetail muestra barra "gastado X de presupuesto Y" con color (verde &lt;60%, naranja 60-80%, rojo &gt;100%).<br>
+          • Cuando se pasa: aparece tarjeta "Post-mortem del puesto" con el desglose y por qué.<br>
+          • Ningún call site existente cambia. Solo agregamos un observador.
+        </td></tr>
+        <tr><th>Decisiones cerradas ✅</th><td>
+          <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 12px 14px; border-radius: 6px;">
+            <strong>1. ¿De dónde sale el precio?</strong> ✅ <strong>Agregar campo <code>fee_usd</code> en Jobs.</strong> El fee NO sale del CRM del cliente — sale del Trato (Deal) de Zoho cuando Cris lo crea. Por ahora vos lo cargás manual al crear el puesto en SharkTalents.<br><br>
+            <strong>2. ¿LinkedIn entra en el 20%?</strong> ✅ <strong>Sí, carga manual</strong> (vos pegás el gasto en el JobDetail). Histórico: máximo $80 hasta ahora. Esto sirve para calibrar las alertas — un gasto de >$100 en LinkedIn ya debería ser raro.<br><br>
+            <strong>3. ¿Qué pasa al 80% y al 100%?</strong> ✅ <strong>SOLO ALERTAS. NUNCA bloquear el flujo.</strong> Filosofía de Cris: "el flujo no debe detenerse, solo aprender qué hicimos mal o por qué el puesto es más costoso". Cuando se pasa del 100%, el sistema genera un <strong>post-mortem automático</strong> identificando qué tipos de costo se dispararon (ej: "se generó IA 12 veces para tech questions cuando lo normal es 1-2 = bug"). Eso queda en el dashboard del puesto para aprender.<br><br>
+            <strong>4. Puestos sin <code>fee_usd</code> cargado.</strong> Filosofía coherente con (3): <strong>seguir trackeando, no bloquear, no alertar hasta que se cargue.</strong> Cuando se carga, el sistema retroactivamente calcula si ya se pasó del 20% y dispara alertas si corresponde.
+          </div>
+        </td></tr>
+        <tr><th>Validación ANTES</th><td>
+          • Mirar últimas 30 entradas en <code>JobCostEvents</code>. Sumar por puesto. ¿Cuánto es el peor caso real?<br>
+          • Comparar con un fee típico tuyo para ver qué porcentaje da hoy.
+        </td></tr>
+        <tr><th>Validación DESPUÉS</th><td>
+          1) Crear puesto con <code>fee_usd=100</code>. Umbral = $20. Disparar generaciones hasta cruzar $16 (80%) → debe llegar alerta warning. Cruzar $20 (100%) → alerta critical + post-mortem aparece en JobDetail.<br>
+          2) Verificar que el flujo SIGUE funcionando después del 100% (no bloquea).<br>
+          3) Crear puesto SIN <code>fee_usd</code>. Gastar. No debe alertar. Cargar el fee retroactivo → si ya pasó el 80%, debe alertar al momento de cargarlo.
+        </td></tr>
+        <tr><th>Riesgo de romper</th><td><span class="risk-bar risk-bajo">BAJO</span> Como no bloquea nada, no rompe ningún flujo. Solo agrega observabilidad.</td></tr>
+        <tr><th>Cómo deshago si rompe</th><td>Env var <code>BUDGET_ALERTS_ENABLED=false</code> apaga las alertas en caliente sin redeploy. El tracking en <code>JobCostEvents</code> sigue normal.</td></tr>
+        <tr><th>Estimación</th><td>
+          ~1.5h código (campo fee + budgetWatch + alertas + dashboard barra) + 30 min post-mortem auto + 30 min prueba ≈ <strong>2.5 horas</strong>
+        </td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ #6 ============ -->
+  <div class="tab-content" id="tab-6">
+    <div class="phase">
+      <div class="phase-header">
+        <div>
+          <span class="severity-badge severity-critical">CRÍTICO #6</span>
+          <strong style="margin-left: 8px;">Borradores de Zia quedan sin dueño</strong>
+        </div>
+        <span class="phase-tag decide">Fase 3 — DECISIÓN TUYA</span>
+      </div>
+
+      <div class="analogy">
+        Es como armar un legajo y guardarlo sin etiquetar a qué archivero pertenece. Existe, pero nadie lo encuentra al buscarlo.
+      </div>
+
+      <table class="method-table">
+        <tr><th>Síntoma</th><td>Cuando Zia transcribe una reunión, el backend genera un borrador del perfil del puesto con IA y lo guarda <strong>sin tenant_id</strong>. Quedan en el limbo: existen pero ningún listado los muestra (todos filtran por tenant).</td></tr>
+        <tr><th>Causa</th><td>El handler del evento <code>briefing.transcript_received</code> no recibe tenant_id en el payload — el campo no se está llenando aguas arriba en el webhook de Zia.</td></tr>
+        <tr><th>Archivo</th><td><code>functions/api/src/features/outbox.ts:666-677</code></td></tr>
+        <tr><th>Fix</th><td>Opción 1: Zia manda <code>meeting_id</code>, mapeamos a tenant_id. Opción 2: inferir del email del cliente en la reunión. Ambas requieren tocar <code>features/ziaWebhook.ts</code> también.</td></tr>
+        <tr><th>Qué más toca</th><td>Webhook de Zia + handler del evento.</td></tr>
+        <tr><th>Decisión tuya</th><td>
+          <div class="decision-box">
+            ¿Hay borradores ya en la tabla con <code>tenant_id=null</code> que querés conservar?<br>
+            • <strong>Sí</strong> → te paso lista, mapeamos uno a uno a su tenant correcto antes del fix.<br>
+            • <strong>No</strong> → los borramos y aplicamos fix de aquí en adelante.
+          </div>
+        </td></tr>
+        <tr><th>Validación ANTES</th><td><code>SELECT COUNT(*) FROM JobProfileDrafts WHERE tenant_id IS NULL</code>. Si > 0, mirar uno por uno para identificar de qué cliente eran.</td></tr>
+        <tr><th>Validación DESPUÉS</th><td>1) Generar transcript de prueba en Zia (reunión interna). 2) Verificar que aparece en DraftsList con tu tenant.</td></tr>
+        <tr><th>Riesgo de romper</th><td><span class="risk-bar risk-medio">MEDIO</span> Si Zia no manda meeting_id confiable, los próximos también quedan sin dueño. Mitigación: si no se puede determinar → no crear + alerta.</td></tr>
+        <tr><th>Cómo deshago si rompe</th><td>Revertir los dos archivos. Vuelve al comportamiento actual (huérfanos pero sin perder eventos).</td></tr>
+        <tr><th>Estimación</th><td>15 min investigación + 30 min código + 15 min prueba = ~60 min</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h2>🆕 Fase 3.5 — Webhook Recruit → SharkTalents al registrarse candidato</h2>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div>
+        <span class="severity-badge" style="background:#ede9fe; color:#6d28d9;">NUEVO</span>
+        <strong style="margin-left: 8px;">Pedido de Cristian — Recruit avisa a SharkTalents cuando entra candidato nuevo</strong>
+      </div>
+      <span class="phase-tag next">Fase 3.5</span>
+    </div>
+
+    <div class="analogy">
+      Hoy Recruit es como una recepcionista que recibe a candidatos pero no avisa a las áreas correspondientes. Lo que pedís: cuando entra un candidato, que la recepcionista llame a SharkTalents y diga "che, llegó Juan para el puesto X, manejalo vos".
+    </div>
+
+    <table class="method-table">
+      <tr><th>Pedido</th><td>Cuando un candidato se registra en Zoho Recruit, Recruit dispara un webhook a SharkTalents. SharkTalents crea automáticamente la Application en el Job correspondiente. A partir de ahí, <strong>todos los mensajes (email, WhatsApp) los manda SharkTalents</strong>, no Recruit. Cierra la arquitectura "Recruit = puerta de entrada + LinkedIn gratis, SharkTalents = todo el resto".</td></tr>
+      <tr><th>Estado actual</th><td>
+        ✅ Webhook EXISTE en <code>functions/api/src/features/zohoRecruitWebhook.ts</code>.<br>
+        ✅ Escucha 3 eventos: <code>candidate.status_changed</code>, <code>candidate.hired</code>, <code>candidate.rejected</code>.<br>
+        ❌ NO escucha el evento "candidato se registró por primera vez".<br>
+        ❌ NO hay workflow rule configurada en Zoho Recruit Console.
+      </td></tr>
+      <tr><th>Fix</th><td>
+        <strong>Parte backend (Claude):</strong><br>
+        1. Agregar evento nuevo <code>candidate.created</code> (o <code>application.created</code>) al webhook handler.<br>
+        2. El handler busca el Job en SharkTalents por <code>recruit_job_id</code>, encuentra el candidato por <code>recruit_candidate_id</code> (o lo crea si no existe), e inserta una Application nueva en estado inicial.<br>
+        3. Disparar evento <code>application.created</code> al outbox para que SharkTalents mande el primer email/WhatsApp al candidato.<br><br>
+        <strong>Parte manual (Cristian / vos):</strong><br>
+        4. En Zoho Recruit Console → Setup → Automation → Workflow Rules → Create New.<br>
+        5. Trigger: "Candidate is created" o "Candidate is associated to Job Opening".<br>
+        6. Action: "Custom Function" o "Webhook" → POST a <code>https://app.sharktalents.ai/server/api/api/webhooks/zoho-recruit</code> con body <code>{event_id, event_type:"candidate.created", candidate_id, recruit_job_id}</code> y header <code>X-Zoho-Recruit-Secret</code>.
+      </td></tr>
+      <tr><th>Qué más toca</th><td>
+        • Frontend NO cambia.<br>
+        • Si el evento se ejecuta para candidato que YA existe (por aplicación previa al mismo job), debe ser idempotente — no duplica Application.<br>
+        • El nuevo evento se integra con el sistema de outbox (mismo patrón usado por <code>candidate.status_changed</code>).<br>
+        • <strong>Importante:</strong> el bug #15 de auditoría (idempotencia del webhook check-then-act) afecta también a este nuevo evento. Mejor arreglar #15 ANTES o EN PARALELO con esta feature.
+      </td></tr>
+      <tr><th>Validación ANTES</th><td>
+        1) Confirmar que Zoho Recruit soporta webhook al evento "candidate created". Algunos planes de Recruit limitan workflow rules.<br>
+        2) Confirmar que el campo <code>recruit_job_id</code> en SharkTalents Jobs está siempre seteado para puestos publicados en Recruit (sí: ya está, según memoria recruit-sync).<br>
+        3) Crear un candidato de prueba manual en Recruit + ver si se genera Application en SharkTalents (debería NO generarse → confirma estado actual).
+      </td></tr>
+      <tr><th>Validación DESPUÉS</th><td>
+        1) Después de configurar el workflow rule + deploy del backend, crear candidato nuevo manualmente en Recruit.<br>
+        2) En menos de 30 seg debe aparecer la Application en SharkTalents.<br>
+        3) El primer email/WhatsApp llega al candidato desde SharkTalents (no desde Recruit).<br>
+        4) Test de idempotencia: disparar 2 veces el mismo webhook → solo una Application.
+      </td></tr>
+      <tr><th>Riesgo de romper</th><td>
+        <span class="risk-bar risk-medio">MEDIO</span><br>
+        • Si el workflow rule de Recruit dispara más eventos de los esperados (ej. también para cambios de campos), se generan Applications duplicadas. Mitigación: idempotency por <code>event_id</code>.<br>
+        • Si el campo <code>recruit_job_id</code> no está en algún Job antiguo, el handler no encuentra el Job y la Application no se crea. Mitigación: alerta clara al admin (en SystemAlerts) cuando esto pase.<br>
+        • Solapamiento con bug #15 (idempotencia rota): si no se arregla, puede haber duplicados en escenarios de retry.
+      </td></tr>
+      <tr><th>Cómo deshago si rompe</th><td>
+        • En Zoho Recruit Console: desactivar el workflow rule (no requiere redeploy).<br>
+        • En SharkTalents: revertir el handler nuevo. Vuelve al estado actual (solo 3 eventos).
+      </td></tr>
+      <tr><th>Decisión tuya</th><td>
+        <div class="decision-box">
+          1. <strong>¿Cuándo hacemos esto?</strong><br>
+          • Antes del go-live 2026-05-15 (eso ya pasó — confusión de fecha) → <strong>ALTA prioridad ahora</strong>.<br>
+          • Después de Fase 1-2 de auditoría (recomendado: arreglar #15 primero porque comparten código).<br><br>
+          2. <strong>¿Cristian hace el workflow rule en Recruit Console o yo te paso pasos detallados para que vos lo hagas?</strong>
+        </div>
+      </td></tr>
+      <tr><th>Estimación</th><td>
+        • Mi parte (backend): 1.5h<br>
+        • Parte de Cristian / vos (Recruit Console): 30 min<br>
+        • Prueba E2E: 30 min<br>
+        • <strong>Total: ~2.5 horas</strong>
+      </td></tr>
+    </table>
+  </div>
+
+  <h2>Listado de los 21 no-críticos (Fase 5)</h2>
+
+  <div class="phase">
+    <h3 style="margin-top: 0;">🟠 Altos (15)</h3>
+    <table class="method-table">
+      <thead>
+        <tr><th style="width: 5%;">#</th><th style="width: 65%;">Resumen</th><th style="width: 30%;">Archivo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>7</td><td>Race del trigger "embudo activo" y "finalistas listos"</td><td><code>applications.ts:414</code></td></tr>
+        <tr><td>8</td><td>Token público puede modificar candidatos cross-tenant</td><td><code>publicTest.ts:269</code></td></tr>
+        <tr><td>9</td><td>renameCandidate no chequea tenant</td><td><code>marketing.ts:929</code></td></tr>
+        <tr><td>10</td><td>inspectIntegrityDims lee dimensiones de otros tenants</td><td><code>marketing.ts:906</code></td></tr>
+        <tr><td>11</td><td>forcePublishRecruitJob permite manipular Jobs cross-tenant</td><td><code>jobs.ts:460</code></td></tr>
+        <tr><td>12</td><td>Endpoints públicos diagnósticos permiten borrar leads</td><td><code>marketing.ts:2429</code></td></tr>
+        <tr><td>13</td><td>Dispatchers de email-cliente devuelven OK aunque falle email</td><td><code>outbox.ts:1323</code></td></tr>
+        <tr><td>14</td><td>Webhook Recruit: idempotencia rota por race condition</td><td><code>zohoRecruitWebhook.ts:181</code></td></tr>
+        <tr><td>15</td><td>Promesas fire-and-forget sin try/catch tumban el proceso</td><td>varios</td></tr>
+        <tr><td>16</td><td>Update Results + insert PipelineTransitions no atómico</td><td><code>publicTest.ts:689</code></td></tr>
+        <tr><td>17</td><td>Reporte hace 10 llamadas Anthropic en paralelo sin cap</td><td><code>reportNarratives.ts:410</code></td></tr>
+        <tr><td>18</td><td>Outbox sequential, mueren al timeout de 30s</td><td><code>outbox.ts:202</code></td></tr>
+        <tr><td>19</td><td>Timeout Anthropic 55s pero Catalyst mata a 30s</td><td><code>anthropic.ts:88</code></td></tr>
+        <tr><td>20</td><td>Pool matching trae 8000 candidatos sin LIMIT</td><td><code>candidatePool.ts:311</code></td></tr>
+        <tr><td>21</td><td>Otras N+1 queries en cierres GDPR</td><td><code>gdpr.ts:57</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3>🟡 Medios (6)</h3>
+    <table class="method-table">
+      <thead>
+        <tr><th style="width: 5%;">#</th><th style="width: 65%;">Resumen</th><th style="width: 30%;">Archivo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>22</td><td>GDPR delete no borra OutboxEvents/AuditLog/etc</td><td><code>gdpr.ts:139</code></td></tr>
+        <tr><td>23</td><td>auditLog no persiste tenant_id</td><td><code>auditLog.ts:60</code></td></tr>
+        <tr><td>24</td><td>publishOutboxEvent sin await pierde eventos</td><td><code>marketing.ts:307</code></td></tr>
+        <tr><td>25</td><td>listOutbox devuelve 200 con error en body (debe ser 503)</td><td><code>outbox.ts:988</code></td></tr>
+        <tr><td>26</td><td>isTableReady cache no se invalida en cold-start</td><td><code>costTracking.ts:36</code></td></tr>
+        <tr><td>27</td><td>gdpr export hace N+1 queries sin LIMIT</td><td><code>gdpr.ts:57</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>📦 Fase 4 — Organización de archivos grandes (File Store)</h2>
+
+  <div class="phase">
+    <p style="margin-top: 0;">
+      El sistema de guardar texto largo en File Store <strong>ya existe</strong> (lo armamos hace ~1 mes). Se usa en 5 lugares: transcripciones de Zia, borradores del puesto, preguntas técnicas IA, bundles de reporte, briefings. Lo que falta es organización en carpetas y verificar que la UI tenga un campo para que vos pegues transcripts manualmente.
+    </p>
+
+    <table class="method-table">
+      <thead>
+        <tr><th style="width: 28%;">Fase</th><th>Qué falta</th><th style="width: 18%;">Estimación</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Fase 4.1</strong> — Verificar UI de pegado</td>
+          <td>Cuando deployes el frontend nuevo, abrir <code>/drafts</code>. Si hay textarea grande "Transcripción": OK. Si no, te aviso dónde agregarlo.</td>
+          <td>20 min</td>
+        </tr>
+        <tr>
+          <td><strong>Fase 4.2</strong> — Organización por carpetas</td>
+          <td>
+            Hoy todo cae en un folder único llamado <code>largecontent</code> con nombres tipo <code>JobProfileDrafts_transcript__1717525800000.txt</code>. No se entiende qué cliente / qué puesto / qué fecha solo mirando el nombre.<br><br>
+            <strong>Limitación:</strong> Catalyst NO soporta subfolders anidados.<br>
+            <strong>Opciones:</strong>
+            <ul>
+              <li><strong>A:</strong> 5 folders por tipo (briefings, drafts, tech-questions, reports, notes)</li>
+              <li><strong>B:</strong> 1 folder + naming rico (<code>pixelweb_pmweb_2026-06-04T10-30__abc123.json</code>)</li>
+              <li><strong>C (sugerida):</strong> combinar A + B</li>
+            </ul>
+            <div class="decision-box">
+              Decisión: ¿A, B o C? Si C: vos creás 5 folders en Catalyst Console y me pegás los ROWIDs.
+            </div>
+          </td>
+          <td>10 min Cris<br>+ 60 min Claude</td>
+        </tr>
+        <tr>
+          <td><strong>Fase 4.3</strong> — Cobertura a otros campos</td>
+          <td>
+            Hay 5-6 campos que hoy guardan inline (sin File Store) y podrían crecer:<br>
+            • <code>analysis_json</code> (VideoResponses) — 8K inline<br>
+            • <code>body</code> (OutreachInbox/Templates) — 4K inline<br>
+            • <code>ideal_profile</code> (Jobs) — 8K inline<br>
+            • <code>notes_internal</code> (CandidatePool) — 4K inline<br>
+            • <code>payload</code> (OutboxEvents) — 8K inline<br><br>
+            <strong>Síntoma cuando se rompe:</strong> Catalyst silenciosamente trunca o devuelve 500 sin mensaje claro al pasar 10K chars.<br>
+            <strong>Fix:</strong> aplicar el mismo patrón <code>persistLargeContent</code>. Migración campo por campo.
+          </td>
+          <td>1.5-2 hs</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>🎯 Decisiones pendientes tuyas</h2>
+
+  <div class="summary">
+    <table>
+      <thead><tr><th>Fase</th><th>Decisión</th><th>Para arrancar</th></tr></thead>
+      <tbody>
+        <tr><td>Fase 1 (auditoría)</td><td>Ninguna. Solo decirme "dale".</td><td>Ya mismo</td></tr>
+        <tr><td>Fase 2 (auditoría)</td><td>Investigación previa de linkMarketingTenant.</td><td>Después de Fase 1</td></tr>
+        <tr><td>Fase 3 (auditoría) — Presupuesto 20%</td><td>
+          ✅ 1) Precio = campo nuevo <code>fee_usd</code> en Jobs, vos cargás manual al crear puesto.<br>
+          ✅ 2) LinkedIn entra, carga manual (máx histórico $80).<br>
+          ✅ 3) Alertar al 80% y 100%, NUNCA bloquear, post-mortem automático.<br>
+          ✅ 4) Puestos sin fee = trackeo silencioso, alertas retroactivas al cargarse.<br>
+          ❌ 5) Borradores Zia huérfanos: pendiente decirme si salvamos o borramos.
+        </td><td>Lista para arrancar</td></tr>
+        <tr><td>Fase 3.5 — Webhook Recruit (nuevo)</td><td>
+          1) ¿Cuándo? Mi sugerencia: arrancar después de Fase 1 + bug #15 (comparten código).<br>
+          2) ¿Cristian configura el workflow rule en Recruit o vos? Si vos, te paso pasos detallados.
+        </td><td>Cuando me lo digas</td></tr>
+        <tr><td>Fase 4.1 (File Store)</td><td>Validar UI cuando deployes el frontend.</td><td>Hoy mismo</td></tr>
+        <tr><td>Fase 4.2 (File Store)</td><td>Opción A, B o C de organización.<br>Si C: creás 5 folders + me pegás ROWIDs.</td><td>Cuando me lo digas</td></tr>
+        <tr><td>Fase 4.3 (File Store)</td><td>¿Migrar todos o solo los que ya están cerca del límite?</td><td>Cuando me lo digas</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help">
+    💡 <strong>Cómo navegar este doc:</strong>
+    <ul style="margin: 6px 0 0 0;">
+      <li>Tabs arriba de los críticos cambian entre los 6 hallazgos.</li>
+      <li>Mind map en el medio: click en cualquier nodo para colapsar/expandir. Drag para mover el mapa. Scroll para zoom.</li>
+      <li>Las tablas con la metodología son escaneables horizontalmente.</li>
+    </ul>
+  </div>
+
+  <script>
+    function showTab(btn, n) {
+      document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + n).classList.add('active');
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@latest"></script>
+</body>
+</html>

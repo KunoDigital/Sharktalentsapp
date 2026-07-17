@@ -36,14 +36,15 @@ const log = logger('CANDIDATE_NOTIFIER');
  * `null` = no se manda nada para esa transición.
  */
 const STAGE_NOTIFICATION_MAP: Record<string, { template: string; phase?: string } | null> = {
-  // El candidato pasó el prescreening
-  prefilter_passed: { template: 'candidate_tecnica_invitation', phase: 'tecnica' },
-  // Terminó técnica → invitar a DISC
-  tecnica_completed: { template: 'candidate_disc_invitation', phase: 'disc' },
-  // Terminó DISC → invitar a integridad
-  conductual_completed: { template: 'candidate_integridad_invitation', phase: 'integridad' },
-  // Terminó integridad → invitar a video
-  integridad_completed: { template: 'candidate_video_invitation', phase: 'videos' },
+  // 2026-06-18: refactor a templates "paso N de 5". Cada correo dice UNA cosa concreta.
+  // El candidato pasó el prescreening → correo "siguiente paso: prueba técnica"
+  prefilter_passed: { template: 'candidate_tecnica_start', phase: 'tecnica' },
+  // Terminó técnica → correo "siguiente paso: evaluación conductual"
+  tecnica_completed: { template: 'candidate_conductual_start', phase: 'disc' },
+  // Terminó conductual → correo "siguiente paso: integridad"
+  conductual_completed: { template: 'candidate_integridad_start', phase: 'integridad' },
+  // Terminó integridad → correo "último paso: entrevista en video"
+  integridad_completed: { template: 'candidate_video_start', phase: 'videos' },
   // videos_completed y bot_decision_advance: el bot decide internamente; sin email todavía
   videos_completed: null,
   bot_decision_advance: null,

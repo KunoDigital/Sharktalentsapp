@@ -179,8 +179,8 @@ export default function JobsList() {
           icon="🔍"
           title="No encontramos puestos"
           description={jobs.length === 0
-            ? 'Empezá creando tu primer puesto. Después podés invitar candidatos.'
-            : 'Ningún puesto coincide con los filtros activos. Probá otra búsqueda o cambiá el filtro de estado.'}
+            ? 'Empieza creando tu primer puesto. Después puedes invitar candidatos.'
+            : 'Ningún puesto coincide con los filtros activos. Prueba otra búsqueda o cambia el filtro de estado.'}
           cta={jobs.length === 0 ? { label: '+ Crear primer puesto' } : undefined}
         />
       ) : (

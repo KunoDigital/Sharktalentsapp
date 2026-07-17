@@ -80,12 +80,24 @@ function buildIdealProfilePayload(
     };
   }
   if (jobState.auto_rejection_rules) {
-    const rules: Record<string, number> = {};
+    const rules: Record<string, unknown> = {};
     const r = jobState.auto_rejection_rules;
     if (typeof r.disc_min_similarity === 'number') rules.disc_min_similarity = r.disc_min_similarity;
     if (typeof r.velna_min_indice === 'number') rules.velna_min_indice = r.velna_min_indice;
     if (typeof r.integridad_max_riesgo === 'number') rules.integridad_max_riesgo = r.integridad_max_riesgo;
     if (typeof r.emo_min_score === 'number') rules.emo_min_score = r.emo_min_score;
+    // 2026-06-12: velna_per_dimension — umbrales VELNA por dimensión individual
+    // (modelo confirmado por Cris). Cada puesto define cuáles son críticas.
+    if (r.velna_per_dimension) {
+      const vpd: Record<string, number> = {};
+      const v = r.velna_per_dimension;
+      if (typeof v.verbal === 'number') vpd.verbal = v.verbal;
+      if (typeof v.espacial === 'number') vpd.espacial = v.espacial;
+      if (typeof v.logica === 'number') vpd.logica = v.logica;
+      if (typeof v.numerica === 'number') vpd.numerica = v.numerica;
+      if (typeof v.abstracta === 'number') vpd.abstracta = v.abstracta;
+      if (Object.keys(vpd).length > 0) rules.velna_per_dimension = vpd;
+    }
     if (Object.keys(rules).length > 0) ideal.auto_rejection_rules = rules;
   }
   if (jobState.report_lang === 'es' || jobState.report_lang === 'en') {
@@ -353,8 +365,8 @@ export default function JobForm({ mode }: { mode: Mode }) {
           </h1>
           <p className="page-subtitle">
             {mode === 'create'
-              ? 'Definí el puesto y su perfil ideal. Después publicás y los candidatos pueden aplicar.'
-              : 'Editá los campos. Los cambios se reflejan inmediatamente en pipeline y comparativos.'}
+              ? 'Define el puesto y su perfil ideal. Después publicas y los candidatos pueden aplicar.'
+              : 'Edita los campos. Los cambios se reflejan inmediatamente en pipeline y comparativos.'}
           </p>
         </div>
         <div className="job-form-undo-bar" role="group" aria-label="Historial">
@@ -444,8 +456,8 @@ export default function JobForm({ mode }: { mode: Mode }) {
         <section className="job-form-section">
           <h2>Lo que verá el candidato en la oferta</h2>
           <p style={{ color: '#4b5563', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
-            Si dejás vacío, se hereda automático del draft generado por IA (objetivo, responsabilidades, herramientas).
-            Editá acá si querés cambiar lo que se publica en sharktalents.ai.
+            Si dejas vacío, se hereda automático del draft generado por IA (objetivo, responsabilidades, herramientas).
+            Edita aquí si quieres cambiar lo que se publica en sharktalents.ai.
           </p>
           <Field label="Qué busco (1-2 frases del rol)">
             <textarea
@@ -590,8 +602,8 @@ export default function JobForm({ mode }: { mode: Mode }) {
         <section className="job-form-section">
           <h2>Reglas de auto-rechazo (opcional)</h2>
           <p className="muted small" style={{ marginBottom: '0.75rem' }}>
-            Si seteás reglas, el sistema rechaza automáticamente al candidato cuando no las cumpla
-            (sin que vos tengas que revisar). Dejá vacío si querés que todos los candidatos te lleguen
+            Si seteas reglas, el sistema rechaza automáticamente al candidato cuando no las cumpla
+            (sin que tú tengas que revisar). Deja vacío si quieres que todos los candidatos te lleguen
             para revisión manual.
           </p>
           <div className="job-form-grid-2">
@@ -675,6 +687,118 @@ export default function JobForm({ mode }: { mode: Mode }) {
                 placeholder="ej: 50 (vacío = no aplicar)"
               />
             </Field>
+          </div>
+
+          {/* 2026-06-12: VELNA por dimensión — modelo confirmado por Cris.
+              Cada puesto define qué dimensiones VELNA son críticas y con qué umbral.
+              Ej: contable → Numérica 70; vendedor → Verbal 65.
+              Si ninguna se setea, el sistema usa el VELNA índice global (regla legacy). */}
+          <div style={{ marginTop: '1rem' }}>
+            <h4 style={{ fontSize: '0.95rem', marginBottom: '0.25rem' }}>
+              VELNA por dimensión (umbrales por puesto)
+            </h4>
+            <p className="muted small" style={{ marginBottom: '0.75rem' }}>
+              Setea un umbral mínimo SOLO en las dimensiones cognitivas que sean críticas para
+              este puesto. Si el candidato saca menos en alguna dimensión seteada → auto-rechazo.
+              Ejemplos: contable → numérica 70; vendedor → verbal 65; asistente operativo → ninguna.
+            </p>
+            <div className="job-form-grid-2">
+              <Field label="Verbal (mínimo)">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={job.auto_rejection_rules?.velna_per_dimension?.verbal ?? ''}
+                  onChange={(e) => {
+                    const v = e.target.value === '' ? undefined : Number(e.target.value);
+                    patch('auto_rejection_rules', {
+                      ...(job.auto_rejection_rules ?? {}),
+                      velna_per_dimension: {
+                        ...(job.auto_rejection_rules?.velna_per_dimension ?? {}),
+                        verbal: v,
+                      },
+                    });
+                  }}
+                  placeholder="vacío = no aplicar"
+                />
+              </Field>
+              <Field label="Espacial (mínimo)">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={job.auto_rejection_rules?.velna_per_dimension?.espacial ?? ''}
+                  onChange={(e) => {
+                    const v = e.target.value === '' ? undefined : Number(e.target.value);
+                    patch('auto_rejection_rules', {
+                      ...(job.auto_rejection_rules ?? {}),
+                      velna_per_dimension: {
+                        ...(job.auto_rejection_rules?.velna_per_dimension ?? {}),
+                        espacial: v,
+                      },
+                    });
+                  }}
+                  placeholder="vacío = no aplicar"
+                />
+              </Field>
+              <Field label="Lógica (mínimo)">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={job.auto_rejection_rules?.velna_per_dimension?.logica ?? ''}
+                  onChange={(e) => {
+                    const v = e.target.value === '' ? undefined : Number(e.target.value);
+                    patch('auto_rejection_rules', {
+                      ...(job.auto_rejection_rules ?? {}),
+                      velna_per_dimension: {
+                        ...(job.auto_rejection_rules?.velna_per_dimension ?? {}),
+                        logica: v,
+                      },
+                    });
+                  }}
+                  placeholder="vacío = no aplicar"
+                />
+              </Field>
+              <Field label="Numérica (mínimo)">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={job.auto_rejection_rules?.velna_per_dimension?.numerica ?? ''}
+                  onChange={(e) => {
+                    const v = e.target.value === '' ? undefined : Number(e.target.value);
+                    patch('auto_rejection_rules', {
+                      ...(job.auto_rejection_rules ?? {}),
+                      velna_per_dimension: {
+                        ...(job.auto_rejection_rules?.velna_per_dimension ?? {}),
+                        numerica: v,
+                      },
+                    });
+                  }}
+                  placeholder="vacío = no aplicar"
+                />
+              </Field>
+              <Field label="Abstracta (mínimo)">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={job.auto_rejection_rules?.velna_per_dimension?.abstracta ?? ''}
+                  onChange={(e) => {
+                    const v = e.target.value === '' ? undefined : Number(e.target.value);
+                    patch('auto_rejection_rules', {
+                      ...(job.auto_rejection_rules ?? {}),
+                      velna_per_dimension: {
+                        ...(job.auto_rejection_rules?.velna_per_dimension ?? {}),
+                        abstracta: v,
+                      },
+                    });
+                  }}
+                  placeholder="vacío = no aplicar"
+                />
+              </Field>
+            </div>
           </div>
 
           {job.english_required && (

@@ -134,7 +134,7 @@ export default function CandidateMyProgress() {
         )}
 
         <div style={{ marginTop: 32, padding: 16, borderTop: '1px solid #e5e7eb', fontSize: 13, color: '#6b7280' }}>
-          ¿Dudas? Escribinos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.
+          ¿Dudas? Escríbenos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.
           {!isTerminal && (
             <>
               <br />

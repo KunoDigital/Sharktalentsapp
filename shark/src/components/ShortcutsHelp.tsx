@@ -45,7 +45,7 @@ export default function ShortcutsHelp({ open, onClose }: { open: boolean; onClos
           ))}
         </div>
         <div className="sh-footer">
-          Cuando estás en un campo de texto, los atajos se desactivan. Probá con <kbd>g</kbd>+<kbd>letra</kbd> para navegar rápido.
+          Cuando estás en un campo de texto, los atajos se desactivan. Prueba con <kbd>g</kbd>+<kbd>letra</kbd> para navegar rápido.
         </div>
       </div>
     </div>

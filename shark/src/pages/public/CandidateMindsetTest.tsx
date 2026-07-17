@@ -126,7 +126,7 @@ export default function CandidateMindsetTest() {
         <header className="ct-header">
           <h1>Sección 2 — Preguntas extras</h1>
           <p className="ct-subtitle">
-            Sobre cómo abordas situaciones cotidianas. No hay respuestas correctas — elegí la opción
+            Sobre cómo abordas situaciones cotidianas. No hay respuestas correctas — elige la opción
             que más te represente.
           </p>
           <div className="ct-progress">

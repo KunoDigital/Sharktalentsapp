@@ -25,7 +25,7 @@ import { logger } from '../lib/logger';
 import { datastore, zcql, now } from '../lib/db';
 import { escapeSql, unwrapRow, unwrapRows } from '../lib/dbHelpers';
 import { requireTenant } from './tenants';
-import { createAccount, createContact, createDeal, updateDealStage } from '../lib/zohoCrmClient';
+import { createAccount, createContact, createDeal, updateDealStage, findLeadInCrmByEmailPublic, convertLead, updateDeal, updateAccount } from '../lib/zohoCrmClient';
 
 const log = logger('FREELANCE');
 const TABLE = 'FreelanceUsers';
@@ -979,9 +979,22 @@ export async function convertLeadToClient(ctx: RequestContext): Promise<void> {
 }
 
 /**
- * Ejecuta las 3 llamadas a Zoho: createAccount, createContact, createDeal.
+ * Sincroniza el cliente convertido a Zoho CRM.
+ *
+ * Estrategia (2026-07-13 refactor): usa la API oficial `POST /Leads/{id}/actions/convert`
+ * cuando el Lead ya existe en Zoho — así el Lead original queda archivado como
+ * "converted" en vez de duplicado en Posibles Clientes.
+ *
+ * Flujo:
+ *   1. Buscar el Lead en Zoho por email del contacto (findLeadInCrmByEmailPublic)
+ *   2. Si existe → llamar convertLead() con datos del Deal
+ *      Zoho crea Account+Contact+Deal automáticamente linkeados
+ *      Después PATCH al Deal con custom fields (Posibles_productos, Owner explícito)
+ *   3. Si NO existe (raro, para leads viejos sin sync a Zoho) → fallback: crear
+ *      Account+Contact+Deal por separado (comportamiento anterior — duplica pero al
+ *      menos el Deal existe).
+ *
  * Actualiza el row SalesClients con los IDs (si todo OK) o con el error.
- * Owner en Zoho no se setea acá — usa el default del refresh_token (Chris Palma).
  */
 async function syncClientToZoho(input: {
   salesClientRowId: string;
@@ -1001,6 +1014,90 @@ async function syncClientToZoho(input: {
   // Catalyst Console), con fallback hardcoded al ID real. El hardcoded no es
   // info sensible — es un ID interno de Zoho, no credencial.
   const ownerId = process.env.OWNER_ID || process.env.ZOHO_CRM_DEFAULT_OWNER_ID || '5710516000002213001';
+  const dealName = `SharkTalents — ${empresa}`.slice(0, 100);
+  const description = `Vendedor responsable: ${freelanceNombre}. Comisión: 10% del salario.`;
+
+  // ─── Estrategia oficial: buscar el Lead por email y convertirlo ────────────
+  const existingLead = await findLeadInCrmByEmailPublic(contactoEmail, traceId);
+
+  if (existingLead) {
+    log.info('lead found in zoho — using official convert API', { traceId, leadZohoId: existingLead.id, email_masked: contactoEmail.slice(0, 2) + '***' });
+
+    const converted = await convertLead(
+      existingLead.id,
+      {
+        overwrite: true,
+        notify_lead_owner: false,
+        notify_new_entity_owner: false,
+        deal: {
+          Deal_Name: dealName,
+          Amount: montoDeal,
+          Stage: 'Cotización',
+          Closing_Date: closingDate,
+          Owner: { id: ownerId },
+          Description: description,
+          Lead_Source: 'Partner',
+        },
+      },
+      traceId,
+    );
+
+    if (!converted.ok) {
+      log.warn('official convertLead failed, falling back to manual create', { traceId, leadZohoId: existingLead.id, error: converted.error });
+      // Fallback al método viejo
+      return await manualCreateAccountContactDeal({ ownerId, empresa, contactoNombre, contactoEmail, contactoPhone, montoDeal, closingDate, dealName, description, salesClientRowId, ctx });
+    }
+
+    // Extra PATCH al Deal para setear campos custom que convert no acepta
+    // (Posibles_productos es multiselect picklist, va aparte).
+    const patchRes = await updateDeal(
+      converted.data.Deals,
+      { Posibles_productos: ['Recursos Humanos'] },
+      traceId,
+    );
+    if (!patchRes.ok) {
+      log.warn('deal PATCH after convert failed — Deal exists but sin Posibles_productos', { traceId, dealId: converted.data.Deals, error: patchRes.error });
+    }
+
+    await datastore(ctx.req).table(TABLE_CLIENTS).updateRow({
+      ROWID: salesClientRowId,
+      zoho_account_id: converted.data.Accounts,
+      zoho_contact_id: converted.data.Contacts,
+      zoho_deal_id: converted.data.Deals,
+      zoho_sync_status: 'ok',
+      zoho_synced_at: now(),
+      zoho_sync_error: null,
+    });
+
+    log.info('lead converted via official API', { traceId, salesClientRowId, dealId: converted.data.Deals });
+    return { ok: true, accountId: converted.data.Accounts, contactId: converted.data.Contacts, dealId: converted.data.Deals };
+  }
+
+  // ─── Fallback: no hay Lead previo en Zoho → crear los 3 records manual ─────
+  log.info('no lead found in zoho — using manual create (fallback)', { traceId, email_masked: contactoEmail.slice(0, 2) + '***' });
+  return await manualCreateAccountContactDeal({ ownerId, empresa, contactoNombre, contactoEmail, contactoPhone, montoDeal, closingDate, dealName, description, salesClientRowId, ctx });
+}
+
+/**
+ * Fallback: crea Account + Contact + Deal por separado. Es el comportamiento
+ * pre-2026-07-13 — se usa cuando el Lead no existe en Zoho o el convert oficial
+ * falla.
+ */
+async function manualCreateAccountContactDeal(input: {
+  ownerId: string;
+  empresa: string;
+  contactoNombre: string;
+  contactoEmail: string;
+  contactoPhone: string;
+  montoDeal: number;
+  closingDate: string;
+  dealName: string;
+  description: string;
+  salesClientRowId: string;
+  ctx: RequestContext;
+}): Promise<{ ok: true; accountId: string; contactId: string; dealId: string } | { ok: false; error: string }> {
+  const { ownerId, empresa, contactoNombre, contactoEmail, contactoPhone, montoDeal, closingDate, dealName, description, salesClientRowId, ctx } = input;
+  const traceId = ctx.traceId;
 
   const acc = await createAccount({
     account_name: empresa,
@@ -1029,7 +1126,6 @@ async function syncClientToZoho(input: {
     return { ok: false, error: `Contact create: ${con.error}` };
   }
 
-  const dealName = `SharkTalents — ${empresa}`.slice(0, 100);
   const deal = await createDeal({
     deal_name: dealName,
     amount: montoDeal,
@@ -1040,7 +1136,7 @@ async function syncClientToZoho(input: {
     owner_id: ownerId,
     lead_source: 'Partner',
     posibles_productos: ['Recursos Humanos'],
-    description: `Vendedor responsable: ${freelanceNombre}. Comisión: 10% del salario.`,
+    description,
   }, traceId);
   if (!deal.ok) {
     await markZohoFailed(ctx, salesClientRowId, `deal: ${deal.error}`);
@@ -1101,7 +1197,7 @@ type SalesClientRow = {
   MODIFIEDTIME: string;
 };
 
-function toPublicClient(row: SalesClientRow) {
+function toPublicClient(row: SalesClientRow & { datos_legales_completos?: boolean | string | number }) {
   return {
     id: row.ROWID,
     lead_id: row.lead_id,
@@ -1118,6 +1214,7 @@ function toPublicClient(row: SalesClientRow) {
     zoho_sync_status: row.zoho_sync_status,
     zoho_sync_error: row.zoho_sync_error,
     notes: row.notes,
+    datos_legales_completos: isTrueish(row.datos_legales_completos),
     created_at: row.CREATEDTIME,
     updated_at: row.MODIFIEDTIME,
   };
@@ -1153,9 +1250,9 @@ export async function patchMyClientStage(ctx: RequestContext): Promise<void> {
   const id = extractIdFromPath(ctx.req.url ?? '/', /^\/api\/freelance\/me\/clients\/([^/?]+)\/stage/);
   if (!id) throw new ValidationError('id required in path');
 
-  const rows = unwrapRows<SalesClientRow>(
+  const rows = unwrapRows<SalesClientRow & { datos_legales_completos?: boolean | string | number }>(
     (await zcql(ctx.req).executeZCQLQuery(
-      `SELECT ROWID, freelance_user_id, zoho_deal_id FROM ${TABLE_CLIENTS} WHERE ROWID = ${escapeSql(id)} LIMIT 1`,
+      `SELECT ROWID, freelance_user_id, zoho_deal_id, datos_legales_completos FROM ${TABLE_CLIENTS} WHERE ROWID = ${escapeSql(id)} LIMIT 1`,
     )) as unknown[],
     TABLE_CLIENTS,
   );
@@ -1167,6 +1264,11 @@ export async function patchMyClientStage(ctx: RequestContext): Promise<void> {
   const newStage = (body.pipeline_stage ?? '').trim();
   if (!(PIPELINE_STAGES as readonly string[]).includes(newStage)) {
     throw new ValidationError(`pipeline_stage inválido: ${newStage}`);
+  }
+
+  // Guard: para mover a 'contrato_enviado' hacen falta los datos legales.
+  if (newStage === 'contrato_enviado' && !isTrueish(existing.datos_legales_completos)) {
+    throw new ValidationError('Completá primero los datos legales del cliente (razón social, RUC, representante, dirección).');
   }
 
   await datastore(ctx.req).table(TABLE_CLIENTS).updateRow({
@@ -1210,6 +1312,267 @@ export async function patchMyClientStage(ctx: RequestContext): Promise<void> {
     pipeline_stage: newStage,
     zoho_sync_status: zohoOk ? 'ok' : 'failed',
     zoho_sync_error: zohoError,
+  });
+}
+
+/**
+ * PATCH /api/freelance/me/clients/:id/datos-legales
+ * Body: { empresa_razon_social, empresa_ruc_nit, empresa_direccion, empresa_ciudad,
+ *         empresa_pais, representante_nombre, representante_cargo, representante_cedula,
+ *         representante_email, puesto_cargo }
+ *
+ * Guarda los 10 campos legales + marca `datos_legales_completos = true` cuando están todos los
+ * obligatorios (razón social, RUC, representante nombre+cargo+email, puesto cargo).
+ *
+ * Sync a Zoho:
+ *   - PATCH Account con: Nombre_de_la_Empresa (razón social), RUC_NIT, Billing_Street/City/Country
+ *   - Crear un nuevo Contact para el representante legal, linkeado al Account
+ *     (con Title = cargo del representante). La cédula NO se manda a Zoho (no
+ *     existe el campo — se queda solo en SalesClients para llenar el contrato Sign)
+ *   - Update Deal con Description incluyendo el cargo del puesto que se busca
+ *
+ * Se llama justo antes de que el vendedor mueva el cliente a 'contrato_enviado'.
+ */
+export async function patchClientDatosLegales(ctx: RequestContext): Promise<void> {
+  const me = await getMyFreelanceRow(ctx);
+  const id = extractIdFromPath(ctx.req.url ?? '/', /^\/api\/freelance\/me\/clients\/([^/?]+)\/datos-legales/);
+  if (!id) throw new ValidationError('id required in path');
+
+  const rows = unwrapRows<SalesClientRow>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT ROWID, freelance_user_id, zoho_account_id, zoho_deal_id, empresa_nombre, contacto_nombre, contacto_email, puesto_cargo FROM ${TABLE_CLIENTS} WHERE ROWID = ${escapeSql(id)} LIMIT 1`,
+    )) as unknown[],
+    TABLE_CLIENTS,
+  );
+  const existing = rows[0] as (SalesClientRow & { puesto_cargo?: string | null }) | undefined;
+  if (!existing) throw new NotFoundError(`SalesClient ${id} not found`);
+  if (existing.freelance_user_id !== me.ROWID) throw new ForbiddenError('Ese cliente no te corresponde');
+
+  const body = await readJsonBody<{
+    empresa_razon_social?: string;
+    empresa_ruc_nit?: string;
+    empresa_direccion?: string;
+    empresa_ciudad?: string;
+    empresa_pais?: string;
+    representante_nombre?: string;
+    representante_cargo?: string;
+    representante_cedula?: string;
+    representante_email?: string;
+    puesto_cargo?: string;
+  }>(ctx.req);
+
+  const razonSocial = (body.empresa_razon_social ?? '').trim();
+  const rucNit = (body.empresa_ruc_nit ?? '').trim();
+  const direccion = (body.empresa_direccion ?? '').trim();
+  const ciudad = (body.empresa_ciudad ?? '').trim();
+  const pais = (body.empresa_pais ?? '').trim();
+  const repNombre = (body.representante_nombre ?? '').trim();
+  const repCargo = (body.representante_cargo ?? '').trim();
+  const repCedula = (body.representante_cedula ?? '').trim();
+  const repEmail = (body.representante_email ?? '').trim().toLowerCase();
+  const puestoCargo = (body.puesto_cargo ?? '').trim();
+
+  // Campos obligatorios para "completos"
+  if (!razonSocial) throw new ValidationError('empresa_razon_social required');
+  if (!rucNit) throw new ValidationError('empresa_ruc_nit required');
+  if (!repNombre) throw new ValidationError('representante_nombre required');
+  if (!repCargo) throw new ValidationError('representante_cargo required');
+  if (!repEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(repEmail)) throw new ValidationError('representante_email invalid');
+  if (!puestoCargo) throw new ValidationError('puesto_cargo required');
+
+  // Guardar en SalesClients
+  const patch: Record<string, unknown> = {
+    ROWID: id,
+    empresa_razon_social: razonSocial.slice(0, 255),
+    empresa_ruc_nit: rucNit.slice(0, 50),
+    empresa_direccion: direccion.slice(0, 500),
+    empresa_ciudad: ciudad.slice(0, 100),
+    empresa_pais: pais.slice(0, 50),
+    representante_nombre: repNombre.slice(0, 255),
+    representante_cargo: repCargo.slice(0, 100),
+    representante_cedula: repCedula.slice(0, 50),
+    representante_email: repEmail.slice(0, 255),
+    puesto_cargo: puestoCargo.slice(0, 255),
+    datos_legales_completos: true,
+  };
+  await datastore(ctx.req).table(TABLE_CLIENTS).updateRow(patch as { ROWID: string });
+
+  // Sync a Zoho — best-effort, no bloquear si falla
+  let zohoOk = true;
+  const zohoErrors: string[] = [];
+
+  if (existing.zoho_account_id) {
+    const accPatch = await updateAccount(
+      existing.zoho_account_id,
+      {
+        Nombre_de_la_Empresa: razonSocial,
+        RUC_NIT: rucNit,
+        Billing_Street: direccion || undefined,
+        Billing_City: ciudad || undefined,
+        Billing_Country: pais || undefined,
+      },
+      ctx.traceId,
+    );
+    if (!accPatch.ok) {
+      zohoOk = false;
+      zohoErrors.push(`Account: ${accPatch.error}`);
+    }
+
+    // Crear Contact del representante (si es email distinto al contact principal)
+    if (repEmail !== existing.contacto_email) {
+      const nameParts = repNombre.split(/\s+/);
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ') || firstName;
+      const ownerId = process.env.OWNER_ID || process.env.ZOHO_CRM_DEFAULT_OWNER_ID || '5710516000002213001';
+      const repContact = await createContact({
+        first_name: firstName,
+        last_name: lastName,
+        email: repEmail,
+        account_id: existing.zoho_account_id,
+        owner_id: ownerId,
+      }, ctx.traceId);
+      if (!repContact.ok) {
+        zohoOk = false;
+        zohoErrors.push(`RepContact: ${repContact.error}`);
+      }
+    }
+  }
+
+  if (existing.zoho_deal_id) {
+    const dealPatch = await updateDeal(
+      existing.zoho_deal_id,
+      { Description: `Cargo a reclutar: ${puestoCargo}. Representante legal: ${repNombre} (${repCargo}).` },
+      ctx.traceId,
+    );
+    if (!dealPatch.ok) {
+      zohoOk = false;
+      zohoErrors.push(`Deal: ${dealPatch.error}`);
+    }
+  }
+
+  if (!zohoOk) {
+    try {
+      await datastore(ctx.req).table(TABLE_CLIENTS).updateRow({
+        ROWID: id,
+        zoho_sync_error: `datos_legales: ${zohoErrors.join(' | ')}`.slice(0, 5000),
+      });
+    } catch { /* best effort */ }
+  }
+
+  log.info('client datos_legales saved', { traceId: ctx.traceId, clientId: id, zohoOk, errors: zohoErrors.length });
+  sendJson(ctx.res, 200, {
+    ok: true,
+    id,
+    datos_legales_completos: true,
+    zoho_sync_status: zohoOk ? 'ok' : 'partial',
+    zoho_sync_errors: zohoErrors.length > 0 ? zohoErrors : null,
+  });
+}
+
+/**
+ * POST /api/freelance/me/clients/:id/send-contract
+ *
+ * Dispara Zoho Sign con la plantilla `enviarContratoSharkTalents`. Requiere que
+ * el cliente tenga `datos_legales_completos=true` (llenados con el modal).
+ *
+ * Usa el mismo `zohoSignClient.sendContract` que el flujo viejo de MarketingLeads
+ * — es la misma Deluge function en Zoho.
+ */
+export async function sendContractToClient(ctx: RequestContext): Promise<void> {
+  const me = await getMyFreelanceRow(ctx);
+  const id = extractIdFromPath(ctx.req.url ?? '/', /^\/api\/freelance\/me\/clients\/([^/?]+)\/send-contract/);
+  if (!id) throw new ValidationError('id required in path');
+
+  const rows = unwrapRows<SalesClientRow & {
+    empresa_razon_social?: string | null;
+    empresa_ruc_nit?: string | null;
+    empresa_direccion?: string | null;
+    empresa_ciudad?: string | null;
+    empresa_pais?: string | null;
+    representante_nombre?: string | null;
+    representante_cargo?: string | null;
+    representante_email?: string | null;
+    puesto_cargo?: string | null;
+    datos_legales_completos?: boolean | string | number;
+  }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT * FROM ${TABLE_CLIENTS} WHERE ROWID = ${escapeSql(id)} LIMIT 1`,
+    )) as unknown[],
+    TABLE_CLIENTS,
+  );
+  const existing = rows[0];
+  if (!existing) throw new NotFoundError(`SalesClient ${id} not found`);
+  if (existing.freelance_user_id !== me.ROWID) throw new ForbiddenError('Ese cliente no te corresponde');
+  if (!isTrueish(existing.datos_legales_completos)) {
+    throw new ValidationError('Completá primero los datos legales antes de enviar el contrato.');
+  }
+
+  const salario = Number(existing.salario_mensual_usd);
+  if (!Number.isFinite(salario) || salario <= 0) {
+    throw new ValidationError('salario_mensual_usd inválido en el cliente');
+  }
+
+  // Datos del cliente para Zoho Sign:
+  //   client_name = representante legal (quien firma)
+  //   client_company = razón social (nombre legal completo)
+  //   client_email = email del representante (a donde va el link de firma)
+  //   Los demás campos vienen del modal de datos legales
+  const addressFull = [existing.empresa_direccion, existing.empresa_ciudad, existing.empresa_pais]
+    .filter(Boolean)
+    .join(', ');
+
+  const { sendContract } = await import('../lib/zohoSignClient.js');
+  const result = await sendContract({
+    client_email: existing.representante_email || existing.contacto_email,
+    client_name: existing.representante_nombre || existing.contacto_nombre,
+    client_company: existing.empresa_razon_social || existing.empresa_nombre,
+    client_ruc_nit_ein: existing.empresa_ruc_nit || undefined,
+    client_address: addressFull || undefined,
+    client_phone: existing.contacto_phone || undefined,
+    puesto_nombre: existing.puesto_cargo || 'Puesto por definir',
+    puesto_salario_usd: salario,
+    plazo_min_dias: 14,
+    plazo_max_dias: 30,
+  }, ctx.traceId);
+
+  if (!result.ok) {
+    if (result.error.includes('not configured') || result.error.includes('TEMPLATE_ID')) {
+      sendJson(ctx.res, 503, {
+        error: {
+          code: 'sign_not_configured',
+          message: 'Zoho Sign no está configurado (falta ZOHO_SIGN_CONTRACT_TEMPLATE_ID). Contactá al admin.',
+        },
+      });
+      return;
+    }
+    throw new AppError(500, 'sign_failed', result.error);
+  }
+
+  // Mover el cliente a 'contrato_enviado' si estaba en 'cotizacion_contrato'.
+  if (existing.pipeline_stage === 'cotizacion_contrato') {
+    try {
+      await datastore(ctx.req).table(TABLE_CLIENTS).updateRow({
+        ROWID: id,
+        pipeline_stage: 'contrato_enviado',
+      });
+    } catch (err) {
+      log.warn('failed to advance stage after contract sent — best effort', { traceId: ctx.traceId, error: (err as Error).message });
+    }
+  }
+
+  log.info('contract sent via zoho sign', {
+    traceId: ctx.traceId,
+    clientId: id,
+    freelanceId: me.ROWID,
+    signingUrl: result.data?.signing_url ? '[redacted]' : null,
+  });
+
+  sendJson(ctx.res, 200, {
+    ok: true,
+    id,
+    message: 'Contrato enviado — el representante lo recibe por email para firmar.',
+    signing_url: result.data?.signing_url ?? null,
+    pipeline_stage: 'contrato_enviado',
   });
 }
 

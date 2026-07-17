@@ -327,6 +327,110 @@ SharkTalents`,
 };
 
 // ============================================================
+// Marketing funnel — invitación al candidato finalista (flow=finalist)
+// Landing: /evalua-tu-finalista. El empleador manda a un candidato de un proceso
+// activo, no a un miembro de su equipo. El ángulo del email cambia: le decimos
+// al candidato que es parte del proceso de selección, no un favor a un amigo.
+// ============================================================
+
+const MARKETING_FINALIST_TEST_LINK: Record<EmailLocale, EmailTemplate> = {
+  es: {
+    subject: 'Tu evaluación para {{lead_company}}',
+    body_text: `SharkTalents
+
+Hola {{member_name}},
+
+{{lead_name}} te invita a completar dos pruebas cortas como parte del proceso para {{puesto}}.
+
+Prueba conductual (~30-40 min):
+{{conductual_url}}
+
+Prueba de integridad (~20-30 min):
+{{integridad_url}}
+
+—
+Equipo SharkTalents`,
+    body_html: `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f3f4f6; margin:0; padding:0;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:12px; overflow:hidden;">
+
+        <!-- HEADER -->
+        <tr>
+          <td style="background-color:#0e1218; padding:28px 40px; text-align:left; border-bottom:4px solid #dafd6f;">
+            <div style="font-family:Arial,Helvetica,sans-serif; font-size:24px; font-weight:bold; color:#dafd6f; letter-spacing:1px;">SHARKTALENTS</div>
+            <div style="font-family:Arial,Helvetica,sans-serif; font-size:13px; color:#8a93a3; margin-top:4px;">Evaluación de finalistas.</div>
+          </td>
+        </tr>
+
+        <!-- BODY -->
+        <tr>
+          <td style="padding:36px 40px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:1.7; color:#1f2937;">
+            <p style="margin:0 0 20px 0;">Hola {{member_name}},</p>
+            <p style="margin:0 0 28px 0;"><strong>{{lead_name}}</strong> te invita a completar dos pruebas cortas como parte del proceso para <strong>{{puesto}}</strong>.</p>
+
+            <p style="margin:0 0 10px 0; font-size:13px; color:#4b5563; font-weight:600;">Prueba conductual (~30-40 min)</p>
+            <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px 0;">
+              <tr>
+                <td align="center" style="background-color:#dafd6f; border-radius:6px; padding:12px 28px;">
+                  <a href="{{conductual_url}}" style="font-family:Arial,Helvetica,sans-serif; font-size:14px; font-weight:bold; color:#1f2937; text-decoration:none; display:inline-block;">
+                    Empezar
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 10px 0; font-size:13px; color:#4b5563; font-weight:600;">Prueba de integridad (~20-30 min)</p>
+            <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px 0;">
+              <tr>
+                <td align="center" style="background-color:#dafd6f; border-radius:6px; padding:12px 28px;">
+                  <a href="{{integridad_url}}" style="font-family:Arial,Helvetica,sans-serif; font-size:14px; font-weight:bold; color:#1f2937; text-decoration:none; display:inline-block;">
+                    Empezar
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- FOOTER -->
+        <tr>
+          <td style="background-color:#f9fafb; padding:20px 40px; border-top:1px solid #e5e7eb; text-align:center;">
+            <div style="font-family:Arial,Helvetica,sans-serif; font-size:13px; color:#6b7280; line-height:1.6;">
+              <strong style="color:#1f2937;">Equipo SharkTalents</strong>
+            </div>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>`,
+  },
+  en: {
+    subject: 'Evaluation for {{puesto}} at {{lead_company}}',
+    body_text: `Hi {{member_name}},
+
+{{lead_name}} from {{lead_company}} invited you to complete an evaluation as part of the selection process for {{puesto}}.
+
+About {{estimated_minutes}} minutes total, in one sitting. Measures work style (DISC), reasoning, integrity, and fit with the role.
+
+Start here: {{test_url}}
+
+Link expires on {{expires_at}}. The report goes to {{lead_name}} for the final decision.
+
+Best,
+SharkTalents`,
+    body_html: `<p>Hi <strong>{{member_name}}</strong>,</p>
+<p><strong>{{lead_name}}</strong> from <strong>{{lead_company}}</strong> invited you to complete an evaluation as part of the selection process for <strong>{{puesto}}</strong>.</p>
+<p>About <strong>{{estimated_minutes}} minutes</strong>, in one sitting. Measures DISC, reasoning, integrity, and fit.</p>
+<p><a href="{{test_url}}" style="background:#dafd6f;color:#000;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:600;">Start evaluation</a></p>
+<p style="color:#666;font-size:14px;">Link expires on <strong>{{expires_at}}</strong>. Report goes to {{lead_name}}.</p>
+<p>Best,<br/><em>SharkTalents</em></p>`,
+  },
+};
+
+// ============================================================
 // Marketing funnel — thank-you al lead cuando deja sus datos
 // ============================================================
 
@@ -570,6 +674,107 @@ SharkTalents Team`,
 </ul>
 <p style="color:#444;">Interested in evaluating more team members or starting a formal hiring process? Reply to this email.</p>
 <p>Best,<br/><em>SharkTalents Team</em></p>`,
+  },
+};
+
+// ============================================================================
+// marketing_fit_report — email camino A (finalista con reunión de fit)
+// ============================================================================
+// Chris arma el reporte manual en /marketing/fit-report/:leadId, la IA genera
+// el HTML del reporte y lo pasa como `report_html`. Este template le pone
+// la envoltura corporativa alrededor.
+const MARKETING_FIT_REPORT: Record<EmailLocale, EmailTemplate> = {
+  es: {
+    subject: 'Reporte de fit — {{candidate_name}}',
+    body_text: `SharkTalents
+
+Hola{{contact_name_prefix}},
+
+Preparé el reporte de fit para {{candidate_name}} — puesto {{puesto}}.
+
+Podés verlo acá: {{fit_view_url}}
+
+El reporte incluye análisis del fit y también link al perfil psicométrico completo del candidato con visualizaciones (DISC, cognitiva, competencias, integridad).
+
+Cualquier cosa, respondé este email — llega directo a nuestro equipo.
+
+—
+Equipo SharkTalents`,
+    body_html: `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f3f4f6; margin:0; padding:0;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+      <table width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px; width:100%; background-color:#ffffff; border-radius:12px; overflow:hidden;">
+
+        <!-- HEADER -->
+        <tr>
+          <td style="background-color:#0e1218; padding:26px 36px; text-align:left; border-bottom:4px solid #dafd6f;">
+            <div style="font-family:Arial,Helvetica,sans-serif; font-size:22px; font-weight:bold; color:#dafd6f; letter-spacing:1px;">SHARKTALENTS</div>
+            <div style="font-family:Arial,Helvetica,sans-serif; font-size:13px; color:#8a93a3; margin-top:4px;">Reporte de fit — evaluación de finalista</div>
+          </td>
+        </tr>
+
+        <!-- BODY -->
+        <tr>
+          <td style="padding:36px 36px 28px 36px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:1.7; color:#1f2937;">
+            <p style="margin:0 0 16px 0;">Hola{{contact_name_prefix}},</p>
+            <p style="margin:0 0 20px 0;">Preparé el reporte de fit para <strong>{{candidate_name}}</strong> — puesto {{puesto}}.</p>
+
+            <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px 0;">
+              <tr>
+                <td align="center" style="background-color:#dafd6f; border-radius:6px; padding:14px 36px;">
+                  <a href="{{fit_view_url}}" style="font-family:Arial,Helvetica,sans-serif; font-size:15px; font-weight:bold; color:#0e1218; text-decoration:none; display:inline-block;">
+                    Ver reporte de fit
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 8px 0; font-size:14px; color:#4b5563;">Adentro vas a encontrar:</p>
+            <ul style="margin:0 0 20px 0; padding-left:20px; font-size:14px; color:#4b5563; line-height:1.8;">
+              <li>Análisis del fit del candidato con tu equipo y rol</li>
+              <li>Fortalezas y puntos de atención específicos</li>
+              <li>Recomendaciones de management para aprovechar el perfil</li>
+              <li>Acceso al perfil psicométrico completo del candidato (DISC, cognitiva, competencias, integridad)</li>
+            </ul>
+
+            <p style="margin:0; font-size:13px; color:#6b7280;">Link válido por 30 días.</p>
+          </td>
+        </tr>
+
+        <!-- FOOTER -->
+        <tr>
+          <td style="background-color:#f9fafb; padding:20px 36px; border-top:1px solid #e5e7eb; text-align:center;">
+            <div style="font-family:Arial,Helvetica,sans-serif; font-size:13px; color:#6b7280; line-height:1.6;">
+              <strong style="color:#1f2937;">Equipo SharkTalents</strong><br/>
+              ¿Dudas? Respondé este email.
+            </div>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>`,
+  },
+  en: {
+    subject: 'Fit report — {{candidate_name}}',
+    body_text: `Hi{{contact_name_prefix}},
+
+Here's the fit report for {{candidate_name}} — role: {{puesto}}.
+
+View it here: {{fit_view_url}}
+
+The link is valid for 30 days.
+
+Reply to this email if you have any questions.
+
+—
+SharkTalents Team`,
+    body_html: `<p>Hi{{contact_name_prefix}},</p>
+<p>Here's the fit report for <strong>{{candidate_name}}</strong> — role: {{puesto}}.</p>
+<p><a href="{{fit_view_url}}">View fit report</a></p>
+<p>Link valid for 30 days.</p>
+<p>— SharkTalents Team</p>`,
   },
 };
 
@@ -1719,8 +1924,10 @@ export const TEMPLATES = {
   // Marketing funnel
   marketing_deletion_request: MARKETING_DELETION_REQUEST,
   marketing_demo_test_link: MARKETING_DEMO_TEST_LINK,
+  marketing_finalist_test_link: MARKETING_FINALIST_TEST_LINK,
   marketing_lead_thanks: MARKETING_LEAD_THANKS,
   marketing_demo_report_ready: MARKETING_DEMO_REPORT_READY,
+  marketing_fit_report: MARKETING_FIT_REPORT,
   meta_lead_welcome: META_LEAD_WELCOME,
   client_comments_received: CLIENT_COMMENTS_RECEIVED,
   client_changes_applied: CLIENT_CHANGES_APPLIED,

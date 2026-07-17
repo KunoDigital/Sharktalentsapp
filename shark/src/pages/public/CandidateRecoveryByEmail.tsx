@@ -25,7 +25,7 @@ export default function CandidateRecoveryByEmail() {
       setSubmitted(true);
     } catch (err) {
       log.warn('recovery failed', { error: (err as Error).message });
-      setError('No pudimos procesar tu pedido. Intentá más tarde o escribinos a proyectos@kunodigital.com');
+      setError('No pudimos procesar tu pedido. Intenta más tarde o escríbenos a proyectos@kunodigital.com');
     } finally {
       setSubmitting(false);
     }
@@ -39,7 +39,7 @@ export default function CandidateRecoveryByEmail() {
             <h1>✓ Listo</h1>
             <p>Si tu email está en nuestro sistema, vas a recibir un link nuevo en los próximos minutos.</p>
             <p style={{ marginTop: 16, fontSize: 13, color: '#6b7280' }}>
-              Revisá tu bandeja de entrada y la carpeta de spam. Si en 10 min no llegó nada, escribinos a{' '}
+              Revisa tu bandeja de entrada y la carpeta de spam. Si en 10 min no llegó nada, escríbenos a{' '}
               <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.
             </p>
           </div>
@@ -54,7 +54,7 @@ export default function CandidateRecoveryByEmail() {
         <div className="ct-test-intro">
           <h1>Recuperar mi link</h1>
           <p className="ct-instructions">
-            Pusiste tu email cuando aplicaste — usalo acá para que te mandemos un link nuevo
+            Pusiste tu email cuando aplicaste — úsalo aquí para que te mandemos un link nuevo
             a la próxima fase de evaluación.
           </p>
         </div>

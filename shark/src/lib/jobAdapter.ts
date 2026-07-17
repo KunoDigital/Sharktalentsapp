@@ -103,20 +103,26 @@ export function apiJobToFormJob(apiJob: ApiJob): Job {
     : undefined;
 
   const auto_rejection_rules: AutoRejectionRules | undefined = ideal.auto_rejection_rules
-    ? {
-        disc_min_similarity: typeof ideal.auto_rejection_rules.disc_min_similarity === 'number'
-          ? ideal.auto_rejection_rules.disc_min_similarity as number : undefined,
-        velna_min_indice: typeof ideal.auto_rejection_rules.velna_min_indice === 'number'
-          ? ideal.auto_rejection_rules.velna_min_indice as number : undefined,
-        integridad_max_riesgo: typeof ideal.auto_rejection_rules.integridad_max_riesgo === 'number'
-          ? ideal.auto_rejection_rules.integridad_max_riesgo as number : undefined,
-        emo_min_score: typeof ideal.auto_rejection_rules.emo_min_score === 'number'
-          ? ideal.auto_rejection_rules.emo_min_score as number : undefined,
-        require_english_passed: typeof ideal.auto_rejection_rules.require_english_passed === 'boolean'
-          ? ideal.auto_rejection_rules.require_english_passed as boolean : undefined,
-        mindset_min_adaptability: typeof ideal.auto_rejection_rules.mindset_min_adaptability === 'number'
-          ? ideal.auto_rejection_rules.mindset_min_adaptability as number : undefined,
-      }
+    ? (() => {
+        const r = ideal.auto_rejection_rules as Record<string, unknown>;
+        const vpdRaw = r.velna_per_dimension as Record<string, unknown> | undefined;
+        const velna_per_dimension = vpdRaw ? {
+          verbal: typeof vpdRaw.verbal === 'number' ? vpdRaw.verbal : undefined,
+          espacial: typeof vpdRaw.espacial === 'number' ? vpdRaw.espacial : undefined,
+          logica: typeof vpdRaw.logica === 'number' ? vpdRaw.logica : undefined,
+          numerica: typeof vpdRaw.numerica === 'number' ? vpdRaw.numerica : undefined,
+          abstracta: typeof vpdRaw.abstracta === 'number' ? vpdRaw.abstracta : undefined,
+        } : undefined;
+        return {
+          disc_min_similarity: typeof r.disc_min_similarity === 'number' ? r.disc_min_similarity : undefined,
+          velna_min_indice: typeof r.velna_min_indice === 'number' ? r.velna_min_indice : undefined,
+          integridad_max_riesgo: typeof r.integridad_max_riesgo === 'number' ? r.integridad_max_riesgo : undefined,
+          emo_min_score: typeof r.emo_min_score === 'number' ? r.emo_min_score : undefined,
+          require_english_passed: typeof r.require_english_passed === 'boolean' ? r.require_english_passed : undefined,
+          mindset_min_adaptability: typeof r.mindset_min_adaptability === 'number' ? r.mindset_min_adaptability : undefined,
+          velna_per_dimension,
+        };
+      })()
     : undefined;
 
   const salary_range_usd = ideal.salary_range_usd

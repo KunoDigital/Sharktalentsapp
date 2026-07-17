@@ -76,7 +76,7 @@ export function JobPrescreeningStatsPanel({ jobId }: { jobId: string }) {
 
       {stats.pass_rate_pct != null && stats.pass_rate_pct < 20 && stats.total >= 5 && (
         <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 6, padding: 10, marginBottom: 12, fontSize: 13, color: '#78350f' }}>
-          ⚠️ Solo el {stats.pass_rate_pct}% pasa. Probablemente estás filtrando demasiado — revisá las preguntas más restrictivas abajo.
+          ⚠️ Solo el {stats.pass_rate_pct}% pasa. Probablemente estás filtrando demasiado — revisa las preguntas más restrictivas abajo.
         </div>
       )}
 

@@ -248,6 +248,117 @@ export async function downloadApplicationCv(ctx: RequestContext): Promise<void> 
   ctx.res.end(buffer);
 }
 
+/**
+ * GET /api/applications/:id/conductual-analysis
+ * Capa 4 — análisis IA contextual del Conductual (DISC + VELNA + Emoción).
+ *
+ * Reemplaza el análisis manual que hace el recruiter al mirar los scores. La IA
+ * recibe el contexto específico del puesto y devuelve un veredicto honesto.
+ *
+ * Regla CORE (Cris 2026-06-12): Conductual NO auto-rechaza. Solo informa.
+ * El recruiter SIEMPRE decide al final.
+ */
+export async function getConductualAnalysis(ctx: RequestContext): Promise<void> {
+  await requireAuth(ctx);
+  const tenantId = await requireTenant(ctx);
+  const urlPath = (ctx.req.url ?? '/').split('?')[0];
+  const match = urlPath.match(/\/api\/applications\/([^/]+)\/conductual-analysis\/?$/);
+  const id = match?.[1];
+  if (!id) throw new ValidationError('application id missing in path');
+
+  const result = await getResultById(ctx.req, id);
+  if (!result) throw new NotFoundError(`Application ${id} not found`);
+
+  const ownerTenant = await getJobTenantId(ctx.req, result.assessment_id);
+  if (ownerTenant !== tenantId) throw new NotFoundError(`Application ${id} not found`);
+
+  // Cargar Scores del candidato
+  type ScoresRow = {
+    disc_norm_d?: number; disc_norm_i?: number; disc_norm_s?: number; disc_norm_c?: number;
+    disc_similarity_pct?: number;
+    velna_verbal?: number; velna_espacial?: number; velna_logica?: number; velna_numerica?: number; velna_abstracta?: number;
+    velna_indice?: number; velna_similarity_pct?: number;
+    emo_score?: number; emo_perfil?: string;
+    tec_score_pct?: number; tec_style_autonomy_consult?: number; tec_style_match_with_boss_pct?: number;
+    conductual_completed_at?: string | null;
+  };
+  const scoresRows = unwrapRows<ScoresRow>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT * FROM Scores WHERE result_id = '${escapeSql(id)}' LIMIT 1`,
+    )) as unknown[],
+    'Scores',
+  );
+  const scores = scoresRows[0];
+
+  if (!scores) {
+    throw new NotFoundError(`No scores available for application ${id} — candidate has not completed evaluations yet`);
+  }
+
+  // Cargar Job + parsear ideal_profile
+  type JobRow = { ideal_profile: string | null; title: string };
+  const jobRows = unwrapRows<JobRow>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT ideal_profile, title FROM Jobs WHERE ROWID = '${escapeSql(result.assessment_id)}' LIMIT 1`,
+    )) as unknown[],
+    'Jobs',
+  );
+  const job = jobRows[0];
+  if (!job) throw new NotFoundError(`Job not found for application ${id}`);
+
+  const { parseIdealProfile } = await import('./jobs.js');
+  const ideal = parseIdealProfile(job.ideal_profile) ?? {};
+
+  // Cargar Candidate
+  type CandRow = { name: string };
+  const candRows = unwrapRows<CandRow>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT name FROM Candidates WHERE ROWID = '${escapeSql(result.candidate_id)}' LIMIT 1`,
+    )) as unknown[],
+    'Candidates',
+  );
+  const candidate_name = candRows[0]?.name ?? 'Candidato';
+
+  // Cargar AntiCheatEvents (opcional — la tabla puede no existir)
+  type AntiCheatRow = { event_type: string; duration_seconds?: number };
+  let antiCheatEvents: Array<{ type: string; count?: number; total_seconds?: number }> = [];
+  try {
+    const rows = unwrapRows<AntiCheatRow>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT event_type, duration_seconds FROM AntiCheatEvents WHERE result_id = '${escapeSql(id)}'`,
+      )) as unknown[],
+      'AntiCheatEvents',
+    );
+    // Agrupar por tipo
+    const byType = new Map<string, { count: number; total_seconds: number }>();
+    for (const r of rows) {
+      const cur = byType.get(r.event_type) ?? { count: 0, total_seconds: 0 };
+      cur.count += 1;
+      cur.total_seconds += r.duration_seconds ?? 0;
+      byType.set(r.event_type, cur);
+    }
+    antiCheatEvents = Array.from(byType.entries()).map(([type, v]) => ({ type, count: v.count, total_seconds: v.total_seconds }));
+  } catch {
+    // Tabla AntiCheatEvents no existe todavía. Continuar sin estos datos.
+  }
+
+  // Generar análisis (con cache)
+  const { analyzeConductual } = await import('../lib/conductualAnalysis.js');
+  const analysis = await analyzeConductual({
+    candidate_name,
+    scores,
+    ideal,
+    anti_cheat_events: antiCheatEvents.length > 0 ? antiCheatEvents : undefined,
+  }, { traceId: ctx.traceId });
+
+  sendJson(ctx.res, 200, {
+    application_id: id,
+    candidate_name,
+    job_title: job.title,
+    conductual_completed: Boolean(scores.conductual_completed_at),
+    analysis,
+  });
+}
+
 export async function createApplication(ctx: RequestContext): Promise<void> {
   await requireAuth(ctx);
   const tenantId = await requireTenant(ctx);

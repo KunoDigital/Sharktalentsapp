@@ -1,0 +1,131 @@
+{
+  "version": "shark-mobile-review-2026-07-01",
+  "exported_at": "2026-07-02T18:49:01.567Z",
+  "total": 15,
+  "approved": 9,
+  "rejected": 3,
+  "pending": 0,
+  "untouched": 3,
+  "slides": [
+    {
+      "slide_id": 1,
+      "pretitle": "(Cover)",
+      "desc": "El candidato brilla en la entrevista. Después no rinde en el puesto. Tagline: Aquí dejas de adivinar.",
+      "status": "approved",
+      "comment": null,
+      "updated_at": "2026-07-02T18:44:41.493Z"
+    },
+    {
+      "slide_id": 2,
+      "pretitle": "Lo que te garantizamos",
+      "desc": "Sin humo. Lo que realmente cumplimos. 4 garantías: 3-4 finalistas, 15-21 días, rebúsqueda gratis, perfil estructurado.",
+      "status": "rejected",
+      "comment": "hay que explicar un poco de la rebuqueda porque es solo si no cumple con los requsitos solicitados inicialmente",
+      "updated_at": "2026-07-02T18:45:07.438Z"
+    },
+    {
+      "slide_id": 3,
+      "pretitle": "El fit es el corazón",
+      "desc": "Un candidato excelente puede fracasar bajo el líder equivocado. Fit con jefe + Fit con rol.",
+      "status": "approved",
+      "comment": null,
+      "updated_at": "2026-07-02T18:45:22.008Z"
+    },
+    {
+      "slide_id": 4,
+      "pretitle": "El costo silencioso",
+      "desc": "Frase de impacto: \"Mientras buscas candidato, la operación pierde plata cada día.\"",
+      "status": "approved",
+      "comment": null,
+      "updated_at": "2026-07-02T18:45:25.543Z"
+    },
+    {
+      "slide_id": 5,
+      "pretitle": "Lo que medimos",
+      "desc": "Las 6 dimensiones (Conducta, Cognición, Técnica, Integridad, Mentalidad, Emoción) + Inglés opcional.",
+      "status": "rejected",
+      "comment": "esto es mucha palabreria el titulo deberia ser algo como analizamos a los candidatos en : conducta, cognicion tenica, integridad cada una de estas en bullets o espero tus sugerencias. ",
+      "updated_at": "2026-07-02T18:46:13.423Z"
+    },
+    {
+      "slide_id": 6,
+      "pretitle": "Para quién",
+      "desc": "Roles que mueven una operación. Dueños/CEO, Responsables de contratación, Gerentes de área.",
+      "status": "approved",
+      "comment": null,
+      "updated_at": "2026-07-02T18:46:18.311Z"
+    },
+    {
+      "slide_id": 7,
+      "pretitle": "Tu camino con nosotros",
+      "desc": "Del primer contacto a los finalistas. 7 pasos: Demo → Reunión → Perfil → Contrato → Pago 50% → Búsqueda → Finalistas.",
+      "status": null,
+      "comment": "hay que haer que esto sea mas claro piensa como el cliente ",
+      "updated_at": "2026-07-02T18:46:49.401Z"
+    },
+    {
+      "slide_id": 8,
+      "pretitle": "El error en silencio",
+      "desc": "Frase impacto: \"El candidato que no rinde te quema dos veces. Cuando lo eliges y cuando lo tienes que sacar.\"",
+      "status": "approved",
+      "comment": null,
+      "updated_at": "2026-07-02T18:46:56.764Z"
+    },
+    {
+      "slide_id": 9,
+      "pretitle": "Qué pasa con cada candidato",
+      "desc": "Por estos filtros antes de llegar a ti. 8 pasos del pipeline de candidato.",
+      "status": "rejected",
+      "comment": "esta como repetido unifiquemos lo que evaluamos y los filtros en una sola ",
+      "updated_at": "2026-07-02T18:47:24.815Z"
+    },
+    {
+      "slide_id": 10,
+      "pretitle": "DISC en la vida real",
+      "desc": "El personaje que ya conoces. 4 personajes: Miranda Bailey (D), Harvey Specter (I), Hagrid (S), Sheldon Cooper (C).",
+      "status": null,
+      "comment": "ya no se si esto sea necesario. ",
+      "updated_at": "2026-07-02T18:47:33.265Z"
+    },
+    {
+      "slide_id": 11,
+      "pretitle": "La presión de arriba",
+      "desc": "Frase impacto: \"Cuando los nuevos no duran, la pregunta del CEO va para ti.\"",
+      "status": "approved",
+      "comment": null,
+      "updated_at": "2026-07-02T18:48:20.415Z"
+    },
+    {
+      "slide_id": 12,
+      "pretitle": "El reporte que recibes",
+      "desc": "Tus 3 o 4 finalistas, uno al lado del otro. Tabla comparativa con Fit / Cognitiva / Integridad / Técnica / Estilo.",
+      "status": null,
+      "comment": "poco claro no se entiende bien pensemos como el cliente ",
+      "updated_at": "2026-07-02T18:48:29.848Z"
+    },
+    {
+      "slide_id": 13,
+      "pretitle": "Inversión",
+      "desc": "El precio no lo escondemos. 1.2x el salario mensual del puesto. Forma de pago 50/50.",
+      "status": "approved",
+      "comment": null,
+      "updated_at": "2026-07-02T18:48:33.830Z"
+    },
+    {
+      "slide_id": 14,
+      "pretitle": "Quienes ya nos confiaron",
+      "desc": "Empresas que decidieron con datos. Logos: Alpha Trading, Maxi Gold, Importadora Panamá, Latam Vaping, Grupo 19 (Kava + Aria).",
+      "status": "approved",
+      "comment": null,
+      "updated_at": "2026-07-02T18:48:36.396Z"
+    },
+    {
+      "slide_id": 15,
+      "pretitle": "(CTA final)",
+      "desc": "Tu próxima contratación puede ser una apuesta o una decisión. Tú eliges.",
+      "status": "approved",
+      "comment": null,
+      "updated_at": "2026-07-02T18:48:39.996Z"
+    }
+  ]
+}

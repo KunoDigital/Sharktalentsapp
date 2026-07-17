@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { config } from '../../config';
+import DatosLegalesModal from './DatosLegalesModal';
 
 type ClientStage =
   | 'cotizacion_contrato'
@@ -30,6 +31,7 @@ type Client = {
   zoho_deal_id: string | null;
   zoho_sync_status: string | null;
   zoho_sync_error: string | null;
+  datos_legales_completos: boolean;
 };
 
 /**
@@ -43,6 +45,7 @@ export default function FreelanceClientesKanban() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
+  const [datosLegalesClient, setDatosLegalesClient] = useState<Client | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -66,7 +69,36 @@ export default function FreelanceClientesKanban() {
     void load();
   }, [load, refreshTick]);
 
+  async function sendContract(client: Client) {
+    if (!client.datos_legales_completos) {
+      setDatosLegalesClient(client);
+      return;
+    }
+    if (!window.confirm(`Enviar contrato de Zoho Sign a ${client.contacto_email}?\n\nEl representante lo recibe por email para firmar.`)) return;
+    try {
+      const token = await getToken();
+      const res = await fetch(`${config.apiBase}/api/freelance/me/clients/${client.id}/send-contract`, {
+        method: 'POST',
+        headers: { 'X-Clerk-Token': token ?? '', 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+        throw new Error(data.error?.message ?? `HTTP ${res.status}`);
+      }
+      const result = (await res.json()) as { message: string };
+      alert(result.message);
+      setRefreshTick((n) => n + 1);
+    } catch (err) {
+      alert(`Error enviando contrato: ${(err as Error).message}`);
+    }
+  }
+
   async function moveClient(client: Client, nextStage: ClientStage) {
+    // Guard: si intenta mover a 'contrato_enviado' sin datos legales, abrir modal en vez de PATCH.
+    if (nextStage === 'contrato_enviado' && !client.datos_legales_completos) {
+      setDatosLegalesClient(client);
+      return;
+    }
     try {
       const token = await getToken();
       const res = await fetch(`${config.apiBase}/api/freelance/me/clients/${client.id}/stage`, {
@@ -170,10 +202,29 @@ export default function FreelanceClientesKanban() {
                   }
                 }}
                 onMovePerdido={(client) => void moveClient(client, 'perdido')}
+                onSendContract={(client) => void sendContract(client)}
               />
             );
           })}
         </div>
+      )}
+
+      {datosLegalesClient && (
+        <DatosLegalesModal
+          client={{
+            id: datosLegalesClient.id,
+            empresa_nombre: datosLegalesClient.empresa_nombre,
+            contacto_nombre: datosLegalesClient.contacto_nombre,
+          }}
+          onClose={() => setDatosLegalesClient(null)}
+          onSaved={() => {
+            const clientToMove = datosLegalesClient;
+            setDatosLegalesClient(null);
+            // Marcar el datos_legales_completos=true localmente y mover al siguiente stage
+            setClients((list) => list.map((c) => (c.id === clientToMove.id ? { ...c, datos_legales_completos: true } : c)));
+            void moveClient({ ...clientToMove, datos_legales_completos: true }, 'contrato_enviado');
+          }}
+        />
       )}
     </div>
   );
@@ -184,11 +235,13 @@ function StageColumn({
   clients,
   onMoveNext,
   onMovePerdido,
+  onSendContract,
 }: {
   stage: typeof CLIENT_STAGES[number];
   clients: Client[];
   onMoveNext: (client: Client) => void;
   onMovePerdido: (client: Client) => void;
+  onSendContract: (client: Client) => void;
 }) {
   const isPerdido = stage.key === 'perdido';
   const totalDeal = clients.reduce((sum, c) => sum + Number(c.monto_deal_usd ?? 0), 0);
@@ -223,6 +276,7 @@ function StageColumn({
             client={client}
             onMoveNext={isPerdido ? undefined : () => onMoveNext(client)}
             onMovePerdido={() => onMovePerdido(client)}
+            onSendContract={() => onSendContract(client)}
           />
         ))}
       </div>
@@ -234,11 +288,14 @@ function ClientCard({
   client,
   onMoveNext,
   onMovePerdido,
+  onSendContract,
 }: {
   client: Client;
   onMoveNext?: () => void;
   onMovePerdido: () => void;
+  onSendContract: () => void;
 }) {
+  const canSendContract = client.datos_legales_completos && client.pipeline_stage === 'cotizacion_contrato';
   return (
     <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 10 }}>
       <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 4 }}>{client.empresa_nombre}</div>
@@ -273,6 +330,24 @@ function ClientCard({
             }}
           >
             ▶ Siguiente etapa
+          </button>
+        )}
+        {canSendContract && (
+          <button
+            onClick={onSendContract}
+            style={{
+              background: '#4f46e5',
+              color: '#fff',
+              border: 'none',
+              padding: '6px 8px',
+              borderRadius: 4,
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+            title="Datos legales completos → dispara Zoho Sign"
+          >
+            📄 Enviar contrato
           </button>
         )}
         <button

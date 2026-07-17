@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roadmap Finalización App — SharkTalents · 2026-07-16</title>
+<style>
+  :root {
+    --page:#FAF9F6;
+    --paper:#FFFFFF;
+    --ink:#1E2C3A;
+    --ink-2:#3B4756;
+    --muted:#5C6773;
+    --line:#E5E1DA;
+    --line-strong:#CFC8BC;
+    --ok:#2C7A5A;
+    --warn:#B8863C;
+    --stop:#A3392C;
+    --ok-soft:#EAF3EE;
+    --warn-soft:#FBF3E3;
+    --stop-soft:#F5E3E0;
+    --highlight:#F7F0DA;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    background:var(--page); color:var(--ink);
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size:15px; line-height:1.6;
+    padding:40px 20px 80px;
+  }
+  .doc { max-width:1080px; margin:0 auto; }
+  header { margin-bottom:32px; }
+  h1 { font-size:28px; font-weight:700; letter-spacing:-0.02em; margin-bottom:4px; }
+  .updated { color:var(--muted); font-size:13px; margin-bottom:20px; }
+  .legend { display:flex; flex-wrap:wrap; gap:12px; }
+  .chip {
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--paper); border:1px solid var(--line);
+    border-radius:20px; padding:5px 12px; font-size:12px; color:var(--ink-2);
+  }
+  .dot { width:8px; height:8px; border-radius:50%; }
+  .dot.ok { background:var(--ok); }
+  .dot.warn { background:var(--warn); }
+  .dot.stop { background:var(--stop); }
+
+  section { margin-bottom:36px; }
+  h2 { font-size:20px; font-weight:700; margin-bottom:4px; letter-spacing:-0.01em; }
+  h2 .num {
+    display:inline-block; width:26px; height:26px; line-height:26px;
+    text-align:center; background:var(--ink); color:var(--paper);
+    border-radius:6px; font-size:13px; margin-right:10px; font-weight:600;
+    vertical-align:1px;
+  }
+  h2 small { color:var(--muted); font-weight:400; font-size:14px; margin-left:8px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; margin-top:2px; }
+
+  .card {
+    background:var(--paper); border:1px solid var(--line); border-radius:12px;
+    padding:22px 26px; margin-bottom:14px;
+  }
+
+  table {
+    width:100%; border-collapse:collapse; background:var(--paper);
+    border:1px solid var(--line); border-radius:12px; overflow:hidden;
+  }
+  th, td {
+    padding:11px 14px; text-align:left; border-bottom:1px solid var(--line);
+    font-size:14px; vertical-align:top;
+  }
+  th {
+    background:#F5F2ED; font-weight:600; font-size:12px;
+    text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-2);
+  }
+  tr:last-child td { border-bottom:none; }
+  td.status { white-space:nowrap; }
+
+  .status-pill {
+    display:inline-block; padding:2px 10px; border-radius:12px;
+    font-size:11px; font-weight:600; letter-spacing:0.03em; text-transform:uppercase;
+  }
+  .status-pill.ok { background:var(--ok-soft); color:var(--ok); }
+  .status-pill.warn { background:var(--warn-soft); color:var(--warn); }
+  .status-pill.stop { background:var(--stop-soft); color:var(--stop); }
+
+  .why {
+    background:var(--highlight); border-left:3px solid var(--warn);
+    border-radius:6px; padding:11px 16px; font-size:13.5px;
+    color:var(--ink-2); margin:14px 0;
+  }
+  .why b { color:var(--ink); }
+
+  .problem-block h3 {
+    font-size:15px; font-weight:700; margin-bottom:6px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .problem-block h3 code {
+    background:#EEF1F3; color:var(--ink-2);
+    padding:1px 8px; border-radius:4px; font-size:12px; font-weight:400;
+  }
+  .problem-grid {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:12px; margin-top:10px;
+  }
+  .field {
+    background:#FAFAF7; border:1px solid var(--line); border-radius:8px;
+    padding:10px 12px;
+  }
+  .field .lbl {
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em;
+    color:var(--muted); font-weight:600; margin-bottom:4px;
+  }
+  .field .val { font-size:13px; color:var(--ink); line-height:1.5; }
+
+  .divider { border:none; border-top:1px solid var(--line); margin:12px 0; }
+
+  ul.tight { list-style:none; padding:0; }
+  ul.tight li {
+    padding:8px 0; border-bottom:1px solid var(--line);
+    display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:baseline;
+  }
+  ul.tight li:last-child { border-bottom:none; }
+  ul.tight li .dot { margin-top:6px; }
+  ul.tight li .task { font-size:13.5px; }
+  ul.tight li .who { font-size:11.5px; color:var(--muted); white-space:nowrap; }
+
+  .rollup {
+    background:var(--paper); border:1px solid var(--line-strong); border-radius:12px;
+    padding:20px 24px; margin-bottom:24px;
+  }
+  .rollup h2 { border:none; padding:0; margin-bottom:12px; }
+
+  .foot { color:var(--muted); font-size:12px; margin-top:20px; text-align:center; }
+
+  code { font-family:'SF Mono', Menlo, Consolas, monospace; font-size:12.5px; }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <header>
+    <h1>Finalización SharkTalents — plan de ejecución</h1>
+    <p class="updated">2026-07-16 · Auditoría del código real vs plan · Orden de ataque para llegar a app funcional end-to-end</p>
+    <div class="legend">
+      <span class="chip"><span class="dot ok"></span> Funciona hoy</span>
+      <span class="chip"><span class="dot warn"></span> Existe pero incompleto</span>
+      <span class="chip"><span class="dot stop"></span> No implementado / roto</span>
+    </div>
+  </header>
+
+  <!-- ============================================================== -->
+  <!-- RESUMEN EJECUTIVO -->
+  <!-- ============================================================== -->
+  <div class="rollup">
+    <h2>Resumen — dónde estás parada</h2>
+    <p class="sub">La base está mucho más avanzada que lo que sugiere el cronograma. Los 3 bloques que Cristian pidió cerrar ya tienen código; falta wiring y cerrar bugs concretos, no construir de cero.</p>
+    <table>
+      <thead>
+        <tr><th>Bloque</th><th>Estado global</th><th>Qué anda</th><th>Qué le falta</th><th>Bloqueado por</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Pipeline (fases)</b></td>
+          <td class="status"><span class="status-pill warn">70%</span></td>
+          <td>Prefiltro → Técnica → Conductual → Integridad ✓</td>
+          <td>English/Mindset no transicionan · videos_completed → finalist manual · "Duda CV" no persiste</td>
+          <td>Nadie — es puro código</td>
+        </tr>
+        <tr>
+          <td><b>Videos dinámicos</b></td>
+          <td class="status"><span class="status-pill warn">60%</span></td>
+          <td>Generación IA de preguntas · Grabación candidato · Upload File Store</td>
+          <td>Whisper no auto-corre · schema mismatch → panel admin muestra <code>undefined</code> · análisis IA solo con click manual</td>
+          <td>Chris: nada · Cristian: cron para transcripción</td>
+        </tr>
+        <tr>
+          <td><b>WhatsApp</b></td>
+          <td class="status"><span class="status-pill warn">40%</span></td>
+          <td>Cliente Twilio con circuit breaker · <code>lead_alerta_cris</code> live en prod</td>
+          <td>6 templates comerciales sin SID · templates candidato ni existen · webhook inbound solo entiende Meta (no Twilio)</td>
+          <td>Meta aprueba templates (24-48h c/u) · Chris crea templates en Twilio Content Builder</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ORDEN DE ATAQUE -->
+  <!-- ============================================================== -->
+  <section>
+    <h2><span class="num">→</span>Orden de ataque sugerido</h2>
+    <p class="sub">Por qué este orden y no otro.</p>
+
+    <div class="card">
+      <h3 style="font-size:16px; margin-bottom:8px;">1. Pipeline (fases del candidato) &nbsp;→&nbsp; primero</h3>
+      <p style="font-size:14px; color:var(--ink-2);">
+        Es la columna vertebral. Todo lo demás depende de que el candidato transicione bien de una fase a la otra.
+        Si el pipeline no avanza automáticamente, el video nunca se genera, el WhatsApp nunca se dispara, el finalista nunca aparece en la cola.
+        Además: <b>no depende de humanos</b> — es puro código y podemos entregarlo sin bloqueos externos.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:16px; margin-bottom:8px;">2. Videos dinámicos &nbsp;→&nbsp; segundo</h3>
+      <p style="font-size:14px; color:var(--ink-2);">
+        Se activa cuando el candidato llega a <code>videos_pending</code>. Sin arreglar el pipeline primero, no vale la pena tocar videos.
+        El bug del schema mismatch (frontend lee <code>attempt</code>, <code>transcript_status</code>; backend escribe otros nombres) es lo que hace que el panel se vea vacío.
+        Chris no puede desbloquear nada acá — es todo código.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:16px; margin-bottom:8px;">3. WhatsApp end-to-end &nbsp;→&nbsp; en paralelo mientras Meta aprueba templates</h3>
+      <p style="font-size:14px; color:var(--ink-2);">
+        Hay un template ya funcionando en prod (<code>lead_alerta_cris</code>). El resto son <b>bloqueos humanos</b>: Chris tiene que crear los templates en Twilio Content Builder + esperar aprobación Meta (24-48h por template).
+        Podemos arrancar el resto del código en paralelo (webhook inbound Twilio, wiring a eventos del pipeline) mientras Meta aprueba.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:16px; margin-bottom:8px;">4. Conectar todo &nbsp;→&nbsp; al final</h3>
+      <p style="font-size:14px; color:var(--ink-2);">
+        Wire de: transiciones del pipeline → notificaciones WhatsApp · Whisper post-upload de video · auto-transición <code>videos_completed</code> → <code>finalist</code>.
+        Esto es la costura final que convierte los 3 bloques en un flujo continuo.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- BLOQUE 1: PIPELINE -->
+  <!-- ============================================================== -->
+  <section>
+    <h2><span class="num">1</span>Pipeline — transiciones de fase <small>3-4 días</small></h2>
+    <p class="sub">Lo que reveló la auditoría del código real vs. el doc <code>27_REGLAS_PIPELINE_CANDIDATO.md</code>.</p>
+
+    <div class="card problem-block">
+      <h3>P1 — English submit no cambia el pipeline_stage <code>englishTest.ts</code></h3>
+      <p style="font-size:13.5px; color:var(--ink-2);">
+        El score se guarda en <code>Scores.english_passed</code>, pero <code>pipeline_stage</code> queda quieto.
+        Rompe el "bloque continuo Técnica + Inglés + Mindset" del doc 27.
+      </p>
+      <div class="problem-grid">
+        <div class="field"><div class="lbl">Solución</div><div class="val">Detectar completitud del bloque técnico (los 3 tests que aplican) y disparar <code>tecnica_completed</code> solo cuando el último termine.</div></div>
+        <div class="field"><div class="lbl">Riesgo si se hace mal</div><div class="val">Candidatos con inglés atascados en <code>tecnica_completed</code> sin poder avanzar a conductual.</div></div>
+        <div class="field"><div class="lbl">Rollback</div><div class="val">Endpoint admin de setStage ya existe. Podemos re-emitir la transición manualmente.</div></div>
+      </div>
+    </div>
+
+    <div class="card problem-block">
+      <h3>P2 — <code>videos_completed → finalist</code> no auto-corre <code>videos.ts</code></h3>
+      <p style="font-size:13.5px; color:var(--ink-2);">
+        Cuando el candidato termina los 7 videos, queda en <code>videos_completed</code>. Nadie lo mueve a <code>finalist</code>.
+        Cris hoy tiene que meterse a mano.
+      </p>
+      <div class="problem-grid">
+        <div class="field"><div class="lbl">Solución</div><div class="val">Al terminar el último video, invocar el bot decisor (<code>bot.ts</code>) con <code>auto_apply=true</code>. Bot decide finalist / no_recomendado / a_revisar.</div></div>
+        <div class="field"><div class="lbl">Riesgo</div><div class="val">Bot decide mal → candidato rechazado por error. Mitigación: modo warm con override humano en cola.</div></div>
+        <div class="field"><div class="lbl">Rollback</div><div class="val">Cris puede re-abrir manualmente cualquier decisión del bot desde <code>BotReviewQueue</code>.</div></div>
+      </div>
+    </div>
+
+    <div class="card problem-block">
+      <h3>P3 — Sub-estado "Duda CV" no persiste <code>autoRejection.ts</code></h3>
+      <p style="font-size:13.5px; color:var(--ink-2);">
+        <code>needs_review: true</code> se calcula y se loguea, pero <code>pipeline_stage</code> queda igual.
+        Comentario en el código: "la transición a duda la hace el rediseño UX cuando se implemente". Nunca se implementó.
+      </p>
+      <div class="problem-grid">
+        <div class="field"><div class="lbl">Solución</div><div class="val">Agregar <code>duda_cv</code> al enum + emitir la transición cuando <code>autoRejection</code> devuelva <code>needs_review</code>. Frontend ya sabe pintarlo.</div></div>
+        <div class="field"><div class="lbl">Riesgo</div><div class="val">Candidatos en "duda" quedan en limbo si nadie los revisa. Mitigación: notif a Cris cuando entra a duda.</div></div>
+        <div class="field"><div class="lbl">Rollback</div><div class="val">setStage manual desde admin.</div></div>
+      </div>
+    </div>
+
+    <div class="card problem-block">
+      <h3>P4 — Drift enum frontend ↔ backend <code>stageLabels.ts</code></h3>
+      <p style="font-size:13.5px; color:var(--ink-2);">
+        El frontend lista <code>auto_rejected_disc_mismatch</code>, <code>auto_rejected_english_failed</code>, <code>auto_rejected_mindset_limiting</code> que NO existen en backend
+        (y contradicen las reglas: DISC/Inglés/Mindset nunca rechazan).
+      </p>
+      <div class="problem-grid">
+        <div class="field"><div class="lbl">Solución</div><div class="val">Borrar esas 3 keys del frontend. Consolidar en un enum compartido (o al menos un test que valide correspondencia).</div></div>
+        <div class="field"><div class="lbl">Riesgo</div><div class="val">Ninguno — son labels muertos que nadie emite.</div></div>
+        <div class="field"><div class="lbl">Rollback</div><div class="val">Trivial (git revert).</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- BLOQUE 2: VIDEOS -->
+  <!-- ============================================================== -->
+  <section>
+    <h2><span class="num">2</span>Videos dinámicos <small>3-4 días</small></h2>
+    <p class="sub">Todo el código existe. Faltan 3 conexiones y 1 fix de schema.</p>
+
+    <div class="card problem-block">
+      <h3>V1 — Schema mismatch: panel admin muestra <code>undefined</code></h3>
+      <p style="font-size:13.5px; color:var(--ink-2);">
+        Doc <code>MIGRATIONS_BLOCK2.md §13</code> define columnas <code>attempt</code>, <code>transcript_status</code>, <code>analysis_payload</code>, <code>analysis_status</code>, <code>submitted_at</code>.
+        Backend escribe <code>uploaded_at</code>, <code>analysis_json</code>, sin las otras. Frontend (<code>CandidateVideosPanel</code>) lee las del doc → todo <code>undefined</code>.
+      </p>
+      <div class="problem-grid">
+        <div class="field"><div class="lbl">Solución</div><div class="val">Alinear con el doc: agregar las columnas faltantes en tabla Catalyst + backend las escribe. Frontend ya está bien.</div></div>
+        <div class="field"><div class="lbl">Riesgo</div><div class="val">Cambio de schema afecta filas existentes. Como los videos aún no están en prod, mínimo.</div></div>
+        <div class="field"><div class="lbl">Rollback</div><div class="val">Las nuevas columnas son opcionales — no rompen lecturas viejas.</div></div>
+      </div>
+    </div>
+
+    <div class="card problem-block">
+      <h3>V2 — Whisper no se dispara post-upload <code>videoTranscription.ts</code></h3>
+      <p style="font-size:13.5px; color:var(--ink-2);">
+        Cliente Whisper existe (con retries + circuit breaker). Nadie lo llama.
+        Después del upload del candidato, el archivo queda en File Store sin transcribir.
+      </p>
+      <div class="problem-grid">
+        <div class="field"><div class="lbl">Solución</div><div class="val">Al final de <code>uploadTestVideo</code>, emitir evento <code>video.transcribe</code> al outbox. Handler descarga archivo, llama Whisper, actualiza <code>transcript</code> + <code>transcript_status</code>. Con retry + backoff.</div></div>
+        <div class="field"><div class="lbl">Riesgo</div><div class="val">Costo Whisper (OpenAI). Circuit breaker ya protege spikes.</div></div>
+        <div class="field"><div class="lbl">Rollback</div><div class="val">Feature flag <code>WHISPER_AUTO_TRANSCRIBE</code>. Endpoint manual queda como fallback.</div></div>
+      </div>
+    </div>
+
+    <div class="card problem-block">
+      <h3>V3 — Análisis IA no auto-corre cuando llega transcript</h3>
+      <p style="font-size:13.5px; color:var(--ink-2);">
+        Hoy es click manual en el panel admin.
+      </p>
+      <div class="problem-grid">
+        <div class="field"><div class="lbl">Solución</div><div class="val">Cuando <code>transcript_status</code> pase a <code>ok</code>, emitir <code>video.analyze</code> al outbox. Handler llama a <code>videoAnalysis.ts</code> y actualiza <code>analysis_payload</code>.</div></div>
+        <div class="field"><div class="lbl">Riesgo</div><div class="val">Análisis IA costoso × 7 videos/candidato. Cap por cost budget (regla existente 20%).</div></div>
+        <div class="field"><div class="lbl">Rollback</div><div class="val">Feature flag + botón manual sigue disponible.</div></div>
+      </div>
+    </div>
+
+    <div class="card problem-block">
+      <h3>V4 — Email al candidato con link a videos no confirmado</h3>
+      <p style="font-size:13.5px; color:var(--ink-2);">
+        <code>outbox.ts:1179</code> menciona "dispara workflow Video test" pero no verifiqué el contenido del email.
+      </p>
+      <div class="problem-grid">
+        <div class="field"><div class="lbl">Solución</div><div class="val">Verificar template <code>candidate_videos_ready</code> · si no existe, crearlo · disparar al entrar en <code>videos_pending</code>.</div></div>
+        <div class="field"><div class="lbl">Riesgo</div><div class="val">Bajo — es email, ya hay infra ZeptoMail.</div></div>
+        <div class="field"><div class="lbl">Rollback</div><div class="val">Deshabilitar template.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- BLOQUE 3: WHATSAPP -->
+  <!-- ============================================================== -->
+  <section>
+    <h2><span class="num">3</span>WhatsApp end-to-end <small>3-5 días · con paralelismo humano</small></h2>
+    <p class="sub">Motor Twilio + circuit breaker OK. Falta contenido aprobado + webhook inbound + wiring a eventos.</p>
+
+    <div class="card problem-block">
+      <h3>W1 — 6 templates comerciales sin SID de Twilio</h3>
+      <p style="font-size:13.5px; color:var(--ink-2);">
+        <code>marketing_lead_thanks</code>, <code>client_briefing_scheduled</code>, <code>client_draft_review</code>, <code>client_comments_received</code>, <code>client_changes_applied</code>, <code>client_contract_ready</code>.
+        Sin SID el outbox falla en producción con <code>content_sid not set</code>.
+      </p>
+      <div class="problem-grid">
+        <div class="field"><div class="lbl">Solución</div><div class="val"><b>Chris</b> crea cada uno en Twilio Content Builder + submit a aprobación Meta. Yo actualizo <code>whatsappTemplates.ts</code> con los SIDs a medida que aprueban.</div></div>
+        <div class="field"><div class="lbl">Riesgo</div><div class="val">Meta rechaza algún template por copy comercial. Reformular + resubmit.</div></div>
+        <div class="field"><div class="lbl">Rollback</div><div class="val">Fallback a email si el template no está disponible.</div></div>
+      </div>
+    </div>
+
+    <div class="card problem-block">
+      <h3>W2 — Templates de candidato ni existen en el catálogo</h3>
+      <p style="font-size:13.5px; color:var(--ink-2);">
+        <code>evaluacion_lista_candidato</code>, <code>recordatorio_evaluacion</code>, <code>reporte_listo_cliente</code>.
+        Los callers los necesitan (candidateNotifier, candidateReminders) pero envían con <code>sendText</code> plano → fuera de ventana 24h Meta bloquea.
+      </p>
+      <div class="problem-grid">
+        <div class="field"><div class="lbl">Solución</div><div class="val">Definir copy con Chris + agregar al catálogo · Chris crea en Twilio · esperar aprobación · cablear.</div></div>
+        <div class="field"><div class="lbl">Riesgo</div><div class="val">Sin template aprobado → mensajes no llegan fuera de la ventana 24h del candidato.</div></div>
+        <div class="field"><div class="lbl">Rollback</div><div class="val">Email como canal primario mientras se aprueban.</div></div>
+      </div>
+    </div>
+
+    <div class="card problem-block">
+      <h3>W3 — Webhook inbound Twilio no procesa <code>whatsappWebhook.ts</code></h3>
+      <p style="font-size:13.5px; color:var(--ink-2);">
+        Está codeado solo para Meta Cloud API (<code>X-Hub-Signature-256</code>). Con <code>WHATSAPP_PROVIDER=twilio</code> el endpoint sirve verification challenge pero no procesa mensajes entrantes (Twilio usa <code>X-Twilio-Signature</code>).
+        Además: guarda con <code>tenant_id: null</code> — nadie enruta la respuesta al tenant correcto.
+      </p>
+      <div class="problem-grid">
+        <div class="field"><div class="lbl">Solución</div><div class="val">Rama nueva para Twilio: validar <code>X-Twilio-Signature</code>, parsear formato Twilio, mapear <code>From</code> → tenant (via lookup en <code>MarketingLeads.phone</code>). Auto-reply "recibimos tu mensaje" para cerrar loop.</div></div>
+        <div class="field"><div class="lbl">Riesgo</div><div class="val">Signature validation mal → aceptamos mensajes falsos. Test con webhook de Twilio staging.</div></div>
+        <div class="field"><div class="lbl">Rollback</div><div class="val">Deshabilitar auto-reply, mantener log de inbound sin procesar.</div></div>
+      </div>
+    </div>
+
+    <div class="card problem-block">
+      <h3>W4 — Config env vars TWILIO_* solo en Development</h3>
+      <p style="font-size:13.5px; color:var(--ink-2);">
+        Environment Production de Catalyst no tiene las TWILIO_* seteadas.
+      </p>
+      <div class="problem-grid">
+        <div class="field"><div class="lbl">Solución</div><div class="val">Cristian setea vars en Catalyst Prod cuando promuevan Dev→Prod.</div></div>
+        <div class="field"><div class="lbl">Riesgo</div><div class="val">WhatsApp no funciona en prod si se olvida.</div></div>
+        <div class="field"><div class="lbl">Rollback</div><div class="val">Vars son idempotentes — agregar tarde no rompe nada.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- BLOQUE 4: WIRING FINAL -->
+  <!-- ============================================================== -->
+  <section>
+    <h2><span class="num">4</span>Wiring final — coser todo <small>1-2 días</small></h2>
+    <p class="sub">Con los 3 bloques arriba resueltos, esto convierte piezas sueltas en flujo continuo.</p>
+
+    <div class="card">
+      <ul class="tight">
+        <li>
+          <span class="dot stop"></span>
+          <div class="task"><b>Transiciones pipeline → notif WhatsApp:</b> emitir evento cuando el candidato pasa a <code>videos_pending</code>, <code>finalist</code>, <code>auto_rejected_*</code>. Cada uno dispara un template distinto (o email si no hay template aprobado).</div>
+          <div class="who">Depende de W1+W2</div>
+        </li>
+        <li>
+          <span class="dot stop"></span>
+          <div class="task"><b>Auto-trigger Whisper post-upload de video:</b> ver V2.</div>
+          <div class="who">Depende de V1</div>
+        </li>
+        <li>
+          <span class="dot stop"></span>
+          <div class="task"><b>Auto-transición videos_completed → finalist:</b> ver P2. Invoca bot decisor.</div>
+          <div class="who">Depende de P1-P4</div>
+        </li>
+        <li>
+          <span class="dot stop"></span>
+          <div class="task"><b>Notif "reporte listo" al cliente:</b> cuando Chris envía el fit report, disparar template <code>reporte_listo_cliente</code> + email.</div>
+          <div class="who">Depende de W2</div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- BLOQUEADORES HUMANOS -->
+  <!-- ============================================================== -->
+  <section>
+    <h2><span class="num">!</span>Bloqueadores humanos <small>en orden de urgencia</small></h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th style="width:44%">Bloqueador</th><th>Quién</th><th>Cuándo idealmente</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Definir copy de los 3 templates de candidato con Chris + submit Twilio</td><td>Chris</td><td>Día 1</td></tr>
+          <tr><td>Crear los 6 templates comerciales pendientes en Twilio Content Builder</td><td>Chris</td><td>Días 1-2</td></tr>
+          <tr><td>Esperar aprobación Meta de todos los templates</td><td>Meta</td><td>24-48h cada uno</td></tr>
+          <tr><td>MD de PROD Catalyst para primer deploy productivo</td><td>Cristian</td><td>Antes de terminar</td></tr>
+          <tr><td>Env vars TWILIO_* en Environment Production</td><td>Cristian</td><td>Al promover a prod</td></tr>
+          <tr><td>Confirmar WABA Sender <code>+5078338754</code> = Online en consola Twilio</td><td>Chris</td><td>Verificación única</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- QUÉ NO ESTOY TOCANDO -->
+  <!-- ============================================================== -->
+  <section>
+    <h2><span class="num">×</span>Fuera del alcance de esta finalización</h2>
+    <div class="card">
+      <p style="font-size:13.5px; color:var(--ink-2); margin-bottom:8px;">
+        Cosas del roadmap original que dejo afuera porque no bloquean "app funcional end-to-end":
+      </p>
+      <ul style="list-style:none; padding:0;">
+        <li style="padding:6px 0; border-bottom:1px solid var(--line); font-size:13.5px;">Outbound sourcing (HeyReach LinkedIn) — feature nueva, no arreglo</li>
+        <li style="padding:6px 0; border-bottom:1px solid var(--line); font-size:13.5px;">MCP Server publicado en npm — ya funciona local</li>
+        <li style="padding:6px 0; border-bottom:1px solid var(--line); font-size:13.5px;">Migración v1→v2 productiva — regla activa, esperar orden explícita</li>
+        <li style="padding:6px 0; border-bottom:1px solid var(--line); font-size:13.5px;">GDPR full compliance Panamá — decisión de Chris de skip</li>
+        <li style="padding:6px 0; font-size:13.5px;">Custom domain <code>api.sharktalents.ai</code> — nice-to-have</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="foot">
+    Estimación total: 10-13 días de código + paralelismo con aprobaciones Meta (que corren fuera de línea)<br>
+    Fuente: auditoría de código real 2026-07-16 · Contra <code>docs/master-plan/</code> + memoria de proyecto
+  </div>
+
+</div>
+</body>
+</html>

@@ -153,7 +153,7 @@ export const MOCK_DRAFTS: Draft[] = [
       'Roberto mencionó "performance marketing" varias veces — el rol parece más marketing que growth product',
       'Salario tope $5500 puede ser bajo para Head of Growth con experiencia LATAM senior',
     ],
-    transcript: `[00:00] Cris: Roberto, contame de la búsqueda.
+    transcript: `[00:00] Cris: Roberto, cuéntame de la búsqueda.
 [00:18] Roberto: Hola Cris. Necesito un Head of Growth. Estamos en Series A, 25 personas, e-commerce regional, principal mercado México y Colombia.
 [01:30] Roberto: La persona que me convence es alguien que ya creció una startup LATAM antes. No me sirven candidatos de USA puro porque el contexto LATAM es muy distinto.
 [03:00] Roberto: Las áreas que quiero que dominen: performance marketing, paid ads, SEO, conversion rate optimization. También que sepa de retention y email marketing.
@@ -189,7 +189,7 @@ export const MOCK_DRAFTS: Draft[] = [
     created_at: '2026-04-26',
     ia_summary_meeting:
       'Isabel busca Coordinador de Operaciones Logísticas para sucursal Bocas. Empresa familiar, 40 empleados. Salario $1500-2200. Modalidad presencial. Urgencia media. Cris ya generó y envió draft al cliente, esperando aprobación.',
-    transcript: '[Transcripción guardada — 28 minutos. Ver detalle si necesitás revisar.]',
+    transcript: '[Transcripción guardada — 28 minutos. Ver detalle si necesitas revisar.]',
     highlights: [],
     draft: {
       title: 'Coordinador de Operaciones Logísticas',

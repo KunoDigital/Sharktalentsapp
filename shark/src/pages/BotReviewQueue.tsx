@@ -170,7 +170,7 @@ export default function BotReviewQueue() {
           <div style={{ background: 'var(--st-bg, #1a1a1a)', border: '1px solid var(--border)', borderRadius: '10px', padding: '1.25rem', maxWidth: '500px', width: '90%' }}>
             <h3 style={{ marginTop: 0, marginBottom: '0.75rem' }}>Override decisión del bot</h3>
             <p className="muted small" style={{ marginBottom: '0.75rem' }}>
-              El bot sugería <strong>{overrideModal.item.bot_decision?.to_stage_proposed}</strong>. ¿A qué etapa querés mover en su lugar?
+              El bot sugería <strong>{overrideModal.item.bot_decision?.to_stage_proposed}</strong>. ¿A qué etapa quieres mover en su lugar?
             </p>
             <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.6rem' }}>
               Etapa destino:

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="20" fill="#0e1218"/>
+  <!-- Aleta de tiburón -->
+  <path d="M 50 18 L 72 68 L 50 60 L 28 68 Z" fill="#dafd6f"/>
+  <!-- Ondas del agua -->
+  <path d="M 12 78 Q 25 72 38 78 T 64 78 T 88 78" stroke="#dafd6f" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 12 88 Q 25 82 38 88 T 64 88 T 88 88" stroke="#dafd6f" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/>
+</svg>

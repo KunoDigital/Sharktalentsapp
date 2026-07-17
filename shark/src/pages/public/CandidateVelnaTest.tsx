@@ -181,8 +181,8 @@ export default function CandidateVelnaTest() {
             <h1>No pudimos guardar tus respuestas</h1>
             <p>{submitError}</p>
             <p style={{ marginTop: 16 }}>
-              Tus respuestas están seguras en este navegador. Recargá la página y volvé a enviar.
-              Si sigue fallando, escribinos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.
+              Tus respuestas están seguras en este navegador. Recarga la página y vuelve a enviar.
+              Si sigue fallando, escríbenos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.
             </p>
             <button className="ct-btn-primary" style={{ marginTop: 24 }} onClick={() => { setSubmitError(null); setPhase('done'); }}>
               Reintentar
@@ -208,7 +208,7 @@ export default function CandidateVelnaTest() {
         <main className="ct-main">
           <h1>Evaluación cognitiva (VELNA)</h1>
           <p className="ct-instructions">
-            Esta evaluación tiene <strong>5 sub-pruebas con tiempo</strong>. Cada una mide una habilidad distinta. No te preocupes si no terminás todas las preguntas — la velocidad y la precisión cuentan parejo.
+            Esta evaluación tiene <strong>5 sub-pruebas con tiempo</strong>. Cada una mide una habilidad distinta. No te preocupes si no terminas todas las preguntas — la velocidad y la precisión cuentan parejo.
           </p>
           {subtestsReady ? (
             <div className="ct-subtests-list">

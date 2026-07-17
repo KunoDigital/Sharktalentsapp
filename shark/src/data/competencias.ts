@@ -2,19 +2,38 @@ export interface Competencia {
   id: string;
   nombre: string;
   factores: string[];
+  /**
+   * Si está presente, este ID es un alias deprecado del ID indicado. Los IDs viejos
+   * NO se eliminan del catálogo (mantienen factores para scoring de datos históricos),
+   * pero la UI de selección los oculta y la persistencia normaliza al canónico.
+   * Ver memory/project_competencias_catalogo_cerrado.md.
+   */
+  alias_of?: string;
 }
+
+// --- Consolidaciones 2026-06-16 ---
+// El manual Kudert tiene varios pares con factores idénticos. Se conserva el ID viejo
+// como alias por retro-compat de drafts/reportes históricos. Mapeo:
+//   colaboracion         → trabajo_equipo
+//   manejo_ambiguedad    → orientacion_cliente
+//   aprendizaje_vuelo    → aprendizaje_activo
+//   habilidad_analitica  → pensamiento_critico
+//   resiliencia          → adaptabilidad
+// 'resolucion_problemas' aparece duplicado en el PDF pero en código siempre hubo
+// un solo entry — no hace falta alias.
 
 export const COMPETENCIAS: Competencia[] = [
   { id: 'comunicacion_digital', nombre: 'Comunicación digital', factores: ['cog_verbal', 'disc_I', 'disc_S', 'emocion_mesura'] },
-  { id: 'colaboracion', nombre: 'Colaboración', factores: ['disc_I', 'disc_S', 'disc_C', 'emocion_mesura'] },
+  { id: 'colaboracion', nombre: 'Colaboración', factores: ['disc_I', 'disc_S', 'disc_C', 'emocion_mesura'], alias_of: 'trabajo_equipo' },
   { id: 'adaptabilidad', nombre: 'Adaptabilidad', factores: ['disc_D', 'disc_I', 'cog_indice', 'emocion_mesura'] },
   { id: 'iniciativa', nombre: 'Iniciativa', factores: ['disc_D', 'disc_I', 'emocion_reflexividad', 'cog_logico', 'cog_abstracto'] },
   { id: 'planificacion', nombre: 'Planificación', factores: ['disc_C', 'cog_espacial', 'emocion_reflexividad'] },
-  { id: 'manejo_ambiguedad', nombre: 'Manejo de la ambigüedad', factores: ['disc_D', 'disc_C', 'cog_indice', 'emocion_mesura'] },
+  { id: 'manejo_ambiguedad', nombre: 'Manejo de la ambigüedad', factores: ['disc_D', 'disc_C', 'cog_indice', 'emocion_mesura'], alias_of: 'orientacion_cliente' },
   { id: 'trabajo_equipo', nombre: 'Trabajo en equipo y colaboración', factores: ['disc_D', 'disc_S', 'cog_indice', 'emocion_mesura'] },
   { id: 'retroalimentacion', nombre: 'Retroalimentación y monitoreo', factores: ['disc_D', 'disc_C', 'cog_logico', 'cog_verbal', 'emocion_mesura'] },
   { id: 'orientacion_cliente', nombre: 'Orientación al cliente', factores: ['disc_D', 'disc_C', 'cog_indice', 'emocion_mesura'] },
-  { id: 'aprendizaje_vuelo', nombre: 'Aprendizaje al vuelo', factores: ['disc_D', 'disc_I', 'cog_logico'] },
+  { id: 'aprendizaje_vuelo', nombre: 'Aprendizaje al vuelo', factores: ['disc_D', 'disc_I', 'cog_logico'], alias_of: 'aprendizaje_activo' },
+  { id: 'aprendizaje_activo', nombre: 'Aprendizaje activo y estrategias de aprendizaje', factores: ['disc_D', 'disc_I', 'cog_logico'] },
   { id: 'resolucion_problemas', nombre: 'Resolución de problemas complejos', factores: ['cog_indice', 'emocion_mesura'] },
   { id: 'inteligencia_emocional', nombre: 'Inteligencia emocional', factores: ['emocion_mesura', 'cog_indice'] },
   { id: 'creatividad_innovacion', nombre: 'Creatividad e innovación', factores: ['disc_D', 'disc_I', 'disc_S_inv', 'disc_C', 'emocion_espontaneidad'] },
@@ -30,7 +49,7 @@ export const COMPETENCIAS: Competencia[] = [
   { id: 'orden_calidad', nombre: 'Orden y calidad', factores: ['disc_C'] },
   { id: 'asertividad', nombre: 'Asertividad', factores: ['disc_D', 'emocion_mesura'] },
   { id: 'dinamismo_energia', nombre: 'Dinamismo y energía', factores: ['disc_I', 'disc_D', 'emocion_mesura'] },
-  { id: 'habilidad_analitica', nombre: 'Habilidad analítica', factores: ['cog_logico', 'cog_espacial', 'disc_C'] },
+  { id: 'habilidad_analitica', nombre: 'Habilidad analítica', factores: ['cog_logico', 'cog_espacial', 'disc_C'], alias_of: 'pensamiento_critico' },
   { id: 'perseverancia', nombre: 'Perseverancia', factores: ['disc_D', 'disc_S', 'emocion_reflexividad'] },
   { id: 'orientacion_accion', nombre: 'Orientación a la acción', factores: ['disc_D', 'disc_I', 'emocion_espontaneidad'] },
   { id: 'compromiso_organizacional', nombre: 'Compromiso organizacional', factores: ['disc_S', 'disc_C'] },
@@ -44,8 +63,30 @@ export const COMPETENCIAS: Competencia[] = [
   { id: 'comunicacion_escrita', nombre: 'Comunicación escrita', factores: ['cog_verbal'] },
   { id: 'gestion_riesgo', nombre: 'Gestión del riesgo', factores: ['disc_S', 'disc_C', 'cog_verbal', 'cog_espacial', 'cog_logico', 'emocion_mesura'] },
   { id: 'pensamiento_critico', nombre: 'Pensamiento crítico y análisis', factores: ['cog_logico', 'cog_espacial', 'disc_C'] },
-  { id: 'resiliencia', nombre: 'Resiliencia, tolerancia al estrés y flexibilidad', factores: ['disc_D', 'disc_I', 'cog_indice', 'emocion_mesura'] },
+  { id: 'resiliencia', nombre: 'Resiliencia, tolerancia al estrés y flexibilidad', factores: ['disc_D', 'disc_I', 'cog_indice', 'emocion_mesura'], alias_of: 'adaptabilidad' },
 ];
+
+/**
+ * Mapa de aliases: ID viejo (deprecado) → ID canónico (oficial).
+ * Lookups O(1). Sincronizado en backend con `functions/api/src/data/competencias.ts`.
+ */
+export const COMPETENCIA_ALIASES: Readonly<Record<string, string>> = Object.freeze(
+  COMPETENCIAS.reduce<Record<string, string>>((acc, c) => {
+    if (c.alias_of) acc[c.id] = c.alias_of;
+    return acc;
+  }, {}),
+);
+
+/**
+ * Resuelve un ID al canónico. Si no está en aliases, lo devuelve tal cual.
+ * Idempotente.
+ */
+export function resolveCompetenciaId(id: string): string {
+  return COMPETENCIA_ALIASES[id] ?? id;
+}
+
+/** Lista de competencias canónicas (sin aliases). Útil para UI de selección. */
+export const COMPETENCIAS_CANONICAS: Competencia[] = COMPETENCIAS.filter((c) => !c.alias_of);
 
 export const COMPETENCIA_DESCRIPCIONES: Record<string, string> = {
   comunicacion_digital: 'Capacidad de comunicarse con claridad por canales digitales (chat, email, video). Útil en cualquier rol que trabaje a distancia o con clientes vía mensajería.',
@@ -58,6 +99,7 @@ export const COMPETENCIA_DESCRIPCIONES: Record<string, string> = {
   retroalimentacion: 'Da y recibe feedback de forma constructiva. Sabe corregir el rumbo sin tomarse las críticas como ataque personal.',
   orientacion_cliente: 'Entiende qué necesita el cliente y orienta su trabajo a resolverlo. Mantiene foco en la experiencia del cliente, no solo en el proceso interno.',
   aprendizaje_vuelo: 'Aprende cosas nuevas rápido, sobre la marcha, sin necesidad de capacitación formal previa.',
+  aprendizaje_activo: 'Aprende cosas nuevas rápido y aplica estrategias propias para incorporar conocimiento, sin depender de capacitación formal.',
   resolucion_problemas: 'Capacidad de descomponer un problema complejo, identificar la causa raíz y encontrar una solución viable.',
   inteligencia_emocional: 'Entiende sus propias emociones y las de los demás. Maneja situaciones tensas sin perder el control.',
   creatividad_innovacion: 'Propone ideas nuevas, ve oportunidades donde otros ven obstáculos. Útil en roles que requieren innovar.',
@@ -130,7 +172,10 @@ export function calculateCompetencias(
     emocion_reflexividad: emocionalContribucion(emotionalVal, 'reflexividad'),
   };
 
-  return COMPETENCIAS.map(comp => {
+  // Solo computar canónicas para evitar duplicados en reportes/gráficos. Los aliases
+  // tienen factores idénticos (o casi idénticos) al canónico, así que el score
+  // sería redundante.
+  return COMPETENCIAS_CANONICAS.map(comp => {
     const values = comp.factores.map(f => factorValues[f] ?? 50);
     const score = values.reduce((s, v) => s + v, 0) / values.length;
     return { id: comp.id, nombre: comp.nombre, score: Math.round(Math.min(100, Math.max(0, score))) };

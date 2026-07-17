@@ -22,13 +22,13 @@ describe('recruitSyncPublisher.publishRecruitSync', () => {
 
   beforeEach(() => {
     mockedPublish.mockReset();
-    delete process.env.ZOHO_RECRUIT_API_URL;
-    delete process.env.ZOHO_RECRUIT_OAUTH_TOKEN;
+    delete process.env.ZOHO_OAUTH_REFRESH_TOKEN;
+    delete process.env.ZOHO_OAUTH_CLIENT_ID;
   });
 
   afterEach(() => {
-    delete process.env.ZOHO_RECRUIT_API_URL;
-    delete process.env.ZOHO_RECRUIT_OAUTH_TOKEN;
+    delete process.env.ZOHO_OAUTH_REFRESH_TOKEN;
+    delete process.env.ZOHO_OAUTH_CLIENT_ID;
   });
 
   it('skipea publicación si Zoho Recruit no está configurado', async () => {
@@ -38,8 +38,8 @@ describe('recruitSyncPublisher.publishRecruitSync', () => {
   });
 
   it('publica si Zoho Recruit está configurado', async () => {
-    process.env.ZOHO_RECRUIT_API_URL = 'https://recruit.zoho.com/api';
-    process.env.ZOHO_RECRUIT_OAUTH_TOKEN = 'token123';
+    process.env.ZOHO_OAUTH_REFRESH_TOKEN = 'refresh123';
+    process.env.ZOHO_OAUTH_CLIENT_ID = 'client123';
     mockedPublish.mockResolvedValue({ id: 'event_1' });
 
     const ok = await publishRecruitSync(fakeReq, baseEvent);
@@ -57,8 +57,8 @@ describe('recruitSyncPublisher.publishRecruitSync', () => {
   });
 
   it('marca action=create si no hay from_stage', async () => {
-    process.env.ZOHO_RECRUIT_API_URL = 'https://recruit.zoho.com/api';
-    process.env.ZOHO_RECRUIT_OAUTH_TOKEN = 'token123';
+    process.env.ZOHO_OAUTH_REFRESH_TOKEN = 'refresh123';
+    process.env.ZOHO_OAUTH_CLIENT_ID = 'client123';
     mockedPublish.mockResolvedValue({ id: 'event_1' });
 
     await publishRecruitSync(fakeReq, { ...baseEvent, from_stage: null });
@@ -67,8 +67,8 @@ describe('recruitSyncPublisher.publishRecruitSync', () => {
   });
 
   it('returns false si publish falla — no throw', async () => {
-    process.env.ZOHO_RECRUIT_API_URL = 'https://recruit.zoho.com/api';
-    process.env.ZOHO_RECRUIT_OAUTH_TOKEN = 'token123';
+    process.env.ZOHO_OAUTH_REFRESH_TOKEN = 'refresh123';
+    process.env.ZOHO_OAUTH_CLIENT_ID = 'client123';
     mockedPublish.mockRejectedValue(new Error('outbox down'));
 
     const ok = await publishRecruitSync(fakeReq, baseEvent);

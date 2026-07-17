@@ -28,6 +28,7 @@ import { logger } from '../lib/logger';
 import { requireAuth } from '../lib/auth';
 import { env } from '../lib/env';
 import { requireTenant } from './tenants';
+import { COMPETENCIAS as COMPETENCIAS_LIST, resolveCompetenciaId } from '../data/competencias';
 import { auditLog } from '../lib/auditLog';
 
 const log = logger('JOB_DRAFTS');
@@ -478,21 +479,11 @@ function validatePayloadPatch(p: Record<string, unknown>): void {
   }
 }
 
-// Set de los 40 IDs del catálogo cerrado de competencias.
-// Sincronizado con shark/src/data/competencias.ts (frontend single source of truth).
-// Si actualizás el catálogo del frontend, actualizá esto.
-const COMPETENCIAS_CATALOG_IDS = new Set([
-  'comunicacion_digital', 'colaboracion', 'adaptabilidad', 'iniciativa', 'planificacion',
-  'manejo_ambiguedad', 'trabajo_equipo', 'retroalimentacion', 'orientacion_cliente',
-  'aprendizaje_vuelo', 'resolucion_problemas', 'inteligencia_emocional', 'creatividad_innovacion',
-  'liderazgo', 'orientacion_logro', 'persuasion_negociacion', 'mentalidad_digital',
-  'foco_data', 'impacto_influencia', 'autoconfianza', 'comprension_interpersonal',
-  'desarrollo_interrelaciones', 'orden_calidad', 'asertividad', 'dinamismo_energia',
-  'habilidad_analitica', 'perseverancia', 'orientacion_accion', 'compromiso_organizacional',
-  'actitud_servicio', 'manejo_conflictos', 'toma_decisiones_oportuna', 'calidad_decisiones',
-  'capacidad_intelectual', 'capacidad_escuchar', 'paciencia', 'comunicacion_escrita',
-  'gestion_riesgo', 'pensamiento_critico', 'resiliencia',
-]);
+// Set derivado del catálogo cerrado (data/competencias.ts) — único source of truth.
+// Incluye tanto IDs canónicos como aliases deprecados (retro-compat). En conversiones
+// de draft → Job real, los aliases se normalizan a canónico para que persistan
+// IDs limpios en `Jobs.ideal_profile.competencias`.
+const COMPETENCIAS_CATALOG_IDS = new Set(COMPETENCIAS_LIST.map((c) => c.id));
 
 /**
  * Convierte un draft en un Job real.
@@ -569,7 +560,19 @@ async function convertDraftInternal(
     idealProfile.velna = payload.velna_ideal;
   }
   if (Array.isArray(payload.competencias)) {
-    idealProfile.competencias = payload.competencias;
+    // Normalizar IDs alias deprecados → canónicos antes de persistir en Jobs.ideal_profile.
+    // Dedupe por canónico: si el draft tiene 'colaboracion' Y 'trabajo_equipo' queda uno.
+    const seen = new Set<string>();
+    const normalized: Array<Record<string, unknown>> = [];
+    for (const raw of payload.competencias as Array<Record<string, unknown>>) {
+      const id = typeof raw.name === 'string' ? raw.name : typeof raw.id === 'string' ? raw.id : '';
+      if (!id) continue;
+      const canonical = resolveCompetenciaId(id);
+      if (seen.has(canonical)) continue;
+      seen.add(canonical);
+      normalized.push({ ...raw, name: canonical });
+    }
+    idealProfile.competencias = normalized;
   }
   if (typeof payload.tecnica_minimo_pct === 'number') {
     idealProfile.tecnica_minimo_pct = payload.tecnica_minimo_pct;
@@ -1855,8 +1858,11 @@ function buildRequisitosHtml(payload: Record<string, unknown>): string {
   }
   if (Array.isArray(payload.competencias) && payload.competencias.length > 0) {
     const compsArr = payload.competencias as Array<{ name?: string; required_pct?: number; que_evaluamos?: string }>;
+    const nameById = new Map(COMPETENCIAS_LIST.map((c) => [c.id, c.nombre]));
     const compsItems = compsArr.map((c) => {
-      const name = String(c.name ?? '').replace(/_/g, ' ');
+      // Si llegó un alias deprecado, mostramos el nombre del canónico.
+      const canonicalId = resolveCompetenciaId(String(c.name ?? ''));
+      const name = nameById.get(canonicalId) ?? String(c.name ?? '').replace(/_/g, ' ');
       const detail = c.que_evaluamos ? ` — ${c.que_evaluamos}` : '';
       return `<li><strong>${escapeHtml(name)}</strong>${escapeHtml(detail)}</li>`;
     });

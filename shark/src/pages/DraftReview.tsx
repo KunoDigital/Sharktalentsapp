@@ -7,7 +7,7 @@ import {
   type TranscriptHighlight,
   MOCK_DRAFTS,
 } from '../data/mockDrafts';
-import { COMPETENCIAS } from '../data/competencias';
+import { COMPETENCIAS, COMPETENCIAS_CANONICAS } from '../data/competencias';
 import { useApi } from '../lib/api';
 import { config } from '../config';
 import { logger } from '../lib/logger';
@@ -56,7 +56,7 @@ export default function DraftReview() {
     setActionError(null);
     try {
       // Persistir los edits actuales antes de generar el preview — así el cliente
-      // ve EXACTAMENTE lo que vos editaste.
+      // ve EXACTAMENTE lo que tú editaste.
       const payloadPatch: Record<string, unknown> = { ...payloadOverrides };
       if (edited && draft?.draft) {
         if (edited.title !== draft.draft.title) payloadPatch.title = edited.title;
@@ -166,7 +166,7 @@ export default function DraftReview() {
       setDraft(adapted);
       setEdited(adapted.draft ?? null);
       setExtraFeedback('');
-      alert('Draft actualizado con IA usando los comentarios. Revisalo abajo y, cuando estés conforme, mandalo de vuelta al cliente.');
+      alert('Draft actualizado con IA usando los comentarios. Revísalo abajo y, cuando estés conforme, mándalo de vuelta al cliente.');
     } catch (err) {
       setActionError((err as Error).message || 'No se pudo iterar el draft con IA.');
     } finally {
@@ -297,7 +297,7 @@ export default function DraftReview() {
         const existingEmail = draft?.client_email?.trim() || '';
         if (!existingEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(existingEmail)) {
           const input = prompt(
-            'El draft no tiene email del cliente. ¿A qué correo querés mandar la solicitud de aprobación?',
+            'El draft no tiene email del cliente. ¿A qué correo quieres mandar la solicitud de aprobación?',
             '',
           );
           if (!input) {
@@ -316,7 +316,7 @@ export default function DraftReview() {
         // Copiar el portal_url al clipboard automáticamente — el alert no permite seleccionar
         try {
           await navigator.clipboard.writeText(res.portal_url);
-          alert('Listo. El cliente recibió un email con el link para revisar el perfil.\n\nEl link del portal también se copió a tu portapapeles — pegalo (Cmd+V) en una pestaña nueva para verlo vos mismo.');
+          alert('Listo. El cliente recibió un email con el link para revisar el perfil.\n\nEl link del portal también se copió a tu portapapeles — pégalo (Cmd+V) en una pestaña nueva para verlo tú mismo.');
         } catch {
           // Fallback: clipboard API puede fallar en contextos sin HTTPS o sin permiso.
           // Mostrar el link en una ventana nueva.
@@ -396,7 +396,7 @@ export default function DraftReview() {
               <textarea
                 value={extraFeedback}
                 onChange={(e) => setExtraFeedback(e.target.value)}
-                placeholder="(Opcional) Instrucciones extra. Ej: 'también bajá el seniority esperado y agregá React Native como deseable'"
+                placeholder="(Opcional) Instrucciones extra. Ej: 'también baja el seniority esperado y agrega React Native como deseable'"
                 rows={2}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid rgba(255, 200, 0, 0.4)', background: '#1a1410', color: '#fef3c7', fontFamily: 'inherit', fontSize: '0.95rem', marginBottom: '0.5rem' }}
                 disabled={iterating}
@@ -584,11 +584,21 @@ export default function DraftReview() {
                           }}
                         >
                           <option value="">— Elegir competencia —</option>
-                          {COMPETENCIAS.map((cat) => (
+                          {/* Solo mostramos canónicas en el selector. Si un draft viejo guardó
+                              un alias deprecado (ej. 'colaboracion'), el value sigue válido y
+                              el label se renderiza con el nombre del alias también disponible. */}
+                          {COMPETENCIAS_CANONICAS.map((cat) => (
                             <option key={cat.id} value={cat.id} disabled={usedIds.has(cat.id) && cat.id !== c.name}>
                               {cat.nombre}
                             </option>
                           ))}
+                          {/* Si el draft actual tiene un alias deprecado, lo mostramos como opción
+                              extra para que la UI no pierda la selección al re-render. */}
+                          {c.name && !COMPETENCIAS_CANONICAS.some((cat) => cat.id === c.name) && (
+                            <option key={c.name} value={c.name}>
+                              {COMPETENCIAS.find((cat) => cat.id === c.name)?.nombre ?? c.name} (alias)
+                            </option>
+                          )}
                         </select>
                         <input
                           type="number"
@@ -1044,7 +1054,7 @@ function AnalisisDelPuesto({ payload }: { payload: Record<string, unknown> }) {
       {/* Perfiles A y B side-by-side */}
       {(perfilA || perfilB) && (
         <div>
-          <h4 style={{ fontSize: '0.85rem', margin: '0 0 0.5rem', color: 'var(--st-fg-muted)' }}>PERFILES IDEALES — buscamos AMBOS (no escogés uno)</h4>
+          <h4 style={{ fontSize: '0.85rem', margin: '0 0 0.5rem', color: 'var(--st-fg-muted)' }}>PERFILES IDEALES — buscamos AMBOS (no escoges uno)</h4>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '0.75rem' }}>
             {perfilA && <DiscProfileCard label="PERFIL A" profile={perfilA} accent="#dafd6f" />}
             {perfilB && <DiscProfileCard label="PERFIL B" profile={perfilB} accent="#9bd0ff" />}

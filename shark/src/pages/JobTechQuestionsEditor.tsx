@@ -69,7 +69,7 @@ export default function JobTechQuestionsEditor() {
       ...curr,
       {
         id: `tq_${Date.now()}`,
-        text: 'Pregunta nueva — editá este texto',
+        text: 'Pregunta nueva — edita este texto',
         options: ['Opción A', 'Opción B', 'Opción C', 'Opción D'],
         correct: 0,
         rationale: '',

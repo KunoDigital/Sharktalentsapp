@@ -70,7 +70,7 @@ export default function EmailTemplateEditor() {
       if (draft.body_html !== selected.default.body_html) body.body_html = draft.body_html;
       if (draft.body_text !== selected.default.body_text) body.body_text = draft.body_text;
       if (Object.keys(body).length === 0) {
-        alert('No hay cambios respecto al default. Usá "Restaurar default" si querés eliminar el override actual.');
+        alert('No hay cambios respecto al default. Usa "Restaurar default" si quieres eliminar el override actual.');
         return;
       }
       await api.emailTemplates.save(selected.key, selected.locale, body);
@@ -188,7 +188,7 @@ export default function EmailTemplateEditor() {
 
             <p style={{ marginTop: 12, fontSize: 12, color: '#6b7280' }}>
               Las variables como <code style={{ background: '#f3f4f6', padding: '1px 4px' }}>{'{{candidate_name}}'}</code> se reemplazan al enviar.
-              No los borres si querés que el email tenga sentido.
+              No los borres si quieres que el email tenga sentido.
             </p>
           </div>
         )}

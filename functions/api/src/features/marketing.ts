@@ -292,6 +292,7 @@ export async function captureLead(ctx: RequestContext): Promise<void> {
       pipeline_stage: 'tecnica_completed',
       started_at: now(),
       idempotency_key: `demo_lead_${leadId}`,
+      marketing_lead_id: leadId,
     });
     resultId = unwrapRow<{ ROWID: string }>(insertedResult, 'Results')?.ROWID ?? '';
 
@@ -487,25 +488,104 @@ export async function requestEval(ctx: RequestContext): Promise<void> {
   if (memberEmail === leadEmail) throw new ValidationError('member email must differ from lead email');
   if (member.consent_obtained !== true) throw new ValidationError('consent_obtained must be true');
 
-  // Verificar que el lead exista (lead debió hacer POST /lead primero)
-  const lead = unwrapRows<{ ROWID: string; status: string }>(
+  // Campos opcionales del flujo Finalista (2026-07-13).
+  // `flow: 'finalist'` distingue esta request de las del /lead-magnet viejo — se usa
+  // para (a) permitir crear el lead sin quiz previo, (b) elegir variante del email
+  // que va al candidato ("candidato en proceso" vs "colaborador a evaluar").
+  const flow = typeof body.flow === 'string' ? body.flow : 'demo';
+  const isFinalistFlow = flow === 'finalist';
+  const createLeadIfMissing = body.create_lead_if_missing === true;
+  const puesto = typeof body.puesto === 'string' ? body.puesto.trim().slice(0, 255) : '';
+  const empleadorWhatsapp = typeof body.empleador_whatsapp === 'string' ? body.empleador_whatsapp.trim().slice(0, 50) : '';
+  // Campos añadidos 2026-07-13 por landing /evalua-tu-finalista para no dejar
+  // contact_name = null (bug: el CRM mostraba lead_email como nombre por fallback).
+  // 2026-07-15: landing v3 divide nombre en nombre + apellido (dos inputs). Backend
+  // acepta ambos y concatena para `contact_name` — no cambia el schema. Si solo
+  // llega `empleador_nombre` (form viejo), se usa tal cual como full name.
+  const empleadorNombre = typeof body.empleador_nombre === 'string' ? body.empleador_nombre.trim().slice(0, 255) : '';
+  const empleadorApellido = typeof body.empleador_apellido === 'string' ? body.empleador_apellido.trim().slice(0, 255) : '';
+  const empleadorFullName = [empleadorNombre, empleadorApellido].filter(Boolean).join(' ').trim();
+  const empresa = typeof body.empresa === 'string' ? body.empresa.trim().slice(0, 255) : '';
+
+  // Landing v3 (2026-07-15): en flow=finalist, `empresa` pasa a obligatoria.
+  // El vendedor freelance no puede hacer nada útil sin nombre de empresa.
+  if (isFinalistFlow && !empresa) {
+    throw new ValidationError('empresa is required for finalist flow');
+  }
+  // member_whatsapp llega en el body pero por ahora no lo persistimos (Candidates
+  // no tiene columna whatsapp todavía). Queda registrado en logs para no perderlo.
+  const memberWhatsapp = typeof member.whatsapp === 'string' ? member.whatsapp.trim().slice(0, 50) : '';
+  if (memberWhatsapp) {
+    log.info('member_whatsapp recibido (no persistido — Candidates.whatsapp no existe)', {
+      traceId: ctx.traceId,
+      whatsapp_prefix: memberWhatsapp.slice(0, 6) + '***',
+    });
+  }
+
+  // Buscar lead existente
+  let lead = unwrapRows<{ ROWID: string; status: string }>(
     (await zcql(ctx.req).executeZCQLQuery(
       `SELECT ROWID, status FROM ${TABLE_LEADS} WHERE email = '${escapeSql(leadEmail)}' LIMIT 1`,
     )) as unknown[],
     TABLE_LEADS,
   )[0];
+
   if (!lead) {
-    sendJson(ctx.res, 404, { error: { code: 'lead_not_found', message: 'Llamá POST /api/marketing/lead primero' } });
-    return;
+    if (!createLeadIfMissing) {
+      // Flujo /lead-magnet viejo: requiere que el lead haya hecho POST /lead con quiz antes
+      sendJson(ctx.res, 404, { error: { code: 'lead_not_found', message: 'Llamá POST /api/marketing/lead primero' } });
+      return;
+    }
+    // Flujo Finalista: crea el lead sin quiz. Marca source distinto para poder
+    // segmentarlo después en el CRM interno (badges en MarketingLeads UI).
+    const insertPayload: Record<string, unknown> = {
+      email: leadEmail,
+      status: 'new',
+      source: isFinalistFlow ? 'evalua-finalista' : 'eval-request',
+      created_at: now(),
+      updated_at: now(),
+    };
+    if (empleadorWhatsapp) insertPayload.whatsapp = empleadorWhatsapp;
+    if (puesto) insertPayload.puesto = puesto;
+    if (empleadorFullName) insertPayload.contact_name = empleadorFullName;
+    if (empresa) insertPayload.company = empresa;
+    try {
+      const inserted = await datastore(ctx.req).table(TABLE_LEADS).insertRow(insertPayload);
+      const row = unwrapRow<{ ROWID: string; status: string }>(inserted, TABLE_LEADS);
+      if (!row) throw new Error('MarketingLeads insert returned null');
+      lead = row;
+      log.info('lead created via eval-request (finalist flow)', { traceId: ctx.traceId, leadId: lead.ROWID, source: insertPayload.source });
+    } catch (err) {
+      log.error('failed to create lead via eval-request', { traceId: ctx.traceId, error: (err as Error).message });
+      throw new AppError(500, 'lead_create_failed', 'No pudimos crear el lead');
+    }
+  } else {
+    // Lead existente: actualizar puesto/whatsapp/nombre/empresa si vienen (idempotente).
+    const patch: { ROWID: string; puesto?: string; whatsapp?: string; contact_name?: string; company?: string } = { ROWID: lead.ROWID };
+    if (puesto) patch.puesto = puesto;
+    if (empleadorWhatsapp) patch.whatsapp = empleadorWhatsapp;
+    if (empleadorFullName) patch.contact_name = empleadorFullName;
+    if (empresa) patch.company = empresa;
+    if (Object.keys(patch).length > 1) {
+      try {
+        await datastore(ctx.req).table(TABLE_LEADS).updateRow(patch);
+      } catch (err) {
+        log.warn('lead update (finalist optional fields) failed — non-blocking', { traceId: ctx.traceId, error: (err as Error).message });
+      }
+    }
   }
 
   // Auto-bootstrap tenant interno + Job demo (lazy create — solo una vez)
   const { jobId } = await ensureMarketingDemoSetup(ctx.req);
 
-  // Buscar o crear Candidate por email (en el tenant interno)
-  const existingCandidate = unwrapRows<{ ROWID: string }>(
+  // Buscar o crear Candidate por email (en el tenant interno).
+  // 2026-07-16: si el candidato ya existe con OTRO nombre (típico cuando el mismo
+  // email es evaluado por distintos empleadores o cuando el empleador corrige el
+  // nombre), actualizamos el nombre al valor actual del form. El nombre del
+  // sender de HOY es el que vale.
+  const existingCandidate = unwrapRows<{ ROWID: string; name: string | null }>(
     (await zcql(ctx.req).executeZCQLQuery(
-      `SELECT ROWID FROM Candidates WHERE email = '${escapeSql(memberEmail)}' LIMIT 1`,
+      `SELECT ROWID, name FROM Candidates WHERE email = '${escapeSql(memberEmail)}' LIMIT 1`,
     )) as unknown[],
     'Candidates',
   )[0];
@@ -513,6 +593,22 @@ export async function requestEval(ctx: RequestContext): Promise<void> {
   let candidateId: string;
   if (existingCandidate) {
     candidateId = existingCandidate.ROWID;
+    if (memberName && existingCandidate.name !== memberName) {
+      try {
+        await datastore(ctx.req).table('Candidates').updateRow({
+          ROWID: candidateId,
+          name: memberName,
+        });
+        log.info('candidate name updated on reuse', {
+          traceId: ctx.traceId,
+          candidateId,
+          old_name: existingCandidate.name,
+          new_name: memberName,
+        });
+      } catch (err) {
+        log.warn('candidate name update failed — non-blocking', { traceId: ctx.traceId, error: (err as Error).message });
+      }
+    }
   } else {
     const insertedCand = await datastore(ctx.req).table('Candidates').insertRow({
       name: memberName,
@@ -522,33 +618,66 @@ export async function requestEval(ctx: RequestContext): Promise<void> {
     candidateId = unwrapRow<{ ROWID: string }>(insertedCand, 'Candidates')?.ROWID ?? '';
   }
 
-  // Crear Result (= application) en pipeline_stage='applied' para este job demo
+  // Crear Result (= application) en pipeline_stage='applied' para este job demo.
+  //
+  // 2026-07-16: el lookup incluye marketing_lead_id para que un mismo finalista
+  // pueda ser evaluado por múltiples clientes distintos. Sin este filtro, el
+  // Result quedaba pegado al primer cliente que lo usó y los clientes nuevos
+  // no veían ningún finalista en Marketing → Finalistas.
   const idempotencyKey = `demo_${lead.ROWID}_${memberEmail}`;
-  let resultId: string;
   const existingResult = unwrapRows<{ ROWID: string }>(
     (await zcql(ctx.req).executeZCQLQuery(
-      `SELECT ROWID FROM Results WHERE candidate_id = '${escapeSql(candidateId)}' AND assessment_id = '${escapeSql(jobId)}' LIMIT 1`,
+      `SELECT ROWID FROM Results WHERE candidate_id = '${escapeSql(candidateId)}' AND assessment_id = '${escapeSql(jobId)}' AND marketing_lead_id = '${escapeSql(lead.ROWID)}' LIMIT 1`,
     )) as unknown[],
     'Results',
   )[0];
+  let resultId: string;
 
   if (existingResult) {
     resultId = existingResult.ROWID;
+    // Si el flujo es finalist y el Result existente está en 'applied' (flujo ATS
+    // completo), lo bajamos a 'tecnica_completed' para saltar prefiltro/técnica.
+    // Idempotente: si ya está bien, no cambia nada.
+    if (isFinalistFlow) {
+      try {
+        await datastore(ctx.req).table('Results').updateRow({
+          ROWID: resultId,
+          pipeline_stage: 'tecnica_completed',
+        });
+      } catch (err) {
+        log.warn('finalist Result stage update failed — non-blocking', { traceId: ctx.traceId, resultId, error: (err as Error).message });
+      }
+    }
   } else {
+    // marketing_lead_id: link explícito al empleador que pidió esta evaluación.
+    // Habilita la vista admin "candidatos por empresa" sin depender del idempotency_key.
+    //
+    // pipeline_stage: en flow finalist arrancamos en 'tecnica_completed' (salta
+    // prefiltro + técnica, mismo modelo que captureLead demo). En el flujo viejo
+    // eval-request queda 'applied' para retrocompat.
+    const startingStage = isFinalistFlow ? 'tecnica_completed' : 'applied';
     const insertedResult = await datastore(ctx.req).table('Results').insertRow({
       assessment_id: jobId,
       candidate_id: candidateId,
-      pipeline_stage: 'applied',
+      pipeline_stage: startingStage,
       started_at: now(),
       idempotency_key: idempotencyKey,
+      marketing_lead_id: lead.ROWID,
     });
     resultId = unwrapRow<{ ROWID: string }>(insertedResult, 'Results')?.ROWID ?? '';
   }
 
-  // Firmar token de test (7 días)
-  const { signToken, expiresIn, WEEK_SEC } = await import('../lib/urlSigning.js');
+  // Firmar tokens. En flow finalist mandamos 2 links (demo-test conductual + integridad)
+  // igual que captureLead. En eval-request viejo mandamos 1 link (test general).
+  const { signToken, expiresIn, WEEK_SEC, DAY_SEC } = await import('../lib/urlSigning.js');
+  const baseUrl = env().APP_BASE_URL.replace(/\/$/, '');
   const testToken = signToken({ kind: 'test', ref: resultId, exp: expiresIn(WEEK_SEC) });
-  const testUrl = `${env().APP_BASE_URL.replace(/\/$/, '')}/app/index.html#/test/${testToken}`;
+  const testUrl = `${baseUrl}/app/index.html#/test/${testToken}`;
+  const exp30d = expiresIn(30 * DAY_SEC);
+  const conductualToken = signToken({ kind: 'demo_conductual', ref: resultId, exp: exp30d });
+  const integridadToken = signToken({ kind: 'demo_integridad', ref: resultId, exp: exp30d });
+  const conductualUrl = `${baseUrl}/app/index.html#/demo-test/conductual/${conductualToken}`;
+  const integridadUrl = `${baseUrl}/app/index.html#/demo-test/integridad/${integridadToken}`;
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   // Opción B (exchange-token): firmamos un session_token corto (5 min, multi-use) que
@@ -569,15 +698,59 @@ export async function requestEval(ctx: RequestContext): Promise<void> {
     updated_at: now(),
   });
 
-  // Email al colaborador con link al test — sincrónico, llega ya
+  // Sync a Zoho CRM — solo cuando el lead se creó ahora vía flow finalist.
+  // Los leads del /lead-magnet viejo ya se sincronizaron desde captureLead.
+  // fireAndForget: si publishOutboxEvent rechaza, no perdemos el rejection en background.
+  if (isFinalistFlow && createLeadIfMissing) {
+    try {
+      const { fireAndForget } = await import('../lib/fireAndForget.js');
+      fireAndForget('publishOutbox.lead_captured_finalist', () =>
+        publishOutboxEvent(ctx.req, 'lead.captured', {
+          lead_id: lead.ROWID,
+          email: leadEmail,
+          contact_name: null,
+          company: null,
+          score_quality: null,
+          urgency: 'less_30d',
+          source: 'evalua-finalista',
+          puesto,
+        }),
+      );
+      log.info('finalist lead outbox event published', { traceId: ctx.traceId, leadId: lead.ROWID });
+    } catch (err) {
+      log.warn('finalist lead outbox publish failed — lead exists locally, retry via cron', {
+        traceId: ctx.traceId,
+        leadId: lead.ROWID,
+        error: (err as Error).message,
+      });
+    }
+  }
+
+  // Email al candidato con link(s) al test — sincrónico, llega ya.
+  // Cuando flow='finalist' (landing /evalua-tu-finalista), usamos template distinto
+  // porque el ángulo cambia: no es "un miembro de tu equipo va a evaluarse", es
+  // "eres candidato en un proceso de selección y el empleador quiere evaluarte antes de firmar".
+  const emailTemplate = isFinalistFlow ? 'marketing_finalist_test_link' : 'marketing_demo_test_link';
+  // Prioridad para vars del email:
+  //   empleador_nombre (landing nueva) → body.lead_name (compat) → leadEmail (último fallback)
+  //   empresa (landing nueva)          → body.lead_company (compat) → 'SharkTalents' (fallback neutro, no dice "" vacío)
+  const displayLeadName = empleadorFullName
+    || (typeof body.lead_name === 'string' && body.lead_name.trim() ? body.lead_name.trim() : leadEmail);
+  const displayLeadCompany = empresa
+    || (typeof body.lead_company === 'string' && body.lead_company.trim() ? body.lead_company.trim() : 'SharkTalents');
   await publishAndProcessEvent(ctx.req, 'email.send_pending', {
     to: memberEmail,
-    template: 'marketing_demo_test_link',
+    template: emailTemplate,
     locale: 'es',
     vars: {
       member_name: memberName,
-      lead_name: typeof body.lead_name === 'string' ? body.lead_name : leadEmail,
-      lead_company: typeof body.lead_company === 'string' ? body.lead_company : '',
+      lead_name: displayLeadName,
+      lead_company: displayLeadCompany,
+      puesto: puesto || 'el puesto',
+      // Flow finalist: 2 links separados (conductual + integridad), igual que demo.
+      conductual_url: conductualUrl,
+      integridad_url: integridadUrl,
+      // Flow eval-request viejo: 1 link único al flujo ATS completo.
       test_url: testUrl,
       expires_at: expiresAt.toLocaleDateString('es-AR'),
       estimated_minutes: '60',
@@ -591,6 +764,13 @@ export async function requestEval(ctx: RequestContext): Promise<void> {
     resultId,
     member_email_masked: memberEmail.slice(0, 2) + '***',
   });
+
+  // Landing v3 finalista (2026-07-15): firmar token corto para que la mini-página
+  // del fit pueda llamar a POST /api/finalist/fit-choice sin exponer el lead_id
+  // en el body. 1h de TTL cubre reflexión + refresh + navegación.
+  const fitChoiceToken = isFinalistFlow
+    ? signToken({ kind: 'fit_choice', ref: lead.ROWID, exp: expiresIn(60 * 60) })
+    : null;
 
   sendJson(ctx.res, 201, {
     request_id: resultId,
@@ -608,6 +788,9 @@ export async function requestEval(ctx: RequestContext): Promise<void> {
     // TTL corto (5 min), multi-use dentro del TTL.
     session_token: sessionToken,
     session_expires_in_seconds: EXCHANGE_TOKEN_TTL_SEC,
+    // Flow finalist v3: token para la mini-página del fit — la landing lo pasa
+    // en el body de /api/finalist/fit-choice junto con "agendado" | "omitido".
+    fit_choice_token: fitChoiceToken,
   });
 }
 
@@ -1331,6 +1514,13 @@ export async function patchLead(ctx: RequestContext): Promise<void> {
     }
     patch.status = body.status;
   }
+  if (typeof body.pipeline_stage === 'string') {
+    const validStages = ['nuevo', 'contactado', 'interesado', 'reunion_agendada', 'reunion_hecha', 'cotizacion_enviada', 'perdido'] as const;
+    if (!validStages.includes(body.pipeline_stage as typeof validStages[number])) {
+      throw new ValidationError(`pipeline_stage inválido — debe ser uno de: ${validStages.join(', ')}`);
+    }
+    patch.pipeline_stage = body.pipeline_stage;
+  }
 
   if (Object.keys(patch).length <= 2) {
     throw new ValidationError('no fields to update');
@@ -1338,7 +1528,68 @@ export async function patchLead(ctx: RequestContext): Promise<void> {
 
   await datastore(ctx.req).table(TABLE_LEADS).updateRow(patch as { ROWID: string });
   log.info('lead patched', { traceId: ctx.traceId, leadId, fields: Object.keys(patch) });
-  sendJson(ctx.res, 200, { ok: true, leadId, updated_fields: Object.keys(patch) });
+
+  let zohoSync: { status: 'ok' | 'failed' | 'skipped'; detail?: string } = { status: 'skipped' };
+  if (typeof patch.pipeline_stage === 'string') {
+    zohoSync = await syncPipelineStageToZoho(ctx.req, leadId, patch.pipeline_stage, ctx.traceId);
+  }
+
+  sendJson(ctx.res, 200, { ok: true, leadId, updated_fields: Object.keys(patch), zoho_sync: zohoSync });
+}
+
+const PIPELINE_STAGE_TO_ZOHO_STATUS: Record<string, string> = {
+  nuevo: 'Nuevo',
+  contactado: 'Contactado',
+  interesado: 'Interesado',
+  reunion_agendada: 'Reunión agendada',
+  reunion_hecha: 'Reunión hecha',
+  cotizacion_enviada: 'Cotización enviada',
+  perdido: 'Perdido',
+};
+
+async function syncPipelineStageToZoho(
+  req: RequestContext['req'],
+  leadId: string,
+  pipelineStage: string,
+  traceId: string,
+): Promise<{ status: 'ok' | 'failed' | 'skipped'; detail?: string }> {
+  const zohoStatus = PIPELINE_STAGE_TO_ZOHO_STATUS[pipelineStage];
+  if (!zohoStatus) return { status: 'skipped', detail: `no mapping for stage ${pipelineStage}` };
+
+  const rows = unwrapRows<{ email: string | null; zoho_crm_lead_id: string | null }>(
+    await zcql(req).executeZCQLQuery(
+      `SELECT email, zoho_crm_lead_id FROM ${TABLE_LEADS} WHERE ROWID = '${escapeSql(leadId)}' LIMIT 1`,
+    ),
+    TABLE_LEADS,
+  );
+  const row = rows[0];
+  if (!row) return { status: 'skipped', detail: 'lead not found post-update' };
+
+  let crmLeadId = row.zoho_crm_lead_id;
+
+  if (!crmLeadId && row.email) {
+    const { findLeadInCrmByEmailPublic } = await import('../lib/zohoCrmClient.js');
+    const found = await findLeadInCrmByEmailPublic(row.email, traceId);
+    if (found) {
+      crmLeadId = found.id;
+      await datastore(req).table(TABLE_LEADS).updateRow({ ROWID: leadId, zoho_crm_lead_id: crmLeadId } as { ROWID: string });
+    }
+  }
+
+  if (!crmLeadId) {
+    log.info('zoho sync skipped — lead not in CRM', { traceId, leadId, email: row.email });
+    return { status: 'skipped', detail: 'lead not found in Zoho CRM' };
+  }
+
+  const { updateLeadStatus } = await import('../lib/zohoCrmClient.js');
+  const result = await updateLeadStatus(crmLeadId, zohoStatus, traceId);
+
+  if (result.ok) {
+    log.info('zoho lead status synced', { traceId, leadId, crmLeadId, zohoStatus });
+    return { status: 'ok' };
+  }
+  log.warn('zoho lead status sync failed', { traceId, leadId, crmLeadId, zohoStatus, error: result.error });
+  return { status: 'failed', detail: result.error };
 }
 
 // ===== GET /api/marketing/_dump_crm_lead?email=... (diagnóstico) =====
@@ -1928,6 +2179,7 @@ export async function sendDemoToLead(ctx: RequestContext): Promise<void> {
           pipeline_stage: 'applied',
           started_at: now(),
           idempotency_key: `demo_${lead.ROWID}_${memberEmail}`,
+          marketing_lead_id: lead.ROWID,
         }),
         'Results',
       )?.ROWID ?? '';
@@ -2480,9 +2732,10 @@ export async function tryCompleteMarketingDemo(ctx: RequestContext, resultId: st
       contact_name: string | null;
       company: string | null;
       status: string;
+      fit_choice: string | null;
     }>(
       (await zcql(ctx.req).executeZCQLQuery(
-        `SELECT ROWID, email, contact_name, company, status FROM ${TABLE_LEADS}
+        `SELECT ROWID, email, contact_name, company, status, fit_choice FROM ${TABLE_LEADS}
          WHERE eval_result_id = '${escapeSql(resultId)}' LIMIT 1`,
       )) as unknown[],
       TABLE_LEADS,
@@ -2490,6 +2743,11 @@ export async function tryCompleteMarketingDemo(ctx: RequestContext, resultId: st
 
     if (!lead) return; // No es un demo del funnel — ignorar
     if (lead.status === 'eval_completed') return; // Ya procesado — idempotente
+
+    // Camino A: cliente pidió reunión de fit. NO auto-enviamos reporte — Chris arma
+    // el fit report manualmente. Solo marcamos que las pruebas terminaron para que
+    // la UI muestre "✓ Pruebas listas" en el badge.
+    const isFitPath = lead.fit_choice === 'agendado';
 
     // Para disparar el reporte, AMBAS secciones (conductual + integridad) tienen que
     // estar completas. Si solo una está, salimos — esperamos la otra.
@@ -2533,14 +2791,65 @@ export async function tryCompleteMarketingDemo(ctx: RequestContext, resultId: st
     const reportToken = signToken({ kind: 'report', ref: resultId, exp: expiresIn(30 * DAY_SEC) });
     const reportUrl = `${env().APP_BASE_URL.replace(/\/$/, '')}/app/index.html#/demo-report/${reportToken}`;
 
-    // Actualizar lead
-    await datastore(ctx.req).table(TABLE_LEADS).updateRow({
+    // Actualizar lead: marcar pruebas completadas. Comportamiento distinto por camino:
+    //  - Camino B (sin fit): finalist_status='reporte_enviado' + report_sent_by='auto'
+    //    → sistema auto-envía email y ejecuta round-robin abajo
+    //  - Camino A (con fit): NO tocamos finalist_status — sigue en 'esperando_reunion'
+    //    o 'esperando_reporte' según haya marcado Chris la reunión. Solo marca
+    //    eval_completed para que la UI muestre "✓ Pruebas listas" en el badge.
+    const patchV3: Record<string, unknown> = {
       ROWID: lead.ROWID,
       status: 'eval_completed',
       eval_completed_at: now(),
       demo_report_url: reportUrl.slice(0, 1000),
       updated_at: now(),
-    });
+    };
+    if (!isFitPath) {
+      patchV3.finalist_status = 'reporte_enviado';
+      patchV3.report_sent_at = now();
+      patchV3.report_sent_by = 'auto';
+    }
+    try {
+      await datastore(ctx.req).table(TABLE_LEADS).updateRow(patchV3 as { ROWID: string });
+    } catch (err) {
+      log.warn('lead update with V3 fields failed — retrying with legacy fields', {
+        traceId: ctx.traceId,
+        leadId: lead.ROWID,
+        error: (err as Error).message,
+      });
+      await datastore(ctx.req).table(TABLE_LEADS).updateRow({
+        ROWID: lead.ROWID,
+        status: 'eval_completed',
+        eval_completed_at: now(),
+        demo_report_url: reportUrl.slice(0, 1000),
+        updated_at: now(),
+      });
+    }
+
+    // Round-robin solo en camino B. En camino A el vendedor se asigna cuando
+    // Chris envía manualmente el fit report.
+    if (!isFitPath) {
+      try {
+        const { autoAssignLead } = await import('./freelance.js');
+        const assignedTo = await autoAssignLead(ctx.req, lead.ROWID);
+        log.info('marketing demo — round-robin executed (camino B)', {
+          traceId: ctx.traceId,
+          leadId: lead.ROWID,
+          assignedTo: assignedTo ?? 'none',
+        });
+      } catch (err) {
+        log.warn('marketing demo — round-robin failed, lead stays unassigned', {
+          traceId: ctx.traceId,
+          leadId: lead.ROWID,
+          error: (err as Error).message,
+        });
+      }
+    } else {
+      log.info('marketing demo — camino A (fit path), skipping auto-send + round-robin', {
+        traceId: ctx.traceId,
+        leadId: lead.ROWID,
+      });
+    }
 
     log.info('marketing demo completed', {
       traceId: ctx.traceId,
@@ -2579,19 +2888,22 @@ export async function tryCompleteMarketingDemo(ctx: RequestContext, resultId: st
       </table>`
       : `<p style="margin:0; color:#6b7280; font-size:14px;">Responde este email y coordinamos una llamada — llega directo a nuestro equipo.</p>`;
 
-    // Email al lead con el reporte — sincrónico, sale ya
-    await publishAndProcessEvent(ctx.req, 'email.send_pending', {
-      to: lead.email,
-      template: 'marketing_demo_report_ready',
-      locale: 'es',
-      vars: {
-        contact_name_prefix: lead.contact_name ? ` ${lead.contact_name.split(/\s+/)[0]}` : '',
-        member_name: candidateRow?.name ?? 'tu colaborador',
-        report_url: reportUrl,
-        booking_url: bookingUrl || '(responde este email)',
-        booking_section_html: bookingSectionHtml,
-      },
-    });
+    // Email al lead con el reporte — solo camino B (sin fit). En camino A Chris
+    // arma el fit report y lo envía manualmente después de la reunión.
+    if (!isFitPath) {
+      await publishAndProcessEvent(ctx.req, 'email.send_pending', {
+        to: lead.email,
+        template: 'marketing_demo_report_ready',
+        locale: 'es',
+        vars: {
+          contact_name_prefix: lead.contact_name ? ` ${lead.contact_name.split(/\s+/)[0]}` : '',
+          member_name: candidateRow?.name ?? 'tu colaborador',
+          report_url: reportUrl,
+          booking_url: bookingUrl || '(responde este email)',
+          booking_section_html: bookingSectionHtml,
+        },
+      });
+    }
   } catch (err) {
     log.warn('tryCompleteMarketingDemo failed', {
       traceId: ctx.traceId,
@@ -2805,21 +3117,57 @@ export async function simulateCompletion(ctx: RequestContext): Promise<void> {
     await datastore(ctx.req).table('Scores').deleteRow(existing.ROWID);
   }
 
-  // Insertar scores sintéticos — valores plausibles para un candidato "promedio alto"
+  // Insertar scores sintéticos — perfil REALISTA de "candidato promedio alto"
+  // para un rol de Gerente de Marketing estratégico:
+  // - D=65 (orientada a resultados, decisión moderada-alta)
+  // - I=58 (comunicativa, persuasiva sin ser exagerada)
+  // - S=40 (adaptable, tolera cambio, no rígida)
+  // - C=55 (sigue procesos, atenta a métricas, no rigid)
+  // - Cognitiva sólida (verbal + lógica altos, complementarios)
+  // - Integridad limpia (riesgo bajo, apto, sin sesgo de imagen)
   const ts = now();
   await datastore(ctx.req).table('Scores').insertRow({
     result_id: lead.eval_result_id,
-    disc_raw_d: 18, disc_raw_i: 12, disc_raw_s: 14, disc_raw_c: 16,
-    disc_norm_d: 30, disc_norm_i: 20, disc_norm_s: 23, disc_norm_c: 27,
+    disc_raw_d: 13, disc_raw_i: 12, disc_raw_s: 8, disc_raw_c: 11,
+    disc_norm_d: 65, disc_norm_i: 58, disc_norm_s: 40, disc_norm_c: 55,
     disc_perfil_dominante: 'D',
     disc_completed_at: ts,
-    velna_verbal: 75, velna_espacial: 60, velna_logica: 80, velna_numerica: 70, velna_abstracta: 65,
-    velna_total: 70, velna_max: 100, velna_indice: 70,
+    velna_verbal: 78, velna_espacial: 68, velna_logica: 78, velna_numerica: 72, velna_abstracta: 70,
+    velna_total: 73, velna_max: 100, velna_indice: 73,
     velna_completed_at: ts,
-    int_overall: 'bajo', int_overall_pct: 12, int_recomendacion: 'apto',
-    int_buena_impresion: 'normal', int_buena_impresion_pct: 25,
+    int_overall: 'bajo', int_overall_pct: 15, int_recomendacion: 'apto',
+    int_buena_impresion: 'normal', int_buena_impresion_pct: 30,
     int_completed_at: ts,
   });
+
+  // Sintéticos de las 13 dimensiones de integridad — sin esto la sección de
+  // "columnas de riesgo" del fit report queda vacía. Perfil promedio-alto
+  // realista: mayoría bajo, un par en medio (los ejes de presión).
+  const mockDims: Array<{ dimension: string; pct: number; nivel: 'bajo' | 'medio' | 'alto' }> = [
+    { dimension: 'honestidad',          pct: 12, nivel: 'bajo' },
+    { dimension: 'autenticidad',        pct: 15, nivel: 'bajo' },
+    { dimension: 'imparcialidad',       pct: 18, nivel: 'bajo' },
+    { dimension: 'sencillez',           pct: 20, nivel: 'bajo' },
+    { dimension: 'inteligencia_social', pct: 22, nivel: 'bajo' },
+    { dimension: 'dominio_personal',    pct: 25, nivel: 'bajo' },
+    { dimension: 'confiabilidad',       pct: 18, nivel: 'bajo' },
+    { dimension: 'hurto',               pct: 10, nivel: 'bajo' },
+    { dimension: 'soborno',             pct: 15, nivel: 'bajo' },
+    { dimension: 'alcohol',             pct: 42, nivel: 'medio' },
+    { dimension: 'drogas',              pct: 20, nivel: 'bajo' },
+    { dimension: 'apuestas',            pct: 45, nivel: 'medio' },
+    { dimension: 'buena_impresion',     pct: 30, nivel: 'bajo' },
+  ];
+  await Promise.all(
+    mockDims.map((d) =>
+      datastore(ctx.req).table('IntegrityDimensions').insertRow({
+        result_id: lead.eval_result_id,
+        dimension: d.dimension,
+        nivel: d.nivel,
+        pct: d.pct,
+      }),
+    ),
+  );
 
   // Actualizar pipeline_stage del Result
   await datastore(ctx.req).table('Results').updateRow({
@@ -3188,6 +3536,138 @@ export async function resendReport(ctx: RequestContext): Promise<void> {
     new_report_url: reportUrl,
     email_send_result: emailResult,
   });
+}
+
+// ============================================================================
+// POST /api/finalist/fit-choice — landing v3 mini-página del fit (2026-07-15)
+// ============================================================================
+//
+// La landing /evalua-tu-finalista v3 muestra después del submit una mini-página
+// donde el cliente elige "Agendar reunión de fit" o "Omitir por ahora". Este
+// endpoint registra esa decisión — es el dato central del experimento comercial.
+//
+// Camino A (agendado): finalist_status='esperando_reporte'. Chris hará la
+//   reunión (Zoho Booking), armará el fit report con IA, lo enviará manualmente
+//   y luego asignará vendedor via round-robin (flujo separado, no aquí).
+//
+// Camino B (omitido): finalist_status='auto_pending'. Cuando el candidato
+//   termine las pruebas, el hook `tryCompleteMarketingDemo()` (a) manda el
+//   reporte automático como siempre, (b) ejecuta round-robin, (c) notifica al
+//   vendedor por WhatsApp con link al reporte.
+//
+// Auth: público (sin Clerk). Protegido con:
+//   - X-Marketing-Site-Key header
+//   - fit_choice_token firmado (kind='fit_choice', ref=lead_id, TTL 1h) que la
+//     landing recibe en la respuesta de POST /api/marketing/eval-request
+//   - Cloudflare Turnstile
+//
+// Idempotente: si el cliente ya eligió, se acepta la nueva elección (puede
+// cambiar de opinión mientras el token siga vivo). Emite un evento outbox para
+// que Zoho CRM registre "fit-agendado" o "fit-omitido" sobre el lead con tag
+// shark-finalista (setup del CRM: tag existente, custom field pendiente).
+export async function submitFitChoice(ctx: RequestContext): Promise<void> {
+  verifySiteKey(ctx);
+  if (!(await isTableReady(ctx.req))) {
+    sendJson(ctx.res, 503, { error: { code: 'table_not_ready', message: 'MarketingLeads table not ready' } });
+    return;
+  }
+
+  const body = (await readJsonBody(ctx.req)) as Record<string, unknown>;
+
+  const captchaToken = typeof body.captcha_token === 'string' ? body.captcha_token : '';
+  if (!captchaToken) {
+    sendJson(ctx.res, 403, { error: { code: 'invalid_captcha', message: 'captcha_token required' } });
+    return;
+  }
+  if (!isDevBypass(captchaToken)) {
+    const userIP = (ctx.req.headers['cf-connecting-ip'] as string | undefined)
+      ?? (ctx.req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim();
+    const turnstileResult = await verifyTurnstileToken(captchaToken, userIP);
+    if (!turnstileResult.ok) {
+      sendJson(ctx.res, 403, { error: { code: 'invalid_captcha', message: 'No pasaste el challenge anti-bot.' } });
+      return;
+    }
+  }
+
+  const fitChoiceToken = typeof body.fit_choice_token === 'string' ? body.fit_choice_token : '';
+  if (!fitChoiceToken) throw new ValidationError('fit_choice_token required');
+
+  const choice = typeof body.choice === 'string' ? body.choice : '';
+  if (choice !== 'agendado' && choice !== 'omitido') {
+    throw new ValidationError('choice must be "agendado" or "omitido"');
+  }
+
+  const { verifyToken, TokenError } = await import('../lib/urlSigning.js');
+  let leadId: string;
+  try {
+    const claims = verifyToken(fitChoiceToken, 'fit_choice');
+    leadId = String(claims.ref ?? '');
+    if (!leadId) throw new AppError(401, 'invalid_token', 'fit_choice_token sin ref');
+  } catch (err) {
+    if (err instanceof TokenError) {
+      if (err.reason === 'expired') {
+        throw new AppError(410, 'token_expired', 'La sesión expiró — recargá la landing');
+      }
+      throw new AppError(401, 'invalid_token', 'fit_choice_token inválido');
+    }
+    throw err;
+  }
+
+  // Verificar que el lead existe (defensa contra tokens de leads borrados)
+  const lead = unwrapRows<{ ROWID: string; email: string; company: string | null }>(
+    (await zcql(ctx.req).executeZCQLQuery(
+      `SELECT ROWID, email, company FROM ${TABLE_LEADS} WHERE ROWID = '${escapeSql(leadId)}' LIMIT 1`,
+    )) as unknown[],
+    TABLE_LEADS,
+  )[0];
+  if (!lead) throw new NotFoundError('lead not found');
+
+  // Update local: fit_choice + fit_choice_at + finalist_status
+  // Camino A (agendado) → 'esperando_reunion' primero. Chris marca reunión hecha
+  //   manualmente en el kanban → pasa a 'esperando_reporte' → arma reporte + envía.
+  // Camino B (omitido) → 'auto_pending'. Cuando candidato termine pruebas, sistema
+  //   despacha reporte automático + round-robin.
+  const finalistStatus = choice === 'agendado' ? 'esperando_reunion' : 'auto_pending';
+  try {
+    await datastore(ctx.req).table(TABLE_LEADS).updateRow({
+      ROWID: leadId,
+      fit_choice: choice,
+      fit_choice_at: now(),
+      finalist_status: finalistStatus,
+      updated_at: now(),
+    });
+    log.info('fit choice registered', { traceId: ctx.traceId, leadId, choice, finalistStatus });
+  } catch (err) {
+    // Si las columnas nuevas todavía no existen en Catalyst, degradamos con log
+    // pero no rompemos la landing — el usuario ya eligió, no queremos frenarlo.
+    log.warn('fit_choice update failed — columns may be pending', {
+      traceId: ctx.traceId,
+      leadId,
+      choice,
+      error: (err as Error).message,
+    });
+  }
+
+  // Publicar evento para sync Zoho CRM (tag shark-finalista + custom field)
+  try {
+    const { fireAndForget } = await import('../lib/fireAndForget.js');
+    fireAndForget('publishOutbox.fit_choice', () =>
+      publishOutboxEvent(ctx.req, 'lead.fit_choice', {
+        lead_id: leadId,
+        email: lead.email,
+        company: lead.company,
+        choice,
+      }),
+    );
+  } catch (err) {
+    log.warn('fit_choice outbox publish failed — retry via cron', {
+      traceId: ctx.traceId,
+      leadId,
+      error: (err as Error).message,
+    });
+  }
+
+  sendJson(ctx.res, 200, { ok: true, choice, finalist_status: finalistStatus });
 }
 
 export const _internal = {

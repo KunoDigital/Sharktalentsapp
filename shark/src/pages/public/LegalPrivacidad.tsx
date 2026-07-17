@@ -18,7 +18,7 @@ export default function LegalPrivacidad() {
         <p className="legal-lead">
           En SharkTalents (operado por Kuno Digital) protegemos los datos personales que nos
           confías para gestionar procesos de selección. Este documento explica qué datos
-          recogemos, cómo los usamos y los derechos que tenés sobre ellos.
+          recogemos, cómo los usamos y los derechos que tienes sobre ellos.
         </p>
 
         <h2>1. Quiénes somos</h2>
@@ -70,7 +70,7 @@ export default function LegalPrivacidad() {
           <li><strong>Oposición</strong> — pedir que no procesemos ciertos datos.</li>
         </ul>
         <p>
-          Para ejercer cualquiera, escribinos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.
+          Para ejercer cualquiera, escríbenos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.
           Respondemos dentro de 30 días corridos.
         </p>
 

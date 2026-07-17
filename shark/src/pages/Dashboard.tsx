@@ -118,7 +118,7 @@ export default function Dashboard() {
                 icon="📋"
                 count={draftsPending.length}
                 label={`${draftsPending.length === 1 ? 'Draft pendiente' : 'Drafts pendientes'} de revisar`}
-                hint="Post-reunión con cliente — la IA armó el borrador, vos validás antes de mandárselo"
+                hint="Post-reunión con cliente — la IA armó el borrador, tú validas antes de mandárselo"
                 cta="Revisar drafts"
                 to="/drafts"
                 priority="warn"
@@ -129,7 +129,7 @@ export default function Dashboard() {
                 icon="🤖"
                 count={botNeedsReview.length}
                 label={`${botNeedsReview.length === 1 ? 'Decisión del bot' : 'Decisiones del bot'} con baja confianza`}
-                hint="El bot prefiere que vos decidas — confidence debajo del umbral"
+                hint="El bot prefiere que tú decidas — confidence debajo del umbral"
                 cta="Ver review queue"
                 to="/bot/review"
                 priority="warn"

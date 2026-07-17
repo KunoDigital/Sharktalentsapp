@@ -23,7 +23,7 @@ import { logger } from '../lib/logger';
 import { requireAuth } from '../lib/auth';
 import { requireTenant } from './tenants';
 import { anthropicMessage, extractJson, extractText, type AnthropicResponse } from '../lib/anthropic';
-import { COMPETENCIAS } from '../data/competencias';
+import { COMPETENCIAS, resolveCompetenciaId } from '../data/competencias';
 
 const log = logger('DRAFTS');
 
@@ -238,19 +238,44 @@ export async function generateDraft(ctx: RequestContext): Promise<void> {
       .map((c) => {
         const raw = (c.name ?? '').trim();
         if (!raw) return null;
-        if (validIds.has(raw)) return c;
-        const mapped = idByLowerName.get(raw.toLowerCase());
-        if (mapped) return { ...c, name: mapped };
-        dropped.push(raw);
-        return null;
+        let resolved: string | null = null;
+        if (validIds.has(raw)) resolved = raw;
+        else {
+          const mapped = idByLowerName.get(raw.toLowerCase());
+          if (mapped) resolved = mapped;
+        }
+        if (!resolved) {
+          dropped.push(raw);
+          return null;
+        }
+        // Si el ID es alias deprecado (ej. 'colaboracion'), reemplazarlo por el canónico
+        // ('trabajo_equipo'). Mantenemos retro-compat: el IA puede usar cualquiera.
+        const canonical = resolveCompetenciaId(resolved);
+        return { ...c, name: canonical };
       })
       .filter((c): c is { name: string; required_pct: number } => c !== null);
-    if (dropped.length > 0) {
-      log.warn('IA proposed invalid competencias — filtered', {
-        traceId: ctx.traceId, dropped, kept: filtered.map((c) => c.name),
+
+    // Deduplicar después del aliasing: dos entries de la IA distintas pueden colapsar
+    // al mismo canónico (ej. 'colaboracion' + 'trabajo_equipo' → 'trabajo_equipo').
+    const seen = new Set<string>();
+    const deduped: typeof filtered = [];
+    for (const c of filtered) {
+      if (seen.has(c.name)) continue;
+      seen.add(c.name);
+      deduped.push(c);
+    }
+    if (deduped.length !== filtered.length) {
+      log.info('competencias deduped after alias resolution', {
+        traceId: ctx.traceId,
+        removed: filtered.length - deduped.length,
       });
     }
-    draft.competencias = filtered;
+    if (dropped.length > 0) {
+      log.warn('IA proposed invalid competencias — filtered', {
+        traceId: ctx.traceId, dropped, kept: deduped.map((c) => c.name),
+      });
+    }
+    draft.competencias = deduped;
   }
 
   sendJson(ctx.res, 200, {

@@ -144,21 +144,34 @@ REGLAS situacional (CRÍTICO — validamos shape estrictamente):
 REGLAS GLOBALES — aplican a las 25 preguntas
 ═══════════════════════════════════════════════════════════════════
 
-1. ANTI-PATRÓN longitud (CRÍTICO — medido como mal en producción):
-   Las 4 opciones DEBEN tener longitudes COMPARABLES — el desvío máximo entre
-   la más corta y la más larga es ±20% en chars. Un candidato sin conocimiento
-   técnico elige "la más larga" como heurística y acierta el 50% si no respetás
-   esto.
-   ❌ MAL (la correcta es la más larga):
-      "A) 15%"
-      "B) 25%"
-      "C) 16.5% calculado en cascada sobre el arancel base + ITBMS Panamá"  ← correcta
-      "D) 20%"
-   ✅ BIEN (todas longitudes parejas):
-      "A) 15% (solo arancel base)"
-      "B) 25% (suma directa de arancel + sobretasa)"
-      "C) 16.5% (arancel + sobretasa en cascada)"  ← correcta
-      "D) 15% + USD 4500 fijo de sobretasa"
+1. ANTI-PATRÓN longitud (CRÍTICO — medido 57% acierto solo eligiendo la más larga):
+   Las 4 opciones DEBEN tener longitudes COMPARABLES.
+   REGLAS DURAS (no opcionales):
+   a) Cada opción: MÁXIMO 180 caracteres. Si excede, recortá.
+   b) Las 4 opciones de UNA pregunta deben caber dentro de ±20% de chars
+      respecto a la longitud promedio.
+      Cálculo concreto: si promedio = 100 chars, ninguna < 80 ni > 120.
+   c) PROHIBIDO hacer la opción correcta MÁS LARGA que las incorrectas para
+      "justificarla mejor". Es el sesgo más explotable: candidato sin
+      conocimiento elige siempre la más larga y acierta 57%.
+   d) Si la opción correcta tiene más detalle natural (cifras, condiciones),
+      AGREGÁ detalle equivalente a los distractores (cifras alternativas,
+      condiciones plausibles) hasta igualar la longitud. NO inventes "obvio mal"
+      en los distractores.
+   ❌ MAL (la correcta es la más larga — el sesgo que queremos eliminar):
+      "A) 15%"  (3 chars)
+      "B) 25%"  (3 chars)
+      "C) 16.5% calculado en cascada sobre el arancel base + ITBMS Panamá"  (61 chars) ← correcta
+      "D) 20%"  (3 chars)
+   ✅ BIEN (todas longitudes parejas ±20%):
+      "A) 15% sobre el valor CIF declarado en aduana"           (45 chars)
+      "B) 25% directo sobre el arancel base más sobretasa"      (48 chars)
+      "C) 16.5% aplicado en cascada arancel + ITBMS Panamá"     (49 chars) ← correcta
+      "D) 20% sobre arancel base más recargo de zona franca"    (50 chars)
+
+   VERIFICACIÓN OBLIGATORIA antes de devolver: contá los chars de cada opción.
+   Si la correcta es >1.2× la longitud promedio de las incorrectas, REESCRIBÍ
+   las incorrectas hasta empatar.
 
 2. BALANCE distribución correctas (CRÍTICO — medido como mal en producción):
    En las 12 técnicas, las posiciones de la respuesta correcta DEBEN distribuirse
@@ -231,8 +244,11 @@ const TOOL_TECHNICAL: AnthropicTool = {
               type: 'array',
               minItems: 4,
               maxItems: 4,
-              items: { type: 'string' },
-              description: '4 opciones de respuesta',
+              // maxLength=180 anti-sesgo "correcta = más larga" (Me2 BUGS_FEEDBACK).
+              // Cap duro fuerza al modelo a comprimir la correcta y evita el patrón
+              // detallado-justificado que daba 57% acierto solo eligiendo la más larga.
+              items: { type: 'string', maxLength: 180 },
+              description: '4 opciones de respuesta — cada una ≤180 chars, longitudes parejas ±20%',
             },
             correct: {
               type: 'integer',
@@ -270,7 +286,9 @@ const TOOL_SITUATIONAL: AnthropicTool = {
               type: 'array',
               minItems: 4,
               maxItems: 4,
-              items: { type: 'string' },
+              // maxLength=180 anti-sesgo "válida = más larga" (Me2 BUGS_FEEDBACK).
+              // En situacionales el sesgo es análogo: distractores cortos + válidas detalladas.
+              items: { type: 'string', maxLength: 180 },
             },
             option_validity: {
               type: 'array',
@@ -472,15 +490,65 @@ export async function generateTechnicalQuestions(args: {
   const situationalCombined = situationalRaw.map(shuffleSituationalOptions);
   const combined = [...technicalCombined, ...situationalCombined];
 
+  // 2026-06-12: Anti-sesgo "correcta = más larga" (Me2 de BUGS_FEEDBACK).
+  // Candidato sin conocimiento podía acertar 57% solo eligiendo la más larga.
+  // Mitigación: instrucción explícita en prompt + cap de caracteres por opción +
+  // medición post-hoc para detectar regresiones. Si el ratio supera 1.3×, log warn
+  // para alertar — el shuffle ya distribuye la posición pero no la longitud, así que
+  // sin esta señal no podríamos saber si el modelo regresa al patrón en producción.
+  const lengthBias = measureLengthBias(technicalCombined);
+  if (lengthBias.biasedCount > 0) {
+    log.warn('length bias detected in technical questions — modelo no respetó cap', {
+      traceId,
+      biased_count: lengthBias.biasedCount,
+      max_ratio: lengthBias.maxRatio.toFixed(2),
+      avg_ratio: lengthBias.avgRatio.toFixed(2),
+    });
+  }
+
   log.info('tech questions generated (double-axis 6+6+5+4+4) + anti-bias shuffle', {
     traceId,
     technical_count: technicalCombined.length,
     situational_count: situationalCombined.length,
     total: combined.length,
     correct_distribution: countCorrectDistribution(technicalCombined),
+    length_bias_ratio_avg: lengthBias.avgRatio.toFixed(2),
   });
 
   return combined;
+}
+
+/**
+ * Mide si el modelo cayó en el sesgo "correcta = más larga". Para cada técnica
+ * calcula ratio = length(correcta) / promedio(length(incorrectas)). Si >1.3×
+ * la pregunta está sesgada por longitud.
+ *
+ * Retorna stats agregados para logging — NO modifica las preguntas. La
+ * normalización de longitud se hace en el prompt + schema. Acá solo medimos
+ * para detectar regresiones en producción.
+ */
+function measureLengthBias(questions: GeneratedQuestionDoubleAxis[]): {
+  biasedCount: number;
+  maxRatio: number;
+  avgRatio: number;
+} {
+  const ratios: number[] = [];
+  for (const q of questions) {
+    if (q.kind !== 'technical' || typeof q.correct !== 'number') continue;
+    if (!Array.isArray(q.options) || q.options.length !== 4) continue;
+    const correctLen = q.options[q.correct]?.length ?? 0;
+    const incorrectLens = q.options
+      .filter((_, i) => i !== q.correct)
+      .map((o) => o.length);
+    const avgIncorrect = incorrectLens.reduce((a, b) => a + b, 0) / incorrectLens.length;
+    if (avgIncorrect === 0) continue;
+    ratios.push(correctLen / avgIncorrect);
+  }
+  if (ratios.length === 0) return { biasedCount: 0, maxRatio: 0, avgRatio: 0 };
+  const biasedCount = ratios.filter((r) => r > 1.3).length;
+  const maxRatio = Math.max(...ratios);
+  const avgRatio = ratios.reduce((a, b) => a + b, 0) / ratios.length;
+  return { biasedCount, maxRatio, avgRatio };
 }
 
 /**
@@ -584,4 +652,8 @@ function validateQuestion(raw: unknown, idx: number): GeneratedQuestion | null {
 export const _internal = {
   buildTechPrompt,
   validateQuestion,
+  measureLengthBias,
+  SYSTEM_TECH,
+  TOOL_TECHNICAL,
+  TOOL_SITUATIONAL,
 };

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup — Reporte completo (fit + psicométrico) · SharkTalents</title>
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Oswald:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root { --navy:#1B2438; --navy2:#222D45; --lima:#D6F26B; --crema:#F0F0EC; --gris:#8B8E9C; --muted:#666C7C; --line:rgba(27,36,56,0.1); --page:#E5E5DE; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--page); color:var(--navy); font-family:'Ubuntu',sans-serif; font-size:15.5px; line-height:1.6; padding:44px 20px 80px; }
+  .doc { max-width:820px; margin:0 auto; display:flex; flex-direction:column; gap:22px; }
+  .oswald { font-family:'Oswald',sans-serif; text-transform:uppercase; }
+
+  /* ── tarjeta base: blanco que flota sobre el gris ── */
+  .card {
+    background:#FFFFFF; border-radius:22px; padding:42px 48px;
+    box-shadow:0 2px 4px rgba(27,36,56,0.05), 0 18px 44px rgba(27,36,56,0.09);
+  }
+  @media (max-width:640px){ .card { padding:28px 24px; } }
+  .kicker { display:flex; align-items:center; gap:14px; margin-bottom:6px; counter-increment:sec; }
+  .kicker .num { font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:0.18em; background:var(--lima); color:var(--navy); border-radius:20px; padding:4px 13px; }
+  .kicker .num::before { content:counter(sec, decimal-leading-zero); }
+  .kicker h2 { font-size:22px; font-weight:700; letter-spacing:-0.01em; }
+  .doc { counter-reset:sec; }
+  .h2sub { font-size:14px; color:var(--muted); margin-bottom:22px; }
+  h3 { font-size:16.5px; margin-bottom:12px; }
+
+  /* ── PORTADA NAVY ── */
+  .cover {
+    background:linear-gradient(135deg, #1B2438 0%, #222D45 100%);
+    color:var(--crema); border-radius:22px; padding:54px 56px;
+    position:relative; overflow:hidden;
+    box-shadow:0 24px 60px rgba(27,36,56,0.3);
+    display:grid; grid-template-columns:1fr auto; gap:36px; align-items:center;
+  }
+  @media (max-width:680px){ .cover { grid-template-columns:1fr; padding:36px 28px; } }
+  .cover::before { content:'S'; position:absolute; right:-40px; top:-70px; font-weight:700; font-size:340px; color:rgba(214,242,107,0.05); line-height:1; pointer-events:none; }
+  .cover::after { content:''; position:absolute; left:-60px; bottom:-90px; width:260px; height:260px; border:1.5px dashed rgba(214,242,107,0.18); border-radius:50%; }
+  .cover .brand { font-family:'Oswald',sans-serif; font-size:12px; letter-spacing:0.34em; text-transform:uppercase; color:var(--lima); margin-bottom:20px; }
+  .cover .rlabel { font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:0.24em; text-transform:uppercase; color:#9BA0B0; }
+  .cover h1 { font-size:clamp(34px,6vw,48px); font-weight:700; letter-spacing:-0.02em; line-height:1.05; margin:4px 0 14px; }
+  .cover .meta { color:#9BA0B0; font-size:15px; }
+  .cover .meta b { color:var(--crema); }
+  .cover .chips { margin-top:20px; }
+  .cover .chip { display:inline-block; font-family:'Oswald',sans-serif; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; border:1px solid rgba(214,242,107,0.5); color:var(--lima); border-radius:20px; padding:4px 13px; margin-right:8px; background:rgba(214,242,107,0.08); }
+  /* anillo en la portada: lima sobre navy = el contraste que faltaba */
+  .ring-box { position:relative; width:172px; height:172px; z-index:1; }
+  .ring-box svg { width:100%; height:100%; transform:rotate(-90deg); }
+  .ring-bg { fill:none; stroke:rgba(240,240,236,0.14); stroke-width:11; }
+  .ring-fill { fill:none; stroke:var(--lima); stroke-width:11; stroke-linecap:round; stroke-dasharray:452; stroke-dashoffset:452; animation:fillring 1.8s cubic-bezier(0.22,1,0.36,1) 0.4s forwards; filter:drop-shadow(0 0 10px rgba(214,242,107,0.6)); }
+  @keyframes fillring { to { stroke-dashoffset:99; } } /* 78% */
+  .ring-label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .ring-label b { font-size:40px; color:var(--lima); }
+  .ring-label span { font-family:'Oswald',sans-serif; font-size:8.5px; letter-spacing:0.16em; text-transform:uppercase; color:#9BA0B0; text-align:center; line-height:1.6; }
+
+  /* ── VEREDICTO ── */
+  .verd-title { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
+  .verd-title b { font-size:26px; letter-spacing:-0.01em; }
+  .sello { font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; background:var(--lima); color:var(--navy); border-radius:20px; padding:6px 18px; box-shadow:0 6px 16px rgba(214,242,107,0.5); }
+  .alcance { background:var(--crema); border-radius:12px; padding:14px 18px; font-size:13.5px; color:var(--muted); margin-top:16px; }
+  .alcance b { color:var(--navy); }
+
+  /* ── MATCH: header NAVY (el contraste pedido por Cris) ── */
+  .match { border-radius:16px; overflow:hidden; margin-bottom:16px; box-shadow:0 2px 4px rgba(27,36,56,0.06), 0 10px 26px rgba(27,36,56,0.08); }
+  .match .ask {
+    background:linear-gradient(120deg, var(--navy), var(--navy2)); color:var(--crema);
+    padding:18px 24px; display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .match .ask .mlabel { font-family:'Oswald',sans-serif; font-size:9px; letter-spacing:0.24em; text-transform:uppercase; color:var(--lima); display:block; margin-bottom:3px; }
+  .match .ask b { font-size:15.5px; font-weight:700; }
+  .estado { font-family:'Oswald',sans-serif; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; padding:6px 16px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
+  .estado.si { background:var(--lima); color:var(--navy); box-shadow:0 0 14px rgba(214,242,107,0.55); }
+  .estado.validar { background:transparent; color:#9BA0B0; border:1.5px dashed var(--gris); }
+  .match .found { background:var(--crema); padding:16px 24px 10px; }
+  .match .found .mlabel { font-family:'Oswald',sans-serif; font-size:9px; letter-spacing:0.24em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:8px; }
+  .match .found ul { margin:0 0 12px 18px; font-size:14px; color:#3A4358; }
+  .match .found li { margin-bottom:5px; }
+
+  /* ── chips fuertes/débiles ── */
+  .cols2 { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  @media (max-width:620px){ .cols2 { grid-template-columns:1fr; } }
+  .chip-item { background:var(--crema); border-radius:12px; padding:13px 16px 13px 30px; margin-bottom:10px; font-size:14px; position:relative; }
+  .chip-item::before { content:''; position:absolute; width:8px; height:8px; border-radius:50%; background:var(--lima); border:1.5px solid var(--navy); left:12px; top:19px; }
+  .chip-item.warn::before { background:var(--gris); border:none; }
+
+  /* ── fit cultural / integridad: banda navy con badge lima ── */
+  .fitbox { display:flex; gap:22px; align-items:center; background:linear-gradient(120deg, var(--navy), var(--navy2)); color:var(--crema); border-radius:16px; padding:24px 28px; }
+  @media (max-width:620px){ .fitbox { flex-direction:column; text-align:center; } }
+  .fit-badge { flex-shrink:0; background:var(--lima); color:var(--navy); border-radius:14px; padding:16px 26px; text-align:center; box-shadow:0 8px 22px rgba(214,242,107,0.35); }
+  .fit-badge b { font-size:26px; display:block; }
+  .fit-badge span { font-family:'Oswald',sans-serif; font-size:8.5px; letter-spacing:0.18em; text-transform:uppercase; }
+  .fitbox p { font-size:14px; margin:0; color:#C9CDD8; }
+  .fitbox p b { color:var(--crema); }
+
+  .use { border-left:3px solid var(--lima); padding:6px 0 6px 18px; margin-bottom:14px; font-size:14.5px; }
+  .use b { display:block; }
+  .use span { color:var(--muted); font-size:14px; }
+
+  /* ── separador parte 2 ── */
+  .part { background:linear-gradient(135deg, var(--navy), var(--navy2)); color:var(--crema); border-radius:22px; padding:30px 40px; position:relative; overflow:hidden; box-shadow:0 18px 44px rgba(27,36,56,0.25); }
+  .part::after { content:''; position:absolute; right:-40px; top:-50px; width:160px; height:160px; border:1.5px dashed rgba(214,242,107,0.22); border-radius:50%; }
+  .part .oswald { font-size:11px; letter-spacing:0.28em; color:var(--lima); display:block; margin-bottom:6px; }
+  .part p { margin:0; font-size:14.5px; color:#9BA0B0; max-width:560px; }
+
+  /* ── DISC ── */
+  .disc { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin:22px 0; }
+  .disc .col { text-align:center; }
+  .disc .barwrap { height:130px; background:var(--crema); border-radius:12px; position:relative; overflow:hidden; }
+  .disc .bar { position:absolute; bottom:0; left:0; right:0; background:var(--navy); opacity:0.28; border-radius:10px 10px 0 0; }
+  .disc .col.dom .bar { background:var(--lima); opacity:1; box-shadow:0 0 18px rgba(214,242,107,0.7); }
+  .disc .col.dom .barwrap { outline:2px solid var(--navy); outline-offset:-2px; }
+  .disc .letter { font-weight:700; font-size:18px; margin-top:10px; display:block; }
+  .disc .val { font-size:13px; color:var(--muted); }
+  .dombox { background:var(--crema); border-left:4px solid var(--lima); border-radius:12px; padding:18px 22px; font-size:14px; }
+  .dombox b.t { display:block; font-size:16.5px; margin-bottom:6px; }
+  .work4 { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; }
+  @media (max-width:620px){ .work4 { grid-template-columns:1fr; } }
+  .wcard { background:var(--crema); border-radius:12px; padding:15px 18px; font-size:13.5px; color:#3A4358; }
+  .wcard .wlabel { font-family:'Oswald',sans-serif; font-size:9px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:4px; }
+
+  /* ── índice grande estilo Kudert ── */
+  .bignum { display:flex; align-items:center; gap:22px; background:var(--crema); border-radius:16px; padding:22px 28px; margin-bottom:18px; flex-wrap:wrap; }
+  .bignum .n { font-size:56px; font-weight:700; letter-spacing:-0.03em; line-height:1; }
+  .bignum .tag { font-family:'Oswald',sans-serif; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; background:var(--navy); color:var(--lima); border-radius:20px; padding:5px 16px; }
+  .bignum .d { color:var(--muted); font-size:13.5px; flex:1; min-width:200px; }
+  /* filas con barra */
+  .row { display:grid; grid-template-columns:1fr 110px 52px; gap:14px; align-items:center; padding:12px 4px; border-bottom:1px solid var(--line); font-size:14.5px; }
+  .row:last-of-type { border-bottom:none; }
+  .row .track { height:9px; background:var(--crema); border-radius:6px; overflow:hidden; }
+  .row .fill { height:100%; background:linear-gradient(90deg, #C9E85C, var(--lima)); border-radius:6px; display:block; box-shadow:0 0 8px rgba(214,242,107,0.45); }
+  .row .pct { text-align:right; font-weight:700; font-size:15px; }
+  .row .lvl { font-family:'Oswald',sans-serif; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); display:block; }
+  .qsig { background:var(--crema); border-left:4px solid var(--lima); border-radius:12px; padding:16px 20px; margin-top:16px; font-size:14.5px; }
+  .qsig .clabel { font-family:'Oswald',sans-serif; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:5px; }
+  /* columnas de riesgo (integridad) */
+  .risk-cols { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+  @media (max-width:640px){ .risk-cols { grid-template-columns:1fr; } }
+  .rhead-col { font-family:'Oswald',sans-serif; font-size:10.5px; letter-spacing:0.2em; text-transform:uppercase; text-align:center; border-radius:20px; padding:7px 10px; margin-bottom:12px; }
+  .rhead-col.ok { background:var(--lima); color:var(--navy); }
+  .rhead-col.mid { background:var(--crema); color:var(--muted); border:1px solid var(--line); }
+  .rhead-col.hi { background:var(--navy); color:var(--crema); }
+  .reje { background:var(--crema); border-radius:10px; padding:10px 14px; margin-bottom:8px; font-size:13.5px; text-align:center; }
+  .reje.empty { background:transparent; border:1.5px dashed var(--line); color:var(--muted); }
+
+  /* ── CTA ── */
+  .cta { background:linear-gradient(135deg, var(--navy), var(--navy2)); color:var(--crema); border-radius:22px; padding:32px 40px; display:flex; gap:20px; align-items:center; justify-content:space-between; flex-wrap:wrap; box-shadow:0 18px 44px rgba(27,36,56,0.25); }
+  .cta p { margin:0; font-size:14.5px; max-width:460px; color:#C9CDD8; }
+  .cta p b { color:var(--lima); }
+  .cta .btn { background:var(--lima); color:var(--navy); font-weight:700; font-size:15px; border:none; border-radius:10px; padding:15px 28px; cursor:pointer; box-shadow:0 8px 22px rgba(214,242,107,0.4); transition:transform 0.15s; }
+  .cta .btn:hover { transform:translateY(-2px); }
+  .foot { text-align:center; font-size:12.5px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- PORTADA -->
+  <div class="cover">
+    <div>
+      <div class="brand">SHARKTALENTS</div>
+      <div class="rlabel">Reporte de finalista · Fit + psicométrico</div>
+      <h1>Natalie</h1>
+      <div class="meta">Para <b>Kuno LLC</b> · Puesto: Gerente de Marca<br>16 de julio de 2026</div>
+      <div class="chips"><span class="chip">Confidencial</span><span class="chip">2 pruebas completadas</span></div>
+    </div>
+    <div class="ring-box">
+      <svg viewBox="0 0 160 160"><circle class="ring-bg" cx="80" cy="80" r="72"/><circle class="ring-fill" cx="80" cy="80" r="72"/></svg>
+      <div class="ring-label"><b>78%</b><span>Fit con tus<br>expectativas</span></div>
+    </div>
+  </div>
+
+  <!-- VEREDICTO -->
+  <div class="card">
+    <div class="kicker"><span class="num"></span><h2>Veredicto</h2></div>
+    <div class="verd-title"><b>Natalie es recomendada</b><span class="sello">Recomendada</span></div>
+    <p>Las pruebas indican un fit sólido con lo que nos dijiste que necesitas: perfil orientado a resultados que decide rápido, comunicación clara para un equipo que debate, razonamiento por encima del promedio e integridad limpia. Engrana con tu estilo de dirección y con la cultura de tu equipo.</p>
+    <div class="alcance"><b>Alcance:</b> esta evaluación cubre su conducta, su pensamiento, su integridad y el encaje contigo. Lo que dependa de su trayectoria — experiencia previa, idiomas, referencias — queda en tus manos en la entrevista.</div>
+  </div>
+
+  <!-- MATCH -->
+  <div class="card">
+    <div class="kicker"><span class="num"></span><h2>¿Cumplirá tus expectativas? Punto por punto</h2></div>
+    <p class="h2sub">Cada expectativa que nos diste en la llamada, contra lo que su evaluación demuestra. Esto es el fit.</p>
+
+    <div class="match">
+      <div class="ask"><div><span class="mlabel">Tu expectativa</span><b>Una estratega que empuje lo comercial — no otra ejecutora como tu agencia anterior</b></div><span class="estado si">Engrana</span></div>
+      <div class="found"><span class="mlabel">La evidencia</span><ul>
+        <li>Perfil orientado a resultados que decide rápido (Decisión 72): empuja proyectos hasta cerrarlos, no espera instrucciones.</li>
+        <li>Razonamiento lógico 76%: piensa en causa-efecto — puede construir el funnel y medir impacto, no solo publicar contenido.</li>
+      </ul></div>
+    </div>
+
+    <div class="match">
+      <div class="ask"><div><span class="mlabel">Tu expectativa</span><b>Que defienda sus ideas con datos en un equipo senior que debate — sin ser confrontacional</b></div><span class="estado si">Engrana</span></div>
+      <div class="found"><span class="mlabel">La evidencia</span><ul>
+        <li>Razonamiento verbal 78% y asertividad alta: estructura argumentos con precisión y los sostiene bajo cuestionamiento.</li>
+        <li>Su perfil empuja resultados sin buscar el choque: debate con datos, no con volumen.</li>
+      </ul></div>
+    </div>
+
+    <div class="match">
+      <div class="ask"><div><span class="mlabel">Tu expectativa</span><b>Alguien que funcione con tu estilo hands-off: plan los lunes, resultados mensuales</b></div><span class="estado si">Engrana</span></div>
+      <div class="found"><span class="mlabel">La evidencia</span><ul>
+        <li>Trabaja con autonomía y objetivos claros; la supervisión constante la desgasta — tu estilo es exactamente el que la retiene.</li>
+        <li>Integridad limpia con detector de imagen favorable en rango normal: los números que te presente los lunes serán reales.</li>
+      </ul></div>
+    </div>
+
+    <div class="match">
+      <div class="ask"><div><span class="mlabel">Tu expectativa</span><b>Que aprenda rápido tu negocio y sus sistemas — sin necesitar manual</b></div><span class="estado si">Engrana</span></div>
+      <div class="found"><span class="mlabel">La evidencia</span><ul>
+        <li>Capacidad de pensamiento en promedio alto (72%): estructura problemas nuevos sola.</li>
+        <li>Razonamiento abstracto 68%: aprende reglas nuevas y se adapta a lo desconocido en semanas, no en meses.</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- CÓMO ES -->
+  <div class="card">
+    <div class="kicker"><span class="num"></span><h2>Cómo es Natalie</h2></div>
+    <p class="h2sub">La persona detrás de los resultados — sin adornos, en ambas direcciones.</p>
+    <div class="cols2">
+      <div>
+        <h3>Puntos fuertes</h3>
+        <div class="chip-item">Decide rápido y empuja hasta cerrar: no se queda en el diagnóstico.</div>
+        <div class="chip-item">Comunica con claridad y estructura: sus argumentos se entienden a la primera.</div>
+        <div class="chip-item">Analítica por encima del promedio: entiende sistemas complejos y puede orquestar especialistas.</div>
+        <div class="chip-item">Honesta con los números: reporta lo que es, no lo que conviene.</div>
+      </div>
+      <div>
+        <h3>Puntos débiles</h3>
+        <div class="chip-item warn">La rutina sin reto la apaga: necesita proyectos que la exijan o empieza a mirar la puerta.</div>
+        <div class="chip-item warn">Puede impacientarse con perfiles lentos o procesos largos sin resultados visibles.</div>
+        <div class="chip-item warn">Prefiere avanzar a documentar: conviene pedirle el registro de decisiones, no esperarlo.</div>
+        <div class="chip-item warn">Su franqueza directa puede leerse como dureza en personas más sensibles.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIT CULTURAL + APROVECHAR -->
+  <div class="card">
+    <div class="kicker"><span class="num"></span><h2>Fit cultural con tu equipo</h2></div>
+    <div class="fitbox" style="margin-bottom:30px;">
+      <div class="fit-badge"><b>Alto</b><span>Fit cultural</span></div>
+      <p>Su estilo <b>engrana con la cultura de Kuno</b>: defiende su punto con datos en un equipo que debate constantemente, sin colapsar y sin confrontar. No necesita supervisión día a día — encaja con tu hands-off. Su integridad limpia sugiere números reales en las reuniones de lunes.</p>
+    </div>
+    <h3>Cómo aprovechar este perfil si la contratas</h3>
+    <div class="use"><b>Su razonamiento con datos</b><span>Asígnale proponer los KPIs comerciales y presentarlos los lunes — análisis de qué funcionó, no solo el plan. La mantiene en modo estratega.</span></div>
+    <div class="use"><b>Su orientación a resultados</b><span>Dale libertad de iterar rápido: si una estrategia no genera leads en dos semanas, que pivotee sin esperar aprobación. Tú validas resultados, no procesos.</span></div>
+    <div class="use"><b>Su comunicación estructurada</b><span>Usa la reunión semanal para estrategia comercial, no control operativo. Refuerza el rol que compraste: estratega, no ejecutora.</span></div>
+  </div>
+
+  <!-- SEPARADOR PARTE 2 -->
+  <div class="part">
+    <span class="oswald">Parte 2 · La evidencia</span>
+    <p>Todo lo anterior sale de aquí: los datos duros de su evaluación. Léelos si quieres profundizar — o confía en que ya los leímos por ti.</p>
+  </div>
+
+  <!-- CÓMO SE COMPORTA -->
+  <div class="card">
+    <div class="kicker"><span class="num"></span><h2>Cómo se comporta</h2></div>
+    <p class="h2sub">Perfil conductual (metodología DISC) — cómo trabaja en el día a día.</p>
+    <div class="disc">
+      <div class="col dom"><div class="barwrap"><div class="bar" style="height:76%"></div></div><span class="letter">D</span><span class="val">72 · Decisión</span></div>
+      <div class="col"><div class="barwrap"><div class="bar" style="height:64%"></div></div><span class="letter">I</span><span class="val">61 · Influencia</span></div>
+      <div class="col"><div class="barwrap"><div class="bar" style="height:40%"></div></div><span class="letter">S</span><span class="val">38 · Estabilidad</span></div>
+      <div class="col"><div class="barwrap"><div class="bar" style="height:60%"></div></div><span class="letter">C</span><span class="val">57 · Cumplimiento</span></div>
+    </div>
+    <div class="dombox">
+      <b class="t">Perfil dominante: Decidida · Resultados · Directa</b>
+      Prefiere avanzar a esperar. Toma decisiones rápido con la información disponible, comunica al grano y empuja los proyectos hasta cerrarlos. Trabaja bien con autonomía y objetivos claros; los procesos largos sin resultados visibles la desgastan.
+    </div>
+    <div class="work4">
+      <div class="wcard"><span class="wlabel">Toma de decisiones</span>Rápida y directa. Prefiere actuar antes que esperar; funciona con autonomía y objetivos claros.</div>
+      <div class="wcard"><span class="wlabel">Trabajo en equipo</span>Marca el ritmo y aporta dirección; espera el mismo nivel de exigencia de sus pares.</div>
+      <div class="wcard"><span class="wlabel">Bajo presión</span>Se vuelve más directa y se enfoca en resolver. Puede exigir de más a quienes van más lento.</div>
+      <div class="wcard"><span class="wlabel">Comunicación</span>Al grano, sin rodeos. Aprecia que le hablen de la misma manera.</div>
+    </div>
+  </div>
+
+  <!-- CÓMO PIENSA -->
+  <div class="card">
+    <div class="kicker"><span class="num"></span><h2>Cómo piensa y decide</h2></div>
+    <p class="h2sub">Capacidad de pensamiento en cinco áreas.</p>
+    <div class="bignum"><span class="n">72%</span><span class="tag">Promedio alto</span><span class="d">Cada área mide algo distinto y predice cosas distintas en el trabajo.</span></div>
+    <div class="row"><span>Razonamiento verbal<span class="lvl">Comprende y comunica ideas complejas</span></span><span class="track"><span class="fill" style="width:78%"></span></span><span class="pct">78%</span></div>
+    <div class="row"><span>Razonamiento lógico<span class="lvl">Identifica patrones y resuelve de forma deductiva</span></span><span class="track"><span class="fill" style="width:76%"></span></span><span class="pct">76%</span></div>
+    <div class="row"><span>Razonamiento numérico<span class="lvl">Cálculo, proporciones e interpretación de tablas</span></span><span class="track"><span class="fill" style="width:70%"></span></span><span class="pct">70%</span></div>
+    <div class="row"><span>Razonamiento abstracto<span class="lvl">Aprende reglas nuevas y se adapta a lo desconocido</span></span><span class="track"><span class="fill" style="width:68%"></span></span><span class="pct">68%</span></div>
+    <div class="row"><span>Razonamiento espacial<span class="lvl">Interpreta planos, mapas y esquemas</span></span><span class="track"><span class="fill" style="width:58%"></span></span><span class="pct">58%</span></div>
+    <div class="qsig"><span class="clabel">Qué significa para ti</span>Aprende rápido y razona por encima del promedio en las áreas que tu rol usa a diario: verbal y lógico. Puedes darle problemas nuevos sin manual. Su área más baja (espacial) es irrelevante para un rol de marca y funnel.</div>
+  </div>
+
+  <!-- COMPETENCIAS -->
+  <div class="card">
+    <div class="kicker"><span class="num"></span><h2>Top 10 competencias</h2></div>
+    <p class="h2sub">Comportamientos concretos en el trabajo, combinando su conducta y su razonamiento.</p>
+    <div class="row"><span>Orientación al logro</span><span class="track"><span class="fill" style="width:86%"></span></span><span class="pct">86%</span></div>
+    <div class="row"><span>Resolución de problemas complejos</span><span class="track"><span class="fill" style="width:83%"></span></span><span class="pct">83%</span></div>
+    <div class="row"><span>Comunicación escrita</span><span class="track"><span class="fill" style="width:81%"></span></span><span class="pct">81%</span></div>
+    <div class="row"><span>Asertividad</span><span class="track"><span class="fill" style="width:79%"></span></span><span class="pct">79%</span></div>
+    <div class="row"><span>Persuasión y negociación</span><span class="track"><span class="fill" style="width:76%"></span></span><span class="pct">76%</span></div>
+    <div class="row"><span>Análisis de datos</span><span class="track"><span class="fill" style="width:75%"></span></span><span class="pct">75%</span></div>
+    <div class="row"><span>Adaptabilidad</span><span class="track"><span class="fill" style="width:73%"></span></span><span class="pct">73%</span></div>
+    <div class="row"><span>Dinamismo y energía</span><span class="track"><span class="fill" style="width:72%"></span></span><span class="pct">72%</span></div>
+    <div class="row"><span>Retroalimentación y monitoreo</span><span class="track"><span class="fill" style="width:70%"></span></span><span class="pct">70%</span></div>
+    <div class="row"><span>Manejo de conflictos</span><span class="track"><span class="fill" style="width:68%"></span></span><span class="pct">68%</span></div>
+  </div>
+
+  <!-- INTEGRIDAD -->
+  <div class="card">
+    <div class="kicker"><span class="num"></span><h2>Qué tan íntegra es</h2></div>
+    <p class="h2sub">Perfil de riesgo conductual — nueve ejes éticos, con detector de respuestas para quedar bien.</p>
+    <div class="fitbox" style="margin-bottom:24px;">
+      <div class="fit-badge"><b>Bajo</b><span>Riesgo global</span></div>
+      <p>Respuestas consistentes y detector de imagen favorable dentro del rango normal: <b>lo que contestó es creíble</b>. Apta para posiciones de confianza — puede manejar presupuesto y datos comerciales.</p>
+    </div>
+    <div class="risk-cols">
+      <div class="rcol">
+        <div class="rhead-col ok">Bajo riesgo</div>
+        <div class="reje">Honestidad en las respuestas</div>
+        <div class="reje">Manejo de información confidencial</div>
+        <div class="reje">Uso de recursos de la empresa</div>
+        <div class="reje">Transparencia en reportes</div>
+        <div class="reje">Cumplimiento de normas</div>
+        <div class="reje">Conducta sin supervisión</div>
+        <div class="reje">Relación con la autoridad</div>
+      </div>
+      <div class="rcol">
+        <div class="rhead-col mid">Riesgo medio</div>
+        <div class="reje">Manejo de excepciones a las reglas</div>
+        <div class="reje">Tolerancia a atajos bajo presión</div>
+      </div>
+      <div class="rcol">
+        <div class="rhead-col hi">Alto riesgo</div>
+        <div class="reje empty">Ninguno detectado</div>
+      </div>
+    </div>
+    <p style="font-size:12.5px; color:var(--muted); margin-top:14px;">Los ejes en riesgo medio no son alertas: son zonas para observar en el día a día. (Ejes y resultados ilustrativos para este mockup — la plataforma usa los nombres reales de la prueba.)</p>
+  </div>
+
+  <p class="foot">Este reporte combina los resultados de las evaluaciones psicométricas de la candidata con la conversación de fit sostenida con Diego Ramírez. Cualquier duda, responde el correo — llega directo al equipo de SharkTalents.<br><span class="oswald" style="font-size:9.5px; letter-spacing:0.2em; color:var(--gris);">SHARKTALENTS.AI · Detectamos lo que el CV no muestra · Confidencial — solo para el empleador que lo solicitó</span></p>
+</div>
+</body>
+</html>

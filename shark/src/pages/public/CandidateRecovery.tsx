@@ -54,11 +54,11 @@ export default function CandidateRecovery() {
         <div className="candidate-test-card">
           <h1>✓ Listo</h1>
           <p>
-            Si tenés una aplicación activa con ese email a este puesto, vas a recibir un email con un link nuevo en
+            Si tienes una aplicación activa con ese email a este puesto, vas a recibir un email con un link nuevo en
             los próximos minutos.
           </p>
           <p style={{ color: '#666', fontSize: 14 }}>
-            Revisá tu bandeja de spam si no aparece. El link nuevo dura 7 días.
+            Revisa tu bandeja de spam si no aparece. El link nuevo dura 7 días.
           </p>
         </div>
       </div>

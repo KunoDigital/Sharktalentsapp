@@ -134,8 +134,8 @@ export default function CandidateIntegridadTest() {
             <h1>No pudimos guardar tus respuestas</h1>
             <p>{submitError}</p>
             <p style={{ marginTop: 16 }}>
-              Tus respuestas están seguras en este navegador. Intentá recargar la página y volver a enviar.
-              Si sigue fallando, escribinos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.
+              Tus respuestas están seguras en este navegador. Intenta recargar la página y volver a enviar.
+              Si sigue fallando, escríbenos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.
             </p>
             <button className="ct-btn-primary" style={{ marginTop: 24 }} onClick={() => { setSubmitError(null); setSubmitted(false); }}>
               Reintentar
@@ -175,7 +175,7 @@ export default function CandidateIntegridadTest() {
         <div className="ct-test-intro">
           <h1>Evaluación de integridad</h1>
           <p className="ct-instructions">
-            Pensá cómo actuarías en cada situación y elegí la respuesta más cercana a tu forma real de proceder. No hay tiempo límite, pero respondé con tu primera reacción honesta.
+            Piensa cómo actuarías en cada situación y elige la respuesta más cercana a tu forma real de proceder. No hay tiempo límite, pero responde con tu primera reacción honesta.
           </p>
         </div>
 

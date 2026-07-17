@@ -44,7 +44,7 @@ export function usePersistedState<T>(
 
 /**
  * Versión que devuelve si el state recuperado es "no vacío" — útil para
- * mostrar banner "continuá donde dejaste".
+ * mostrar banner "continúa donde dejaste".
  */
 export function hasPersistedState(key: string): boolean {
   try {

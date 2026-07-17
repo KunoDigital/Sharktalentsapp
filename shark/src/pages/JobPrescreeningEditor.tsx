@@ -83,11 +83,11 @@ export default function JobPrescreeningEditor() {
       ...curr,
       {
         id: `pq_${Date.now()}`,
-        text: 'Pregunta nueva — editá este texto',
+        text: 'Pregunta nueva — edita este texto',
         type: 'yes_no',
         options: ['Sí', 'No'],
         accepted_indices: [0],
-        rejection_reason: 'Razón del rechazo — editá este texto',
+        rejection_reason: 'Razón del rechazo — edita este texto',
         criterion: 'Criterio que evalúa',
       },
     ]);

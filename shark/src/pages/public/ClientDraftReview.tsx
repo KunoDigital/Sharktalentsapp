@@ -80,6 +80,7 @@ const COMPETENCIA_NAMES: Record<string, string> = {
   retroalimentacion: 'Retroalimentación y monitoreo',
   orientacion_cliente: 'Orientación al cliente',
   aprendizaje_vuelo: 'Aprendizaje al vuelo',
+  aprendizaje_activo: 'Aprendizaje activo y estrategias de aprendizaje',
   resolucion_problemas: 'Resolución de problemas complejos',
   inteligencia_emocional: 'Inteligencia emocional',
   creatividad_innovacion: 'Creatividad e innovación',
@@ -362,7 +363,7 @@ export default function ClientDraftReview() {
           {(p.disc_ideal_a || p.disc_ideal_b) && (
             <Section title="Tipo de personas que buscamos">
               <p style={{ ...paragraphStyle, marginBottom: 8, fontStyle: 'italic' }}>
-                Vamos a buscar <strong>dos perfiles</strong> distintos. Las personas no son perfectas — cada perfil cubre el rol con un énfasis diferente. <strong>No elegís uno, los buscamos a los dos en paralelo.</strong>
+                Vamos a buscar <strong>dos perfiles</strong> distintos. Las personas no son perfectas — cada perfil cubre el rol con un énfasis diferente. <strong>No eliges uno, los buscamos a los dos en paralelo.</strong>
               </p>
               {p.tensiones_detectadas && p.tensiones_detectadas.length > 0 && (
                 <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: 18, marginBottom: 22 }}>

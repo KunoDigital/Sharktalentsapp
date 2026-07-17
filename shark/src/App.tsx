@@ -30,6 +30,10 @@ const Settings = lazy(() => import('./pages/Settings'));
 const EmailPreviews = lazy(() => import('./pages/EmailPreviews'));
 const HelpCenter = lazy(() => import('./pages/HelpCenter'));
 const MarketingLeads = lazy(() => import('./pages/MarketingLeads'));
+const MarketingClientes = lazy(() => import('./pages/MarketingClientes'));
+const MarketingFinalistas = lazy(() => import('./pages/MarketingFinalistas'));
+const MarketingProspectos = lazy(() => import('./pages/MarketingProspectos'));
+const MarketingFitReport = lazy(() => import('./pages/MarketingFitReport'));
 const AlertsPage = lazy(() => import('./pages/Alerts'));
 const ExpensesPage = lazy(() => import('./pages/Expenses'));
 const HealthPage = lazy(() => import('./pages/Health'));
@@ -64,6 +68,7 @@ const CandidateRecovery = lazy(() => import('./pages/public/CandidateRecovery'))
 const CandidateTestDone = lazy(() => import('./pages/public/CandidateTestDone'));
 const DemoTestRegister = lazy(() => import('./pages/public/DemoTestRegister'));
 const DemoReport = lazy(() => import('./pages/public/DemoReport'));
+const FitReportView = lazy(() => import('./pages/FitReportView'));
 const LegalPrivacidad = lazy(() => import('./pages/public/LegalPrivacidad'));
 const LegalTerminos = lazy(() => import('./pages/public/LegalTerminos'));
 
@@ -182,6 +187,10 @@ function ProtectedAdmin() {
             <Route path="emails" element={lazyRoute(<EmailTemplateEditor />, 'emails-editor')} />
             <Route path="emails/preview" element={lazyRoute(<EmailPreviews />, 'emails-preview')} />
             <Route path="marketing/leads" element={lazyRoute(<MarketingLeads />, 'marketing-leads')} />
+            <Route path="marketing/clientes" element={lazyRoute(<MarketingClientes />, 'marketing-clientes')} />
+            <Route path="marketing/finalistas" element={lazyRoute(<MarketingFinalistas />, 'marketing-finalistas')} />
+            <Route path="marketing/prospectos" element={lazyRoute(<MarketingProspectos />, 'marketing-prospectos')} />
+            <Route path="marketing/fit-report/:leadId" element={lazyRoute(<MarketingFitReport />, 'marketing-fit-report')} />
             <Route path="team/freelance" element={lazyRoute(<AdminFreelanceVendedores />, 'admin-freelance-vendedores')} />
             <Route path="alerts" element={lazyRoute(<AlertsPage />, 'alerts')} />
             <Route path="operations/expenses" element={lazyRoute(<ExpensesPage />, 'expenses')} />
@@ -224,6 +233,7 @@ export default function App() {
         <Route path="/test/:token/prefilter" element={lazyRoute(<CandidatePrefilter />, 'candidate-prefilter')} />
         <Route path="/demo-test/:section/:token" element={lazyRoute(<DemoTestRegister />, 'demo-test-register')} />
         <Route path="/demo-report/:token" element={lazyRoute(<DemoReport />, 'demo-report')} />
+        <Route path="/fit-report-view/:token" element={lazyRoute(<FitReportView />, 'fit-report-view')} />
         <Route path="/apply/:tenantSlug/:jobSlug" element={lazyRoute(<CandidateApply />, 'candidate-apply')} />
         <Route path="/apply/:tenantSlug/:jobSlug/recover" element={lazyRoute(<CandidateRecovery />, 'candidate-recovery')} />
         <Route path="/recovery" element={lazyRoute(<CandidateRecoveryByEmail />, 'candidate-recovery-email')} />

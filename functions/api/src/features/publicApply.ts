@@ -70,15 +70,25 @@ async function fetchTenant(req: IncomingMessage, slug: string): Promise<TenantPi
 }
 
 async function fetchJob(req: IncomingMessage, tenantId: string, identifier: string): Promise<JobPick | null> {
-  // Probar primero ROWID, después slug (si la columna slug existe).
-  const byRowid = unwrapRows<JobPick>(
-    (await zcql(req).executeZCQLQuery(
-      `SELECT ROWID, tenant_id, title, company, cognitive_level, is_active, company_context
-       FROM Jobs WHERE ROWID = '${escapeSql(identifier)}' AND tenant_id = '${escapeSql(tenantId)}' LIMIT 1`,
-    )) as unknown[],
-    'Jobs',
-  );
-  if (byRowid[0]) return byRowid[0];
+  // 2026-06-29: BUG FIX — Catalyst tira excepción cuando ROWID (bigint) se compara con
+  // un string que no es numérico (caso slug). Sin try/catch acá, el handler responde 500
+  // para CUALQUIER aplicación por slug, que es el camino normal de candidatos reales.
+  // Probar primero ROWID; si falla o no encuentra, caer a slug.
+  const isNumericIdentifier = /^\d+$/.test(identifier);
+  if (isNumericIdentifier) {
+    try {
+      const byRowid = unwrapRows<JobPick>(
+        (await zcql(req).executeZCQLQuery(
+          `SELECT ROWID, tenant_id, title, company, cognitive_level, is_active, company_context
+           FROM Jobs WHERE ROWID = ${escapeSql(identifier)} AND tenant_id = '${escapeSql(tenantId)}' LIMIT 1`,
+        )) as unknown[],
+        'Jobs',
+      );
+      if (byRowid[0]) return byRowid[0];
+    } catch {
+      // Identifier no aceptado como ROWID → caer a búsqueda por slug
+    }
+  }
 
   // Slug fallback. Si la columna `slug` no existe en Catalyst todavía, este SELECT falla
   // silenciosamente y devolvemos null.
@@ -398,13 +408,14 @@ async function enqueueCandidateWelcomeEmail(
       ref: input.applicationId,
       exp: expiresIn(2 * WEEK_SEC),
     });
-    const testUrl = `${e.APP_BASE_URL.replace(/\/$/, '')}/app/#/test/${testToken}`;
+    // 2026-06-18: el primer correo lleva al PREFILTER (paso 1 de 5), no al panel general.
+    const testUrl = `${e.APP_BASE_URL.replace(/\/$/, '')}/app/#/test/${testToken}/prescreening`;
 
     await datastore(req).table('OutboxEvents').insertRow({
       event_type: 'email.send_pending',
       payload: JSON.stringify({
         to: input.candidateEmail,
-        template: 'candidate_application_received',
+        template: 'candidate_prefilter_start',
         locale: 'es',
         vars: {
           candidate_name: input.candidateName,
@@ -417,7 +428,7 @@ async function enqueueCandidateWelcomeEmail(
       retry_count: 0,
       created_at: now(),
     });
-    log.info('welcome email enqueued', { applicationId: input.applicationId, to: input.candidateEmail.split('@')[0] + '@…' });
+    log.info('prefilter email enqueued', { applicationId: input.applicationId, to: input.candidateEmail.split('@')[0] + '@…' });
   } catch (err) {
     log.warn('failed to enqueue welcome email', { error: (err as Error).message, applicationId: input.applicationId });
   }

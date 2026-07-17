@@ -55,15 +55,15 @@ const SECTIONS: Section[] = [
       },
       {
         q: '¿Por qué a veces no aplica auto?',
-        a: <>Cuando confidence está debajo del umbral, el bot prefiere que vos decidas. Eso pasa cuando los scores son ambiguos (ej: técnica alta pero DISC bajo, o anti-trampa flag). Tu decisión queda guardada como ejemplo de entrenamiento para que el bot mejore.</>,
+        a: <>Cuando confidence está debajo del umbral, el bot prefiere que tú decidas. Eso pasa cuando los scores son ambiguos (ej: técnica alta pero DISC bajo, o anti-trampa flag). Tu decisión queda guardada como ejemplo de entrenamiento para que el bot mejore.</>,
       },
       {
         q: '¿Puedo ajustar el umbral?',
-        a: <>Sí. En Settings → Bot decisor podrás ajustar el confidence umbral por etapa (cuando esté implementado el backend). Si querés que el bot sea más conservador, subilo a 0.85. Más agresivo, bajalo a 0.65.</>,
+        a: <>Sí. En Settings → Bot decisor podrás ajustar el confidence umbral por etapa (cuando esté implementado el backend). Si quieres que el bot sea más conservador, súbelo a 0.85. Más agresivo, bájalo a 0.65.</>,
       },
       {
         q: '¿Cómo veo qué pensó el bot?',
-        a: <>En cada perfil de candidato (<code>/candidates/:id</code>) hay una sección "Decisión del bot" con: rationale en español plano, factores con peso y señal, casos similares pasados que usó (RAG examples), y override si vos overrideaste.</>,
+        a: <>En cada perfil de candidato (<code>/candidates/:id</code>) hay una sección "Decisión del bot" con: rationale en español plano, factores con peso y señal, casos similares pasados que usó (RAG examples), y override si tú overrideaste.</>,
       },
     ],
   },
@@ -87,7 +87,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: '¿Y si el candidato es honesto pero se distrajo?',
-        a: <>Los flags son señales, no rechazos automáticos. Cuando hay anti-trampa, conviene <strong>entrevistar antes de decidir</strong>. Pedile al candidato que explique cómo hizo el test, y juzgá vos.</>,
+        a: <>Los flags son señales, no rechazos automáticos. Cuando hay anti-trampa, conviene <strong>entrevistar antes de decidir</strong>. Pídele al candidato que explique cómo hizo el test, y juzga tú.</>,
       },
     ],
   },
@@ -97,11 +97,11 @@ const SECTIONS: Section[] = [
     faqs: [
       {
         q: '¿Cuándo se publica el reporte al cliente?',
-        a: <>Cuando vos marcás top 3 finalistas en el comparativo y haces click "Preparar reporte para cliente". La IA genera la narrativa, vos revisás, publicás, y el cliente recibe email con el link.</>,
+        a: <>Cuando tú marcas top 3 finalistas en el comparativo y haces click "Preparar reporte para cliente". La IA genera la narrativa, tú revisas, publicas, y el cliente recibe email con el link.</>,
       },
       {
         q: '¿Cómo me entero si el cliente lo abrió?',
-        a: <>En Reportes ves "Cliente abrió" con timestamp. Y el dashboard te muestra si hay <strong>feedback nuevo</strong> recibido (que vos todavía no viste).</>,
+        a: <>En Reportes ves "Cliente abrió" con timestamp. Y el dashboard te muestra si hay <strong>feedback nuevo</strong> recibido (que tú todavía no viste).</>,
       },
       {
         q: '¿El cliente puede dar feedback?',
@@ -115,11 +115,11 @@ const SECTIONS: Section[] = [
     faqs: [
       {
         q: '¿Hay atajos de teclado?',
-        a: <>Sí. Presioná <kbd>?</kbd> en cualquier momento para ver todos. Los más útiles: <kbd>⌘</kbd>+<kbd>K</kbd> búsqueda global, <kbd>j</kbd>/<kbd>k</kbd> navegar tablas, <kbd>g</kbd>+<kbd>letra</kbd> para ir a páginas (g d Dashboard, g j Jobs, etc.), <kbd>/</kbd> enfocar buscador.</>,
+        a: <>Sí. Presiona <kbd>?</kbd> en cualquier momento para ver todos. Los más útiles: <kbd>⌘</kbd>+<kbd>K</kbd> búsqueda global, <kbd>j</kbd>/<kbd>k</kbd> navegar tablas, <kbd>g</kbd>+<kbd>letra</kbd> para ir a páginas (g d Dashboard, g j Jobs, etc.), <kbd>/</kbd> enfocar buscador.</>,
       },
       {
         q: '¿Cómo silencio notificaciones?',
-        a: <>En <Link to="/settings">Settings</Link> → 🔔 Notificaciones, hay 5 toggles. Apagás los tipos que no querés ver. Las silenciadas no aparecen en el bell ni en el dashboard.</>,
+        a: <>En <Link to="/settings">Settings</Link> → 🔔 Notificaciones, hay 5 toggles. Apagas los tipos que no quieres ver. Las silenciadas no aparecen en el bell ni en el dashboard.</>,
       },
       {
         q: '¿Puedo exportar candidatos a Excel?',
@@ -155,19 +155,19 @@ const SECTIONS: Section[] = [
           <ol>
             <li>Ir a <Link to="/jobs">Jobs</Link> → "Nuevo puesto"</li>
             <li>Completar título, empresa, contexto y nivel cognitivo (basic/mid/senior)</li>
-            <li>Definir DISC ideal — usá el slider visual o uno de los 24 PK profiles</li>
-            <li>Definir mínimo técnico (default 60%) y reglas de auto-rechazo si querés filtrado automático</li>
+            <li>Definir DISC ideal — usa el slider visual o uno de los 24 PK profiles</li>
+            <li>Definir mínimo técnico (default 60%) y reglas de auto-rechazo si quieres filtrado automático</li>
             <li>Activar el puesto → ya genera link público de aplicación</li>
           </ol>
         ),
       },
       {
         q: '¿Qué es el "Briefing IA" y para qué sirve?',
-        a: <>Si tenés transcript de reunión con el cliente, pegalo en "Drafts" y la IA arma un Job Profile completo (DISC ideal, VELNA, competencias, salario sugerido, contexto). Ahorra ~30 min por puesto. Después podés refinar con feedback en lenguaje natural.</>,
+        a: <>Si tienes transcript de reunión con el cliente, pégalo en "Drafts" y la IA arma un Job Profile completo (DISC ideal, VELNA, competencias, salario sugerido, contexto). Ahorra ~30 min por puesto. Después puedes refinar con feedback en lenguaje natural.</>,
       },
       {
         q: '¿Cómo defino el perfil del jefe directo (boss profile)?',
-        a: <>En el form del puesto hay sección "Estilo del jefe". Definís nombre, rol, y un slider de 0-1 entre "consulta todo" → "da autonomía". Si lo seteás, la prueba situacional doble eje compara el estilo del candidato contra el del jefe — match alto = mejor fit cultural.</>,
+        a: <>En el form del puesto hay sección "Estilo del jefe". Defines nombre, rol, y un slider de 0-1 entre "consulta todo" → "da autonomía". Si lo seteas, la prueba situacional doble eje compara el estilo del candidato contra el del jefe — match alto = mejor fit cultural.</>,
       },
       {
         q: '¿Qué hace el flag "auto-rejection rules"?',
@@ -181,7 +181,7 @@ const SECTIONS: Section[] = [
     faqs: [
       {
         q: '¿Qué es el pool interno?',
-        a: <>Base de candidatos evaluados que NO fueron contratados pero quedaron buenos. Cuando se cierra un puesto sin contratar a alguien fuerte, automáticamente entra al pool con sus scores. Para puestos futuros, podés hacer "match" y ver candidatos preexistentes que califican sin tener que arrancar evaluación de cero.</>,
+        a: <>Base de candidatos evaluados que NO fueron contratados pero quedaron buenos. Cuando se cierra un puesto sin contratar a alguien fuerte, automáticamente entra al pool con sus scores. Para puestos futuros, puedes hacer "match" y ver candidatos preexistentes que califican sin tener que arrancar evaluación de cero.</>,
       },
       {
         q: '¿Cómo funciona el matching del pool?',
@@ -221,11 +221,11 @@ const SECTIONS: Section[] = [
       },
       {
         q: '¿Qué hace el MCP server?',
-        a: <>Es un servidor Model Context Protocol que expone 12 tools de SharkTalents para que un agente IA (Claude Desktop, etc.) pueda crear puestos, listar candidatos, leer scores, etc. Útil si querés operar SharkTalents desde tu agente personal en lugar de la UI.</>,
+        a: <>Es un servidor Model Context Protocol que expone 12 tools de SharkTalents para que un agente IA (Claude Desktop, etc.) pueda crear puestos, listar candidatos, leer scores, etc. Útil si quieres operar SharkTalents desde tu agente personal en lugar de la UI.</>,
       },
       {
         q: '¿Cómo invito a alguien de mi equipo?',
-        a: <>En <Link to="/settings">Settings → Equipo</Link>, hacés "Invitar" con su email. Le llega invitación de Clerk. Cuando la acepta, queda en tu organización con permisos del rol que le diste (admin, recruiter, viewer).</>,
+        a: <>En <Link to="/settings">Settings → Equipo</Link>, haces "Invitar" con su email. Le llega invitación de Clerk. Cuando la acepta, queda en tu organización con permisos del rol que le diste (admin, recruiter, viewer).</>,
       },
     ],
   },
@@ -247,7 +247,7 @@ export default function HelpCenter() {
     <div>
       <h1 className="page-title">Centro de ayuda</h1>
       <p className="page-subtitle">
-        Preguntas frecuentes sobre cómo funciona SharkTalents. Si no encontrás lo que buscás, escribí a{' '}
+        Preguntas frecuentes sobre cómo funciona SharkTalents. Si no encuentras lo que buscas, escribe a{' '}
         <a href="mailto:cris@kunodigital.com">cris@kunodigital.com</a>.
       </p>
 

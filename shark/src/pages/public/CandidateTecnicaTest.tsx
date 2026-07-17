@@ -384,13 +384,13 @@ export default function CandidateTecnicaTest() {
         <div className="ct-test-intro">
           <h1>Prueba técnica</h1>
           <p className="ct-instructions">
-            Estas preguntas evalúan tu dominio técnico para el puesto. Si una pregunta tiene "Argumentar tu respuesta" abajo, escribí en tus palabras — eso vale más que la opción que marcaste.
+            Estas preguntas evalúan tu dominio técnico para el puesto. Si una pregunta tiene "Argumentar tu respuesta" abajo, escribe en tus palabras — eso vale más que la opción que marcaste.
           </p>
         </div>
 
         {hadResume && Object.keys(answers).length > 0 && (
           <div className="ct-resume-banner">
-            ↩️ Continuamos donde quedaste — tenés {Object.keys(answers).length} respuestas guardadas.
+            ↩️ Continuamos donde quedaste — tienes {Object.keys(answers).length} respuestas guardadas.
             <button
               className="ct-resume-clear"
               onClick={() => {

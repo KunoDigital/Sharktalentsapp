@@ -115,7 +115,46 @@ export default function MarketingLeads() {
 
   return (
     <div>
-      <h1 className="page-title">Marketing — Leads del funnel</h1>
+      <div style={{
+        background: 'rgba(245,158,11,0.12)',
+        border: '1px solid rgba(245,158,11,0.4)',
+        borderRadius: 10,
+        padding: '14px 18px',
+        marginBottom: 20,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 16,
+        flexWrap: 'wrap',
+      }}>
+        <div style={{ flex: '1 1 320px' }}>
+          <div style={{ fontWeight: 700, color: '#f59e0b', fontSize: 14, marginBottom: 4 }}>
+            ⚠️ Panel legacy — vamos a eliminarlo
+          </div>
+          <div style={{ color: '#d1d5db', fontSize: 13, lineHeight: 1.5 }}>
+            Los mismos leads están en <strong>Marketing → Clientes</strong> con más features
+            (drag & drop entre etapas, filtro por vendedor, sync a Zoho, finalistas conectados).
+            Este panel se elimina cuando confirmes que el nuevo cubre todo tu flujo.
+          </div>
+        </div>
+        <a
+          href="/marketing/clientes"
+          style={{
+            background: '#4f46e5',
+            color: '#fff',
+            padding: '9px 16px',
+            borderRadius: 6,
+            fontSize: 13,
+            fontWeight: 600,
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          → Ir a Marketing Clientes
+        </a>
+      </div>
+
+      <h1 className="page-title">Marketing — Leads del funnel (legacy)</h1>
       <p className="page-subtitle">
         Captura del quiz + calculadora de la landing. Cuando alguien completa el quiz, aparece acá con su score de calidad.
       </p>
@@ -528,22 +567,22 @@ function SendContractButton({ lead }: { lead: ApiMarketingLead }) {
         </p>
         {missingClient && (
           <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '6px', color: '#f59e0b', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
-            ⚠ Faltan datos del lead (contact_name + company). Editá el lead primero o el envío va a fallar.
+            ⚠ Faltan datos del lead (contact_name + company). Edita el lead primero o el envío va a fallar.
           </div>
         )}
         {contextLoaded && contextSource === 'draft+crm' && (
           <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#22c55e', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
-            ✓ Pre-llenado desde el draft (puesto/salario) y Zoho CRM (RUC/dirección/teléfono). Editá si necesitás.
+            ✓ Pre-llenado desde el draft (puesto/salario) y Zoho CRM (RUC/dirección/teléfono). Edita si necesitas.
           </div>
         )}
         {contextLoaded && contextSource === 'draft' && (
           <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#22c55e', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
-            ✓ Puesto y salario desde el draft. No se encontró este lead en Zoho CRM — completá RUC + dirección manualmente.
+            ✓ Puesto y salario desde el draft. No se encontró este lead en Zoho CRM — completa RUC + dirección manualmente.
           </div>
         )}
         {contextLoaded && contextSource === 'crm' && (
           <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#22c55e', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
-            ✓ RUC + dirección + teléfono desde Zoho CRM. No hay draft del puesto — escribí puesto + salario.
+            ✓ RUC + dirección + teléfono desde Zoho CRM. No hay draft del puesto — escribe puesto + salario.
           </div>
         )}
         {contextLoaded && contextSource === 'none' && (

@@ -26,6 +26,7 @@ import { assertTenantId } from '../lib/tenantGuard';
 import { unwrapRow, unwrapRows, escapeSql } from '../lib/dbHelpers';
 import { stringifyAndTruncate, FIELD_LIMITS } from '../lib/dbLimits';
 import { requireInternalKey } from '../lib/internalAuth';
+import { COMPETENCIAS as COMPETENCIAS_LIST, resolveCompetenciaId } from '../data/competencias';
 
 const log = logger('OUTBOX');
 const T_OUTBOX = 'OutboxEvents';
@@ -2357,20 +2358,15 @@ function applyPolarities(
  * Sin esto, la IA generaba nombres libres ("Liderazgo Técnico Pragmático") que el
  * frontend no podía matchear con el catálogo → mostraba placeholder "Elegir competencia".
  */
-const COMPETENCIAS_CATALOG_IDS = new Set([
-  'comunicacion_digital', 'colaboracion', 'adaptabilidad', 'iniciativa', 'planificacion',
-  'manejo_ambiguedad', 'trabajo_equipo', 'retroalimentacion', 'orientacion_cliente', 'aprendizaje_vuelo',
-  'resolucion_problemas', 'inteligencia_emocional', 'creatividad_innovacion', 'liderazgo', 'orientacion_logro',
-  'persuasion_negociacion', 'mentalidad_digital', 'foco_data', 'impacto_influencia', 'autoconfianza',
-  'comprension_interpersonal', 'desarrollo_interrelaciones', 'orden_calidad', 'asertividad', 'dinamismo_energia',
-  'habilidad_analitica', 'perseverancia', 'orientacion_accion', 'compromiso_organizacional', 'actitud_servicio',
-  'manejo_conflictos', 'toma_decisiones_oportuna', 'calidad_decisiones', 'capacidad_intelectual', 'capacidad_escuchar',
-  'paciencia', 'comunicacion_escrita', 'gestion_riesgo', 'pensamiento_critico', 'resiliencia',
-]);
+// Set derivado del catálogo cerrado (data/competencias.ts) — único source of truth.
+// Incluye tanto IDs canónicos como aliases deprecados (retro-compat). Los aliases
+// se normalizan a canónico en `warnIfCompetenciasEmpty()`.
+const COMPETENCIAS_CATALOG_IDS = new Set(COMPETENCIAS_LIST.map((c) => c.id));
 
 // Defaults por nivel — si la IA no logra elegir del catálogo, estos son los que aplican.
+// Usar IDs canónicos (no aliases deprecados).
 const DEFAULT_COMPETENCIAS_BY_LEVEL: Record<string, string[]> = {
-  basic: ['adaptabilidad', 'colaboracion', 'orientacion_cliente'],
+  basic: ['adaptabilidad', 'trabajo_equipo', 'orientacion_cliente'],
   mid: ['resolucion_problemas', 'comunicacion_digital', 'orientacion_logro'],
   senior: ['liderazgo', 'pensamiento_critico', 'toma_decisiones_oportuna'],
 };
@@ -2381,13 +2377,19 @@ function warnIfCompetenciasEmpty(draft: Record<string, unknown>, eventId: string
   const rawCount = arr.length;
 
   // Paso 1: filtrar las que tengan name/id en el catálogo cerrado. La IA puede usar
-  // "name" o "id" como campo según humor — aceptamos ambos.
+  // "name" o "id" como campo según humor — aceptamos ambos. Si la IA usó un alias
+  // deprecado (ej. 'colaboracion'), se normaliza al canónico ('trabajo_equipo').
+  const seenCanonical = new Set<string>();
   const valid: Array<Record<string, unknown>> = arr
     .map((c) => {
       const key = (typeof c.name === 'string' ? c.name : typeof c.id === 'string' ? c.id : '').toLowerCase().trim().replace(/\s+/g, '_').replace(/[áàä]/g, 'a').replace(/[éèë]/g, 'e').replace(/[íìï]/g, 'i').replace(/[óòö]/g, 'o').replace(/[úùü]/g, 'u').replace(/ñ/g, 'n');
-      return { ...c, name: key } as Record<string, unknown>;
+      if (!COMPETENCIAS_CATALOG_IDS.has(key)) return null;
+      const canonical = resolveCompetenciaId(key);
+      if (seenCanonical.has(canonical)) return null;  // dedup post-aliasing
+      seenCanonical.add(canonical);
+      return { ...c, name: canonical } as Record<string, unknown>;
     })
-    .filter((c) => COMPETENCIAS_CATALOG_IDS.has(c.name as string))
+    .filter((c): c is Record<string, unknown> => c !== null)
     .slice(0, 5);
 
   // Paso 2: si quedan <3, completar con defaults del cognitive_level

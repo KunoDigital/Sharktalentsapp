@@ -150,7 +150,7 @@ export default function CandidateVideosPanel({ applicationId }: { applicationId:
               <p className="muted small">
                 7 preguntas IA personalizadas según los scores del candidato. Cuando el candidato responde,
                 el transcript queda <code>pending</code> hasta que la integración de transcripción lo procesa,
-                después podés disparar el análisis IA por respuesta.
+                después puedes disparar el análisis IA por respuesta.
               </p>
 
               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>

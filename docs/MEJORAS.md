@@ -358,6 +358,44 @@ Cris decidió 2026-06-08: NO hacer estos cierres ahora. La página Gastos se mon
 
 ---
 
+## N. Indicador visual de mismatch de Mindset vs perfil deseado del puesto
+
+**Estado:** En exploración. Identificada por el subagente UX el 2026-06-12 al armar el mockup v3 del pipeline.
+
+**Última actualización:** 2026-06-12
+
+### Problema que resuelve
+
+Hoy el badge 🧠 Mindset muestra el perfil real del candidato (Adaptable / Mixto / Rígido) siempre en verde, porque Mindset NUNCA rechaza (regla confirmada por Cris). Bueno para no inducir falsos rechazos.
+
+**Tradeoff**: si el puesto necesita un perfil específico (ej. requiere Adaptable porque es un rol con mucho cambio) y el candidato salió Rígido, **visualmente NO hay alerta**. El recruiter podría pasar de largo sin notar el mismatch.
+
+### Diseño propuesto
+
+1. Agregar al draft del puesto un campo opcional `mindset_perfil_deseado` con valores `Adaptable` / `Mixto` / `Rígido` / `null` (no requerido).
+2. En el mockup/UI del pipeline:
+   - Si `mindset_perfil_deseado === null` → badge siempre verde (modelo actual, sin cambio).
+   - Si `mindset_perfil_deseado` está seteado Y el candidato matchea → badge verde con ✓ sutil.
+   - Si `mindset_perfil_deseado` está seteado Y el candidato NO matchea → badge verde con **borde naranja** y tooltip "El puesto prefiere {perfil_deseado}, el candidato es {perfil_real}".
+3. NO rechaza, NO va a Duda CV — sigue siendo informativo. Solo agrega señal visual al recruiter.
+
+### Preguntas abiertas
+
+- ¿El campo `mindset_perfil_deseado` se llena automáticamente al elegir competencias del catálogo Kudert (algunas implican un perfil esperado) o lo setea Cris a mano?
+- ¿La señal se usa también en el reporte final / comparativo de finalistas o solo en el kanban del recruiter?
+
+### Schema implications (si avanzamos)
+
+- Nuevo campo opcional en `IdealProfile.mindset_perfil_deseado: 'Adaptable' | 'Mixto' | 'Rígido' | null`
+- Sin migración requerida porque es opcional con default `null`
+- CSS nuevo en el mockup/JobDetail: `.tim-chip.ok.outline-mismatch` con `border: 1px solid var(--orange)`
+
+### Decisión pendiente
+
+Cuando termine la implementación del pipeline rediseñado, evaluar si vale el esfuerzo. NO urgente — el mockup hoy ya tolera la limitación documentada.
+
+---
+
 ## Plantilla para nuevas mejoras
 
 ```markdown

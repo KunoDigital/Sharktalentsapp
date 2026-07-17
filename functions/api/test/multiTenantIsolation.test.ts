@@ -62,6 +62,14 @@ describe('Multi-tenant isolation — structural', () => {
       const issues: string[] = [];
       let buffer = '';
       let inSelect = false;
+      // Tracker para funciones admin: dentro de una función que llama requireInternalKey
+      // un SELECT cross-tenant es intencional (ej: backfills). Detectamos heurístico
+      // por presencia de requireInternalKey en las últimas ~50 líneas previas al SELECT.
+      function isInsideAdminFn(lineIdx: number): boolean {
+        const start = Math.max(0, lineIdx - 50);
+        const slice = lines.slice(start, lineIdx + 1).join('\n');
+        return slice.includes('requireInternalKey');
+      }
 
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -77,7 +85,8 @@ describe('Multi-tenant isolation — structural', () => {
           if (buffer.includes('SELECT') && !buffer.includes('tenant_id') && !buffer.includes('JOIN')) {
             // SELECT sin tenant_id Y sin JOIN (que podría agregar el filter via JOIN)
             // Permitimos ROWID = ... (lookup por ROWID es OK porque después se valida ownership)
-            if (!buffer.includes('ROWID =') && !buffer.includes('ROWID IN')) {
+            // Permitimos también si está dentro de una función admin (requireInternalKey)
+            if (!buffer.includes('ROWID =') && !buffer.includes('ROWID IN') && !isInsideAdminFn(i)) {
               issues.push(`Line ~${i}: ${buffer.slice(0, 200)}`);
             }
           }

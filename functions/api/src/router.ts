@@ -104,7 +104,10 @@ import {
   submitPrefilterAnswers,
   listPrefilterAnswersForApplication,
 } from './features/prefilter';
-import { captureLead, requestEval, exchangeMarketingToken, getLeadStatus, listMarketingLeads, requestLeadDeletion, confirmLeadDeletion, createManualLead, convertLeadToTenant, sendDemoToLead, sendContractToLead, getContractContext, registerDemoTest, diagnoseLead, resetLead, simulateCompletion, forceCrmSync, listCrmModules, linkMarketingTenant, whoami, resendReport, adminWipeLeads, patchLead, getLeadDemoStatus, forceGenerateLeadReport, inspectIntegrityDims, renameCandidate, testIntegrityDimsInsert, importLeadFromCrm, listImportableCrmLeads, dumpCrmLead, wipeTestLeads } from './features/marketing';
+import { listMarketingClientes as listMarketingClientesV2, listMarketingFinalistas as listMarketingFinalistasV2 } from './features/marketingV2';
+import { listProspectos, listVentas, updateV3Stage, convertLeadToDeal, markMeetingDone } from './features/marketingV3';
+import { getFitReportContext, generateFitReport, sendFitReport, saveFitReportDraft, previewFitReport, viewFitReport } from './features/fitReport';
+import { captureLead, requestEval, exchangeMarketingToken, getLeadStatus, listMarketingLeads, requestLeadDeletion, confirmLeadDeletion, createManualLead, convertLeadToTenant, sendDemoToLead, sendContractToLead, getContractContext, registerDemoTest, diagnoseLead, resetLead, simulateCompletion, forceCrmSync, listCrmModules, linkMarketingTenant, whoami, resendReport, adminWipeLeads, patchLead, getLeadDemoStatus, forceGenerateLeadReport, inspectIntegrityDims, renameCandidate, testIntegrityDimsInsert, importLeadFromCrm, listImportableCrmLeads, dumpCrmLead, wipeTestLeads, submitFitChoice } from './features/marketing';
 import { getVideoConsent, postVideoConsent, withdrawVideoConsent } from './features/videoConsents';
 import { scheduleBriefing, listBriefings, uploadBriefingTranscript } from './features/briefings';
 import { trackPortalEvent, listJobTracking } from './features/jobTracking';
@@ -124,6 +127,8 @@ import {
   convertLeadToClient,
   listMyClients,
   patchMyClientStage,
+  patchClientDatosLegales,
+  sendContractToClient,
   sendEvalToLead,
   sendQuoteToLead,
 } from './features/freelance';
@@ -152,6 +157,23 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/api\/marketing\/lead\/?$/, handler: captureLead, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/marketing\/eval-request\/?$/, handler: requestEval, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/marketing\/exchange-token\/?$/, handler: exchangeMarketingToken, auth: 'public' },
+  // Landing v3 finalista — mini-página del fit registra "agendado" / "omitido"
+  { method: 'POST', pattern: /^\/api\/finalist\/fit-choice\/?$/, handler: submitFitChoice, auth: 'public' },
+  // Marketing V3 (Tanda 1) — endpoints paralelos, activados por MARKETING_V3_ENABLED
+  { method: 'GET', pattern: /^\/api\/marketing\/prospectos\/?$/, handler: listProspectos, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/marketing\/ventas\/?$/, handler: listVentas, auth: 'tenant' },
+  // Marketing V3 (Tanda 4) — mover cards + conversión a Zoho Deal
+  { method: 'PATCH', pattern: /^\/api\/marketing\/lead\/[^/]+\/v3-stage\/?$/, handler: updateV3Stage, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/marketing\/lead\/[^/]+\/convert-to-deal\/?$/, handler: convertLeadToDeal, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/marketing\/lead\/[^/]+\/mark-meeting-done\/?$/, handler: markMeetingDone, auth: 'tenant' },
+  // Fit Report editor (camino A finalista)
+  { method: 'GET', pattern: /^\/api\/marketing\/fit-report\/[^/]+\/context\/?$/, handler: getFitReportContext, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/marketing\/fit-report\/[^/]+\/generate\/?$/, handler: generateFitReport, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/marketing\/fit-report\/[^/]+\/save-draft\/?$/, handler: saveFitReportDraft, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/marketing\/fit-report\/[^/]+\/preview\/?$/, handler: previewFitReport, auth: 'tenant' },
+  { method: 'POST', pattern: /^\/api\/marketing\/fit-report\/[^/]+\/send\/?$/, handler: sendFitReport, auth: 'tenant' },
+  // Fit report view — endpoint público (auth por signed token en el path)
+  { method: 'GET', pattern: /^\/api\/marketing\/fit-report\/view\/[^/]+\/?$/, handler: viewFitReport, auth: 'public' },
   { method: 'POST', pattern: /^\/api\/marketing\/demo-test\/register\/?$/, handler: registerDemoTest, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/marketing\/_diagnose\/?$/, handler: diagnoseLead, auth: 'public' },
   // 2026-06-04 (audit fix #12): cambiados de 'public' → 'admin'. Eran endpoints de
@@ -206,6 +228,9 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/api\/marketing\/lead\/request-deletion\/?$/, handler: requestLeadDeletion, auth: 'public' },
   { method: 'DELETE', pattern: /^\/api\/marketing\/lead\/?$/, handler: confirmLeadDeletion, auth: 'public' },
   { method: 'GET', pattern: /^\/api\/marketing\/leads\/?$/, handler: listMarketingLeads, auth: 'tenant' },
+  // V2 mini-CRM — coexiste con /leads viejo hasta que se confirme el reemplazo
+  { method: 'GET', pattern: /^\/api\/marketing\/clientes\/?$/, handler: listMarketingClientesV2, auth: 'tenant' },
+  { method: 'GET', pattern: /^\/api\/marketing\/finalistas\/?$/, handler: listMarketingFinalistasV2, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/marketing\/lead-manual\/?$/, handler: createManualLead, auth: 'tenant' },
   { method: 'POST', pattern: /^\/api\/marketing\/import-from-crm\/?$/, handler: importLeadFromCrm, auth: 'tenant' },
   { method: 'GET', pattern: /^\/api\/marketing\/crm-leads\/?$/, handler: listImportableCrmLeads, auth: 'tenant' },
@@ -492,6 +517,8 @@ const routes: Route[] = [
   { method: 'POST', pattern: /^\/api\/freelance\/me\/leads\/[^/]+\/send-quote\/?$/, handler: sendQuoteToLead, auth: 'freelance' },
   { method: 'GET', pattern: /^\/api\/freelance\/me\/clients\/?$/, handler: listMyClients, auth: 'freelance' },
   { method: 'PATCH', pattern: /^\/api\/freelance\/me\/clients\/[^/]+\/stage\/?$/, handler: patchMyClientStage, auth: 'freelance' },
+  { method: 'PATCH', pattern: /^\/api\/freelance\/me\/clients\/[^/]+\/datos-legales\/?$/, handler: patchClientDatosLegales, auth: 'freelance' },
+  { method: 'POST', pattern: /^\/api\/freelance\/me\/clients\/[^/]+\/send-contract\/?$/, handler: sendContractToClient, auth: 'freelance' },
 ];
 
 function getClientIp(ctx: RequestContext): string {

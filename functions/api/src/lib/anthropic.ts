@@ -347,7 +347,18 @@ export function extractJson<T = unknown>(response: AnthropicResponse): T {
   cleaned = cleaned.replace(/\n?```\s*$/, '');
   try {
     return JSON.parse(cleaned) as T;
-  } catch (parseErr) {
+  } catch (firstErr) {
+    // 2026-06-29: Claude a veces agrega texto explicativo después del JSON cerrado
+    // ("Notas adicionales: ..."). Intentar extraer SOLO el objeto JSON balanceado.
+    const balanced = extractBalancedJsonObject(cleaned);
+    if (balanced && balanced !== cleaned) {
+      try {
+        return JSON.parse(balanced) as T;
+      } catch {
+        // Si el balanced tampoco parsea, caer al log original con el error inicial.
+      }
+    }
+    const parseErr = firstErr;
     // Log obligatorio cuando parsing falla — sin este detalle estamos adivinando.
     // El raw text completo es lo único que permite diagnosticar JSON malformados,
     // truncamientos, escapado mal de comillas, caracteres unicode raros, etc.
@@ -363,6 +374,32 @@ export function extractJson<T = unknown>(response: AnthropicResponse): T {
     });
     throw parseErr;
   }
+}
+
+/**
+ * Extrae el primer objeto JSON balanceado del texto. Si Claude responde
+ * `{"foo": 1}\n\nNotas adicionales: ...`, devuelve solo `{"foo": 1}`.
+ * Respeta strings (no cuenta `{` ni `}` dentro de comillas).
+ */
+function extractBalancedJsonObject(text: string): string | null {
+  const start = text.indexOf('{');
+  if (start === -1) return null;
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (escape) { escape = false; continue; }
+    if (c === '\\') { escape = true; continue; }
+    if (c === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  return null;
 }
 
 /** Intenta extraer el chunk del text alrededor de la posición donde falló JSON.parse. */

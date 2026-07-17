@@ -86,7 +86,7 @@ export function JobBudgetPanel({ jobId }: { jobId: string }) {
 
       {budget.level === 'no_fee' ? (
         <div style={{ padding: 12, background: style.bg, borderRadius: 6, fontSize: 13, color: 'var(--st-fg-muted)' }}>
-          Para activar el control de presupuesto, cargá el precio cobrado al cliente en el formulario del puesto (campo <code>fee_usd</code>).
+          Para activar el control de presupuesto, carga el precio cobrado al cliente en el formulario del puesto (campo <code>fee_usd</code>).
         </div>
       ) : (
         <>

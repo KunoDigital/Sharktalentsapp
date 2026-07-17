@@ -35,7 +35,11 @@ type Phase = 'consent' | 'questions' | 'done';
 export default function CandidateVideoTest() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  // 2026-06-29 BUG FIX: antes validaba SOLO contra el mock getTestSession, lo cual rechazaba
+  // todos los tokens REALES del backend. Ahora si config.useApi=true confiamos en el token
+  // y delegamos validación a getTestVideos() del backend.
   const session = token ? getTestSession(token) : undefined;
+  const isValidToken = !!token && (config.useApi || !!session);
 
   const [phase, setPhase] = useState<Phase>('consent');
   const [questionIdx, setQuestionIdx] = useState(0);
@@ -43,6 +47,8 @@ export default function CandidateVideoTest() {
   const [attempts, setAttempts] = useState<Record<string, number>>({});
   const [questions, setQuestions] = useState<VideoQuestion[]>(VIDEO_QUESTIONS);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Cargar preguntas reales del backend si hay useApi
   useEffect(() => {
@@ -53,7 +59,7 @@ export default function CandidateVideoTest() {
       .then((res) => {
         if (cancelled || !res) return;
         if (!res.questions || res.questions.length === 0) {
-          setLoadError('Las preguntas todavía no fueron generadas. Pedile a tu reclutadora que las dispare desde su panel.');
+          setLoadError('Las preguntas todavía no fueron generadas. Pídele a tu reclutadora que las dispare desde su panel.');
           return;
         }
         const adapted: VideoQuestion[] = res.questions.map((q, i) => ({
@@ -80,7 +86,7 @@ export default function CandidateVideoTest() {
     current_question_id: currentQ?.id ?? null,
   });
 
-  if (!session) return <p>Link inválido. <Link to="/">Volver</Link></p>;
+  if (!isValidToken) return <p>Link inválido. <Link to="/">Volver</Link></p>;
   if (loadError) {
     return (
       <div className="ct-root">
@@ -131,12 +137,24 @@ export default function CandidateVideoTest() {
   }
 
   async function nextQuestion() {
-    await submitCurrentToBackend();
-    if (questionIdx < questions.length - 1) {
-      setQuestionIdx(questionIdx + 1);
-    } else {
-      setPhase('done');
-      setTimeout(() => navigate(`/test/${token}/done?phase=videos`), 1500);
+    // 2026-06-30 BUG FIX: antes el click se quedaba colgado porque el upload del blob
+    // tarda 5-30s y NO había feedback visual. Ahora setea submitting=true → botón muestra
+    // "Subiendo…" y queda disabled hasta que termine. Si falla, mostramos error legible.
+    if (submitting) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await submitCurrentToBackend();
+      if (questionIdx < questions.length - 1) {
+        setQuestionIdx(questionIdx + 1);
+      } else {
+        setPhase('done');
+        setTimeout(() => navigate(`/test/${token}/done?phase=videos`), 1500);
+      }
+    } catch (err) {
+      setSubmitError((err as Error).message || 'No pudimos subir tu respuesta. Intenta de nuevo.');
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -181,6 +199,8 @@ export default function CandidateVideoTest() {
           question={currentQ}
           attemptsUsed={attempts[currentQ.id] ?? 0}
           existingResponse={responses[currentQ.id]}
+          submitting={submitting}
+          submitError={submitError}
           onComplete={(r) => {
             handleResponse(r);
           }}
@@ -198,7 +218,7 @@ function ConsentScreen({ onAccept }: { onAccept: () => void }) {
       <main className="ct-main">
         <h1>Última prueba: 7 preguntas en video</h1>
         <p className="ct-instructions">
-          Esta es la última parte. Te vamos a hacer 7 preguntas que tenés que contestar grabándote en video, audio o texto. Tenés <strong>2 intentos por pregunta</strong> y máximo 90 segundos por respuesta.
+          Esta es la última parte. Te vamos a hacer 7 preguntas que tienes que contestar grabándote en video, audio o texto. Tienes <strong>2 intentos por pregunta</strong> y máximo 90 segundos por respuesta.
         </p>
 
         <div className="ct-consent-card">
@@ -207,8 +227,8 @@ function ConsentScreen({ onAccept }: { onAccept: () => void }) {
             <li>Vamos a grabar tu video y audio para evaluar tus respuestas con IA.</li>
             <li>Las grabaciones se almacenan encriptadas y se eliminan <strong>30 días después</strong> de cerrarse el puesto.</li>
             <li>Solo tu reclutador y el cliente final que contrate ven las grabaciones.</li>
-            <li>Podés pedir que borremos tus datos en cualquier momento (GDPR / Ley de Datos PA).</li>
-            <li>Si preferís, podés contestar por audio o texto en lugar de video.</li>
+            <li>Puedes pedir que borremos tus datos en cualquier momento (GDPR / Ley de Datos PA).</li>
+            <li>Si prefieres, puedes contestar por audio o texto en lugar de video.</li>
           </ul>
           <label className="ct-consent-check">
             <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
@@ -227,12 +247,16 @@ function VideoQuestionCard({
   question,
   attemptsUsed,
   existingResponse,
+  submitting,
+  submitError,
   onComplete,
   onNext,
 }: {
   question: VideoQuestion;
   attemptsUsed: number;
   existingResponse: Response | undefined;
+  submitting: boolean;
+  submitError: string | null;
   onComplete: (r: Response) => void;
   onNext: () => void;
 }) {
@@ -446,7 +470,11 @@ function VideoQuestionCard({
               {recording && (
                 <>
                   <span className="ct-vq-recording-indicator">● Grabando · {secondsElapsed}s / {question.max_seconds}s</span>
-                  <button className="cd-btn-danger" onClick={stopRecording}>
+                  <button
+                    className="ct-start-btn"
+                    onClick={stopRecording}
+                    style={{ background: '#dc2626', color: 'white', borderColor: '#b91c1c' }}
+                  >
                     ⏹ Detener
                   </button>
                 </>
@@ -467,6 +495,12 @@ function VideoQuestionCard({
         </>
       )}
 
+      {submitError && (
+        <div className="ct-vq-error" style={{ marginTop: 16 }}>
+          ❌ {submitError}
+        </div>
+      )}
+
       <div className="ct-test-actions" style={{ justifyContent: 'space-between' }}>
         <div />
         {!wasSaved && (
@@ -475,8 +509,12 @@ function VideoQuestionCard({
           </button>
         )}
         {wasSaved && (
-          <button className="ct-start-btn" onClick={onNext}>
-            {question.order === 7 ? 'Terminar →' : 'Siguiente pregunta →'}
+          <button className="ct-start-btn" onClick={onNext} disabled={submitting}>
+            {submitting
+              ? '⏳ Subiendo respuesta...'
+              : question.order === 7
+                ? 'Terminar →'
+                : 'Siguiente pregunta →'}
           </button>
         )}
       </div>

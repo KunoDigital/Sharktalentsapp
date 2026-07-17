@@ -63,7 +63,7 @@ export default function RequireOrganization({ children }: { children: React.Reac
         ) : (
           <>
             <p style={{ marginTop: '1.5rem' }}>
-              No tenés organizaciones todavía. Creá la primera para arrancar.
+              No tienes organizaciones todavía. Crea la primera para arrancar.
             </p>
           </>
         )}

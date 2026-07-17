@@ -84,6 +84,23 @@ export type AutoRejectionRules = {
   require_english_passed?: boolean;
   /** Mínimo score de adaptabilidad (0-100). Útil para puestos donde la mentalidad es crítica. */
   mindset_min_adaptability?: number;
+  /**
+   * Umbrales VELNA por dimensión individual (modelo confirmado por Cris 2026-06-12).
+   * Cada dimensión es opcional — si no se setea, no aplica. Reemplaza la lógica genérica
+   * `velna_min_indice` para puestos que necesitan exigencia distinta por dimensión.
+   *
+   * Ejemplos:
+   *   - Contable → numerica: 70
+   *   - Vendedor → verbal: 65
+   *   - Asistente operativo → ninguna seteada
+   */
+  velna_per_dimension?: {
+    verbal?: number;
+    espacial?: number;
+    logica?: number;
+    numerica?: number;
+    abstracta?: number;
+  };
 };
 
 const COMPETENCIAS_DEFAULT: IdealCompetencia[] = [

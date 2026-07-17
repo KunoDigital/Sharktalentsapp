@@ -309,7 +309,7 @@ function ApiKeysTab() {
       </div>
 
       {keys.length === 0 ? (
-        <p className="muted">Todavía no tenés API keys.</p>
+        <p className="muted">Todavía no tienes API keys.</p>
       ) : (
         <table className="data-table">
           <thead>
@@ -632,7 +632,7 @@ function NotificationsTab() {
   return (
     <div className="settings-list">
       <p className="muted" style={{ marginBottom: '1rem' }}>
-        Activá o silenciá tipos de notificación. Las que silencies no aparecen en el bell ni en el dashboard.
+        Activa o silencia tipos de notificación. Las que silencies no aparecen en el bell ni en el dashboard.
       </p>
 
       {ALL_TYPES.map((type) => (
@@ -664,7 +664,7 @@ function NotificationsTab() {
         <div>
           <div className="settings-item-title">Marcas de "leído"</div>
           <div className="settings-item-desc">
-            Cuando hacés click en una notificación se marca como leída. Si querés volver a verlas todas como no leídas, podés limpiar el historial.
+            Cuando haces click en una notificación se marca como leída. Si quieres volver a verlas todas como no leídas, puedes limpiar el historial.
           </div>
         </div>
         <div className="settings-item-actions">
@@ -752,7 +752,7 @@ function DemoDataTab() {
         <div>
           <div className="settings-item-title">Generar N candidatos random</div>
           <div className="settings-item-desc">
-            Si querés un número específico fuera de los presets.
+            Si quieres un número específico fuera de los presets.
           </div>
         </div>
         <div className="settings-item-actions" style={{ alignItems: 'center', gap: '0.5rem' }}>
@@ -854,7 +854,7 @@ function BotConfigTab() {
         <div className="settings-item-title" style={{ marginBottom: '0.5rem' }}>Modo del bot decisor</div>
         <div className="settings-item-desc" style={{ marginBottom: '0.5rem' }}>
           <strong>cold:</strong> solo recomienda, todo va a tu cola para que decidas.<br />
-          <strong>warm:</strong> aplica auto si la confianza ≥ umbral Y vos pediste auto-apply.<br />
+          <strong>warm:</strong> aplica auto si la confianza ≥ umbral Y tú pediste auto-apply.<br />
           <strong>hot:</strong> aplica auto siempre que pase el umbral. Para cuando ya entrenaste el bot con suficientes overrides.
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1391,8 +1391,8 @@ function LeadDetailModal({
   const [demoConsent, setDemoConsent] = useState(false);
 
   async function handleSendDemo() {
-    if (!demoName || !demoEmail || !demoRole) return setError('Completá nombre, email y cargo');
-    if (!demoConsent) return setError('Necesitás confirmar que tenés consentimiento del colaborador');
+    if (!demoName || !demoEmail || !demoRole) return setError('Completa nombre, email y cargo');
+    if (!demoConsent) return setError('Necesitas confirmar que tienes consentimiento del colaborador');
     setBusy(true); setError(null);
     try {
       const result = await api.marketing.sendDemoFromAdmin(lead.ROWID, {
@@ -1689,7 +1689,7 @@ function OperacionalTab() {
     <div className="settings-section">
       <h2>⚙️ Operacional</h2>
       <p className="muted">
-        Acciones manuales que normalmente corre el cron, pero podés disparar a mano cuando necesités.
+        Acciones manuales que normalmente corre el cron, pero puedes disparar a mano cuando necesites.
       </p>
 
       <section style={{ marginTop: '1.5rem', padding: '1rem', border: '1px solid var(--border)', borderRadius: 8 }}>

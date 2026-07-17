@@ -12,6 +12,7 @@ import { Term } from '../components/Tooltip';
 import CandidateVideosPanel from '../components/CandidateVideosPanel';
 import CandidateMindsetPanel from '../components/CandidateMindsetPanel';
 import CandidateEnglishPanel from '../components/CandidateEnglishPanel';
+import { ConductualAnalysisPanel } from '../components/ConductualAnalysisPanel';
 import PrefilterAnswersPanel from '../components/PrefilterAnswersPanel';
 import { CandidateOtherApplicationsPanel } from '../components/CandidateOtherApplicationsPanel';
 import { BotDecisionPanel } from '../components/BotDecisionPanel';
@@ -445,6 +446,8 @@ export default function CandidateDetail() {
           )}
         </div>
       </section>
+
+      <ConductualAnalysisPanel applicationId={app.id} />
 
       <CandidateMindsetPanel applicationId={app.id} />
 

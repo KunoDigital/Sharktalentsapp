@@ -114,7 +114,7 @@ export default function ClientPortalLanding() {
       <main className="cp-main">
         <h1 className="cp-greeting">Hola {portal.client_name.split(' ')[0]} 👋</h1>
         <p className="cp-greeting-sub">
-          Bienvenida al portal de {portal.client_company}. Acá ves el avance de cada puesto que estamos buscando con vos.
+          Bienvenida al portal de {portal.client_company}. Aquí ves el avance de cada puesto que estamos buscando contigo.
         </p>
 
         {pendingDraft.length > 0 && (

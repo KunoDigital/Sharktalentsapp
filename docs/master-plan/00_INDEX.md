@@ -24,6 +24,9 @@ Plan integral para llevar SharkTalents de "prototipo single-tenant funcional" a 
 13. **Test de Mentalidades** — Adaptabilidad y Resiliencia basado en marco McKinsey Forward (entre DISC y VELNA, sin alertar al candidato) ([26](26_TEST_MENTALIDADES.md))
 14. **ZeptoMail (Zoho transactional email)** — reemplazo de Postmark/SendGrid en el roadmap. Incluido en Zoho One de Cris, costo $0 adicional. Wire-up backend listo en `lib/zeptomailClient.ts` + `outbox.ts`. Pendiente verificar dominio + activar Mail Agent (Cris, ver [PUNCH_LIST.md](../PUNCH_LIST.md))
 
+**CORE BUSINESS LOGIC del pipeline (sesión 2026-06-12/16):**
+15. **Reglas del pipeline candidato** — Las 6 fases (Prefiltro/Técnica con bloque continuo Tec+Inglés+Mindset/Conductual/Integridad/Video/Finalistas), sub-estados, qué dispara auto-rechazo vs Duda CV, regla de naming Integridad backend↔frontend, modelo análisis IA contextual (Capa 4), velna_per_dimension por puesto. Fuente de verdad para todo el flujo del candidato. ([27](27_REGLAS_PIPELINE_CANDIDATO.md))
+
 **Estimación total:** 24–28 semanas calendario para una persona (vs 14-18 del refactor base). Se puede ir deployando por fase — cada una deja la app funcional.
 
 ---

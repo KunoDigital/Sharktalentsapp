@@ -11,12 +11,13 @@ describe('buildTechPrompt', () => {
       techPrompt: 'Buscamos alguien con Node.js y SQL',
       level: 'mid',
       count: 12,
+      batchType: 'technical',
     });
     expect(p).toContain('Backend Engineer');
     expect(p).toContain('AcmeTech');
     expect(p).toContain('Node.js y SQL');
     expect(p).toContain('NIVEL: mid');
-    expect(p).toContain('CANTIDAD DE PREGUNTAS: 12');
+    expect(p).toContain('CANTIDAD: 12');
   });
 
   it('omite company si no viene', () => {
@@ -25,6 +26,7 @@ describe('buildTechPrompt', () => {
       techPrompt: 'Y',
       level: 'basic',
       count: 8,
+      batchType: 'technical',
     });
     expect(p).toContain('PUESTO: X');
     expect(p).not.toContain('—');

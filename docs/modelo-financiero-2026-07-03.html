@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modelo financiero SharkTalents · 2026-07-03</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --border-strong: #cbd5e1;
+    --text: #1f2937;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+    --navy: #1B2438;
+    --lima: #D6F26B;
+    --green: #16a34a;
+    --green-bg: #dcfce7;
+    --red: #dc2626;
+    --red-bg: #fee2e2;
+    --amber: #d97706;
+    --amber-bg: #fef3c7;
+    --blue: #2563eb;
+    --blue-bg: #dbeafe;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    font-size: 15px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
+
+  header.top {
+    background: var(--navy);
+    color: white;
+    padding: 28px 36px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+  }
+  header.top h1 { margin: 0 0 8px; font-size: 24px; font-weight: 700; }
+  header.top p { margin: 0; opacity: 0.75; font-size: 14px; }
+  header.top .actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  header.top button {
+    background: var(--lima);
+    color: var(--navy);
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  header.top button.ghost {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+  header.top button:hover { opacity: 0.85; }
+
+  .rules {
+    background: #fef3c7;
+    border-left: 4px solid #d97706;
+    padding: 16px 20px;
+    border-radius: 6px;
+    margin-bottom: 32px;
+    font-size: 13px;
+  }
+  .rules strong { color: #78350f; }
+  .rules ul { margin: 8px 0 0; padding-left: 22px; }
+  .rules li { margin-bottom: 3px; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  section.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  section.card h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  section.card .subtitle {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  /* Sliders y controles */
+  .control-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 100px;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .control-row label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .control-row input[type="range"] {
+    width: 100%;
+    accent-color: var(--navy);
+  }
+  .control-row .value {
+    text-align: right;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    background: #f1f5f9;
+    padding: 6px 12px;
+    border-radius: 6px;
+  }
+  .control-row input[type="number"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 14px;
+    text-align: right;
+  }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex;
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 4px;
+    gap: 4px;
+    margin: 12px 0;
+  }
+  .toggle-row button {
+    flex: 1;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .toggle-row button.active {
+    background: white;
+    color: var(--navy);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+
+  /* Costos fijos editables */
+  .costos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .costo-row {
+    display: grid;
+    grid-template-columns: 1fr 140px 40px;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border-radius: 6px;
+  }
+  .costo-row input.name {
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 13px;
+    color: var(--text);
+    border-radius: 4px;
+  }
+  .costo-row input.name:focus { border-color: var(--border-strong); background: white; outline: none; }
+  .costo-row input.amount {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 14px;
+    text-align: right;
+    background: white;
+  }
+  .costo-row button.del {
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .costo-row button.del:hover { background: var(--red-bg); color: var(--red); }
+  .costos-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 12px;
+    margin-top: 8px;
+    background: var(--navy);
+    color: white;
+    border-radius: 6px;
+    font-weight: 700;
+  }
+  button.add-costo {
+    background: transparent;
+    border: 1px dashed var(--border-strong);
+    color: var(--text-muted);
+    padding: 10px;
+    border-radius: 6px;
+    width: 100%;
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  button.add-costo:hover { background: #f8fafc; color: var(--navy); border-color: var(--navy); }
+
+  /* Descomposición visual */
+  .descomp-bar {
+    display: flex;
+    height: 48px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 20px 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .descomp-bar > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .descomp-bar .b-costos { background: #64748b; }
+  .descomp-bar .b-marketing { background: #2563eb; }
+  .descomp-bar .b-vendedor { background: #7c3aed; }
+  .descomp-bar .b-cris { background: #db2777; }
+  .descomp-bar .b-ganancia { background: #16a34a; }
+
+  .descomp-list {
+    display: grid;
+    grid-template-columns: 1fr 100px 100px;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .descomp-list .head {
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .descomp-list .head:nth-child(2), .descomp-list .head:nth-child(3) { text-align: right; }
+  .descomp-list .row-label {
+    padding: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .descomp-list .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .descomp-list .row-pct, .descomp-list .row-amount {
+    padding: 10px 0;
+    text-align: right;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-weight: 600;
+  }
+  .descomp-list .totales {
+    grid-column: 1 / 4;
+    display: grid;
+    grid-template-columns: 1fr 100px 100px;
+    gap: 8px;
+    border-top: 2px solid var(--navy);
+    padding-top: 10px;
+    margin-top: 10px;
+    font-weight: 700;
+  }
+  .descomp-list .totales > div:nth-child(2), .descomp-list .totales > div:nth-child(3) {
+    text-align: right;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  /* Stat grid */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .stat {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .stat.emphasis {
+    background: var(--navy);
+    color: white;
+    border-color: var(--navy);
+  }
+  .stat.warn {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .stat.good {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .stat .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .stat.emphasis .label { color: rgba(255,255,255,0.7); }
+  .stat.warn .label { color: #991b1b; }
+  .stat.good .label { color: #15803d; }
+  .stat .value {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    color: var(--navy);
+  }
+  .stat.emphasis .value { color: var(--lima); }
+  .stat.warn .value { color: var(--red); }
+  .stat.good .value { color: var(--green); }
+  .stat .hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .stat.emphasis .hint { color: rgba(255,255,255,0.6); }
+
+  /* Alerta cobertura */
+  .cobertura-alert {
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  .cobertura-alert.good {
+    background: var(--green-bg);
+    border-left: 4px solid var(--green);
+    color: #14532d;
+  }
+  .cobertura-alert.warn {
+    background: var(--red-bg);
+    border-left: 4px solid var(--red);
+    color: #7f1d1d;
+  }
+  .cobertura-alert strong { display: block; margin-bottom: 4px; font-size: 15px; }
+
+  /* Tabla comparación */
+  table.comparativo {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+  }
+  table.comparativo th, table.comparativo td {
+    padding: 10px 12px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  table.comparativo th:first-child, table.comparativo td:first-child {
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: #f8fafc;
+  }
+  table.comparativo th {
+    background: var(--navy);
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+  }
+  table.comparativo th:first-child { background: var(--navy); }
+  table.comparativo tr.emphasis td {
+    background: #f1f5f9;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  table.comparativo td.good { color: var(--green); font-weight: 700; }
+  table.comparativo td.warn { color: var(--red); font-weight: 700; }
+
+  /* Break-even chart */
+  .breakeven-chart {
+    display: grid;
+    grid-template-columns: 60px repeat(10, 1fr);
+    gap: 4px;
+    align-items: end;
+    height: 240px;
+    margin: 20px 0;
+    padding-left: 8px;
+  }
+  .breakeven-chart .y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 10px;
+    color: var(--text-muted);
+    padding-right: 8px;
+    border-right: 1px solid var(--border);
+    height: 100%;
+  }
+  .breakeven-chart .bar-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+  }
+  .breakeven-chart .bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.15s;
+    position: relative;
+  }
+  .breakeven-chart .bar.income { background: var(--navy); }
+  .breakeven-chart .bar.costs { background: var(--red); }
+  .breakeven-chart .bar-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    text-align: center;
+  }
+  .breakeven-chart .bar-value {
+    position: absolute;
+    top: -20px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .chart-legend {
+    display: flex;
+    gap: 24px;
+    margin-top: 12px;
+    font-size: 12px;
+  }
+  .chart-legend .item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-legend .swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+
+  /* Comisión Cris venta vs ganancia */
+  .cris-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .cris-option {
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: #f8fafc;
+  }
+  .cris-option.winner {
+    border-color: var(--green);
+    background: var(--green-bg);
+  }
+  .cris-option h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    color: var(--navy);
+  }
+  .cris-option .amount {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--navy);
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+  .cris-option.winner .amount { color: var(--green); }
+  .cris-option .hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+  .cris-option .badge {
+    display: inline-block;
+    background: var(--green);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  footer.bottom {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 32px 0;
+  }
+
+  @media (max-width: 900px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .control-row { grid-template-columns: 1fr; }
+    .control-row .value { text-align: left; }
+    .breakeven-chart { grid-template-columns: 40px repeat(10, 1fr); }
+    .cris-compare { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header class="top">
+    <h1>💰 Modelo financiero SharkTalents</h1>
+    <p>Simulador de escenarios · 2026-07-03 · para revisar con Cristian</p>
+    <div class="actions">
+      <button onclick="exportJson()">📥 Exportar JSON</button>
+      <button class="ghost" onclick="resetDefaults()">↺ Restablecer defaults</button>
+    </div>
+  </header>
+
+  <div class="rules">
+    <strong>Reglas fijas (no negociables — confirmadas por Cristian):</strong>
+    <ul>
+      <li>Precio venta = <strong>1.2x salario mensual del puesto</strong> a contratar</li>
+      <li>Costos operativos = <strong>≤ 20%</strong> (techo firme, nunca sube)</li>
+      <li>Reinversión marketing = <strong>20%</strong> (fijo)</li>
+      <li>Comisión vendedor externo = <strong>10%</strong> (fijo)</li>
+      <li>Comisión Cris = <strong>10%</strong> (fijo · varía la base: sobre venta bruta o sobre ganancia neta)</li>
+      <li>Salario puesto mínimo modelable: <strong>$2,000</strong></li>
+    </ul>
+  </div>
+
+  <!-- ============ PARÁMETROS ============ -->
+  <section class="card">
+    <h2>Parámetros</h2>
+    <div class="subtitle">Ajustá los sliders para ver escenarios en tiempo real.</div>
+
+    <div class="control-row">
+      <label>Salario del puesto</label>
+      <input type="range" id="salario" min="2000" max="10000" step="500" value="2500" oninput="recompute()">
+      <div class="value" id="v-salario">$2,500</div>
+    </div>
+
+    <div class="control-row">
+      <label>Puestos por mes</label>
+      <input type="range" id="puestos" min="1" max="10" step="1" value="3" oninput="recompute()">
+      <div class="value" id="v-puestos">3</div>
+    </div>
+
+    <div class="control-row">
+      <label>Base comisión Cris</label>
+      <div class="toggle-row" style="margin: 0; grid-column: 2 / 4;">
+        <button id="cris-venta" class="active" onclick="setBaseCris('venta')">Sobre venta bruta (10%)</button>
+        <button id="cris-ganancia" onclick="setBaseCris('ganancia')">Sobre ganancia neta (10%)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COSTOS FIJOS ============ -->
+  <section class="card">
+    <h2>Costos fijos reales (mes)</h2>
+    <div class="subtitle">Editá cada línea con el monto real. El total se compara automáticamente contra el 20% designado.</div>
+    <div class="costos-list" id="costos-list"></div>
+    <button class="add-costo" onclick="addCosto()">+ Agregar línea de costo</button>
+    <div class="costos-total">
+      <span>Total costos fijos mes</span>
+      <span id="costos-total">$0</span>
+    </div>
+  </section>
+
+  <!-- ============ DESCOMPOSICIÓN 1 PUESTO ============ -->
+  <section class="card">
+    <h2>Descomposición · 1 puesto</h2>
+    <div class="subtitle">Cómo se reparte la venta de UN solo puesto.</div>
+
+    <div class="descomp-bar" id="descomp-bar-1"></div>
+
+    <div class="descomp-list">
+      <div class="head">Concepto</div>
+      <div class="head">%</div>
+      <div class="head">Monto USD</div>
+
+      <div class="row-label"><span class="dot" style="background: #64748b"></span> Costos operativos</div>
+      <div class="row-pct">20%</div>
+      <div class="row-amount" id="d1-costos">$0</div>
+
+      <div class="row-label"><span class="dot" style="background: #2563eb"></span> Reinversión marketing</div>
+      <div class="row-pct">20%</div>
+      <div class="row-amount" id="d1-marketing">$0</div>
+
+      <div class="row-label"><span class="dot" style="background: #7c3aed"></span> Comisión vendedor</div>
+      <div class="row-pct">10%</div>
+      <div class="row-amount" id="d1-vendedor">$0</div>
+
+      <div class="row-label"><span class="dot" style="background: #db2777"></span> Comisión Cris</div>
+      <div class="row-pct" id="d1-cris-pct">10%</div>
+      <div class="row-amount" id="d1-cris">$0</div>
+
+      <div class="row-label"><span class="dot" style="background: #16a34a"></span> Ganancia neta (Kuno)</div>
+      <div class="row-pct" id="d1-ganancia-pct">40%</div>
+      <div class="row-amount" id="d1-ganancia">$0</div>
+
+      <div class="totales">
+        <div>Precio venta total</div>
+        <div>100%</div>
+        <div id="d1-total">$0</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ANÁLISIS MENSUAL ============ -->
+  <section class="card">
+    <h2>Análisis mensual</h2>
+    <div class="subtitle">Con la cantidad de puestos configurada arriba.</div>
+
+    <div class="stat-grid">
+      <div class="stat emphasis">
+        <div class="label">Ingreso mes</div>
+        <div class="value" id="m-ingreso">$0</div>
+        <div class="hint" id="m-ingreso-hint">de X puestos × $Y</div>
+      </div>
+      <div class="stat">
+        <div class="label">Costos operativos (20%)</div>
+        <div class="value" id="m-costos">$0</div>
+        <div class="hint">designado del ingreso</div>
+      </div>
+      <div class="stat">
+        <div class="label">Reinversión mkt (20%)</div>
+        <div class="value" id="m-marketing">$0</div>
+      </div>
+      <div class="stat">
+        <div class="label">Vendedor (10%)</div>
+        <div class="value" id="m-vendedor">$0</div>
+      </div>
+      <div class="stat" style="background: #fdf2f8; border-color: #ec4899">
+        <div class="label" style="color: #9d174d">Cris (comisión)</div>
+        <div class="value" style="color: #be185d" id="m-cris">$0</div>
+        <div class="hint" id="m-cris-hint">sobre venta</div>
+      </div>
+      <div class="stat good">
+        <div class="label">Ganancia neta Kuno</div>
+        <div class="value" id="m-ganancia">$0</div>
+        <div class="hint">retorno de inversión</div>
+      </div>
+    </div>
+
+    <div id="cobertura-alert"></div>
+  </section>
+
+  <!-- ============ CRIS: VENTA vs GANANCIA ============ -->
+  <section class="card">
+    <h2>Comisión Cris · venta vs ganancia</h2>
+    <div class="subtitle">Comparación directa para saber cuándo conviene cambiar la base.</div>
+
+    <div class="cris-compare">
+      <div class="cris-option" id="cris-opt-venta">
+        <div class="badge" id="badge-venta" style="display: none">MEJOR PARA CRIS</div>
+        <h3>10% sobre venta bruta</h3>
+        <div class="amount" id="cris-monto-venta">$0</div>
+        <div class="hint">Cobrás fijo independiente de si Kuno gana o no en el mes.</div>
+      </div>
+      <div class="cris-option" id="cris-opt-ganancia">
+        <div class="badge" id="badge-ganancia" style="display: none">MEJOR PARA CRIS</div>
+        <h3>10% sobre ganancia neta</h3>
+        <div class="amount" id="cris-monto-ganancia">$0</div>
+        <div class="hint">Cobrás menos por puesto, pero incentivo alineado con rentabilidad total.</div>
+      </div>
+    </div>
+
+    <div id="trigger-recommendation" class="cobertura-alert" style="margin-top: 20px"></div>
+  </section>
+
+  <!-- ============ COMPARATIVO 3x3 ============ -->
+  <section class="card">
+    <h2>Comparativo · 3 precios × 3 volúmenes</h2>
+    <div class="subtitle">Ganancia neta mensual de Kuno según combinación. Base de Cris: <strong id="comp-base">sobre venta bruta</strong>.</div>
+    <table class="comparativo" id="tabla-comparativo">
+      <thead>
+        <tr>
+          <th>Salario puesto ↓ / Puestos mes →</th>
+          <th>1 puesto</th>
+          <th>3 puestos</th>
+          <th>5 puestos</th>
+        </tr>
+      </thead>
+      <tbody id="comp-body"></tbody>
+    </table>
+  </section>
+
+  <!-- ============ BREAK-EVEN CHART ============ -->
+  <section class="card">
+    <h2>Break-even · ingreso vs costos fijos</h2>
+    <div class="subtitle">A partir de cuántos puestos el ingreso mensual cubre los costos fijos reales.</div>
+
+    <div class="breakeven-chart" id="be-chart"></div>
+    <div class="chart-legend">
+      <div class="item"><span class="swatch" style="background: var(--navy)"></span> Ingreso mensual (venta bruta)</div>
+      <div class="item"><span class="swatch" style="background: var(--red)"></span> Costos fijos reales</div>
+    </div>
+
+    <div id="breakeven-result" class="cobertura-alert" style="margin-top: 20px"></div>
+  </section>
+
+  <footer class="bottom">
+    Simulador armado 2026-07-03 · localStorage guarda tus cambios automáticamente
+  </footer>
+
+</div>
+
+<script>
+// ============================================================
+// CONSTANTES DEL MODELO (reglas fijas)
+// ============================================================
+const MULT_VENTA = 1.2;
+const PCT_COSTOS = 0.20;
+const PCT_MARKETING = 0.20;
+const PCT_VENDEDOR = 0.10;
+const PCT_CRIS = 0.10;
+
+const DEFAULT_COSTOS = [
+  { name: 'Salario Cris (80% que paga SharkTalents)', amount: 1200 },
+  { name: 'Zoho suite (compartido 4 depts, 25% acá)', amount: 150 },
+  { name: 'LinkedIn Sales Navigator + campañas base', amount: 200 },
+  { name: 'Creador contenido SharkTalents', amount: 400 },
+  { name: 'Anthropic API + Twilio + Catalyst storage', amount: 100 },
+  { name: 'Buffer / imprevistos', amount: 100 },
+];
+
+const STORAGE_KEY = 'shark_modelo_financiero_2026_07_03';
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    return {
+      salario: s.salario ?? 2500,
+      puestos: s.puestos ?? 3,
+      baseCris: s.baseCris ?? 'venta',
+      costos: Array.isArray(s.costos) ? s.costos : [...DEFAULT_COSTOS],
+    };
+  } catch {
+    return {
+      salario: 2500,
+      puestos: 3,
+      baseCris: 'venta',
+      costos: [...DEFAULT_COSTOS],
+    };
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function money(n) {
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
+
+// ============================================================
+// COMPUTE
+// ============================================================
+function computePuesto(salarioPuesto, baseCris) {
+  const venta = salarioPuesto * MULT_VENTA;
+  const costos = venta * PCT_COSTOS;
+  const marketing = venta * PCT_MARKETING;
+  const vendedor = venta * PCT_VENDEDOR;
+
+  const gananciaPreCris = venta - costos - marketing - vendedor; // = 50% de venta
+
+  let cris, gananciaKuno;
+  if (baseCris === 'venta') {
+    cris = venta * PCT_CRIS; // 10% de venta
+    gananciaKuno = gananciaPreCris - cris;
+  } else {
+    // 10% de ganancia neta pre-Cris (antes de descontar la comisión de ella)
+    cris = gananciaPreCris * PCT_CRIS;
+    gananciaKuno = gananciaPreCris - cris;
+  }
+
+  return {
+    venta,
+    costos,
+    marketing,
+    vendedor,
+    cris,
+    gananciaKuno,
+    pctCris: (cris / venta) * 100,
+    pctGanancia: (gananciaKuno / venta) * 100,
+  };
+}
+
+function totalCostosFijos() {
+  return state.costos.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderCostos() {
+  const list = document.getElementById('costos-list');
+  list.innerHTML = '';
+  state.costos.forEach((c, i) => {
+    const row = document.createElement('div');
+    row.className = 'costo-row';
+    row.innerHTML = `
+      <input class="name" value="${escapeHtml(c.name)}" oninput="updateCostoName(${i}, this.value)">
+      <input class="amount" type="number" value="${c.amount}" min="0" oninput="updateCostoAmount(${i}, this.value)">
+      <button class="del" onclick="deleteCosto(${i})" title="Eliminar">×</button>
+    `;
+    list.appendChild(row);
+  });
+  document.getElementById('costos-total').textContent = money(totalCostosFijos());
+}
+
+function updateCostoName(i, val) { state.costos[i].name = val; saveState(); recompute(); }
+function updateCostoAmount(i, val) { state.costos[i].amount = Number(val) || 0; saveState(); recompute(); }
+function deleteCosto(i) { state.costos.splice(i, 1); saveState(); renderCostos(); recompute(); }
+function addCosto() { state.costos.push({ name: 'Nuevo costo', amount: 0 }); saveState(); renderCostos(); recompute(); }
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function recompute() {
+  state.salario = Number(document.getElementById('salario').value);
+  state.puestos = Number(document.getElementById('puestos').value);
+  saveState();
+
+  document.getElementById('v-salario').textContent = money(state.salario);
+  document.getElementById('v-puestos').textContent = state.puestos;
+
+  const p = computePuesto(state.salario, state.baseCris);
+
+  // Descomposición 1 puesto
+  document.getElementById('d1-costos').textContent = money(p.costos);
+  document.getElementById('d1-marketing').textContent = money(p.marketing);
+  document.getElementById('d1-vendedor').textContent = money(p.vendedor);
+  document.getElementById('d1-cris').textContent = money(p.cris);
+  document.getElementById('d1-cris-pct').textContent = p.pctCris.toFixed(1) + '%';
+  document.getElementById('d1-ganancia').textContent = money(p.gananciaKuno);
+  document.getElementById('d1-ganancia-pct').textContent = p.pctGanancia.toFixed(1) + '%';
+  document.getElementById('d1-total').textContent = money(p.venta);
+
+  // Barra visual
+  const bar = document.getElementById('descomp-bar-1');
+  bar.innerHTML = `
+    <div class="b-costos" style="width: 20%">Costos<br>20%</div>
+    <div class="b-marketing" style="width: 20%">Mkt<br>20%</div>
+    <div class="b-vendedor" style="width: 10%">Vend<br>10%</div>
+    <div class="b-cris" style="width: ${p.pctCris}%">Cris<br>${p.pctCris.toFixed(1)}%</div>
+    <div class="b-ganancia" style="width: ${p.pctGanancia}%">Kuno<br>${p.pctGanancia.toFixed(1)}%</div>
+  `;
+
+  // Mensual
+  const N = state.puestos;
+  const m = {
+    ingreso: p.venta * N,
+    costos: p.costos * N,
+    marketing: p.marketing * N,
+    vendedor: p.vendedor * N,
+    cris: p.cris * N,
+    gananciaKuno: p.gananciaKuno * N,
+  };
+  document.getElementById('m-ingreso').textContent = money(m.ingreso);
+  document.getElementById('m-ingreso-hint').textContent = `${N} puestos × ${money(p.venta)}`;
+  document.getElementById('m-costos').textContent = money(m.costos);
+  document.getElementById('m-marketing').textContent = money(m.marketing);
+  document.getElementById('m-vendedor').textContent = money(m.vendedor);
+  document.getElementById('m-cris').textContent = money(m.cris);
+  document.getElementById('m-cris-hint').textContent = state.baseCris === 'venta' ? 'sobre venta bruta' : 'sobre ganancia neta';
+  document.getElementById('m-ganancia').textContent = money(m.gananciaKuno);
+
+  // Cobertura costos fijos vs 20% designado
+  const costosReales = totalCostosFijos();
+  const alertBox = document.getElementById('cobertura-alert');
+  const diferencia = m.costos - costosReales;
+  if (diferencia >= 0) {
+    alertBox.className = 'cobertura-alert good';
+    alertBox.innerHTML = `<strong>✅ El 20% designado a operativos CUBRE los costos fijos reales.</strong>Ingreso designado: ${money(m.costos)} · Costos reales: ${money(costosReales)} · Sobra: ${money(diferencia)}. Ese sobrante queda como buffer o se puede reasignar.`;
+  } else {
+    alertBox.className = 'cobertura-alert warn';
+    alertBox.innerHTML = `<strong>⚠️ El 20% designado NO cubre los costos fijos reales.</strong>Ingreso designado: ${money(m.costos)} · Costos reales: ${money(costosReales)} · Falta: ${money(Math.abs(diferencia))}. Con este volumen los costos comen ganancia de Kuno.`;
+  }
+
+  // Cris venta vs ganancia
+  const pV = computePuesto(state.salario, 'venta');
+  const pG = computePuesto(state.salario, 'ganancia');
+  const crisMesVenta = pV.cris * N;
+  const crisMesGanancia = pG.cris * N;
+  document.getElementById('cris-monto-venta').textContent = money(crisMesVenta);
+  document.getElementById('cris-monto-ganancia').textContent = money(crisMesGanancia);
+
+  const optV = document.getElementById('cris-opt-venta');
+  const optG = document.getElementById('cris-opt-ganancia');
+  optV.classList.toggle('winner', crisMesVenta >= crisMesGanancia);
+  optG.classList.toggle('winner', crisMesGanancia > crisMesVenta);
+  document.getElementById('badge-venta').style.display = crisMesVenta >= crisMesGanancia ? 'inline-block' : 'none';
+  document.getElementById('badge-ganancia').style.display = crisMesGanancia > crisMesVenta ? 'inline-block' : 'none';
+
+  // Trigger recommendation: cuándo conviene cambiar
+  const trigger = document.getElementById('trigger-recommendation');
+  // Calcular cantidad de puestos donde ambos son iguales (no aplica porque son constantes)
+  // Con las mismas fórmulas, sobre venta SIEMPRE le paga más a Cris que sobre ganancia
+  // (10% de 100% = 10% > 10% de 40-50% = 4-5%)
+  // El cambio se justifica por INCENTIVO estratégico, no por matemática pura
+  trigger.className = 'cobertura-alert';
+  trigger.style.background = '#dbeafe';
+  trigger.style.borderLeft = '4px solid #2563eb';
+  trigger.style.color = '#1e3a8a';
+  trigger.innerHTML = `
+    <strong>ℹ️ Análisis del cambio de base:</strong>
+    Matemáticamente, "sobre venta" siempre paga MÁS a Cris (10% del 100% vs 10% del 40-50%).
+    El cambio a "sobre ganancia" tiene sentido cuando el negocio esté ESTABLECIDO y quieran alinear a Cris con rentabilidad total, no volumen bruto.
+    <br><br><strong>Trigger sugerido:</strong> cambiar a "sobre ganancia" cuando SharkTalents supere <strong>${money(costosReales * 3)}/mes de ingreso estable durante 3 meses seguidos</strong> (3x costos fijos = colchón sólido).
+  `;
+
+  // Comparativo 3x3
+  const precios = [2000, 3000, 5000];
+  const volumenes = [1, 3, 5];
+  const body = document.getElementById('comp-body');
+  body.innerHTML = '';
+  document.getElementById('comp-base').textContent = state.baseCris === 'venta' ? 'sobre venta bruta' : 'sobre ganancia neta';
+  precios.forEach(pr => {
+    const tr = document.createElement('tr');
+    const isCurrent = pr === state.salario;
+    if (isCurrent) tr.className = 'emphasis';
+    let html = `<td>${money(pr)}</td>`;
+    volumenes.forEach(vol => {
+      const c = computePuesto(pr, state.baseCris);
+      const gk = c.gananciaKuno * vol;
+      const cls = gk > costosReales ? 'good' : gk > 0 ? '' : 'warn';
+      html += `<td class="${cls}">${money(gk)}</td>`;
+    });
+    tr.innerHTML = html;
+    body.appendChild(tr);
+  });
+
+  // Break-even chart
+  renderBreakevenChart(p.venta, costosReales);
+}
+
+function renderBreakevenChart(ventaPorPuesto, costosReales) {
+  const chart = document.getElementById('be-chart');
+  const result = document.getElementById('breakeven-result');
+
+  const puestos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const ingresos = puestos.map(n => ventaPorPuesto * n);
+  const maxVal = Math.max(...ingresos, costosReales) * 1.15;
+
+  // Calcular break-even
+  const breakevenPuestos = costosReales / ventaPorPuesto;
+
+  let html = `<div class="y-axis">
+    <div>${money(maxVal)}</div>
+    <div>${money(maxVal * 0.75)}</div>
+    <div>${money(maxVal * 0.5)}</div>
+    <div>${money(maxVal * 0.25)}</div>
+    <div>$0</div>
+  </div>`;
+
+  puestos.forEach((n, i) => {
+    const ingreso = ingresos[i];
+    const heightIngreso = (ingreso / maxVal) * 100;
+    const heightCostos = (costosReales / maxVal) * 100;
+    html += `
+      <div class="bar-container">
+        <div class="bar income" style="height: ${heightIngreso}%">
+          ${n >= Math.floor(breakevenPuestos) && n <= Math.ceil(breakevenPuestos) + 1 ?
+            `<div class="bar-value" style="color: var(--navy)">${money(ingreso)}</div>` : ''}
+        </div>
+        <div class="bar-label">${n} p</div>
+      </div>
+    `;
+  });
+  chart.innerHTML = html;
+
+  // Line overlay costos fijos
+  const costosLineHeight = (costosReales / maxVal) * 240;
+  chart.style.position = 'relative';
+  const existingLine = chart.querySelector('.costos-line');
+  if (existingLine) existingLine.remove();
+  const line = document.createElement('div');
+  line.className = 'costos-line';
+  line.style.cssText = `position: absolute; left: 68px; right: 4px; bottom: ${costosLineHeight}px; height: 2px; background: var(--red); border-top: 2px dashed var(--red); pointer-events: none;`;
+  chart.appendChild(line);
+  const label = document.createElement('div');
+  label.style.cssText = `position: absolute; right: 8px; bottom: ${costosLineHeight + 4}px; font-size: 11px; font-weight: 700; color: var(--red); background: white; padding: 2px 6px; border-radius: 4px;`;
+  label.textContent = `Costos fijos: ${money(costosReales)}`;
+  chart.appendChild(label);
+
+  const bePuestosRound = Math.ceil(breakevenPuestos);
+  if (breakevenPuestos <= 10) {
+    result.className = 'cobertura-alert good';
+    result.innerHTML = `<strong>📊 Break-even: ${bePuestosRound} puesto${bePuestosRound === 1 ? '' : 's'} por mes</strong>Con ese volumen el ingreso mensual (${money(ventaPorPuesto * bePuestosRound)}) ya cubre los costos fijos reales de ${money(costosReales)}. Cualquier puesto adicional es ganancia.`;
+  } else {
+    result.className = 'cobertura-alert warn';
+    result.innerHTML = `<strong>⚠️ Break-even fuera del rango visible</strong>Con este precio de puesto (${money(ventaPorPuesto)}), harían falta más de 10 puestos/mes para cubrir los costos fijos. Considerá subir el salario del puesto objetivo o reducir costos fijos.`;
+  }
+}
+
+function setBaseCris(base) {
+  state.baseCris = base;
+  saveState();
+  document.getElementById('cris-venta').classList.toggle('active', base === 'venta');
+  document.getElementById('cris-ganancia').classList.toggle('active', base === 'ganancia');
+  recompute();
+}
+
+function exportJson() {
+  const p = computePuesto(state.salario, state.baseCris);
+  const N = state.puestos;
+  const costosReales = totalCostosFijos();
+  const data = {
+    version: 'shark-modelo-financiero-2026-07-03',
+    exported_at: new Date().toISOString(),
+    parametros: {
+      salario_puesto: state.salario,
+      puestos_mes: N,
+      base_comision_cris: state.baseCris,
+      multiplicador_venta: MULT_VENTA,
+      pct_costos_operativos: PCT_COSTOS,
+      pct_reinversion_marketing: PCT_MARKETING,
+      pct_comision_vendedor: PCT_VENDEDOR,
+      pct_comision_cris: PCT_CRIS,
+    },
+    costos_fijos: state.costos,
+    total_costos_fijos: costosReales,
+    por_puesto: {
+      precio_venta: p.venta,
+      costos: p.costos,
+      marketing: p.marketing,
+      vendedor: p.vendedor,
+      cris: p.cris,
+      ganancia_kuno: p.gananciaKuno,
+    },
+    mensual: {
+      ingreso: p.venta * N,
+      costos: p.costos * N,
+      marketing: p.marketing * N,
+      vendedor: p.vendedor * N,
+      cris: p.cris * N,
+      ganancia_kuno: p.gananciaKuno * N,
+      cobertura_costos_fijos: p.costos * N - costosReales,
+    },
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `modelo-financiero-shark-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetDefaults() {
+  if (!confirm('¿Restablecer todos los valores a los defaults? Se pierden tus cambios.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = loadState();
+  document.getElementById('salario').value = state.salario;
+  document.getElementById('puestos').value = state.puestos;
+  setBaseCris(state.baseCris);
+  renderCostos();
+  recompute();
+}
+
+// Init
+document.getElementById('salario').value = state.salario;
+document.getElementById('puestos').value = state.puestos;
+setBaseCris(state.baseCris);
+renderCostos();
+recompute();
+</script>
+
+</body>
+</html>

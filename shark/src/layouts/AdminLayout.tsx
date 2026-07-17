@@ -25,7 +25,10 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Clientes',
     items: [
-      { to: '/marketing/leads', label: 'Leads marketing' },
+      { to: '/marketing/prospectos', label: 'Marketing → Prospectos' },
+      { to: '/marketing/clientes', label: 'Marketing → Clientes' },
+      { to: '/marketing/finalistas', label: 'Marketing → Finalistas' },
+      { to: '/marketing/leads', label: 'Leads marketing (clásico)' },
       { to: '/team/freelance', label: 'Vendedores freelance' },
       { to: '/drafts', label: 'Drafts pendientes' },
       { to: '/reports', label: 'Reportes enviados' },

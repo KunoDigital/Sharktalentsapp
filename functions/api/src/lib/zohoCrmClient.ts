@@ -139,6 +139,135 @@ async function findLeadByEmail(
 }
 
 /**
+ * Public: expone findLeadByEmail para que el flujo de conversión pueda buscar el Lead
+ * existente antes de crear duplicados.
+ */
+export async function findLeadInCrmByEmailPublic(
+  email: string,
+  traceId: string,
+): Promise<{ id: string; lead_status: string | null; lead_source: string | null } | null> {
+  return findLeadByEmail(email, traceId);
+}
+
+/**
+ * Convierte un Lead a Account + Contact + Deal usando la API oficial de Zoho:
+ *   POST /Leads/{id}/actions/convert
+ *
+ * Comportamiento oficial:
+ *   - Marca el Lead como "converted" (queda archivado, NO se elimina)
+ *   - Crea Account, Contact y Deal automáticamente con relación entre ellos
+ *   - Zoho devuelve los 3 IDs creados
+ *
+ * Ventaja sobre crear los 3 records por separado: el Lead original NO queda como
+ * duplicado en Posibles Clientes.
+ *
+ * Después de este call, el caller normalmente hace un PATCH al Deal creado con
+ * los custom fields (Amount, Stage, Posibles_productos, Owner, etc.).
+ *
+ * @param leadZohoId  ID del Lead en Zoho
+ * @param options.overwrite  si true, permite conversión aunque el Lead ya esté converted
+ * @param options.notify_lead_owner  notificar al owner del Lead
+ * @param options.notify_new_entity_owner  notificar al owner del nuevo Deal
+ * @param options.deal  datos del Deal a crear (Amount, Closing_Date, Deal_Name, Stage, etc.)
+ */
+export async function convertLead(
+  leadZohoId: string,
+  options: {
+    overwrite?: boolean;
+    notify_lead_owner?: boolean;
+    notify_new_entity_owner?: boolean;
+    deal?: {
+      Deal_Name?: string;
+      Amount?: number;
+      Closing_Date?: string;
+      Stage?: string;
+      Owner?: { id: string };
+      Description?: string;
+      Lead_Source?: string;
+    };
+  },
+  traceId: string,
+): Promise<CrmResult<{ Accounts: string; Contacts: string; Deals: string }>> {
+  const e = env();
+  const module = e.ZOHO_CRM_LEADS_MODULE;
+
+  const dataItem: Record<string, unknown> = {
+    overwrite: options.overwrite ?? true,
+    notify_lead_owner: options.notify_lead_owner ?? false,
+    notify_new_entity_owner: options.notify_new_entity_owner ?? false,
+  };
+  if (options.deal) dataItem.Deals = options.deal;
+
+  type ConvertResponse = {
+    data?: Array<{ Accounts: string; Contacts: string; Deals: string }>;
+  };
+
+  const result = await callCrm<ConvertResponse>(
+    `/${encodeURIComponent(module)}/${encodeURIComponent(leadZohoId)}/actions/convert`,
+    { method: 'POST', body: { data: [dataItem] } },
+    traceId,
+  );
+  if (!result.ok) return result;
+  const first = result.data.data?.[0];
+  if (!first) {
+    return { ok: false, error: `Convert returned no data: ${JSON.stringify(result.data).slice(0, 200)}` };
+  }
+  return { ok: true, data: first };
+}
+
+/**
+ * PATCH al Account para setear campos custom (RUC/NIT, razón social, dirección, etc).
+ * Se llama cuando el vendedor completa los datos legales antes del contrato.
+ */
+export async function updateAccount(
+  accountId: string,
+  fields: {
+    Account_Name?: string;
+    Nombre_de_la_Empresa?: string;
+    RUC_NIT?: string;
+    Billing_Street?: string;
+    Billing_City?: string;
+    Billing_State?: string;
+    Billing_Country?: string;
+    Billing_Code?: string;
+    Phone?: string;
+    Email_de_la_empresa?: string;
+  },
+  traceId: string,
+): Promise<CrmResult<unknown>> {
+  return callCrm<unknown>(
+    `/Accounts/${encodeURIComponent(accountId)}`,
+    { method: 'PUT', body: { data: [fields] } },
+    traceId,
+  );
+}
+
+/**
+ * PATCH al Deal para setear campos custom que la API convert no permite (Posibles_productos,
+ * Owner en formato lookup, etc). Se llama después de convertLead.
+ */
+export async function updateDeal(
+  dealId: string,
+  fields: {
+    Amount?: number;
+    Stage?: string;
+    Owner?: { id: string };
+    Lead_Source?: string;
+    Posibles_productos?: string[];
+    Description?: string;
+    Closing_Date?: string;
+    Deal_Name?: string;
+  },
+  traceId: string,
+): Promise<CrmResult<unknown>> {
+  return callCrm<unknown>(
+    `/Deals/${encodeURIComponent(dealId)}`,
+    { method: 'PUT', body: { data: [fields] } },
+    traceId,
+  );
+}
+
+/**
  * Crea o actualiza un lead en Zoho CRM. Hace search-before-create por email para
  * evitar duplicados aunque Zoho no tenga Duplicate Detection configurada:
  *   - Si existe lead con ese email → PUT al ID existente (update con los datos nuevos)

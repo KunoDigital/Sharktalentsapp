@@ -13,8 +13,8 @@ type Step = {
 const STEPS: Step[] = [
   {
     selector: '.action-queue',
-    title: '👋 Acá empezás cada día',
-    body: 'En el dashboard tenés "Tu cola": lo que requiere tu atención hoy. Drafts pendientes, decisiones del bot que necesitan tu input, finalistas listos. Click en cada uno te lleva al lugar correcto.',
+    title: '👋 Aquí empiezas cada día',
+    body: 'En el dashboard tienes "Tu cola": lo que requiere tu atención hoy. Drafts pendientes, decisiones del bot que necesitan tu input, finalistas listos. Click en cada uno te lleva al lugar correcto.',
     position: 'bottom',
   },
   {
@@ -26,7 +26,7 @@ const STEPS: Step[] = [
   {
     selector: '.notif-bell',
     title: '🔔 Notificaciones en vivo',
-    body: 'El bell muestra cuántas notifs nuevas tenés. Click abre el panel. Podés silenciar tipos en Settings → Notificaciones.',
+    body: 'El bell muestra cuántas notifs nuevas tienes. Click abre el panel. Puedes silenciar tipos en Settings → Notificaciones.',
     position: 'bottom',
   },
   {
@@ -38,25 +38,25 @@ const STEPS: Step[] = [
   {
     selector: '.dashboard-charts-grid',
     title: '📊 Charts',
-    body: 'Funnel de conversión, distribución DISC, origen de candidatos. Si pasás el mouse sobre los términos técnicos (DISC, VELNA), aparecen tooltips con definiciones.',
+    body: 'Funnel de conversión, distribución DISC, origen de candidatos. Si pasas el mouse sobre los términos técnicos (DISC, VELNA), aparecen tooltips con definiciones.',
     position: 'top',
   },
   {
     selector: '[href="/drafts"]',
     title: '📝 Briefings con IA',
-    body: 'Cuando agendás una reunión con cliente nuevo (botón "Agendar briefing" abajo en Drafts), Zoho Bookings manda invite. Cuando termina la reunión, Zia transcribe automático y la IA arma el draft del puesto. Tu solo revisás y aprobás.',
+    body: 'Cuando agendas una reunión con cliente nuevo (botón "Agendar briefing" abajo en Drafts), Zoho Bookings manda invite. Cuando termina la reunión, Zia transcribe automático y la IA arma el draft del puesto. Tú solo revisas y apruebas.',
     position: 'right',
   },
   {
     selector: '[href="/jobs"]',
     title: '🎯 Prefilter opcional',
-    body: 'Cada puesto puede tener preguntas iniciales (visa, salario esperado, disponibilidad). Si las marcás como "descalificadoras" + un valor esperado, el sistema rechaza automático candidatos que no matcheen.',
+    body: 'Cada puesto puede tener preguntas iniciales (visa, salario esperado, disponibilidad). Si las marcas como "descalificadoras" + un valor esperado, el sistema rechaza automático candidatos que no matcheen.',
     position: 'right',
   },
   {
     selector: '[href="/jobs"]',
     title: '🇺🇸 Test de inglés (CEFR)',
-    body: 'Si activás "english_required" en el puesto, el candidato hace un test de inglés según el nivel mínimo requerido (A2/B1/B2/C1). Multiple choice + listening (con MP3) + writing (analizado por IA) + speaking en video.',
+    body: 'Si activas "english_required" en el puesto, el candidato hace un test de inglés según el nivel mínimo requerido (A2/B1/B2/C1). Multiple choice + listening (con MP3) + writing (analizado por IA) + speaking en video.',
     position: 'right',
   },
   {

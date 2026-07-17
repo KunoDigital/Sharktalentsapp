@@ -681,17 +681,45 @@ export async function submitTest(ctx: RequestContext): Promise<void> {
     await transitResult(ctx, result, 'conductual_completed', 'webhook');
   }
 
-  // Auto-rejection multidim (doc 18). Si el candidato no cumple las reglas configuradas
-  // del job (DISC similitud, VELNA mínimo, integridad máxima de riesgo, emocional mínimo),
-  // transicionar a auto_rejected_low_score y devolver un flag al frontend.
+  // Auto-rejection multidim (reglas confirmadas Cris 2026-06-12, ver memoria
+  // project_reglas_pipeline_candidato.md). Evalúa:
+  //   🔴 Integridad con 5 dimensiones críticas en 'bajo' → auto-rechazo
+  //   🟡 Integridad con 8 dimensiones secundarias en 'bajo' → Duda CV
+  //   🟡 Inglés bajo el mínimo → Duda CV (no rechaza)
+  //   🟢 Mindset, Conductual (DISC/VELNA/Emo) → NUNCA rechazan
   let autoRejected: { reasons: string[] } | null = null;
+  let needsReview: { reasons: string[] } | null = null;
   if (refreshed && !['auto_rejected_low_score', 'rejected_by_admin'].includes(result.pipeline_stage)) {
     try {
       const { evaluateAutoRejection } = await import('../lib/autoRejection.js');
       const { parseIdealProfile } = await import('./jobs.js');
       const jobIdeal = await fetchJobIdealProfile(ctx, result.assessment_id);
       const ideal = parseIdealProfile(jobIdeal);
-      const decision = evaluateAutoRejection(refreshed as Parameters<typeof evaluateAutoRejection>[0], ideal);
+
+      // Cargar dimensiones de Integridad si existen (regla nueva por dimensión).
+      let integrityDims: Array<{ dimension: string; classification: 'bajo' | 'medio' | 'alto' }> | undefined;
+      try {
+        const dims = (await zcql(ctx.req).executeZCQLQuery(
+          `SELECT dimension, nivel FROM IntegrityDimensions WHERE result_id = '${escapeSql(resultId)}'`,
+        )) as unknown[];
+        const rows = unwrapRows<{ dimension: string; nivel: string }>(dims, 'IntegrityDimensions');
+        if (rows.length > 0) {
+          integrityDims = rows.map((r) => ({
+            dimension: r.dimension,
+            classification: (r.nivel === 'bajo' ? 'bajo' : r.nivel === 'medio' ? 'medio' : 'alto') as 'bajo' | 'medio' | 'alto',
+          }));
+        }
+      } catch {
+        // Si no hay dimensiones (tabla vacía o test no completado), seguimos sin ellas.
+        // La función igual evalúa las reglas legacy globales.
+      }
+
+      const decision = evaluateAutoRejection(
+        refreshed as Parameters<typeof evaluateAutoRejection>[0],
+        ideal,
+        integrityDims,
+      );
+
       if (decision.reject) {
         const fresh = await getResult(ctx, resultId);
         if (fresh && !['auto_rejected_low_score', 'rejected_by_admin'].includes(fresh.pipeline_stage)) {
@@ -703,6 +731,15 @@ export async function submitTest(ctx: RequestContext): Promise<void> {
             reasons: decision.reasons,
           });
         }
+      } else if (decision.needs_review) {
+        // Duda CV: NO cambia pipeline_stage (la transición a "duda" la hace el rediseño UX
+        // cuando se implemente). Solo loggeamos y devolvemos flag al frontend.
+        needsReview = { reasons: decision.review_reasons };
+        log.info('candidate needs manual review (Duda CV)', {
+          traceId: ctx.traceId,
+          resultId,
+          reasons: decision.review_reasons,
+        });
       }
     } catch (err) {
       log.warn('auto-rejection evaluation failed', {
@@ -714,7 +751,11 @@ export async function submitTest(ctx: RequestContext): Promise<void> {
   }
 
   log.info('public test submitted', { traceId: ctx.traceId, resultId, blocks: blocksWritten });
-  sendJson(ctx.res, 200, { submitted: blocksWritten, ...(autoRejected ? { auto_rejected: autoRejected } : {}) });
+  sendJson(ctx.res, 200, {
+    submitted: blocksWritten,
+    ...(autoRejected ? { auto_rejected: autoRejected } : {}),
+    ...(needsReview ? { needs_review: needsReview } : {}),
+  });
 }
 
 async function fetchJobIdealProfile(ctx: RequestContext, jobId: string): Promise<string | null> {

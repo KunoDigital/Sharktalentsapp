@@ -16,7 +16,7 @@ import { logger } from './logger';
 const log = logger('URL_SIGNING');
 
 export type TokenClaims = {
-  kind: 'test' | 'report' | 'report_bundle' | 'portal' | 'demo_conductual' | 'demo_integridad';
+  kind: 'test' | 'report' | 'report_bundle' | 'portal' | 'demo_conductual' | 'demo_integridad' | 'exchange' | 'fit_choice' | 'fit_report';
   ref: string;          // ROWID al que apunta (Result para report, Job para report_bundle, etc.)
   exp: number;          // unix seconds
   [key: string]: unknown;

@@ -55,6 +55,27 @@ export type AutoRejectionRules = {
   require_english_passed?: boolean;
   /** Mínimo % de adaptabilidad (mindset) — 0-100. */
   mindset_min_adaptability?: number;
+  /**
+   * Umbrales VELNA por dimensión individual (modelo confirmado por Cris 2026-06-12).
+   * Cada dimensión es opcional — si no se setea, no aplica.
+   * El draft del puesto define cuáles son críticas para ese rol.
+   *
+   * Ejemplos del modelo real:
+   *   - Contable → numerica crítica con umbral 70
+   *   - Vendedor → verbal crítica con umbral 65
+   *   - Asistente operativo → ninguna VELNA crítica (no setear)
+   *
+   * Si el score del candidato en esa dimensión está por debajo del umbral, va a
+   * auto-rechazo. Se evalúa además (no en lugar) de la regla legacy
+   * `velna_min_indice` para mantener compatibilidad.
+   */
+  velna_per_dimension?: {
+    verbal?: number;
+    espacial?: number;
+    logica?: number;
+    numerica?: number;
+    abstracta?: number;
+  };
 };
 
 export type ReportLang = 'es' | 'en';
@@ -245,6 +266,23 @@ function validateAutoRejection(raw: unknown): AutoRejectionRules {
       throw new ValidationError('require_english_passed must be boolean');
     }
     out.require_english_passed = r.require_english_passed;
+  }
+  if (r.velna_per_dimension !== undefined) {
+    if (typeof r.velna_per_dimension !== 'object' || r.velna_per_dimension === null) {
+      throw new ValidationError('velna_per_dimension must be object');
+    }
+    const vpd = r.velna_per_dimension as Record<string, unknown>;
+    const cleaned: NonNullable<AutoRejectionRules['velna_per_dimension']> = {};
+    for (const k of ['verbal', 'espacial', 'logica', 'numerica', 'abstracta'] as const) {
+      if (vpd[k] !== undefined) {
+        const n = Number(vpd[k]);
+        if (!Number.isFinite(n) || n < 0 || n > 100) {
+          throw new ValidationError(`velna_per_dimension.${k} must be 0..100`);
+        }
+        cleaned[k] = Math.round(n);
+      }
+    }
+    if (Object.keys(cleaned).length > 0) out.velna_per_dimension = cleaned;
   }
   return out;
 }

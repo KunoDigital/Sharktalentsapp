@@ -1,8 +1,8 @@
 /**
  * Prefiltro del candidato — cuestionario corto inicial antes del test completo.
  *
- * El recruiter configura preguntas eliminatorias por puesto (ej: "¿tenés visa de
- * trabajo?", "¿hablás español nativo?"). Si el candidato responde mal y la pregunta
+ * El recruiter configura preguntas eliminatorias por puesto (ej: "¿tienes visa de
+ * trabajo?", "¿hablas español nativo?"). Si el candidato responde mal y la pregunta
  * tiene `is_disqualifier=true`, el flow termina sin pasar al test.
  *
  * Las preguntas vienen del backend (`GET /test/:token/prefilter`) — no del repo.

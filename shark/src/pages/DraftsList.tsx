@@ -68,7 +68,7 @@ export default function DraftsList() {
     <div>
       <h1 className="page-title">Job Profile Drafts</h1>
       <p className="page-subtitle">
-        Borradores de puestos generados por IA después de cada reunión con cliente. Revisás, editás, aprobás → mandamos al cliente.
+        Borradores de puestos generados por IA después de cada reunión con cliente. Revisas, editas, apruebas → mandamos al cliente.
         {useBackend && <span className="muted small"> · Datos en vivo del backend</span>}
       </p>
 

@@ -8,27 +8,39 @@ import './candidate-test.css';
 type TestEntryView = {
   candidate_name: string;
   greeting_text: string;
+  prefilter_completed: boolean;
   tecnica_completed: boolean;
   conductual_completed: boolean;
   integridad_completed: boolean;
-  current_phase: 'tecnica' | 'conductual' | 'integridad' | 'done';
+  video_completed: boolean;
+  // 'video' agregado 2026-06-29 — antes el frontend ignoraba pipeline_stage='videos_pending'
+  // y caía a 'prefilter' por default.
+  current_phase: 'prefilter' | 'tecnica' | 'conductual' | 'integridad' | 'video' | 'done';
 };
 
-function stageToPhases(stage: string): Pick<TestEntryView, 'tecnica_completed' | 'conductual_completed' | 'integridad_completed' | 'current_phase'> {
+function stageToPhases(stage: string): Pick<TestEntryView, 'prefilter_completed' | 'tecnica_completed' | 'conductual_completed' | 'integridad_completed' | 'video_completed' | 'current_phase'> {
+  // 2026-06-18: agregada fase Prefiltro como paso 0.
+  // 2026-06-29: agregada fase Video. Stage canónico = 'videos_pending' / 'videos_completed'.
   const completed = {
+    prefilter: ['prefilter_passed', 'tecnica_completed', 'conductual_completed', 'integridad_completed', 'videos_pending', 'videos_completed', 'bot_decision_advance', 'finalist', 'offered', 'hired'].includes(stage),
     tecnica: ['tecnica_completed', 'conductual_completed', 'integridad_completed', 'videos_pending', 'videos_completed', 'bot_decision_advance', 'finalist', 'offered', 'hired'].includes(stage),
     conductual: ['conductual_completed', 'integridad_completed', 'videos_pending', 'videos_completed', 'bot_decision_advance', 'finalist', 'offered', 'hired'].includes(stage),
     integridad: ['integridad_completed', 'videos_pending', 'videos_completed', 'bot_decision_advance', 'finalist', 'offered', 'hired'].includes(stage),
+    video: ['videos_completed', 'bot_decision_advance', 'finalist', 'offered', 'hired'].includes(stage),
   };
-  let current_phase: TestEntryView['current_phase'] = 'tecnica';
-  if (!completed.tecnica) current_phase = 'tecnica';
+  let current_phase: TestEntryView['current_phase'] = 'prefilter';
+  if (!completed.prefilter) current_phase = 'prefilter';
+  else if (!completed.tecnica) current_phase = 'tecnica';
   else if (!completed.conductual) current_phase = 'conductual';
   else if (!completed.integridad) current_phase = 'integridad';
+  else if (stage === 'videos_pending' || (!completed.video && stage === 'integridad_completed')) current_phase = 'video';
   else current_phase = 'done';
   return {
+    prefilter_completed: completed.prefilter,
     tecnica_completed: completed.tecnica,
     conductual_completed: completed.conductual,
     integridad_completed: completed.integridad,
+    video_completed: completed.video,
     current_phase,
   };
 }
@@ -68,9 +80,11 @@ export default function CandidateTestEntry() {
       setView({
         candidate_name: mock.candidate_name,
         greeting_text: mock.greeting_text ?? '',
+        prefilter_completed: true, // mock no tiene este flag, asumimos hecho
         tecnica_completed: mock.tecnica_completed,
         conductual_completed: mock.conductual_completed,
         integridad_completed: mock.integridad_completed,
+        video_completed: false,
         current_phase: mock.current_phase,
       });
       setLoading(false);
@@ -93,27 +107,33 @@ export default function CandidateTestEntry() {
     return (
       <div className="ct-not-found">
         <h1>Link inválido o expirado</h1>
-        <p>Si el link es viejo o no funciona, escribinos a <a href="mailto:cris@kunodigital.com">cris@kunodigital.com</a> y te mandamos uno nuevo.</p>
+        <p>Si el link es viejo o no funciona, escríbenos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a> y te mandamos uno nuevo.</p>
       </div>
     );
   }
 
   const phaseRoute =
+    view.current_phase === 'prefilter' ? `/test/${token}/prescreening` :
     view.current_phase === 'tecnica' ? `/test/${token}/tecnica` :
     view.current_phase === 'conductual' ? `/test/${token}/disc` :
     view.current_phase === 'integridad' ? `/test/${token}/integridad` :
+    view.current_phase === 'video' ? `/test/${token}/videos` :
     `/test/${token}/my-progress`;
 
   const phaseTitle =
+    view.current_phase === 'prefilter' ? 'Cuestionario inicial' :
     view.current_phase === 'tecnica' ? 'Prueba técnica' :
     view.current_phase === 'conductual' ? 'Evaluación conductual' :
     view.current_phase === 'integridad' ? 'Prueba de integridad' :
+    view.current_phase === 'video' ? 'Entrevista en video' :
     'Ver mi progreso';
 
   const phaseDuration =
+    view.current_phase === 'prefilter' ? '~5 min' :
     view.current_phase === 'tecnica' ? '20-30 min' :
     view.current_phase === 'conductual' ? '15-20 min' :
     view.current_phase === 'integridad' ? '10-15 min' :
+    view.current_phase === 'video' ? '5-10 min' :
     '';
 
   const allDone = view.current_phase === 'done';
@@ -133,26 +153,11 @@ export default function CandidateTestEntry() {
           </p>
         </div>
 
-        <section className="ct-progress">
-          <h2>Tu progreso</h2>
-          <div className="ct-progress-list">
-            <ProgressItem
-              label="1. Prueba técnica"
-              done={view.tecnica_completed}
-              current={view.current_phase === 'tecnica'}
-            />
-            <ProgressItem
-              label="2. Evaluación conductual (DISC + cognitiva + emoción)"
-              done={view.conductual_completed}
-              current={view.current_phase === 'conductual'}
-            />
-            <ProgressItem
-              label="3. Prueba de integridad"
-              done={view.integridad_completed}
-              current={view.current_phase === 'integridad'}
-            />
-          </div>
-        </section>
+        {/* 2026-06-29: Lista de pruebas REMOVIDA por petición de Cris. Mostraba 4 items
+            hardcoded (prefilter/técnica/conductual/integridad) sin video/inglés/mindset,
+            y le daba al candidato un mapa de todas las pruebas — no todas aplican a cada
+            puesto, y revelar la secuencia influye en respuestas. Ahora solo mostramos
+            la SIGUIENTE prueba. */}
 
         <section className="ct-current-card">
           {allDone ? (
@@ -168,9 +173,9 @@ export default function CandidateTestEntry() {
               <h2>{phaseTitle}</h2>
               <p>Duración estimada: <strong>{phaseDuration}</strong></p>
               <ul className="ct-rules">
-                <li>Hacela en un lugar tranquilo, sin interrupciones.</li>
+                <li>Hazla en un lugar tranquilo, sin interrupciones.</li>
                 <li>No salgas de esta ventana ni copies/pegues — el sistema lo detecta y queda registrado.</li>
-                <li>Si tenés un problema técnico, podés volver al link y continuar donde quedaste.</li>
+                <li>Si tienes un problema técnico, puedes volver al link y continuar donde quedaste.</li>
               </ul>
               <Link to={phaseRoute} className="ct-start-btn">
                 Empezar ahora →
@@ -180,22 +185,13 @@ export default function CandidateTestEntry() {
         </section>
 
         <p className="ct-help">
-          ¿Dudas? Escribinos a <a href="mailto:cris@kunodigital.com">cris@kunodigital.com</a>
+          ¿Dudas? Escríbenos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>
         </p>
       </main>
     </div>
   );
 }
 
-function ProgressItem({ label, done, current }: { label: string; done: boolean; current: boolean }) {
-  return (
-    <div className={`ct-progress-item ${done ? 'is-done' : current ? 'is-current' : ''}`}>
-      <div className="ct-progress-dot">
-        {done ? '✓' : current ? '●' : ''}
-      </div>
-      <div className="ct-progress-label">{label}</div>
-      {done && <span className="ct-progress-status">Completada</span>}
-      {current && <span className="ct-progress-status is-current">Próxima</span>}
-    </div>
-  );
-}
+// ProgressItem REMOVIDA 2026-06-29 — la lista de pruebas hardcoded se quitó.
+// Si en el futuro queremos lista dinámica basada en qué pruebas aplican al puesto,
+// agregar campo `applicable_phases: string[]` al backend y re-implementar.

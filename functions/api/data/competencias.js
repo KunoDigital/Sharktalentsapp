@@ -1,17 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.COMPETENCIAS = void 0;
+exports.COMPETENCIAS_CANONICAS = exports.COMPETENCIA_ALIASES = exports.COMPETENCIAS = void 0;
+exports.resolveCompetenciaId = resolveCompetenciaId;
 exports.COMPETENCIAS = [
     { id: 'comunicacion_digital', nombre: 'Comunicación digital' },
-    { id: 'colaboracion', nombre: 'Colaboración' },
+    { id: 'colaboracion', nombre: 'Colaboración', alias_of: 'trabajo_equipo' },
     { id: 'adaptabilidad', nombre: 'Adaptabilidad' },
     { id: 'iniciativa', nombre: 'Iniciativa' },
     { id: 'planificacion', nombre: 'Planificación' },
-    { id: 'manejo_ambiguedad', nombre: 'Manejo de la ambigüedad' },
+    { id: 'manejo_ambiguedad', nombre: 'Manejo de la ambigüedad', alias_of: 'orientacion_cliente' },
     { id: 'trabajo_equipo', nombre: 'Trabajo en equipo y colaboración' },
     { id: 'retroalimentacion', nombre: 'Retroalimentación y monitoreo' },
     { id: 'orientacion_cliente', nombre: 'Orientación al cliente' },
-    { id: 'aprendizaje_vuelo', nombre: 'Aprendizaje al vuelo' },
+    { id: 'aprendizaje_vuelo', nombre: 'Aprendizaje al vuelo', alias_of: 'aprendizaje_activo' },
     { id: 'resolucion_problemas', nombre: 'Resolución de problemas complejos' },
     { id: 'inteligencia_emocional', nombre: 'Inteligencia emocional' },
     { id: 'creatividad_innovacion', nombre: 'Creatividad e innovación' },
@@ -30,7 +31,7 @@ exports.COMPETENCIAS = [
     { id: 'direccion_personas', nombre: 'Dirección de personas' },
     { id: 'asertividad', nombre: 'Asertividad' },
     { id: 'dinamismo_energia', nombre: 'Dinamismo y energía' },
-    { id: 'habilidad_analitica', nombre: 'Habilidad analítica' },
+    { id: 'habilidad_analitica', nombre: 'Habilidad analítica', alias_of: 'pensamiento_critico' },
     { id: 'perseverancia', nombre: 'Perseverancia' },
     { id: 'orientacion_accion', nombre: 'Orientación a la acción' },
     { id: 'habilidades_mando', nombre: 'Habilidades de mando' },
@@ -56,5 +57,32 @@ exports.COMPETENCIAS = [
     { id: 'pensamiento_critico', nombre: 'Pensamiento crítico y análisis' },
     { id: 'creatividad_originalidad_iniciativa', nombre: 'Creatividad, originalidad e iniciativa' },
     { id: 'liderazgo_influencia_social', nombre: 'Liderazgo e influencia social' },
-    { id: 'resiliencia', nombre: 'Resiliencia, tolerancia al estrés y flexibilidad' },
+    { id: 'resiliencia', nombre: 'Resiliencia, tolerancia al estrés y flexibilidad', alias_of: 'adaptabilidad' },
 ];
+/**
+ * Mapa de aliases: ID viejo (deprecado) → ID canónico (oficial).
+ *
+ * Derivado de los entries del catálogo con `alias_of`. Mantener este mapa para
+ * lookups O(1) sin necesidad de iterar COMPETENCIAS.
+ *
+ * Los IDs viejos siguen siendo válidos como entrada (no se rechazan en
+ * validación). Cualquier consumidor que necesite "el ID definitivo" debe pasar
+ * el valor por `resolveCompetenciaId()`.
+ *
+ * Nota sobre 'resolucion_problemas': el manual Kudert lo lista dos veces, pero
+ * en código siempre hubo un solo entry. No hay alias que crear.
+ */
+exports.COMPETENCIA_ALIASES = Object.freeze(exports.COMPETENCIAS.reduce((acc, c) => {
+    if (c.alias_of)
+        acc[c.id] = c.alias_of;
+    return acc;
+}, {}));
+/**
+ * Resuelve un ID al canónico. Si no está en aliases, lo devuelve tal cual.
+ * Idempotente: resolveCompetenciaId(resolveCompetenciaId(x)) === resolveCompetenciaId(x).
+ */
+function resolveCompetenciaId(id) {
+    return exports.COMPETENCIA_ALIASES[id] ?? id;
+}
+/** Lista de IDs canónicos (sin aliases). Útil para UI de selección. */
+exports.COMPETENCIAS_CANONICAS = exports.COMPETENCIAS.filter((c) => !c.alias_of);

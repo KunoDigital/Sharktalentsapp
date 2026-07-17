@@ -20,7 +20,7 @@ import { ValidationError, NotFoundError } from '../lib/errors';
 import { datastore, zcql, now } from '../lib/db';
 import { escapeSql, unwrapRows, unwrapRow } from '../lib/dbHelpers';
 import { parseIdealProfile } from './jobs';
-import { COMPETENCIAS } from '../data/competencias';
+import { COMPETENCIAS, resolveCompetenciaId } from '../data/competencias';
 
 const COMPETENCIA_NAME_BY_ID = new Map(COMPETENCIAS.map((c) => [c.id, c.nombre]));
 
@@ -75,7 +75,10 @@ function toPublicJobProfile(idealProfileJson: string | null, companyContext: str
     .map((c) => {
       const id = c.name?.trim();
       if (!id) return null;
-      return COMPETENCIA_NAME_BY_ID.get(id) ?? id;
+      // Resolver alias deprecado (ej. drafts viejos guardaron 'colaboracion'). El
+      // candidato/cliente ve el nombre canónico.
+      const canonical = resolveCompetenciaId(id);
+      return COMPETENCIA_NAME_BY_ID.get(canonical) ?? COMPETENCIA_NAME_BY_ID.get(id) ?? id;
     })
     .filter((n): n is string => !!n);
   return {

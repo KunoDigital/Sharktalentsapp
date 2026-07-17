@@ -144,11 +144,11 @@ export default function CandidateDiscTest() {
             <h1>No pudimos guardar tus respuestas</h1>
             <p>{submitError}</p>
             <p style={{ marginTop: 16 }}>
-              Tus respuestas no se perdieron — están en este navegador. Intentá:
+              Tus respuestas no se perdieron — están en este navegador. Intenta:
             </p>
             <ul style={{ textAlign: 'left', marginTop: 8 }}>
               <li>Recargar la página y tocar el botón de Enviar otra vez.</li>
-              <li>Si sigue fallando, escribinos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.</li>
+              <li>Si sigue fallando, escríbenos a <a href="mailto:proyectos@kunodigital.com">proyectos@kunodigital.com</a>.</li>
             </ul>
             <button
               className="ct-btn-primary"
@@ -192,7 +192,7 @@ export default function CandidateDiscTest() {
         <div className="ct-test-intro">
           <h1>Evaluación conductual — DISC</h1>
           <p className="ct-instructions">
-            En cada situación, elegí <strong>la respuesta que mejor te describe</strong>. No hay respuestas buenas ni malas — usá tu intuición.
+            En cada situación, elige <strong>la respuesta que mejor te describe</strong>. No hay respuestas buenas ni malas — usa tu intuición.
           </p>
         </div>
 

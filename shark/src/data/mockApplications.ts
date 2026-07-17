@@ -130,9 +130,18 @@ export type Application = {
   salary_aspiration_usd: number;
   disponibilidad: string;
   // phase states (per-fase)
-  tecnica_state: 'registrado' | 'en_progreso' | 'completado' | 'siguiente_etapa' | 'salario_fuera_rango' | 'rechazado';
+  tecnica_state: 'registrado' | 'en_progreso' | 'completado' | 'siguiente_etapa' | 'salario_fuera_rango' | 'rechazado' | 'duda_cv';
   conductual_state: 'registrado' | 'en_progreso' | 'completado' | 'siguiente_etapa' | 'duda_cv' | 'rechazado';
-  integridad_state: 'registrado' | 'en_progreso' | 'completado' | 'llamar_entrevista' | 'rechazado';
+  integridad_state: 'registrado' | 'en_progreso' | 'completado' | 'llamar_entrevista' | 'rechazado' | 'duda_cv';
+  // 2026-06-12: sub-estados de Técnica para los 3 badges del rediseño UX (Téc/Inglés/Mindset).
+  // null cuando el puesto NO activó esa evaluación al armar el perfil.
+  english_state?: 'completado' | 'en_progreso' | 'fallo' | null;
+  mindset_perfil?: 'adaptable' | 'mixto' | 'rigido' | 'en_progreso' | null;
+  // 2026-06-12: estado del Video (fase nueva después de Integridad).
+  video_state?: 'pendiente' | 'grabado';
+  // 2026-06-12: razones de Duda CV viniendo del backend (autoRejection needs_review).
+  // Solo presente cuando el candidato cae en Duda CV automáticamente.
+  needs_review_reasons?: string[];
   // scores
   disc?: DiscScores;
   velna?: VelnaScores;
@@ -374,7 +383,7 @@ const PIPELINE_AcmeTech: Application[] = [
       threshold: 0.75,
       mode: 'warm',
       rationale_text:
-        'Ariana presenta un patrón conflictivo que no puedo resolver sin tu input humano. Su técnica fue 93% (muy alta), pero su DISC similitud cayó a 35% (debajo del 70% mínimo) y detecté 6 eventos anti-trampa durante conductual (5 salidas de cursor + 1 ventana). Hipótesis: la diferencia entre técnica fuerte y conductual débil con tantas salidas sugiere posible asistencia externa en la técnica. No estoy seguro y prefiero que vos lo revises. Mi recomendación cautelosa: pedir CV detallado y entrevistar antes de avanzar a integridad. Si ves contexto que justifique el patrón (ej: ansiedad, distracción puntual), podés override.',
+        'Ariana presenta un patrón conflictivo que no puedo resolver sin tu input humano. Su técnica fue 93% (muy alta), pero su DISC similitud cayó a 35% (debajo del 70% mínimo) y detecté 6 eventos anti-trampa durante conductual (5 salidas de cursor + 1 ventana). Hipótesis: la diferencia entre técnica fuerte y conductual débil con tantas salidas sugiere posible asistencia externa en la técnica. No estoy seguro y prefiero que tú lo revises. Mi recomendación cautelosa: pedir CV detallado y entrevistar antes de avanzar a integridad. Si ves contexto que justifique el patrón (ej: ansiedad, distracción puntual), puedes override.',
       rationale_factors: [
         { label: 'Técnica', weight: 0.25, signal: '93% — muy alta, sospechosa por contraste' },
         { label: 'DISC similitud', weight: 0.25, signal: '35% — debajo del umbral 70%' },

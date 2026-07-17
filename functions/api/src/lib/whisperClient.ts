@@ -4,14 +4,17 @@
  * Acepta URL de audio (Catalyst File Store, Zoho Drive, etc.) o buffer in-memory.
  * Retorna transcript en texto plano.
  *
- * Default: usa la API de OpenAI Whisper (requiere `WHISPER_API_KEY` env var).
+ * Default: usa la API de OpenAI Whisper (requiere `OPENAI_API_KEY` env var).
  * Alternativa: cualquier endpoint compatible con la spec de Whisper.
  *
  * Use cases:
  *   - Transcript del briefing cliente (Zia ya hace esto, este es fallback si Zia falla)
  *   - Transcript de videos del candidato (para análisis IA cuando el video tiene audio)
  *
- * No-op si `WHISPER_API_KEY` no está seteado → devuelve error explícito.
+ * 2026-06-29: migrado de WHISPER_API_KEY (legacy) a OPENAI_API_KEY (misma key).
+ * Fallback a WHISPER_API_KEY si por algún motivo sigue seteado en dev.
+ *
+ * No-op si la key no está seteada → devuelve error explícito.
  *
  * Pasa por circuit breaker `whisper` (threshold 5, cooldown 60s).
  */
@@ -37,16 +40,23 @@ export type TranscribeInput = {
   language_hint?: string;       // ISO 639-1 ej: 'es', 'en'
 };
 
+function getApiKey(): string {
+  const e = env();
+  // Preferir OPENAI_API_KEY (post 2026-06-29). WHISPER_API_KEY queda como fallback legacy.
+  return e.OPENAI_API_KEY || e.WHISPER_API_KEY || '';
+}
+
 function isConfigured(): boolean {
-  return !!env().WHISPER_API_KEY;
+  return !!getApiKey();
 }
 
 export async function transcribeAudio(input: TranscribeInput, traceId: string): Promise<TranscribeResult> {
   if (!isConfigured()) {
-    return { ok: false, error: 'Whisper not configured (WHISPER_API_KEY missing)' };
+    return { ok: false, error: 'Whisper not configured (OPENAI_API_KEY missing)' };
   }
 
   const e = env();
+  const apiKey = getApiKey();
 
   // Construir multipart form-data manualmente (no FormData en Node sin polyfill seguro)
   const boundary = `----WhisperBoundary${Date.now()}${Math.random().toString(36).slice(2)}`;
@@ -93,7 +103,7 @@ export async function transcribeAudio(input: TranscribeInput, traceId: string): 
       const response = await fetchWithTimeout(e.WHISPER_API_URL, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${e.WHISPER_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
           'Content-Type': `multipart/form-data; boundary=${boundary}`,
         },
         body,
