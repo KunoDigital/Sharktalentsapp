@@ -170,7 +170,7 @@ export async function notifyCandidateOnTransition(
   }
 
   const testUrl = notif.phase ? buildContinuationUrl(info.applicationId, notif.phase) : '';
-  const reasonNote = args.reason ? `Razón: ${args.reason.slice(0, 200)}` : 'No es un comentario sobre vos — buscamos un perfil muy específico para este puesto.';
+  const reasonNote = args.reason ? `Razón: ${args.reason.slice(0, 200)}` : 'No es un comentario sobre ti — buscamos un perfil muy específico para este puesto.';
 
   try {
     const { publishOutboxEvent } = await import('../features/outbox.js');
@@ -189,14 +189,17 @@ export async function notifyCandidateOnTransition(
       },
     });
 
-    // WhatsApp: solo si el candidato tiene teléfono Y el template existe.
-    // Hoy mandamos send_text simple. Cuando tengamos templates aprobados, send_template.
+    // WhatsApp: solo si el candidato tiene teléfono Y hay template aprobado por Meta.
+    // Usamos send_template con Content SID (aprobado 2026-07-17). El rechazo NO tiene
+    // template WhatsApp por decisión de Chris — solo email.
     if (info.candidatePhone) {
-      const waBody = buildWhatsAppBody(notif.template, info, testUrl, reasonNote);
-      if (waBody) {
-        await publishOutboxEvent(req, 'whatsapp.send_text', {
+      const waTemplate = mapEmailTemplateToWhatsApp(notif.template);
+      if (waTemplate) {
+        await publishOutboxEvent(req, 'whatsapp.send_template', {
           to: info.candidatePhone,
-          body: waBody,
+          template_name: waTemplate,
+          language_code: 'es',
+          params: [info.candidateName, info.jobTitle, testUrl],
           job_id: info.jobId,
           tenant_id: info.tenantId,
         });
@@ -215,22 +218,18 @@ export async function notifyCandidateOnTransition(
 }
 
 /**
- * Cuerpo del WhatsApp por template. Mantenemos cortos para no saturar.
- * Devuelve null si no hay versión WhatsApp para ese template.
+ * Mapea el template de email → el template WhatsApp equivalente (nombre en Twilio).
+ * Devuelve null si NO existe versión WhatsApp para ese template (no dispara WA).
+ * Rechazo intencionalmente ausente — solo email por decisión de Chris (2026-07-17).
  */
-function buildWhatsAppBody(template: string, info: CandidateInfo, testUrl: string, reasonNote: string): string | null {
-  switch (template) {
-    case 'candidate_tecnica_invitation':
-      return `Hola ${info.candidateName}, pasaste el prescreening. Ahora viene la prueba técnica de ${info.jobTitle} (15-25 min): ${testUrl}`;
-    case 'candidate_disc_invitation':
-      return `Hola ${info.candidateName}, próxima etapa: evaluación conductual DISC (10-15 min). Sin respuestas buenas ni malas: ${testUrl}`;
-    case 'candidate_integridad_invitation':
-      return `Hola ${info.candidateName}, próxima etapa: prueba de integridad (10-15 min): ${testUrl}`;
-    case 'candidate_video_invitation':
-      return `Hola ${info.candidateName}, última etapa: video respuestas cortas (10-15 min): ${testUrl}`;
-    case 'candidate_rejected':
-      return `Hola ${info.candidateName}, gracias por evaluar para ${info.jobTitle}. En esta búsqueda decidimos avanzar con otros candidatos. ${reasonNote} Te dejamos en nuestra base.`;
-    default:
-      return null;
+function mapEmailTemplateToWhatsApp(emailTemplate: string): string | null {
+  switch (emailTemplate) {
+    case 'candidate_tecnica_start': return 'candidate_tecnica_start_wa';
+    case 'candidate_conductual_start': return 'candidate_conductual_start_wa';
+    case 'candidate_integridad_start': return 'candidate_integridad_start_wa';
+    case 'candidate_video_start': return 'candidate_video_start_wa';
+    // candidate_rejected: no WhatsApp (solo email)
+    // candidate_prefilter_start: no WhatsApp (primera comunicación, va por email)
+    default: return null;
   }
 }
