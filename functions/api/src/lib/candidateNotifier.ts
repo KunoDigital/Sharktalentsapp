@@ -56,9 +56,6 @@ const STAGE_NOTIFICATION_MAP: Record<string, { template: string; phase?: string 
   interview_scheduled: null,
   // Rechazos
   auto_rejected_low_score: { template: 'candidate_rejected' },
-  auto_rejected_disc_mismatch: { template: 'candidate_rejected' },
-  auto_rejected_english_failed: { template: 'candidate_rejected' },
-  auto_rejected_mindset_limiting: { template: 'candidate_rejected' },
   rejected_by_admin: { template: 'candidate_rejected' },
   // No notificar en estos
   salary_out_of_range: null,

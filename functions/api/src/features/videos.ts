@@ -192,11 +192,87 @@ export async function analyzeVideoResponse(ctx: RequestContext): Promise<void> {
       traceId: ctx.traceId,
     });
     await updateResponseAnalysis(ctx.req, responseRowId, analysis, 'ok');
+    // Después de cada análisis exitoso, chequeamos si todas las respuestas del
+    // candidato ya tienen score. Si sí → triage por promedio (regla 2026-07-17).
+    void triageVideoIfAllScored(ctx, applicationId);
     sendJson(ctx.res, 200, { application_id: applicationId, response_id: responseRowId, analysis });
   } catch (err) {
     log.warn('analyze failed', { traceId: ctx.traceId, applicationId, responseRowId, error: (err as Error).message });
     await updateResponseAnalysis(ctx.req, responseRowId, { overall_pct: 0, signals_matched_pct: 0, observations: [], flags: ['analysis_failed'] }, 'failed');
     sendJson(ctx.res, 502, { error: { code: 'analysis_failed', message: (err as Error).message } });
+  }
+}
+
+/**
+ * Video score triage — regla 2026-07-17 (Chris).
+ *
+ * Cuando todas las respuestas de un candidato tienen análisis IA con `overall_pct`,
+ * calcula el promedio y decide la transición del pipeline:
+ *   < 40         → auto_rejected_low_score
+ *   40 ≤ p < 70  → duda_cv (Cris revisa manual)
+ *   ≥ 70         → finalist
+ *
+ * Silent-fail si falta algo (no rompe el request principal).
+ */
+async function triageVideoIfAllScored(ctx: RequestContext, applicationId: string): Promise<void> {
+  try {
+    const allQs = await listVideoQuestionsForApplication(ctx.req, applicationId);
+    if (allQs.length === 0) return;
+
+    const rows = unwrapRows<{ question_id: string; analysis_json: string | null }>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT question_id, analysis_json FROM VideoResponses WHERE application_id = '${escapeSql(applicationId)}'`,
+      )) as unknown[],
+      'VideoResponses',
+    );
+
+    // Nos quedamos con la última respuesta por pregunta (por si el candidato reintentó).
+    const latestByQid = new Map<string, string | null>();
+    for (const r of rows) latestByQid.set(r.question_id, r.analysis_json);
+
+    const scores: number[] = [];
+    for (const q of allQs) {
+      const raw = latestByQid.get(q.question_id);
+      if (raw == null) return; // falta análisis en al menos una pregunta → no decidir aún
+      try {
+        const parsed = JSON.parse(raw) as { overall_pct?: unknown };
+        const pct = typeof parsed.overall_pct === 'number' ? parsed.overall_pct : parseFloat(String(parsed.overall_pct ?? ''));
+        if (isNaN(pct)) return;
+        scores.push(pct);
+      } catch {
+        return;
+      }
+    }
+
+    const avg = scores.reduce((s, v) => s + v, 0) / scores.length;
+    let targetStage: 'auto_rejected_low_score' | 'duda_cv' | 'finalist';
+    if (avg < 40) targetStage = 'auto_rejected_low_score';
+    else if (avg < 70) targetStage = 'duda_cv';
+    else targetStage = 'finalist';
+
+    const resultRow = unwrapRows<{ ROWID: string; assessment_id: string; candidate_id: string; pipeline_stage: string }>(
+      (await zcql(ctx.req).executeZCQLQuery(
+        `SELECT ROWID, assessment_id, candidate_id, pipeline_stage FROM Results WHERE ROWID = '${escapeSql(applicationId)}' LIMIT 1`,
+      )) as unknown[],
+      'Results',
+    )[0];
+    if (!resultRow) return;
+
+    // Solo transicionar desde estados que tienen sentido — no revertir un finalist manual.
+    if (!['videos_completed', 'videos_pending'].includes(resultRow.pipeline_stage)) {
+      log.info('video triage skipped — pipeline_stage already past videos', {
+        traceId: ctx.traceId, applicationId, currentStage: resultRow.pipeline_stage,
+      });
+      return;
+    }
+
+    const { transitResult } = await import('../lib/pipelineTransition.js');
+    await transitResult(ctx, resultRow, targetStage, 'video_triage');
+    log.info('video triage decided', {
+      traceId: ctx.traceId, applicationId, avg: Math.round(avg), scoreCount: scores.length, targetStage,
+    });
+  } catch (err) {
+    log.warn('video triage failed', { applicationId, error: (err as Error).message });
   }
 }
 
@@ -450,27 +526,15 @@ export async function submitTestVideo(ctx: RequestContext): Promise<void> {
     const allResponded = allQs.length > 0 && allQs.every((q) => respondedQids.has(q.question_id));
 
     if (allResponded) {
-      const resultRow = unwrapRows<{ pipeline_stage: string }>(
+      const resultRow = unwrapRows<{ ROWID: string; assessment_id: string; candidate_id: string; pipeline_stage: string }>(
         (await zcql(ctx.req).executeZCQLQuery(
-          `SELECT pipeline_stage FROM Results WHERE ROWID = '${escapeSql(applicationId)}' LIMIT 1`,
+          `SELECT ROWID, assessment_id, candidate_id, pipeline_stage FROM Results WHERE ROWID = '${escapeSql(applicationId)}' LIMIT 1`,
         )) as unknown[],
         'Results',
       )[0];
       if (resultRow?.pipeline_stage === 'videos_pending') {
-        const { datastore, now } = await import('../lib/db.js');
-        await datastore(ctx.req).table('PipelineTransitions').insertRow({
-          result_id: applicationId,
-          from_stage: 'videos_pending',
-          to_stage: 'videos_completed',
-          actor: 'system',
-          reason: `All ${allQs.length} videos submitted`,
-          transitioned_at: now(),
-        });
-        await datastore(ctx.req).table('Results').updateRow({
-          ROWID: applicationId,
-          pipeline_stage: 'videos_completed',
-        });
-        log.info('auto-transitioned to videos_completed', { traceId: ctx.traceId, applicationId });
+        const { transitResult } = await import('../lib/pipelineTransition.js');
+        await transitResult(ctx, resultRow, 'videos_completed', 'system');
       }
     }
   } catch (err) {

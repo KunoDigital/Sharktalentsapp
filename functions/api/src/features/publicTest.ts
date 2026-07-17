@@ -23,12 +23,12 @@ import {
   classifyIntegrityPct,
   type IntegrityClassification,
 } from '../lib/scoring';
-import { isStage, transitionAllowed, type PipelineStage } from '../lib/pipelineStateMachine';
+import { transitResult } from '../lib/pipelineTransition';
 
 const log = logger('PUBLIC_TEST');
 const T_RESULTS = 'Results';
 const T_SCORES = 'Scores';
-const T_TRANSITIONS = 'PipelineTransitions';
+// T_TRANSITIONS ('PipelineTransitions') vive en lib/pipelineTransition.ts
 
 type ResultRow = {
   ROWID: string;
@@ -450,8 +450,20 @@ export async function submitTest(ctx: RequestContext): Promise<void> {
 
     blocksWritten.push('tecnica');
 
-    // Auto-transition de pipeline_stage
-    await transitResult(ctx, result, calc.passed ? 'tecnica_completed' : 'auto_rejected_low_score', 'webhook');
+    // Auto-transition de pipeline_stage.
+    // Si técnica falla → auto_rejected_low_score (no depende de inglés/mindset).
+    // Si pasa → esperar a que el bloque continuo Tec+Inglés+Mindset esté completo antes
+    // de mover a tecnica_completed (o duda_cv si inglés reprobó).
+    if (!calc.passed) {
+      await transitResult(ctx, result, 'auto_rejected_low_score', 'webhook');
+    } else {
+      const { checkTechnicalBlockComplete } = await import('../lib/technicalBlockCompletion.js');
+      const check = await checkTechnicalBlockComplete(ctx.req, resultId);
+      if (check.allComplete) {
+        const targetStage = check.englishFailed ? 'duda_cv' : 'tecnica_completed';
+        await transitResult(ctx, result, targetStage, 'webhook');
+      }
+    }
   }
 
   // DISC
@@ -732,10 +744,15 @@ export async function submitTest(ctx: RequestContext): Promise<void> {
           });
         }
       } else if (decision.needs_review) {
-        // Duda CV: NO cambia pipeline_stage (la transición a "duda" la hace el rediseño UX
-        // cuando se implemente). Solo loggeamos y devolvemos flag al frontend.
+        // Duda CV: transiciona el pipeline a `duda_cv` para que Cris lo vea en la cola.
+        // Antes solo se logueaba (a la espera del rediseño UX); desde 2026-07-17 el
+        // estado existe en el enum y la UI lo pinta directo.
+        const fresh = await getResult(ctx, resultId);
+        if (fresh && !['auto_rejected_low_score', 'rejected_by_admin', 'duda_cv'].includes(fresh.pipeline_stage)) {
+          await transitResult(ctx, fresh, 'duda_cv', 'webhook');
+        }
         needsReview = { reasons: decision.review_reasons };
-        log.info('candidate needs manual review (Duda CV)', {
+        log.info('candidate transitioned to Duda CV', {
           traceId: ctx.traceId,
           resultId,
           reasons: decision.review_reasons,
@@ -769,140 +786,8 @@ async function fetchJobIdealProfile(ctx: RequestContext, jobId: string): Promise
   return rows[0]?.ideal_profile ?? null;
 }
 
-async function transitResult(ctx: RequestContext, result: ResultRow, toStage: string, actor: string): Promise<void> {
-  // Validación del state machine — si la transición no es legal, NO se aplica.
-  // En lugar de tirar error (lo que rompería el submit del candidato), logueamos
-  // y dejamos al admin/bot resolverlo manualmente.
-  if (!isStage(toStage) || !isStage(result.pipeline_stage)
-      || !transitionAllowed(result.pipeline_stage as PipelineStage, toStage as PipelineStage)) {
-    log.warn('skipping invalid transition', {
-      traceId: ctx.traceId,
-      resultId: result.ROWID,
-      from: result.pipeline_stage,
-      to: toStage,
-    });
-    return;
-  }
-
-  await datastore(ctx.req).table(T_RESULTS).updateRow({
-    ROWID: result.ROWID,
-    pipeline_stage: toStage,
-    ...(toStage.includes('completed') || toStage.includes('rejected') || toStage === 'finalist'
-      ? { completed_at: now() }
-      : {}),
-  });
-  // 2026-06-04 (audit fix #17): Results es la fuente de verdad (ya quedó OK arriba).
-  // PipelineTransitions es auditoría histórica — si falla, log.warn y seguir.
-  // Sin este try/catch un throttle de Catalyst sobre la segunda escritura tiraba 500
-  // y dejaba el invariante OK pero el caller veía error 500.
-  try {
-    await datastore(ctx.req).table(T_TRANSITIONS).insertRow({
-      result_id: result.ROWID,
-      from_stage: result.pipeline_stage,
-      to_stage: toStage,
-      actor,
-      reason: `Auto-transition on submit`,
-      transitioned_at: now(),
-    });
-  } catch (err) {
-    log.warn('PipelineTransitions insert failed (Results already updated)', {
-      traceId: ctx.traceId,
-      resultId: result.ROWID,
-      from: result.pipeline_stage,
-      to: toStage,
-      error: (err as Error).message,
-    });
-  }
-
-  // Auto-populate del pool: cuando el candidato termina la fase intermedia
-  // (integridad o videos), entra al pool histórico para futuro matching.
-  if (toStage === 'integridad_completed' || toStage === 'videos_completed' || toStage === 'finalist') {
-    const { upsertPoolFromApplication } = await import('../lib/poolAutoPopulate.js');
-    void upsertPoolFromApplication(ctx.req, result.ROWID);
-  }
-
-  // Notificación al candidato del siguiente paso (email + WhatsApp).
-  // 2026-06-04 (audit fix #16): fireAndForget wrapper para garantizar que un fallo
-  // de la importación dinámica o del notify no tumbe el proceso (UnhandledRejection).
-  const { fireAndForget } = await import('../lib/fireAndForget.js');
-  fireAndForget('notifyCandidateOnTransition', async () => {
-    const { notifyCandidateOnTransition } = await import('../lib/candidateNotifier.js');
-    await notifyCandidateOnTransition(ctx.req, {
-      applicationId: result.ROWID,
-      toStage,
-    });
-  });
-
-  // Notificación a Cris cuando candidato avanza una etapa importante o es auto-rechazado.
-  void (async () => {
-    try {
-      const { enqueueNotification } = await import('./notifications.js');
-      const { zcql: zcqlFn } = await import('../lib/db.js');
-      const { escapeSql: esc, unwrapRows: unr } = await import('../lib/dbHelpers.js');
-      const meta = unr<{ tenant_id: string; candidate_name: string; job_title: string }>(
-        (await zcqlFn(ctx.req).executeZCQLQuery(
-          `SELECT J.tenant_id AS tenant_id, C.name AS candidate_name, J.title AS job_title
-           FROM Results R JOIN Jobs J ON J.ROWID = R.assessment_id
-           JOIN Candidates C ON C.ROWID = R.candidate_id
-           WHERE R.ROWID = '${esc(result.ROWID)}' LIMIT 1`,
-        )) as unknown[],
-        'Results',
-      )[0];
-      if (!meta) return;
-      const candName = meta.candidate_name || 'Candidato';
-      // Solo notificar en stages importantes — sino floodea a Cris
-      const NOTIFY_ON: Record<string, { type: 'candidate_auto_rejected' | 'candidate_stage_advanced'; msg: string }> = {
-        auto_rejected_low_score: { type: 'candidate_auto_rejected', msg: `${candName} fue auto-rechazado por score bajo en ${meta.job_title}` },
-        integridad_completed: { type: 'candidate_stage_advanced', msg: `${candName} completó integridad para ${meta.job_title}` },
-        videos_completed: { type: 'candidate_stage_advanced', msg: `${candName} completó los videos para ${meta.job_title}` },
-      };
-      const cfg = NOTIFY_ON[toStage];
-      if (!cfg) return;
-      await enqueueNotification(ctx.req, {
-        tenantId: meta.tenant_id,
-        type: cfg.type,
-        message: cfg.msg,
-        resourceType: 'application',
-        resourceId: result.ROWID,
-        link: `/candidates/${result.ROWID}`,
-      });
-    } catch (err) {
-      log.warn('cris notification failed', { error: (err as Error).message });
-    }
-  })();
-
-  // Marketing demo flow: si el Result es de un MarketingLead, chequear si ambas
-  // secciones (conductual + integridad) están completas para disparar el reporte.
-  // Se chequea en cada transición a *_completed porque las 2 pruebas pueden hacerse
-  // en cualquier orden (links independientes).
-  if (toStage === 'integridad_completed' || toStage === 'conductual_completed') {
-    const { tryCompleteMarketingDemo } = await import('./marketing.js');
-    void tryCompleteMarketingDemo(ctx, result.ROWID);
-  }
-
-  // Sync con Recruit: cada cambio de etapa avisa a Recruit para que dispare sus
-  // reglas automáticas (email + WhatsApp). Usa el recruit_candidate_id guardado en
-  // Candidates desde el primer apply.
-  void (async () => {
-    try {
-      const { publishRecruitSync } = await import('../lib/recruitSyncPublisher.js');
-      await publishRecruitSync(ctx.req, {
-        application_id: result.ROWID,
-        job_id: String(result.assessment_id ?? ''),
-        tenant_id: '',
-        from_stage: result.pipeline_stage,
-        to_stage: toStage,
-        actor,
-        transitioned_at: now(),
-        candidate_id: String(result.candidate_id ?? ''),
-      });
-    } catch (err) {
-      log.warn('publishRecruitSync failed on transition', {
-        traceId: ctx.traceId, resultId: result.ROWID, error: (err as Error).message,
-      });
-    }
-  })();
-}
+// transitResult vive en lib/pipelineTransition.ts (compartido con englishTest/mindsetTest/videos).
+// Ver comentario histórico ahí sobre auditoría PipelineTransitions y notif Cris.
 
 /**
  * GET /test/:token/my-progress

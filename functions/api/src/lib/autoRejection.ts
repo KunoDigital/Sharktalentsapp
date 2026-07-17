@@ -1,8 +1,7 @@
 /**
  * Auto-rejection multidimensional.
  *
- * Reglas de pipeline (confirmadas por Cris 2026-06-12, ver memoria
- * `project_reglas_pipeline_candidato.md`):
+ * Reglas de pipeline (ver memoria `project_reglas_pipeline_candidato.md`):
  *
  * 🔴 AUTO-RECHAZO (`reject: true`):
  *   - Técnico < umbral del puesto (lo maneja submitTest, no esta función)
@@ -10,24 +9,25 @@
  *   - Integridad con cualquiera de estas 5 dimensiones en `'bajo'`:
  *       hurto, soborno, drogas, alcohol, confiabilidad
  *   - VELNA por dimensión individual debajo del umbral configurado para el puesto
- *     (regla nueva 2026-06-12 — `auto_rejection_rules.velna_per_dimension`).
- *     Cada puesto define qué dimensiones VELNA son críticas y con qué umbral.
- *     Ej.: contable → numerica ≥ 70; vendedor → verbal ≥ 65.
+ *     (regla 2026-06-12 — `auto_rejection_rules.velna_per_dimension`).
+ *   - **DISC similarity vs ideal del puesto < 40%** (regla 2026-07-17). Umbral
+ *     hardcoded: si el candidato está demasiado lejos del perfil ideal DISC
+ *     definido para el puesto, rechaza. Cris confirmó "sí, rechaza si está
+ *     demasiado lejos".
  *
  * 🟡 DUDA CV (`needs_review: true`):
  *   - Inglés bajo el mínimo (cuando el puesto lo activó)
  *   - Integridad con cualquiera de estas 8 dimensiones en `'bajo'`:
  *       honestidad, imparcialidad, autenticidad, sencillez, dominio_personal,
- *       inteligencia_social, apuestas, buena_impresion
+ *       inteligencia_social, apuestas, buena_impresion (esta última, si está en 'alto')
  *
  * 🟢 NUNCA RECHAZA NI VA A DUDA CV:
  *   - Mindset (siempre informativo)
- *   - DISC + Emoción (análisis IA contextual, no umbrales)
+ *   - Emoción (análisis IA contextual)
  *
- * Las reglas viejas por umbral global (disc_min_similarity, velna_min_indice, etc.)
- * quedan DEPRECATED — siguen funcionando si el draft del puesto las setea, pero
- * se desaconseja usarlas. El modelo nuevo para VELNA es `velna_per_dimension`
- * (umbrales individuales). Si el draft setea ambas, ambas se evalúan.
+ * Las reglas viejas por umbral global configurables por draft (velna_min_indice,
+ * disc_min_similarity, etc.) quedan DEPRECATED — siguen funcionando si el draft las
+ * setea, pero se desaconseja usarlas. El umbral duro del 40% de DISC es siempre.
  */
 import type { IdealProfile, AutoRejectionRules } from '../features/jobs';
 import { calculateDiscSimilarity } from './scoring';
@@ -65,6 +65,9 @@ export type IntegrityDim = {
   dimension: string;
   classification: 'bajo' | 'medio' | 'alto';
 };
+
+/** Umbral duro de similitud DISC candidato vs ideal del puesto (regla 2026-07-17). */
+const DISC_HARD_REJECT_THRESHOLD = 40;
 
 /** 5 dimensiones de Integridad que disparan auto-rechazo si están en `'bajo'`. */
 const INTEGRITY_HARD_REJECT_DIMS = new Set([
@@ -141,6 +144,21 @@ export function evaluateAutoRejection(
   // Reemplaza la regla vieja `require_english_passed` cuando esté presente.
   if (scores.english_passed === false) {
     reviewReasons.push('Inglés por debajo del nivel requerido — revisar manualmente');
+  }
+
+  // DISC similarity < 40% del ideal del puesto → auto-rechazo (regla 2026-07-17).
+  // Umbral hardcoded, no configurable por puesto. Solo aplica si hay ideal DISC
+  // definido para el puesto Y scores DISC completos.
+  if (ideal?.disc
+    && typeof scores.disc_norm_d === 'number' && typeof scores.disc_norm_i === 'number'
+    && typeof scores.disc_norm_s === 'number' && typeof scores.disc_norm_c === 'number') {
+    const sim = calculateDiscSimilarity(
+      { d: scores.disc_norm_d, i: scores.disc_norm_i, s: scores.disc_norm_s, c: scores.disc_norm_c },
+      { d: ideal.disc.d, i: ideal.disc.i, s: ideal.disc.s, c: ideal.disc.c },
+    );
+    if (sim < DISC_HARD_REJECT_THRESHOLD) {
+      reasons.push(`DISC similitud ${sim}% con perfil ideal < ${DISC_HARD_REJECT_THRESHOLD}%`);
+    }
   }
 
   // --- Reglas viejas DEPRECATED — siguen funcionando por compatibilidad ---

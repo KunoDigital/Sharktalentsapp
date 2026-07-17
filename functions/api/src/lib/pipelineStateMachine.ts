@@ -18,6 +18,7 @@ export type PipelineStage =
   | 'videos_pending'        // preguntas de video generadas, esperando que candidato responda
   | 'videos_completed'      // candidato completó videos (todos)
   | 'bot_decision_advance'
+  | 'duda_cv'               // requiere revisión humana de Cris (inglés bajo / 7 dims integridad / score video 4-6)
   | 'finalist'
   | 'awaiting_client_review'
   | 'interview_scheduled'
@@ -32,7 +33,7 @@ export type PipelineStage =
 export const ALL_STAGES: readonly PipelineStage[] = [
   'prefilter_pending', 'prefilter_passed', 'salary_out_of_range',
   'tecnica_completed', 'conductual_completed', 'integridad_completed',
-  'videos_pending', 'videos_completed', 'bot_decision_advance',
+  'videos_pending', 'videos_completed', 'bot_decision_advance', 'duda_cv',
   'finalist', 'awaiting_client_review', 'interview_scheduled', 'offered', 'hired',
   'auto_rejected_low_score', 'rejected_by_admin', 'offer_declined', 'withdrew',
 ] as const;
@@ -41,7 +42,7 @@ export const ALL_STAGES: readonly PipelineStage[] = [
 export const ACTIVE_STAGES: readonly PipelineStage[] = [
   'prefilter_pending', 'prefilter_passed', 'salary_out_of_range',
   'tecnica_completed', 'conductual_completed', 'integridad_completed',
-  'videos_pending', 'videos_completed', 'bot_decision_advance',
+  'videos_pending', 'videos_completed', 'bot_decision_advance', 'duda_cv',
   'finalist', 'awaiting_client_review', 'interview_scheduled', 'offered',
 ] as const;
 
@@ -58,17 +59,20 @@ const ALLOWED_TRANSITIONS: Record<PipelineStage, PipelineStage[]> = {
   // este transition desde `prefilter_passed`, así que el rechazo se ignoraba y el
   // candidato quedaba colgado en `prefilter_passed` para siempre (detectado con
   // Andrea Martínez completando la técnica con score bajo).
-  prefilter_passed: ['tecnica_completed', 'auto_rejected_low_score', 'rejected_by_admin', 'withdrew'],
+  prefilter_passed: ['tecnica_completed', 'duda_cv', 'auto_rejected_low_score', 'rejected_by_admin', 'withdrew'],
   salary_out_of_range: ['prefilter_passed', 'rejected_by_admin', 'withdrew'],
   // tecnica_completed → integridad_completed: necesario para el demo del funnel marketing,
   // donde la persona puede hacer la integridad antes que el conductual (links independientes).
-  tecnica_completed: ['conductual_completed', 'integridad_completed', 'auto_rejected_low_score', 'rejected_by_admin', 'withdrew'],
-  conductual_completed: ['integridad_completed', 'rejected_by_admin', 'withdrew'],
+  tecnica_completed: ['conductual_completed', 'integridad_completed', 'duda_cv', 'auto_rejected_low_score', 'rejected_by_admin', 'withdrew'],
+  conductual_completed: ['integridad_completed', 'duda_cv', 'auto_rejected_low_score', 'rejected_by_admin', 'withdrew'],
   // integridad_completed → conductual_completed: idem, demo permite orden inverso.
-  integridad_completed: ['conductual_completed', 'videos_pending', 'videos_completed', 'bot_decision_advance', 'finalist', 'rejected_by_admin', 'withdrew'],
-  videos_pending: ['videos_completed', 'rejected_by_admin', 'withdrew'],
-  videos_completed: ['bot_decision_advance', 'finalist', 'rejected_by_admin', 'withdrew'],
-  bot_decision_advance: ['finalist', 'rejected_by_admin', 'withdrew'],
+  integridad_completed: ['conductual_completed', 'videos_pending', 'videos_completed', 'bot_decision_advance', 'duda_cv', 'finalist', 'rejected_by_admin', 'withdrew'],
+  videos_pending: ['videos_completed', 'duda_cv', 'rejected_by_admin', 'withdrew'],
+  videos_completed: ['bot_decision_advance', 'duda_cv', 'finalist', 'auto_rejected_low_score', 'rejected_by_admin', 'withdrew'],
+  bot_decision_advance: ['finalist', 'duda_cv', 'rejected_by_admin', 'withdrew'],
+  // Duda CV: Cris resuelve manual → puede avanzar el candidato a cualquier fase intermedia
+  // o rechazar. NO puede volver atrás a etapas de test ya completadas.
+  duda_cv: ['videos_pending', 'videos_completed', 'finalist', 'rejected_by_admin', 'withdrew'],
   finalist: ['awaiting_client_review', 'offered', 'rejected_by_admin', 'withdrew'],
   awaiting_client_review: ['interview_scheduled', 'finalist', 'rejected_by_admin', 'withdrew'],
   interview_scheduled: ['offered', 'rejected_by_admin', 'withdrew'],

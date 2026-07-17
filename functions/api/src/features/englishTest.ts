@@ -202,6 +202,28 @@ export async function submitEnglishTest(ctx: RequestContext): Promise<void> {
     log.warn('outbox publish failed (english)', { error: (err as Error).message });
   }
 
+  // Chequear si el bloque continuo Tec+Inglés+Mindset está completo → transicionar
+  // pipeline_stage. Si inglés reprobó → duda_cv. Si pasó y el bloque cerró → tecnica_completed.
+  try {
+    const { checkTechnicalBlockComplete } = await import('../lib/technicalBlockCompletion.js');
+    const { transitResult } = await import('../lib/pipelineTransition.js');
+    const check = await checkTechnicalBlockComplete(ctx.req, resultId);
+    if (check.allComplete) {
+      const resultRow = unwrapRows<{ ROWID: string; assessment_id: string; candidate_id: string; pipeline_stage: string }>(
+        (await zcql(ctx.req).executeZCQLQuery(
+          `SELECT ROWID, assessment_id, candidate_id, pipeline_stage FROM Results WHERE ROWID = '${escapeSql(resultId)}' LIMIT 1`,
+        )) as unknown[],
+        'Results',
+      )[0];
+      if (resultRow) {
+        const targetStage = check.englishFailed ? 'duda_cv' : 'tecnica_completed';
+        await transitResult(ctx, resultRow, targetStage, 'webhook');
+      }
+    }
+  } catch (err) {
+    log.warn('technical block transition failed (english)', { resultId, error: (err as Error).message });
+  }
+
   // Métrica
   metrics.incrementCounter('candidate_test_submitted_total', {
     test: 'english',

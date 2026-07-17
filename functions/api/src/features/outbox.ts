@@ -1179,9 +1179,6 @@ async function dispatchRecruitSync(event: OutboxRow, req: RequestContext['req'])
     integridad_completed: 'Invitación entrevista',   // dispara workflow Video test
     rejected_by_admin: 'Rejected',
     auto_rejected_low_score: 'Rejected',
-    auto_rejected_disc_mismatch: 'Rejected',
-    auto_rejected_english_failed: 'Rejected',
-    auto_rejected_mindset_limiting: 'Rejected',
     hired: 'hired',
   };
   const applicationStatus = STATUS_MAP[toStage];

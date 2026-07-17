@@ -15,15 +15,13 @@ export type PipelineStage =
   | 'videos_pending'
   | 'videos_completed'
   | 'bot_decision_advance'
+  | 'duda_cv'
   | 'finalist'
   | 'awaiting_client_review'
   | 'interview_scheduled'
   | 'offered'
   | 'hired'
   | 'auto_rejected_low_score'
-  | 'auto_rejected_disc_mismatch'
-  | 'auto_rejected_english_failed'
-  | 'auto_rejected_mindset_limiting'
   | 'rejected_by_admin'
   | 'offer_declined'
   | 'withdrew';
@@ -48,6 +46,8 @@ export const STAGE_LABELS: Record<PipelineStage, StageDef> = {
   videos_completed: { label: 'Videos completados', shortLabel: 'Video ✓', category: 'evaluando', color: '#a855f7' },
   bot_decision_advance: { label: 'Bot aprobó', shortLabel: 'Bot ✓', category: 'evaluando', color: '#dafd6f' },
 
+  duda_cv: { label: 'Duda CV — revisar manual', shortLabel: 'Duda CV', category: 'evaluando', color: '#f59e0b' },
+
   finalist: { label: 'Finalista', shortLabel: 'Finalista', category: 'finalista', color: '#16a34a' },
   awaiting_client_review: { label: 'Esperando revisión del cliente', shortLabel: 'En cliente', category: 'finalista', color: '#16a34a' },
   interview_scheduled: { label: 'Entrevista agendada', shortLabel: 'Entrevista', category: 'finalista', color: '#15803d' },
@@ -56,9 +56,6 @@ export const STAGE_LABELS: Record<PipelineStage, StageDef> = {
   hired: { label: 'Contratado 🎉', shortLabel: 'Contratado', category: 'cerrado_ok', color: '#15803d' },
 
   auto_rejected_low_score: { label: 'Rechazo automático — score bajo', shortLabel: 'Score bajo', category: 'cerrado_rechazo', color: '#dc2626' },
-  auto_rejected_disc_mismatch: { label: 'Rechazo automático — DISC no encaja', shortLabel: 'DISC mismatch', category: 'cerrado_rechazo', color: '#dc2626' },
-  auto_rejected_english_failed: { label: 'Rechazo automático — inglés', shortLabel: 'Inglés bajo', category: 'cerrado_rechazo', color: '#dc2626' },
-  auto_rejected_mindset_limiting: { label: 'Rechazo automático — mindset', shortLabel: 'Mindset', category: 'cerrado_rechazo', color: '#dc2626' },
   rejected_by_admin: { label: 'Rechazado manualmente', shortLabel: 'Rechazado', category: 'cerrado_rechazo', color: '#dc2626' },
   offer_declined: { label: 'Rechazó la oferta', shortLabel: 'Rechazó oferta', category: 'cerrado_rechazo', color: '#f59e0b' },
   withdrew: { label: 'Se retiró del proceso', shortLabel: 'Retirado', category: 'cerrado_rechazo', color: '#9ca3af' },

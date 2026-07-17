@@ -111,7 +111,7 @@ export async function getSourceAnalytics(ctx: RequestContext): Promise<void> {
     'prefilter_passed', 'tecnica_completed', 'conductual_completed',
     ...COMPLETED_TESTS_STAGES,
   ]);
-  const REJECTED_STAGES = new Set(['rejected_by_admin', 'auto_rejected_low_score', 'auto_rejected_disc_mismatch', 'auto_rejected_english_failed', 'auto_rejected_mindset_limiting']);
+  const REJECTED_STAGES = new Set(['rejected_by_admin', 'auto_rejected_low_score']);
 
   const grouped: Record<Source, SourceStats> = {
     recruit_linkedin: emptyStats('recruit_linkedin'),
