@@ -96,8 +96,8 @@ type VideoResponseMini = {
   ROWID: string;
   application_id: string;
   question_id: string;
-  analysis_json: string | null;
-  analyzed_at: string | null;
+  analysis_payload: string | null;
+  analysis_status: 'pending' | 'ok' | 'failed' | null;
 };
 
 function extractTokenFromPath(url: string): string | null {
@@ -175,7 +175,7 @@ export async function getPublicReportBundle(ctx: RequestContext): Promise<void> 
     fetchAll<ScoresRow>(ctx.req, 'Scores', `result_id IN (${resultIds})`),
     fetchAll<IntegrityDimRow>(ctx.req, 'IntegrityDimensions', `result_id IN (${resultIds})`, 'ORDER BY dimension'),
     fetchAllSafe<VideoQuestionMini>(ctx.req, 'VideoQuestions', `application_id IN (${resultIds})`, 'ORDER BY CREATEDTIME ASC'),
-    fetchAllSafe<VideoResponseMini>(ctx.req, 'VideoResponses', `application_id IN (${resultIds})`, 'ORDER BY uploaded_at ASC'),
+    fetchAllSafe<VideoResponseMini>(ctx.req, 'VideoResponses', `application_id IN (${resultIds})`, 'ORDER BY submitted_at ASC'),
     fetchAllSafe<Record<string, unknown>>(ctx.req, 'MindsetScores', `result_id IN (${resultIds})`),
     fetchAllSafe<Record<string, unknown>>(ctx.req, 'EnglishTestSessions', `result_id IN (${resultIds})`, 'ORDER BY CREATEDTIME DESC'),
   ]);
@@ -225,16 +225,16 @@ export async function getPublicReportBundle(ctx: RequestContext): Promise<void> 
       const allResponses = videoRsByAppQ.get(`${result.ROWID}::${q.question_id}`) ?? [];
       const latest = allResponses[allResponses.length - 1];
       let analysis: Record<string, unknown> | null = null;
-      if (latest?.analysis_json) {
-        try { analysis = JSON.parse(latest.analysis_json); } catch { analysis = null; }
+      if (latest?.analysis_payload) {
+        try { analysis = JSON.parse(latest.analysis_payload); } catch { analysis = null; }
       }
       return {
         question_id: q.question_id,
         category: q.category,
         question_text: q.question_text,
         has_response: !!latest,
-        analysis_status: latest?.analyzed_at ? 'ok' : 'pending',
-        analysis, // solo el análisis IA (overall_pct, observaciones, flags, etc.)
+        analysis_status: (latest?.analysis_status ?? 'pending') as 'pending' | 'ok' | 'failed',
+        analysis,
       };
     }).filter((v) => v.has_response); // Omitir preguntas sin respuesta del candidato
 

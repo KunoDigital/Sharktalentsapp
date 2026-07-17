@@ -49,14 +49,19 @@ export type VideoResponseRow = {
   ROWID: string;
   application_id: string;
   question_id: string;
+  /** Numero de intento del candidato (1..2). Default 1. */
+  attempt: number;
   catalyst_file_id: string | null;
-  file_size_bytes: number | null;
   duration_sec: number | null;
-  mime_type: string | null;
   transcript: string | null;
-  analysis_json: string | null;
-  uploaded_at: string;
-  analyzed_at: string | null;
+  /** Estado del proceso de transcripción: pending → ok/failed. */
+  transcript_status: 'pending' | 'ok' | 'failed';
+  /** JSON string con el análisis IA (`VideoAnswerAnalysis`). */
+  analysis_payload: string | null;
+  /** Estado del análisis IA: pending → ok/failed. */
+  analysis_status: 'pending' | 'ok' | 'failed';
+  /** Timestamp del submit del candidato. */
+  submitted_at: string;
 };
 
 // ===== VideoQuestions =====
@@ -129,6 +134,10 @@ export async function fetchVideoQuestion(
 /**
  * Registra que un candidato submiteó una respuesta. La transcripción + análisis IA
  * llegan asíncrono (Whisper + analyzeVideoAnswer) — empezamos en pending.
+ *
+ * Attempt: si el candidato ya submitió un intento previo para esta pregunta,
+ * incrementa el número de intento (máximo 2, se enforcea en el caller). Si es
+ * el primer submit, attempt=1.
  */
 export async function recordVideoResponse(
   req: IncomingMessage,
@@ -140,23 +149,40 @@ export async function recordVideoResponse(
     durationSec?: number | null;
     mimeType?: string | null;
     transcript?: string | null;
+    /** Si no se provee, se auto-detecta con COUNT. */
+    attempt?: number;
   },
 ): Promise<{ rowId: string | null; tableMissing: boolean }> {
   if (!(await checkTableReady(req, T_RESPONSES))) {
     return { rowId: null, tableMissing: true };
   }
   try {
+    // Detectar attempt si no vino: contar rows previos de la misma pregunta + 1.
+    let attempt = input.attempt;
+    if (attempt == null) {
+      const existing = unwrapRows<{ ROWID: string }>(
+        (await zcql(req).executeZCQLQuery(
+          `SELECT ROWID FROM ${T_RESPONSES} WHERE application_id = '${escapeSql(input.applicationId)}' AND question_id = '${escapeSql(input.questionId)}'`,
+        )) as unknown[],
+        T_RESPONSES,
+      );
+      attempt = existing.length + 1;
+    }
+
+    const hasTranscript = typeof input.transcript === 'string' && input.transcript.length > 0;
+
     const row = await datastore(req).table(T_RESPONSES).insertRow({
       application_id: input.applicationId,
       question_id: input.questionId,
+      attempt,
       catalyst_file_id: input.catalystFileId ?? null,
-      file_size_bytes: input.fileSizeBytes ?? null,
       duration_sec: input.durationSec ?? null,
-      mime_type: input.mimeType ?? null,
       transcript: input.transcript ?? null,
-      analysis_json: null,
-      uploaded_at: now(),
-      analyzed_at: null,
+      // Si el caller ya pasó transcript (mockup/manual), lo marcamos ok directo.
+      transcript_status: hasTranscript ? 'ok' : 'pending',
+      analysis_payload: null,
+      analysis_status: 'pending',
+      submitted_at: now(),
     });
     const inserted = unwrapRow<{ ROWID: string }>(row, T_RESPONSES);
     return { rowId: inserted?.ROWID ?? null, tableMissing: false };
@@ -170,12 +196,13 @@ export async function updateResponseTranscript(
   req: IncomingMessage,
   rowId: string,
   transcript: string,
-  _status: 'ok' | 'failed' = 'ok',
+  status: 'ok' | 'failed' = 'ok',
 ): Promise<void> {
   if (!(await checkTableReady(req, T_RESPONSES))) return;
   await datastore(req).table(T_RESPONSES).updateRow({
     ROWID: rowId,
     transcript: truncate(transcript, FIELD_LIMITS.VIDEO_TRANSCRIPT, 'VideoResponses.transcript'),
+    transcript_status: status,
   });
 }
 
@@ -183,13 +210,13 @@ export async function updateResponseAnalysis(
   req: IncomingMessage,
   rowId: string,
   analysis: VideoAnswerAnalysis,
-  _status: 'ok' | 'failed' = 'ok',
+  status: 'ok' | 'failed' = 'ok',
 ): Promise<void> {
   if (!(await checkTableReady(req, T_RESPONSES))) return;
   await datastore(req).table(T_RESPONSES).updateRow({
     ROWID: rowId,
-    analysis_json: stringifyAndTruncate(analysis, FIELD_LIMITS.VIDEO_ANALYSIS, 'VideoResponses.analysis_json'),
-    analyzed_at: now(),
+    analysis_payload: stringifyAndTruncate(analysis, FIELD_LIMITS.VIDEO_ANALYSIS, 'VideoResponses.analysis_payload'),
+    analysis_status: status,
   });
 }
 
@@ -201,7 +228,7 @@ export async function listResponsesForApplication(
   const q = `
     SELECT * FROM ${T_RESPONSES}
     WHERE application_id = '${escapeSql(applicationId)}'
-    ORDER BY uploaded_at DESC
+    ORDER BY submitted_at DESC
   `.replace(/\s+/g, ' ');
   return unwrapRows<VideoResponseRow>(
     (await zcql(req).executeZCQLQuery(q)) as unknown[],

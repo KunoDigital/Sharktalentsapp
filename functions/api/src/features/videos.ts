@@ -33,6 +33,7 @@ import {
   recordVideoResponse,
   listResponsesForApplication,
   fetchVideoResponse,
+  updateResponseTranscript,
   updateResponseAnalysis,
   type VideoResponseRow,
 } from '../lib/videoPersistence';
@@ -219,16 +220,16 @@ async function triageVideoIfAllScored(ctx: RequestContext, applicationId: string
     const allQs = await listVideoQuestionsForApplication(ctx.req, applicationId);
     if (allQs.length === 0) return;
 
-    const rows = unwrapRows<{ question_id: string; analysis_json: string | null }>(
+    const rows = unwrapRows<{ question_id: string; analysis_payload: string | null }>(
       (await zcql(ctx.req).executeZCQLQuery(
-        `SELECT question_id, analysis_json FROM VideoResponses WHERE application_id = '${escapeSql(applicationId)}'`,
+        `SELECT question_id, analysis_payload FROM VideoResponses WHERE application_id = '${escapeSql(applicationId)}'`,
       )) as unknown[],
       'VideoResponses',
     );
 
     // Nos quedamos con la última respuesta por pregunta (por si el candidato reintentó).
     const latestByQid = new Map<string, string | null>();
-    for (const r of rows) latestByQid.set(r.question_id, r.analysis_json);
+    for (const r of rows) latestByQid.set(r.question_id, r.analysis_payload);
 
     const scores: number[] = [];
     for (const q of allQs) {
@@ -513,6 +514,32 @@ export async function submitTestVideo(ctx: RequestContext): Promise<void> {
     has_file: catalystFileId != null,
   });
 
+  // Cablear procesamiento asíncrono: Whisper (si hay file y no vino transcript) →
+  // análisis IA (cuando el transcript queda ok). Fire-and-forget para no bloquear
+  // el response al candidato.
+  if (rowId && catalystFileId && !transcript) {
+    const { fireAndForget } = await import('../lib/fireAndForget.js');
+    fireAndForget('runWhisperAndAnalyzeAsync', async () => {
+      await runWhisperAndAnalyzeAsync(ctx, {
+        responseRowId: rowId,
+        applicationId,
+        questionId,
+        catalystFileId,
+      });
+    });
+  } else if (rowId && transcript) {
+    // Ya vino transcript (mock/manual) → saltear Whisper, disparar solo análisis IA.
+    const { fireAndForget } = await import('../lib/fireAndForget.js');
+    fireAndForget('analyzeExistingTranscriptAsync', async () => {
+      await analyzeVideoResponseAsync(ctx, {
+        responseRowId: rowId,
+        applicationId,
+        questionId,
+        transcript,
+      });
+    });
+  }
+
   // Auto-transition videos_pending → videos_completed cuando el candidato respondió
   // todas las preguntas. Si quedan algunas sin responder, sigue en videos_pending.
   try {
@@ -625,6 +652,147 @@ function tryParseArray(raw: string | null | undefined): string[] {
     return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
   } catch {
     return [];
+  }
+}
+
+// ===== Procesamiento asíncrono post-submit del candidato =====
+
+/**
+ * Cadena async post-submit del candidato:
+ *   1. Descarga el archivo del File Store
+ *   2. Llama a Whisper para transcribir
+ *   3. Persiste transcript + transcript_status='ok' (o 'failed')
+ *   4. Si transcribió OK → dispara análisis IA (analyzeVideoResponseAsync)
+ *
+ * Fire-and-forget: NO devuelve el resultado al request principal — el candidato
+ * ya recibió su 201 hace rato. Si algo falla, quedan los status en la tabla para
+ * que Cris pueda ver el estado desde el panel admin.
+ */
+async function runWhisperAndAnalyzeAsync(
+  ctx: RequestContext,
+  input: {
+    responseRowId: string;
+    applicationId: string;
+    questionId: string;
+    catalystFileId: string;
+  },
+): Promise<void> {
+  const { responseRowId, applicationId, questionId, catalystFileId } = input;
+
+  try {
+    const { env } = await import('../lib/env.js');
+    const folderId = env().FILESTORE_VIDEO_FOLDER_ID;
+    if (!folderId) {
+      log.warn('FILESTORE_VIDEO_FOLDER_ID not set — cannot transcribe', { responseRowId });
+      await updateResponseTranscript(ctx.req, responseRowId, '', 'failed');
+      return;
+    }
+
+    const { filestore } = await import('../lib/db.js');
+    const folder = (filestore(ctx.req) as { folder: (id: string) => unknown }).folder(folderId);
+    const buffer = await (folder as { downloadFile: (id: string) => Promise<Buffer> }).downloadFile(catalystFileId);
+    if (!buffer || buffer.length === 0) {
+      log.warn('empty buffer downloaded from filestore', { responseRowId, catalystFileId });
+      await updateResponseTranscript(ctx.req, responseRowId, '', 'failed');
+      return;
+    }
+
+    const { transcribeAudio } = await import('../lib/videoTranscription.js');
+    const result = await transcribeAudio(buffer, {
+      language: 'es',
+      filename: `video-${questionId}.webm`,
+      contentType: 'audio/webm',
+      traceId: ctx.traceId,
+    });
+
+    if (!result.text || result.text.trim().length === 0) {
+      log.warn('whisper returned empty transcript', { responseRowId });
+      await updateResponseTranscript(ctx.req, responseRowId, '', 'failed');
+      return;
+    }
+
+    await updateResponseTranscript(ctx.req, responseRowId, result.text, 'ok');
+    log.info('whisper transcribed', {
+      responseRowId,
+      applicationId,
+      duration_seconds: result.duration_seconds,
+      text_chars: result.text.length,
+    });
+
+    // Cadena → análisis IA con el transcript ya cargado
+    await analyzeVideoResponseAsync(ctx, {
+      responseRowId,
+      applicationId,
+      questionId,
+      transcript: result.text,
+    });
+  } catch (err) {
+    log.warn('runWhisperAndAnalyzeAsync failed', {
+      responseRowId,
+      applicationId,
+      error: (err as Error).message,
+    });
+    try { await updateResponseTranscript(ctx.req, responseRowId, '', 'failed'); } catch { /* noop */ }
+  }
+}
+
+/**
+ * Análisis IA async de una respuesta que ya tiene transcript. Usado desde:
+ *  (a) el cierre de runWhisperAndAnalyzeAsync
+ *  (b) el submit directo cuando el candidato ya pasó transcript (mock/manual)
+ *
+ * Al terminar OK, dispara `triageVideoIfAllScored` — si es la última pregunta
+ * del set, mueve el pipeline (rechaza / duda / finalist).
+ */
+async function analyzeVideoResponseAsync(
+  ctx: RequestContext,
+  input: {
+    responseRowId: string;
+    applicationId: string;
+    questionId: string;
+    transcript: string;
+  },
+): Promise<void> {
+  const { responseRowId, applicationId, questionId, transcript } = input;
+
+  try {
+    const question = await fetchVideoQuestion(ctx.req, applicationId, questionId);
+    if (!question) {
+      log.warn('question not found for async analysis', { responseRowId, questionId });
+      return;
+    }
+
+    const analysis = await analyzeVideoAnswer({
+      category: question.category,
+      question_text: question.question_text,
+      rationale_internal: question.rationale_internal,
+      expected_signals: tryParseArray(question.expected_signals),
+      transcript,
+      traceId: ctx.traceId,
+    });
+    await updateResponseAnalysis(ctx.req, responseRowId, analysis, 'ok');
+    log.info('video analysis auto-completed', {
+      responseRowId,
+      applicationId,
+      overall_pct: analysis.overall_pct,
+    });
+
+    // Video score triage — si todas las respuestas tienen análisis, decidir pipeline.
+    await triageVideoIfAllScored(ctx, applicationId);
+  } catch (err) {
+    log.warn('analyzeVideoResponseAsync failed', {
+      responseRowId,
+      applicationId,
+      error: (err as Error).message,
+    });
+    try {
+      await updateResponseAnalysis(
+        ctx.req,
+        responseRowId,
+        { overall_pct: 0, signals_matched_pct: 0, observations: [], flags: ['analysis_failed'] },
+        'failed',
+      );
+    } catch { /* noop */ }
   }
 }
 

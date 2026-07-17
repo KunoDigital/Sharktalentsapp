@@ -43,11 +43,19 @@ const STAGE_NOTIFICATION_MAP: Record<string, { template: string; phase?: string 
   tecnica_completed: { template: 'candidate_conductual_start', phase: 'disc' },
   // Terminó conductual → correo "siguiente paso: integridad"
   conductual_completed: { template: 'candidate_integridad_start', phase: 'integridad' },
-  // Terminó integridad → correo "último paso: entrevista en video"
-  integridad_completed: { template: 'candidate_video_start', phase: 'videos' },
+  // Terminó integridad → SIN email todavía. El link de video no existe hasta
+  // que la IA genere las preguntas (dispara la transición → videos_pending), y
+  // recién ahí el candidato puede acceder al test. Antes acá se mandaba el email
+  // pero llegaba prematuro — el candidato clickeaba y no había preguntas.
+  integridad_completed: null,
+  // Ya se generaron las preguntas del video → correo "último paso: video respuestas"
+  // con el link real al test.
+  videos_pending: { template: 'candidate_video_start', phase: 'videos' },
   // videos_completed y bot_decision_advance: el bot decide internamente; sin email todavía
   videos_completed: null,
   bot_decision_advance: null,
+  // Duda CV: sin email al candidato (Cris revisa manual, si decide avanzar dispara desde admin)
+  duda_cv: null,
   // Finalist: SharkTalents NO manda nada — Cris manda invitación a entrevista manual
   // (porque necesita detalles como fecha/hora/link Meet)
   finalist: null,

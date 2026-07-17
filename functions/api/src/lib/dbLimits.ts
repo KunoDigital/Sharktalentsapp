@@ -28,7 +28,7 @@
  * **Campos inline (todos ≤ 9,500):**
  * | Campo                              | Límite | Justificación                               |
  * |------------------------------------|--------|---------------------------------------------|
- * | analysis_json (VideoResponses)     | 8000   | Análisis IA estructurado                    |
+ * | analysis_payload (VideoResponses)  | 8000   | Análisis IA estructurado (renombrado 17-jul)|
  * | ideal_profile (Jobs)               | 8000   | DISC + VELNA + competencias + boss          |
  * | quiz_data (MarketingLeads)         | 4000   | 5 respuestas del quiz                       |
  * | calculator_data (MarketingLeads)   | 2000   | Cálculos del riesgo                         |
