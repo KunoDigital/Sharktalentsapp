@@ -144,7 +144,7 @@ exports.WHATSAPP_TEMPLATES = {
             { name: 'job_title', example: 'Gerente de Marca' },
             { name: 'test_link', example: 'https://app.sharktalents.ai/test/abc123' },
         ],
-        template_text_es: `Hola {{1}}, superaste el prescreening para {{2}}. El siguiente paso es una prueba técnica de 30-40 min. Hazla desde una computadora: {{3}}`,
+        template_text_es: `Hola {{1}}, superaste el prescreening para {{2}} y avanzas a la prueba técnica. Necesitas una computadora y entre 30 y 40 minutos sin interrupciones. Comienza aquí: {{3}}. Cualquier duda, responde este mensaje.`,
         twilio_content_sid: 'HX9d202960922ad40c4727b98b950975f4',
     },
     candidate_conductual_start_wa: {
@@ -157,7 +157,7 @@ exports.WHATSAPP_TEMPLATES = {
             { name: 'job_title', example: 'Gerente de Marca' },
             { name: 'test_link', example: 'https://app.sharktalents.ai/test/abc123' },
         ],
-        template_text_es: `Hola {{1}}, avanzaste a la evaluación conductual para {{2}}. Son 3 pruebas de personalidad, dura ~20 min: {{3}}`,
+        template_text_es: `Hola {{1}}, avanzas a la siguiente etapa para {{2}}: prueba conductual y de cognición, unos 20 minutos. Comienza aquí: {{3}}. Cualquier duda, responde este mensaje.`,
         twilio_content_sid: 'HXcf3a3fe0b8c485932213fbe5c1fe60ae',
     },
     candidate_integridad_start_wa: {
@@ -170,7 +170,7 @@ exports.WHATSAPP_TEMPLATES = {
             { name: 'job_title', example: 'Gerente de Marca' },
             { name: 'test_link', example: 'https://app.sharktalents.ai/test/abc123' },
         ],
-        template_text_es: `Hola {{1}}, penúltima etapa para {{2}}: evaluación de integridad, ~15 min. Necesitas tu número de identificación a mano: {{3}}`,
+        template_text_es: `Hola {{1}}, pasas a la penúltima etapa para {{2}}: evaluación de integridad, unos 15 minutos. Ten a mano tu documento de identificación. Comienza aquí: {{3}}. Cualquier duda, responde este mensaje.`,
         twilio_content_sid: 'HX6f0d4ff51e0f43903e1cde1e2d8de68e',
     },
     candidate_video_start_wa: {
@@ -183,7 +183,7 @@ exports.WHATSAPP_TEMPLATES = {
             { name: 'job_title', example: 'Gerente de Marca' },
             { name: 'test_link', example: 'https://app.sharktalents.ai/test/abc123/videos' },
         ],
-        template_text_es: `Hola {{1}}, último paso para {{2}}: 5-7 preguntas en video, ~15 min. Puedes grabar cuando quieras: {{3}}`,
+        template_text_es: `Hola {{1}}, último paso para {{2}}: preguntas en video, unos 15 minutos. Puedes grabarlas cuando quieras — busca un lugar tranquilo y con buena luz. Nos interesa cómo piensas, no la calidad de tu cámara. Comienza aquí: {{3}}. Cualquier duda, responde este mensaje.`,
         twilio_content_sid: 'HXc6c936971dee2db3c5b785e2d997606f',
     },
     // NOTA: candidate_rejected NO tiene template WhatsApp por decisión de Chris (2026-07-17).
