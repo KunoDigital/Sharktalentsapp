@@ -3304,6 +3304,19 @@ export async function diagCrmLayouts(ctx: RequestContext): Promise<void> {
       standard_fields_count: fieldsResult.ok
         ? fieldsResult.data.filter((f) => !f.custom_field).length
         : 0,
+      // Picklists estándar (Lead_Status, Industry, etc.) — necesarios para wiring del pipeline.
+      standard_picklists: fieldsResult.ok
+        ? fieldsResult.data
+            .filter((f) => !f.custom_field
+              && (f.data_type === 'picklist' || f.data_type === 'multiselectpicklist')
+              && f.pick_list_values && f.pick_list_values.length > 0)
+            .map((f) => ({
+              api_name: f.api_name,
+              label: f.field_label,
+              type: f.data_type,
+              pick_list: (f.pick_list_values ?? []).map((v) => v.display_value),
+            }))
+        : [],
     });
   } catch (err) {
     sendJson(ctx.res, 500, { error: (err as Error).message });

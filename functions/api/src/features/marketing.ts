@@ -1537,17 +1537,20 @@ export async function patchLead(ctx: RequestContext): Promise<void> {
   sendJson(ctx.res, 200, { ok: true, leadId, updated_fields: Object.keys(patch), zoho_sync: zohoSync });
 }
 
+// Mapping SharkTalents pipeline → Zoho CRM Lead_Status (2026-07-21).
+// Chris decidió NO crear etapas nuevas en Zoho — los 7 stages internos colapsan
+// en las 4 que ya existen en el picklist. Granularidad fina queda en SharkTalents.
 const PIPELINE_STAGE_TO_ZOHO_STATUS: Record<string, string> = {
   nuevo: 'Nuevo',
-  contactado: 'Contactado',
-  interesado: 'Interesado',
-  reunion_agendada: 'Reunión agendada',
-  reunion_hecha: 'Reunión hecha',
-  cotizacion_enviada: 'Cotización enviada',
+  contactado: 'En conversación',
+  interesado: 'En conversación',
+  reunion_agendada: 'En conversación',
+  reunion_hecha: 'En conversación',
+  cotizacion_enviada: 'Propuesta enviada',
   perdido: 'Perdido',
 };
 
-async function syncPipelineStageToZoho(
+export async function syncPipelineStageToZoho(
   req: RequestContext['req'],
   leadId: string,
   pipelineStage: string,

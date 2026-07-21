@@ -467,7 +467,16 @@ export async function updateV3Stage(ctx: RequestContext): Promise<void> {
     throw new AppError(500, 'update_failed', `Update failed: ${(err as Error).message}`);
   }
 
-  sendJson(ctx.res, 200, { ok: true, leadId, v3_stage: newV3Stage, pipeline_stage: pipelineStage });
+  // Sync a Zoho CRM Lead_Status (silent-fail — no rompe el update si CRM falla).
+  let zohoSync: { status: 'ok' | 'failed' | 'skipped'; detail?: string } = { status: 'skipped' };
+  try {
+    const { syncPipelineStageToZoho } = await import('./marketing.js');
+    zohoSync = await syncPipelineStageToZoho(ctx.req, leadId, pipelineStage, ctx.traceId);
+  } catch (err) {
+    log.warn('zoho sync failed after v3 stage update', { leadId, error: (err as Error).message });
+  }
+
+  sendJson(ctx.res, 200, { ok: true, leadId, v3_stage: newV3Stage, pipeline_stage: pipelineStage, zoho_sync: zohoSync });
 }
 
 // ============================================================================
