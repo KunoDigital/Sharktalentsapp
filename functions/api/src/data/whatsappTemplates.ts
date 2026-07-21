@@ -171,7 +171,7 @@ export const WHATSAPP_TEMPLATES: Record<string, WhatsAppTemplateDef> = {
       { name: 'test_link', example: 'https://app.sharktalents.ai/test/abc123' },
     ],
     template_text_es: `Hola {{1}}, superaste el prescreening para {{2}} y avanzas a la prueba técnica. Necesitas una computadora y entre 30 y 40 minutos sin interrupciones. Comienza aquí: {{3}}. Éxitos. Si tienes alguna duda escribe al correo RRHH@sharktalents.ai.`,
-    twilio_content_sid: 'HX9d202960922ad40c4727b98b950975f4',
+    twilio_content_sid: 'HX22721aa379af6e19d40ab908cc77fb6b',
   },
 
   candidate_conductual_start_wa: {
@@ -185,7 +185,7 @@ export const WHATSAPP_TEMPLATES: Record<string, WhatsAppTemplateDef> = {
       { name: 'test_link', example: 'https://app.sharktalents.ai/test/abc123' },
     ],
     template_text_es: `Hola {{1}}, avanzas a la siguiente etapa para {{2}}: prueba conductual y de cognición, unos 20 minutos. Comienza aquí: {{3}}. Éxitos. Si tienes alguna duda escribe al correo RRHH@sharktalents.ai.`,
-    twilio_content_sid: 'HXcf3a3fe0b8c485932213fbe5c1fe60ae',
+    twilio_content_sid: 'HXac086904a5d674b57b15ddcab1304cc3',
   },
 
   candidate_integridad_start_wa: {
@@ -199,7 +199,7 @@ export const WHATSAPP_TEMPLATES: Record<string, WhatsAppTemplateDef> = {
       { name: 'test_link', example: 'https://app.sharktalents.ai/test/abc123' },
     ],
     template_text_es: `Hola {{1}}, pasas a la penúltima etapa para {{2}}: evaluación de integridad, unos 15 minutos. Ten a mano tu documento de identificación. Comienza aquí: {{3}}. Éxitos. Si tienes alguna duda escribe al correo RRHH@sharktalents.ai.`,
-    twilio_content_sid: 'HX6f0d4ff51e0f43903e1cde1e2d8de68e',
+    twilio_content_sid: 'HXdb7c09cd2f6363197cb9574765545f9e',
   },
 
   candidate_video_start_wa: {
@@ -213,7 +213,7 @@ export const WHATSAPP_TEMPLATES: Record<string, WhatsAppTemplateDef> = {
       { name: 'test_link', example: 'https://app.sharktalents.ai/test/abc123/videos' },
     ],
     template_text_es: `Hola {{1}}, último paso para {{2}}: preguntas en video, unos 15 minutos. Puedes grabarlas cuando quieras — busca un lugar tranquilo y con buena luz. Nos interesa cómo piensas, no la calidad de tu cámara. Comienza aquí: {{3}}. Éxitos. Si tienes alguna duda escribe al correo RRHH@sharktalents.ai.`,
-    twilio_content_sid: 'HXc6c936971dee2db3c5b785e2d997606f',
+    twilio_content_sid: 'HXa39d2bc341a711a3240b333f2d5edce7',
   },
 
   // NOTA: candidate_rejected NO tiene template WhatsApp por decisión de Chris (2026-07-17).
